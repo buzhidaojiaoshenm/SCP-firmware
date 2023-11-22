@@ -5,13 +5,28 @@
 # SPDX-License-Identifier: BSD-3-Clause
 #
 
+# cmake-lint: disable=E1122
+
 #
 # Create the firmware target.
 #
-
-# cmake-lint: disable=E1122
-
 add_executable(rdv3-bl2)
+
+# SCP_PLATFORM_VARIANT value for supported RD-V3 platform variants:
+# - '0' for RD-V3 platform
+# - '1' for RD-V3-Cfg1 platform
+
+if (SCP_PLATFORM_VARIANT STREQUAL "0")
+      target_compile_definitions(rdv3-bl2
+                                 PUBLIC -DPLATFORM_VARIANT=0)
+elseif (SCP_PLATFORM_VARIANT STREQUAL "1")
+      target_compile_definitions(rdv3-bl2
+                                 PUBLIC -DPLATFORM_VARIANT=1)
+else()
+      message(FATAL_ERROR "Please set SCP_PLATFORM_VARIANT to \n"
+                                "'0' for RD-V3\n"
+                                "'1' for RD-V3-Cfg1\n")
+endif()
 
 target_include_directories(
     rdv3-bl2

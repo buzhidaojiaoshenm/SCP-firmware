@@ -1,6 +1,6 @@
 #
 # Arm SCP/MCP Software
-# Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+# Copyright (c) 2024-2025, Arm Limited and Contributors. All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -29,6 +29,9 @@
     - name: GNU
 
 - product: rdv3
+  variants:
+    - name: 0
+    - name: 1
   product_group: neoverse-rd
 
 - product: rdv1

@@ -14,6 +14,7 @@
 /*
  * CMN node ids
  */
+#if (PLATFORM_VARIANT == 0)
 #define MEM_CNTRL0_ID 64
 #define MEM_CNTRL1_ID 128
 #define MEM_CNTRL2_ID 192
@@ -48,5 +49,24 @@
 #define IOVB_NODE_ID2 NODE_ID_HNP4
 #define IOVB_NODE_ID3 NODE_ID_HNT0
 #define IOVB_NODE_ID4 NODE_ID_HNT2
+
+#elif (PLATFORM_VARIANT == 1)
+#define MEM_CNTRL0_ID 32
+#define MEM_CNTRL1_ID 64
+
+#define NODE_ID_HND  68
+
+#define NODE_ID_HNT0 0
+#define NODE_ID_HNP0 2
+#define NODE_ID_HNP1 3
+
+#define NODE_ID_SBSX 66
+
+#define MESH_SIZE_X 3
+#define MESH_SIZE_Y 3
+
+#define IOVB_NODE_ID0 NODE_ID_HNP0
+
+#endif
 
 #endif /* CMN_NODE_ID */

@@ -16,7 +16,13 @@
 #define PLATFORM_CORE_PER_CLUSTER_MAX 1
 
 #define CORES_PER_CLUSTER  1
+#if (PLATFORM_VARIANT == 0)
 #define NUMBER_OF_CLUSTERS 16
+#elif (PLATFORM_VARIANT == 1)
+#define NUMBER_OF_CLUSTERS 8
+#else
+#error "Unsupported PLATFORM_VARIANT value"
+#endif
 
 /* Number of chips supported on the platform. */
 enum platform_chip_id { PLATFORM_CHIP_0, PLATFORM_CHIP_COUNT };

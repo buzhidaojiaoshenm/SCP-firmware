@@ -16,7 +16,13 @@
 #include <fwk_id.h>
 #include <fwk_module.h>
 
+#if (PLATFORM_VARIANT == 0)
 #define RD_V3_PART_NUMBER 0x7EE
+#elif (PLATFORM_VARIANT == 1)
+#define RD_V3_PART_NUMBER 0x7F9
+#else
+#error "Unsupported platform variant"
+#endif
 
 /* Module 'sid' element count */
 #define MOD_SID_ELEMENT_COUNT 2

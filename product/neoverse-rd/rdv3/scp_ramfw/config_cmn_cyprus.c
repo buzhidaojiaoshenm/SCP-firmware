@@ -24,11 +24,13 @@
 #include <stddef.h>
 #include <stdint.h>
 
-/* Number of entries in the 'snf_table' */
-#define SNF_TABLE_COUNT 32
-
-/* Number of entries in the 'mmap_table' */
-#define MMAP_TABLE_COUNT 17
+#if (PLATFORM_VARIANT == 0)
+#    define MMAP_TABLE_COUNT 17
+#    define SNF_TABLE_COUNT  32
+#elif (PLATFORM_VARIANT == 1)
+#    define MMAP_TABLE_COUNT 13
+#    define SNF_TABLE_COUNT  8
+#endif
 
 static const unsigned int snf_table[SNF_TABLE_COUNT] = {
     MEM_CNTRL0_ID, /* Maps to HN-F logical node 0  */
@@ -39,6 +41,7 @@ static const unsigned int snf_table[SNF_TABLE_COUNT] = {
     MEM_CNTRL1_ID, /* Maps to HN-F logical node 5  */
     MEM_CNTRL1_ID, /* Maps to HN-F logical node 6  */
     MEM_CNTRL1_ID, /* Maps to HN-F logical node 7  */
+#if (PLATFORM_VARIANT == 0)
     MEM_CNTRL2_ID, /* Maps to HN-F logical node 8  */
     MEM_CNTRL2_ID, /* Maps to HN-F logical node 9  */
     MEM_CNTRL2_ID, /* Maps to HN-F logical node 10  */
@@ -63,6 +66,7 @@ static const unsigned int snf_table[SNF_TABLE_COUNT] = {
     MEM_CNTRL7_ID, /* Maps to HN-F logical node 29  */
     MEM_CNTRL7_ID, /* Maps to HN-F logical node 30  */
     MEM_CNTRL7_ID, /* Maps to HN-F logical node 31  */
+#endif
 };
 
 static const struct mod_cmn_cyprus_mem_region_map mmap[MMAP_TABLE_COUNT] = {
@@ -95,7 +99,11 @@ static const struct mod_cmn_cyprus_mem_region_map mmap[MMAP_TABLE_COUNT] = {
         .base = UINT64_C(0x0008000000),
         .size = UINT64_C(128) * FWK_MIB,
         .type = MOD_CMN_CYPRUS_MEM_REGION_TYPE_IO,
-        .node_id = NODE_ID_HNT1,
+#if (PLATFORM_VARIANT == 0)
+	.node_id = NODE_ID_HNT1,
+#else
+        .node_id = NODE_ID_HNT0,
+#endif
     },
     {
         /*
@@ -167,6 +175,7 @@ static const struct mod_cmn_cyprus_mem_region_map mmap[MMAP_TABLE_COUNT] = {
         .type = MOD_CMN_CYPRUS_MEM_REGION_TYPE_IO,
         .node_id = IOVB_NODE_ID0,
     },
+#if (PLATFORM_VARIANT == 0)
     {
         /*
          * Peripherals, NCI GPV Memory Map 1
@@ -207,6 +216,7 @@ static const struct mod_cmn_cyprus_mem_region_map mmap[MMAP_TABLE_COUNT] = {
         .type = MOD_CMN_CYPRUS_MEM_REGION_TYPE_IO,
         .node_id = IOVB_NODE_ID4,
     },
+#endif
     {
         /*
          * GPC_SMMU region

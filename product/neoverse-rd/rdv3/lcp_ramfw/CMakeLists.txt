@@ -11,6 +11,22 @@
 
 add_executable(rdv3-lcp-bl2)
 
+# SCP_PLATFORM_VARIANT value for supported RD-V3 platform variants:
+# - '0' for RD-V3 platform
+# - '1' for RD-V3-Cfg1 platform
+
+if (SCP_PLATFORM_VARIANT STREQUAL "0")
+      target_compile_definitions(rdv3-lcp-bl2
+                                 PUBLIC -DPLATFORM_VARIANT=0)
+elseif (SCP_PLATFORM_VARIANT STREQUAL "1")
+      target_compile_definitions(rdv3-lcp-bl2
+                                 PUBLIC -DPLATFORM_VARIANT=1)
+else()
+      message(FATAL_ERROR "Please set SCP_PLATFORM_VARIANT to \n"
+                                "'0' for RD-V3\n"
+                                "'1' for RD-V3-Cfg1\n")
+endif()
+
 target_include_directories(
     rdv3-lcp-bl2 PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}"
                     "${CMAKE_CURRENT_SOURCE_DIR}/include")

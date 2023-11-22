@@ -48,10 +48,13 @@ static const struct fwk_element clock_dev_table[MOD_CLOCK_ELEMENT_COUNT] = {
     CFGD_MOD_CLOCK_ELEMENT_CPU(1),
     CFGD_MOD_CLOCK_ELEMENT_CPU(2),
     CFGD_MOD_CLOCK_ELEMENT_CPU(3),
+#if (PLATFORM_VARIANT == 0 || PLATFORM_VARIANT == 1)
     CFGD_MOD_CLOCK_ELEMENT_CPU(4),
     CFGD_MOD_CLOCK_ELEMENT_CPU(5),
     CFGD_MOD_CLOCK_ELEMENT_CPU(6),
     CFGD_MOD_CLOCK_ELEMENT_CPU(7),
+#endif
+#if (PLATFORM_VARIANT == 0)
     CFGD_MOD_CLOCK_ELEMENT_CPU(8),
     CFGD_MOD_CLOCK_ELEMENT_CPU(9),
     CFGD_MOD_CLOCK_ELEMENT_CPU(10),
@@ -60,6 +63,7 @@ static const struct fwk_element clock_dev_table[MOD_CLOCK_ELEMENT_COUNT] = {
     CFGD_MOD_CLOCK_ELEMENT_CPU(13),
     CFGD_MOD_CLOCK_ELEMENT_CPU(14),
     CFGD_MOD_CLOCK_ELEMENT_CPU(15),
+#endif
     [CFGD_MOD_CLOCK_EIDX_CMN] = {
         .name = "CMN-Cyprus",
         .data = &((struct mod_clock_dev_config) {
