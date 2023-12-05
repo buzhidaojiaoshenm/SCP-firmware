@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -16,8 +16,8 @@
 #include <fwk_id.h>
 #include <fwk_module.h>
 
-#if (PLATFORM_VARIANT == 0)
-#define RD_V3_PART_NUMBER 0x7EE
+#if (PLATFORM_VARIANT == 0 || PLATFORM_VARIANT == 2)
+#    define RD_V3_PART_NUMBER 0x7EE
 #elif (PLATFORM_VARIANT == 1)
 #define RD_V3_PART_NUMBER 0x7F9
 #else
