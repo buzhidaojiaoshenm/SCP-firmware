@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -8,12 +8,14 @@
  *     Configuration data for module 'atu'.
  */
 
+#include "platform_core.h"
 #include "scp_css_mmap.h"
 
 #include <mod_atu.h>
 
 #include <fwk_element.h>
 #include <fwk_id.h>
+#include <fwk_log.h>
 #include <fwk_macros.h>
 #include <fwk_module.h>
 
@@ -41,7 +43,7 @@ enum atu_regions_idx {
     ATU_REGION_IDX_COUNT,
 };
 
-const struct atu_region_map atu_regions[ATU_REGION_IDX_COUNT] = {
+static struct atu_region_map atu_regions[ATU_REGION_IDX_COUNT] = {
     [ATU_REGION_IDX_CMN] = {
         .region_owner_id = FWK_ID_MODULE_INIT(FWK_MODULE_IDX_SCP_PLATFORM),
         .log_addr_base = SCP_ATW1_CMN_BASE,
@@ -94,6 +96,16 @@ static const struct fwk_element element_table[MOD_ATU_ELEMENT_COUNT] = {
 
 static const struct fwk_element *get_element_table(fwk_id_t module_id)
 {
+    unsigned int i;
+    uint8_t chip_id;
+
+    chip_id =
+        ((*(FWK_R unsigned int *)SID_CHIP_ID_REG) & SID_CHIP_ID_CHIP_ID_MASK) >>
+        SID_CHIP_ID_CHIP_ID_SHIFT;
+
+    for (i = 0; i < FWK_ARRAY_SIZE(atu_regions); i++) {
+        atu_regions[i].phy_addr_base += (chip_id * RDV3_CHIP_ADDR_SPACE);
+    }
     return element_table;
 }
 
