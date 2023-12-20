@@ -90,6 +90,54 @@ static const struct fwk_element element_table[MOD_TRANSPORT_ELEMENT_COUNT]  = {
                         MOD_MHU3_API_IDX_TRANSPORT_DRIVER),
         }),
     },
+    [SCP_CFGD_MOD_TRANSPORT_EIDX_RSE_SCMI_MSG_SEND_CH] = {
+        .name = "SCP_RSE_SCMI_MSG_SEND_CH",
+        .data = &((
+            struct mod_transport_channel_config) {
+                .transport_type = MOD_TRANSPORT_CHANNEL_TRANSPORT_TYPE_OUT_BAND,
+                .policies = MOD_TRANSPORT_POLICY_INIT_MAILBOX |
+                    MOD_TRANSPORT_POLICY_SECURE,
+                .channel_type = MOD_TRANSPORT_CHANNEL_TYPE_REQUESTER,
+                .out_band_mailbox_address =
+                    (uintptr_t) SCP_RSE_SCMI_MSG_PAYLOAD_BASE,
+                .out_band_mailbox_size = SCP_RSE_SCMI_MSG_PAYLOAD_SIZE,
+                .signal_api_id =
+                    FWK_ID_API_INIT(
+                        FWK_MODULE_IDX_SCMI,
+                        MOD_SCMI_API_IDX_TRANSPORT),
+                .driver_id =
+                    FWK_ID_SUB_ELEMENT_INIT(
+                        FWK_MODULE_IDX_MHU3,
+                        SCP_CFGD_MOD_MHU3_EIDX_SCP_RSS_S,
+                        2),
+                .driver_api_id =
+                    FWK_ID_API_INIT(
+                        FWK_MODULE_IDX_MHU3,
+                        MOD_MHU3_API_IDX_TRANSPORT_DRIVER),
+        }),
+    },
+    [SCP_CFGD_MOD_TRANSPORT_EIDX_RSE_SCMI_MSG_RECV_CH] = {
+        .name = "SCP_RSE_SCMI_MSG_RECV_CH",
+        .data = &((
+            struct mod_transport_channel_config) {
+                .transport_type = MOD_TRANSPORT_CHANNEL_TRANSPORT_TYPE_OUT_BAND,
+                .policies = MOD_TRANSPORT_POLICY_INIT_MAILBOX |
+                    MOD_TRANSPORT_POLICY_SECURE,
+                .channel_type = MOD_TRANSPORT_CHANNEL_TYPE_COMPLETER,
+                .out_band_mailbox_address =
+                    (uintptr_t) SCP_RSE_SCMI_MSG_PAYLOAD_BASE,
+                .out_band_mailbox_size = SCP_RSE_SCMI_MSG_PAYLOAD_SIZE,
+                .driver_id =
+                    FWK_ID_SUB_ELEMENT_INIT(
+                        FWK_MODULE_IDX_MHU3,
+                        SCP_CFGD_MOD_MHU3_EIDX_SCP_RSS_S,
+                        2),
+                .driver_api_id =
+                    FWK_ID_API_INIT(
+                        FWK_MODULE_IDX_MHU3,
+                        MOD_MHU3_API_IDX_TRANSPORT_DRIVER),
+        }),
+    },
     [SCP_CFGD_MOD_TRANSPORT_EIDX_MCP_SCMI_MSG_SEND_CH] = {
         .name = "SCP_MCP_SCMI_MSG_SEND_CH",
         .data = &((

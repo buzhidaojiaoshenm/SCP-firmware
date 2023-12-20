@@ -26,7 +26,7 @@
 #define SCP2AP_S_DBCH_COUNT 1
 
 /* SCP<-->RSS Secure MHUv3 Doorbell channel count */
-#define SCP2RSS_S_DBCH_COUNT 2
+#define SCP2RSS_S_DBCH_COUNT 3
 
 /* SCP<-->MCP Secure MHUv3 Doorbell channel count */
 #define SCP2MCP_S_DBCH_COUNT 1
@@ -43,6 +43,8 @@ struct mod_mhu3_channel_config scp2rss_s_dbch_config[SCP2RSS_S_DBCH_COUNT] = {
     MOD_MHU3_INIT_DBCH(0, 0, 0, 0),
     /* PBX CH 1, FLAG 0, MBX CH 1, FLAG 0 */
     MOD_MHU3_INIT_DBCH(1, 0, 1, 0),
+    /* PBX CH 2, FLAG 0, MBX CH 2, FLAG 0, used by scp platform for shutdown */
+    MOD_MHU3_INIT_DBCH(2, 0, 2, 0),
 };
 
 /* MCP<-->SCP Secure MHUv3 doorbell channel configuration */
@@ -66,7 +68,7 @@ static const struct fwk_element mhu_element_table[MOD_MHU3_ELEMENT_COUNT]  = {
     },
     [SCP_CFGD_MOD_MHU3_EIDX_SCP_RSS_S] = {
         .name = "SCP2RSS_S_MHU_DBCH",
-        .sub_element_count = 2,
+        .sub_element_count = SCP2RSS_S_DBCH_COUNT,
         .data = &(struct mod_mhu3_device_config) {
             .irq = (unsigned int) MHU3_RSS2SCP_IRQ_S,
             .in = SCP_RSS2SCP_MHUV3_RCV_S_BASE,

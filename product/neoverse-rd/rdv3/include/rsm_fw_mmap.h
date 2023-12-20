@@ -21,6 +21,10 @@
  *  |                                       |
  *  |         SCP-MCP SCMI payload          |
  *  | (SCP_MCP_SCMI_MSG_PAYLOAD_SIZE bytes) |
+ *  +---------------------------------------+  [SCP_RSE_SCMI_MSG_PAYLOAD_BASE]
+ *  |                                       |
+ *  |         SCP-RSE SCMI payload          |
+ *  | (SCP_RSE_SCMI_MSG_PAYLOAD_SIZE bytes) |
  *  +---------------------------------------+
  *  |                                       |
  *  |                                       |
@@ -33,6 +37,10 @@
 
 #define SCP_MCP_SCMI_MSG_PAYLOAD_OFFSET UINT32_C(0x0)
 #define SCP_MCP_SCMI_MSG_PAYLOAD_SIZE   (128)
+
+#define SCP_RSE_SCMI_MSG_PAYLOAD_OFFSET \
+    (SCP_MCP_SCMI_MSG_PAYLOAD_OFFSET + SCP_MCP_SCMI_MSG_PAYLOAD_SIZE)
+#define SCP_RSE_SCMI_MSG_PAYLOAD_SIZE   (128)
 
 // clang-format on
 
