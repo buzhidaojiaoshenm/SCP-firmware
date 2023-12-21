@@ -8,6 +8,7 @@
  *     SCP Platform Support - Power Management
  */
 
+#include "nrd_scmi.h"
 #include "scp_cfgd_scmi.h"
 
 #include <internal/scp_platform.h>
@@ -17,6 +18,7 @@
 #include <mod_scmi_std.h>
 #include <mod_system_power.h>
 
+#include <fwk_log.h>
 #include <fwk_module.h>
 #include <fwk_status.h>
 
@@ -31,6 +33,37 @@ static struct mod_pd_restricted_api *pd_restricted_api;
 /* System shutdown function */
 static int platform_shutdown(enum mod_pd_system_shutdown system_shutdown)
 {
+    int status;
+    fwk_id_t rse_scmi_prot_id = FWK_ID_ELEMENT(
+        FWK_MODULE_IDX_SCMI, SCP_CFGD_MOD_SCMI_EIDX_RSE_SCMI_SEND);
+    struct scp_cfgd_scmi_sys_power_state_set_payload scp_scmi_payload;
+
+    scp_scmi_payload.flags = 0;
+    scp_scmi_payload.system_state = (uint32_t)system_shutdown;
+
+    /*
+     * The current RSE firmware lacks SCMI support, preventing the RSE platform
+     * firmware from sending SCMI power state notify messages to the SCP or
+     * subscribing to SCMI notifications. To address this limitation, notify
+     * the RSE about system power down using the SCMI system power state set
+     * message. As this message can be decoded in the RSE firmware with minimal
+     * SCMI message parsing logic.
+     */
+    status = scmi_protocol_req_api->scmi_send_message(
+        MOD_SCMI_SYS_POWER_STATE_SET,
+        MOD_SCMI_PROTOCOL_ID_SYS_POWER,
+        0,
+        rse_scmi_prot_id,
+        (void *)&scp_scmi_payload,
+        sizeof(scp_scmi_payload),
+        false);
+
+    if (status != FWK_SUCCESS) {
+        FWK_LOG_ERR(
+            "[SCP_PLATFORM] ERROR! Unable to send shutdown request to RSE");
+        return status;
+    }
+
     while (1) {
         __WFI();
     }

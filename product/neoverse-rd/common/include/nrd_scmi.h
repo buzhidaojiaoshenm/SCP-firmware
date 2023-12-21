@@ -28,6 +28,16 @@ enum nrd_scmi_system_state {
 
 /*
  * SCMI payload for scmi sytem power protocol, message id
+ * SYSTEM_POWER_STATE_SET
+ * This will be removed once SCMI support is enabled at RSE
+ */
+struct scp_cfgd_scmi_sys_power_state_set_payload {
+    uint32_t flags;
+    uint32_t system_state;
+};
+
+/*
+ * SCMI payload for scmi sytem power protocol, message id
  * SYSTEM_POWER_STATE_NOTIFY
  */
 struct mcp_cfgd_scmi_sys_power_state_notify_payload {
