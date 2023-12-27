@@ -1,12 +1,15 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * Description:
  *     SCP platform sub-system initialization support.
  */
+
+#include "core_manager.h"
+#include "platform_core.h"
 
 #include <internal/scp_platform.h>
 
@@ -32,6 +35,23 @@ struct scp_platform_ctx {
 
 /* Module context data */
 struct scp_platform_ctx scp_platform_ctx;
+
+static void platform_update_gpt_size(void)
+{
+    unsigned int core_idx;
+    struct core_manager_reg *coremgr_ptr;
+
+    /* Update L0GPTSZ for all cores */
+    for (core_idx = 0; core_idx < platform_get_core_count(); core_idx++) {
+        coremgr_ptr = SCP_CLUSTER_UTILITY_CORE_MANAGER_PTR(core_idx);
+        coremgr_ptr->PE_STATIC_CONFIG &=
+            ~(CORE_MANAGER_PE_STATIC_CONFIG_L0GPTSZ_MASK
+              << CORE_MANAGER_PE_STATIC_CONFIG_L0GPTSZ_SHIFT);
+        coremgr_ptr->PE_STATIC_CONFIG |=
+            (CORE_MANAGER_PE_STATIC_CONFIG_L0GPTSZ_16GB
+             << CORE_MANAGER_PE_STATIC_CONFIG_L0GPTSZ_SHIFT);
+    }
+}
 
 /*
  * Framework handlers
@@ -151,6 +171,9 @@ static int scp_platform_start(fwk_id_t id)
         FWK_LOG_ERR(MOD_NAME "Error! LCP setup failed");
         return FWK_E_PANIC;
     }
+
+    /* Update L0GPTSZ for all cores */
+    platform_update_gpt_size();
 
     /* Determine the chip information */
     status = scp_platform_ctx.system_info_api->get_system_info(&system_info);

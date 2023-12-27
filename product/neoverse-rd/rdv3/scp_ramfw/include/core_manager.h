@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -72,5 +72,10 @@ struct core_manager_reg {
 
 #define SCP_CLUSTER_UTILITY_CORE_MANAGER_PTR(IDX) \
     ((struct core_manager_reg *)SCP_CLUSTER_UTILITY_CORE_MANAGER_BASE(IDX))
+
+/* AP Peripheral PE_STATIC_CONFIG definitions */
+#define CORE_MANAGER_PE_STATIC_CONFIG_L0GPTSZ_MASK  (0xF)
+#define CORE_MANAGER_PE_STATIC_CONFIG_L0GPTSZ_SHIFT (9)
+#define CORE_MANAGER_PE_STATIC_CONFIG_L0GPTSZ_16GB  (4)
 
 #endif /* CORE_MANAGER_H */
