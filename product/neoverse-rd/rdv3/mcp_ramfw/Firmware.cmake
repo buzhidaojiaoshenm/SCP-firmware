@@ -1,6 +1,6 @@
 #
 # Arm SCP/MCP Software
-# Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+# Copyright (c) 2024-2025, Arm Limited and Contributors. All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -26,6 +26,8 @@ set(SCP_ENABLE_IPO_INIT FALSE)
 
 set(SCP_ARCHITECTURE "arm-m")
 
+set(SCP_ENABLE_OUTBAND_MSG_SUPPORT TRUE)
+
 list(PREPEND SCP_MODULE_PATHS
     "${CMAKE_CURRENT_LIST_DIR}/../module/mcp_platform")
 
@@ -38,4 +40,6 @@ list(APPEND SCP_MODULES "pl011")
 list(APPEND SCP_MODULES "clock")
 list(APPEND SCP_MODULES "timer")
 list(APPEND SCP_MODULES "gtimer")
+list(APPEND SCP_MODULES "mhu3")
+list(APPEND SCP_MODULES "transport")
 list(APPEND SCP_MODULES "mcp-platform")

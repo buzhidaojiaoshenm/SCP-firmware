@@ -36,6 +36,7 @@ typedef enum IRQn {
     SysTick_IRQn = -1,
 
     REFCLK_GTIMER_IRQ = 34, /* MCP REFCLK Physical Timer interrupt */
+    MHU3_SCP2MCP_IRQ_S = 84, /* SCP to MCP Secure MHUv3 IRQ */
 
     IRQn_MAX = INT16_MAX,
 } IRQn_Type;
