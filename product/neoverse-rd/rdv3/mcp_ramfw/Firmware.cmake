@@ -28,6 +28,9 @@ set(SCP_ARCHITECTURE "arm-m")
 
 set(SCP_ENABLE_OUTBAND_MSG_SUPPORT TRUE)
 
+set(SCP_ENABLE_ATU_DELEGATE FALSE)
+set(SCP_ENABLE_ATU_MANAGE TRUE)
+
 list(PREPEND SCP_MODULE_PATHS
     "${CMAKE_SOURCE_DIR}/product/neoverse-rd/module/scmi_sys_power"
     "${CMAKE_CURRENT_LIST_DIR}/../module/mcp_platform")
@@ -38,6 +41,7 @@ list(PREPEND SCP_MODULE_PATHS
 
 list(APPEND SCP_MODULES "armv7m-mpu")
 list(APPEND SCP_MODULES "pl011")
+list(APPEND SCP_MODULES "atu")
 list(APPEND SCP_MODULES "clock")
 list(APPEND SCP_MODULES "timer")
 list(APPEND SCP_MODULES "gtimer")

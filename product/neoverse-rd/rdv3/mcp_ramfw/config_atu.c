@@ -8,8 +8,8 @@
  *     Configuration data for module 'atu'.
  */
 
+#include "css_common.h"
 #include "mcp_css_mmap.h"
-#include "rsm_fw_mmap.h"
 
 #include <mod_atu.h>
 
