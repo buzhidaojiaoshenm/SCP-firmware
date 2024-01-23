@@ -53,6 +53,16 @@ enum clock_pik_idx {
     CLOCK_PIK_IDX_COUNT
 };
 
+/*
+ * CCSM clock indexes
+ */
+enum clock_ccsm_idx {
+    CLOCK_CCSM_IDX_CPU_GROUP_LITTLE,
+    CLOCK_CCSM_IDX_CPU_GROUP_MID,
+    CLOCK_CCSM_IDX_CPU_GROUP_BIG,
+    CLOCK_CCSM_IDX_COUNT,
+};
+
 /*!
  * \brief Selectable clock sources for TC4 cluster clocks.
  */

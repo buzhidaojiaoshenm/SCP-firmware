@@ -128,7 +128,8 @@ target_sources(
             "${CMAKE_CURRENT_SOURCE_DIR}/config_system_pll.c"
             "${CMAKE_CURRENT_SOURCE_DIR}/config_pik_clock.c"
             "${CMAKE_CURRENT_SOURCE_DIR}/config_css_clock.c"
-            "${CMAKE_CURRENT_SOURCE_DIR}/config_clock.c")
+            "${CMAKE_CURRENT_SOURCE_DIR}/config_clock.c"
+            "${CMAKE_CURRENT_SOURCE_DIR}/config_ccsm.c")
 
 if(SCP_ENABLE_RESOURCE_PERMISSIONS)
     target_sources(scp-css PRIVATE "config_resource_perms.c")
