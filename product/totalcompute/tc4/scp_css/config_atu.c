@@ -73,6 +73,13 @@ static const struct atu_region_map atu_regions[] = {
         .region_size = SCP_ATU_REG_SIZE_PLL,
         .attributes = ATU_ENCODE_ATTRIBUTES_SECURE_PAS,
     },
+    {
+        .region_owner_id = FWK_ID_MODULE_INIT(FWK_MODULE_IDX_ATU),
+        .log_addr_base = SCP_ATU_LOG_ADDR_CCSM,
+        .phy_addr_base = SCP_ATU_PHY_ADDR_CCSM,
+        .region_size = SCP_ATU_REG_SIZE_CCSM,
+        .attributes = ATU_ENCODE_ATTRIBUTES_SECURE_PAS,
+    },
 };
 #endif
 
