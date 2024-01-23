@@ -86,13 +86,7 @@ enum mod_clusclock_source_tc4 {
 /*
  * CSS clock indexes.
  */
-enum clock_css_idx {
-    CLOCK_CSS_IDX_CPU_GROUP_GROUP_LITTLE,
-    CLOCK_CSS_IDX_CPU_GROUP_GROUP_MID,
-    CLOCK_CSS_IDX_CPU_GROUP_GROUP_BIG,
-    CLOCK_CSS_IDX_DPU,
-    CLOCK_CSS_IDX_COUNT
-};
+enum clock_css_idx { CLOCK_CSS_IDX_DPU, CLOCK_CSS_IDX_COUNT };
 
 /*
  * Clock indexes.
