@@ -48,6 +48,49 @@ const void *get_platform_system_power_driver_api(void)
     return &platform_system_pwr_drv_api;
 }
 
+/*
+ * SCMI module -> SCP platform module interface
+ */
+static int platform_system_get_scmi_protocol_id(
+    fwk_id_t protocol_id,
+    uint8_t *scmi_protocol_id)
+{
+    *scmi_protocol_id = (uint8_t)MOD_SCMI_PROTOCOL_ID_SYS_POWER;
+
+    return FWK_SUCCESS;
+}
+
+/*
+ * Upon binding the scp_platform module to the SCMI module, the SCMI module
+ * will also bind back to the scp_platform module, anticipating the presence of
+ * .get_scmi_protocol_id() and .message_handler() APIs.
+ *
+ * In the current implementation of scp_platform module, only sending SCMI
+ * message is implemented, and the scp_platform module is not intended to
+ * receive any SCMI messages. Therefore, it is necessary to include a minimal
+ * .message_handler() API to ensure the successful binding of the SCMI module.
+ */
+static int platform_system_scmi_message_handler(
+    fwk_id_t protocol_id,
+    fwk_id_t service_id,
+    const uint32_t *payload,
+    size_t payload_size,
+    unsigned int message_id)
+{
+    return FWK_SUCCESS;
+}
+
+/* SCMI driver interface */
+static const struct mod_scmi_to_protocol_api platform_system_scmi_api = {
+    .get_scmi_protocol_id = platform_system_get_scmi_protocol_id,
+    .message_handler = platform_system_scmi_message_handler,
+};
+
+const void *get_platform_scmi_power_down_api(void)
+{
+    return &platform_system_scmi_api;
+}
+
 int platform_power_mgmt_bind(void)
 {
     int status;
