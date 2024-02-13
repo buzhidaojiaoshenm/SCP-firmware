@@ -23,7 +23,16 @@ enum scp_scmi_agent_idx {
 enum scp_cfgd_mod_scmi_element_idx {
     SCP_CFGD_MOD_SCMI_EIDX_PSCI,
     SCP_CFGD_MOD_SCMI_EIDX_MCP_SCMI_SEND,
+#ifdef BUILD_HAS_SCMI_NOTIFICATIONS
+    SCP_CFGD_MOD_SCMI_EIDX_MCP_SCMI_RECV,
+#endif
     SCP_CFGD_MOD_SCMI_EIDX_COUNT,
+};
+
+/* SCMI protocol requester agents */
+enum scmi_protocol_requester {
+    SCMI_PROTOCOL_REQUESTER_MCP,
+    SCMI_PROTOCOL_REQUESTER_COUNT
 };
 
 #endif /* SCP_CFGD_SCMI_H */
