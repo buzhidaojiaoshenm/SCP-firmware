@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2024-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -8,15 +8,22 @@
  *     SCP Platform Support - Power Management
  */
 
+#include "scp_cfgd_scmi.h"
+
 #include <internal/scp_platform.h>
 
 #include <mod_power_domain.h>
+#include <mod_scmi.h>
+#include <mod_scmi_std.h>
 #include <mod_system_power.h>
 
 #include <fwk_module.h>
 #include <fwk_status.h>
 
 #include <fmw_cmsis.h>
+
+/*! SCMI protocol API */
+static const struct mod_scmi_from_protocol_req_api *scmi_protocol_req_api;
 
 /* Module 'power_domain' restricted API pointer */
 static struct mod_pd_restricted_api *pd_restricted_api;
@@ -43,6 +50,17 @@ const void *get_platform_system_power_driver_api(void)
 
 int platform_power_mgmt_bind(void)
 {
+    int status;
+
+    /* Bind to SCMI module for RSE communication */
+    status = fwk_module_bind(
+        FWK_ID_MODULE(FWK_MODULE_IDX_SCMI),
+        FWK_ID_API(FWK_MODULE_IDX_SCMI, MOD_SCMI_API_IDX_PROTOCOL_REQ),
+        &scmi_protocol_req_api);
+    if (status != FWK_SUCCESS) {
+        return status;
+    }
+
     return fwk_module_bind(
         fwk_module_id_power_domain,
         mod_pd_api_id_restricted,

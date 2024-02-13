@@ -39,5 +39,5 @@ target_sources(
 
 target_link_libraries(
     ${SCP_MODULE_TARGET}
-    PRIVATE module-power-domain module-system-power
+    PRIVATE module-power-domain module-system-power module-scmi
             module-system-info module-transport module-timer)
