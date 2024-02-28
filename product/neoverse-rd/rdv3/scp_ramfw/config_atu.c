@@ -74,9 +74,9 @@ static struct atu_region_map atu_regions[ATU_REGION_IDX_COUNT] = {
     },
     [ATU_REGION_IDX_RSM_SRAM] = {
         .region_owner_id = FWK_ID_MODULE_INIT(FWK_MODULE_IDX_SCP_PLATFORM),
-        .log_addr_base = SCP_ATW0_SYSTEM_CONTROL_SRAM_BASE,
-        .phy_addr_base = 0x2F000000,
-        .region_size = SCP_ATW0_SYSTEM_CONTROL_SRAM_SIZE,
+        .log_addr_base = SCP_ATW0_SHARED_SRAM_RSM_BASE,
+        .phy_addr_base = RSM_SHARED_SRAM_BASE,
+        .region_size = RSM_SHARED_SRAM_SIZE,
         .attributes = ATU_ENCODE_ATTRIBUTES_SECURE_PAS,
     },
 };

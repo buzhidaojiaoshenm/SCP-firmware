@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2024-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -11,6 +11,8 @@
 
 #ifndef SCP_CSS_MMAP_H
 #define SCP_CSS_MMAP_H
+
+#include "css_common.h"
 
 /* Base address and size of SCP's ITCM */
 #define SCP_ITC_RAM_BASE (0x00000000)
@@ -65,7 +67,6 @@
 #define SCP_ATW0_LCP_AND_CLUSTER_UTILITY_SIZE (256 * FWK_MIB)
 #define SCP_ATW0_AP_PERIPHERAL_SRAM_SIZE      (128 * FWK_MIB)
 #define SCP_ATW0_AP_PERIPHERAL_GPC_SMMU_SIZE  (1 * FWK_MIB)
-#define SCP_ATW0_SYSTEM_CONTROL_SRAM_SIZE     (4 * FWK_MIB)
 #define SCP_ATW0_ATU_MMIO_SIZE                (1 * FWK_MIB)
 
 #define SCP_ATW0_LCP_AND_CLUSTER_UTILITY_BASE \
@@ -75,11 +76,11 @@
      SCP_ATW0_LCP_AND_CLUSTER_UTILITY_SIZE)
 #define SCP_ATW0_AP_PERIPHERAL_GPC_SMMU_BASE \
     (SCP_ATW0_AP_PERIPHERAL_SRAM_BASE + SCP_ATW0_AP_PERIPHERAL_SRAM_SIZE)
-#define SCP_ATW0_SYSTEM_CONTROL_SRAM_BASE \
+#define SCP_ATW0_SHARED_SRAM_RSM_BASE \
     (SCP_ATW0_AP_PERIPHERAL_GPC_SMMU_BASE + \
      SCP_ATW0_AP_PERIPHERAL_GPC_SMMU_SIZE)
 #define SCP_ATW0_ATU_MMIO_BASE \
-    (SCP_ATW0_SYSTEM_CONTROL_SRAM_BASE + SCP_ATW0_SYSTEM_CONTROL_SRAM_SIZE)
+    (SCP_ATW0_SHARED_SRAM_RSM_BASE + RSM_SHARED_SRAM_SIZE)
 
 /*
  * Offsets within SCP's Address Translation Window1
@@ -162,11 +163,10 @@
     (SCP_LCP_CONTROL(n) + SCP_LCP_CONTROL_CPU_WAIT_OFFSET)
 
 /*
- * System Control SRAM (shared between RSS, MCP, SCP and AP) is mapped by ATU in
- * the SCP address translation window 0 at the address 0x7800_0000.
+ * Shared RSM SRAM (shared between RSS, MCP, SCP) is mapped by ATU in
+ * the SCP address translation window 0.
  */
-#define SCP_SYSTEM_CONTROL_SRAM_BASE \
-    (SCP_ADDRESS_TRANSLATION_WINDOW0_BASE + SCP_ATW0_SYSTEM_CONTROL_SRAM_OFFSET)
+#define SCP_SHARED_SRAM_RSM_BASE (SCP_ATW0_SHARED_SRAM_RSM_BASE)
 
 /* CMN config space is mapped in the SCP address translation window 1 */
 #define SCP_CMN_BASE SCP_ATW1_CMN_BASE
