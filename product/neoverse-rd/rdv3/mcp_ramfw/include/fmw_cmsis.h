@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2024-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -35,7 +35,7 @@ typedef enum IRQn {
     PendSV_IRQn = -2,
     SysTick_IRQn = -1,
 
-    REFCLK_GTIMER_IRQ = 31, /* MCP REFCLK Physical Timer interrupt */
+    REFCLK_GTIMER_IRQ = 34, /* MCP REFCLK Physical Timer interrupt */
 
     IRQn_MAX = INT16_MAX,
 } IRQn_Type;
