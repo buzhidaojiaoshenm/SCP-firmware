@@ -15,7 +15,10 @@
 #include <fwk_id.h>
 #include <fwk_log.h>
 #include <fwk_module.h>
+#include <fwk_notification.h>
 #include <fwk_status.h>
+
+#include <fmw_cmsis.h>
 
 #define MOD_NAME "[MCP_PLATFORM] "
 
@@ -28,6 +31,12 @@ struct mcp_platform_ctx {
 
 /* Module context data */
 struct mcp_platform_ctx mcp_platform_ctx;
+
+/* Notification for system power down */
+static const fwk_id_t mod_scmi_sys_power_notification_system_power_down =
+    FWK_ID_NOTIFICATION_INIT(
+        FWK_MODULE_IDX_SCMI_SYS_POWER,
+        MOD_SCMI_SYSTEM_POWER_NOTIFICATION_IDX_SYSTEM_POWER_DOWN);
 #endif
 
 /*
@@ -152,11 +161,53 @@ static int mod_mcp_platform_start(fwk_id_t id)
                     "Failed to subscribe SCMI power state change notofication");
         return status;
     }
+
+#    ifdef BUILD_HAS_NOTIFICATION
+    status = fwk_notification_subscribe(
+        mod_scmi_sys_power_notification_system_power_down,
+        FWK_ID_MODULE(FWK_MODULE_IDX_SCMI_SYS_POWER),
+        id);
+    if (status != FWK_SUCCESS) {
+        FWK_LOG_ERR(MOD_NAME "Failed to subscribe to power down notification");
+        return status;
+    }
+#    endif
 #endif
 
     FWK_LOG_INFO(MOD_NAME "MCP RAM firmware initialized");
     return FWK_SUCCESS;
 }
+
+#ifdef BUILD_HAS_NOTIFICATION
+static int mcp_platform_process_notification(
+    const struct fwk_event *event,
+    struct fwk_event *resp_event)
+{
+#    ifdef BUILD_HAS_SCMI_NOTIFICATIONS
+    unsigned int *power_down;
+
+    /* Notification handler for system wide power down. */
+    if (fwk_id_is_equal(
+            event->id, mod_scmi_sys_power_notification_system_power_down)) {
+        power_down = (unsigned int *)event->params;
+
+        if (*power_down == NRD_SCMI_SYSTEM_STATE_SHUTDOWN) {
+            FWK_LOG_INFO(MOD_NAME "System shutting down!");
+        } else if (*power_down == NRD_SCMI_SYSTEM_STATE_COLD_RESET) {
+            FWK_LOG_INFO(MOD_NAME "System rebooting!");
+        } else {
+            FWK_LOG_ERR(MOD_NAME "Invalid power mode");
+        }
+
+        __WFI();
+    } else {
+        return FWK_E_PARAM;
+    }
+#    endif
+
+    return FWK_SUCCESS;
+}
+#endif
 
 const struct fwk_module module_mcp_platform = {
     .type = FWK_MODULE_TYPE_SERVICE,
@@ -166,6 +217,9 @@ const struct fwk_module module_mcp_platform = {
     .process_bind_request = mod_mcp_platform_process_bind,
 #endif
     .start = mod_mcp_platform_start,
+#ifdef BUILD_HAS_NOTIFICATION
+    .process_notification = mcp_platform_process_notification,
+#endif
 };
 
 const struct fwk_module_config config_mcp_platform = { 0 };

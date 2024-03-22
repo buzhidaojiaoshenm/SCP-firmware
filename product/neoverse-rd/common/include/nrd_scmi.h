@@ -17,6 +17,16 @@
 
 #ifdef BUILD_HAS_SCMI_NOTIFICATIONS
 /*
+ * System power states for Neoverse RD platform
+ */
+enum nrd_scmi_system_state {
+    NRD_SCMI_SYSTEM_STATE_SHUTDOWN,
+    NRD_SCMI_SYSTEM_STATE_COLD_RESET,
+    NRD_SCMI_SYSTEM_STATE_WARM_RESET,
+    NRD_SCMI_SYSTEM_STATE_COUNT,
+};
+
+/*
  * SCMI payload for scmi sytem power protocol, message id
  * SYSTEM_POWER_STATE_NOTIFY
  */
