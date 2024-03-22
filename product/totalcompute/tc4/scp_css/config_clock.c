@@ -27,6 +27,7 @@ static const struct fwk_element clock_dev_desc_table[CLOCK_IDX_COUNT + 1] = {
                 .driver_id = FWK_ID_ELEMENT_INIT(
                     FWK_MODULE_IDX_CSS_CLOCK,
                     CLOCK_CSS_IDX_CPU_GROUP_GROUP_LITTLE),
+                    CLOCK_CCSM_IDX_CPU_GROUP_LITTLE),
                 .api_id = FWK_ID_API_INIT(
                     FWK_MODULE_IDX_CSS_CLOCK,
                     MOD_CSS_CLOCK_API_TYPE_CLOCK),
@@ -38,7 +39,7 @@ static const struct fwk_element clock_dev_desc_table[CLOCK_IDX_COUNT + 1] = {
             .data = &((struct mod_clock_dev_config){
                 .driver_id = FWK_ID_ELEMENT_INIT(
                     FWK_MODULE_IDX_CSS_CLOCK,
-                    CLOCK_CSS_IDX_CPU_GROUP_GROUP_MID),
+                    CLOCK_CCSM_IDX_CPU_GROUP_MID),
                 .api_id = FWK_ID_API_INIT(
                     FWK_MODULE_IDX_CSS_CLOCK,
                     MOD_CSS_CLOCK_API_TYPE_CLOCK),
@@ -50,7 +51,7 @@ static const struct fwk_element clock_dev_desc_table[CLOCK_IDX_COUNT + 1] = {
             .data = &((struct mod_clock_dev_config){
                 .driver_id = FWK_ID_ELEMENT_INIT(
                     FWK_MODULE_IDX_CSS_CLOCK,
-                    CLOCK_CSS_IDX_CPU_GROUP_GROUP_BIG),
+                    CLOCK_CCSM_IDX_CPU_GROUP_BIG),
                 .api_id = FWK_ID_API_INIT(
                     FWK_MODULE_IDX_CSS_CLOCK,
                     MOD_CSS_CLOCK_API_TYPE_CLOCK),
@@ -97,11 +98,11 @@ static const struct fwk_element clock_dev_desc_table[CLOCK_IDX_COUNT + 1] = {
             .name = "GPU",
             .data = &((struct mod_clock_dev_config){
                 .driver_id = FWK_ID_ELEMENT_INIT(
-                    FWK_MODULE_IDX_SYSTEM_PLL,
-                    CLOCK_PLL_IDX_GPU),
+                    FWK_MODULE_IDX_CCSM,
+                    CLOCK_CCSM_IDX_GPU),
                 .api_id = FWK_ID_API_INIT(
-                    FWK_MODULE_IDX_SYSTEM_PLL,
-                    MOD_SYSTEM_PLL_API_TYPE_DEFAULT),
+                    FWK_MODULE_IDX_CCSM,
+                    MOD_CCSM_CLOCK_API),
             }),
         },
     { 0 }, /* Termination description. */
