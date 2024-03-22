@@ -22,9 +22,6 @@
  * PLL clock indexes.
  */
 enum clock_pll_idx {
-    CLOCK_PLL_IDX_CPU_GROUP_LITTLE,
-    CLOCK_PLL_IDX_CPU_GROUP_MID,
-    CLOCK_PLL_IDX_CPU_GROUP_BIG,
     CLOCK_PLL_IDX_SYS,
     CLOCK_PLL_IDX_DPU,
     CLOCK_PLL_IDX_PIX0,
