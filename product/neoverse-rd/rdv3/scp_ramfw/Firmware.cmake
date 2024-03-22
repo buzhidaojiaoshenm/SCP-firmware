@@ -1,6 +1,6 @@
 #
 # Arm SCP/MCP Software
-# Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+# Copyright (c) 2024-2025, Arm Limited and Contributors. All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -29,6 +29,8 @@ set(SCP_ENABLE_NEWLIB_NANO FALSE)
 set(SCP_ENABLE_OUTBAND_MSG_SUPPORT TRUE)
 
 set(SCP_ENABLE_ATU_MANAGE TRUE)
+
+set(SCP_ENABLE_SCMI_NOTIFICATIONS TRUE)
 
 list(PREPEND SCP_MODULE_PATHS
      "${CMAKE_CURRENT_LIST_DIR}/../module/scp_platform")
