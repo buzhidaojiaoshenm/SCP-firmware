@@ -1,9 +1,16 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2024-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
+
+#include "mcp_cfgd_scmi.h"
+#include "mod_mcp_platform.h"
+#include "nrd_scmi.h"
+
+#include <mod_scmi.h>
+#include <mod_scmi_sys_power.h>
 
 #include <fwk_id.h>
 #include <fwk_log.h>
@@ -11,6 +18,17 @@
 #include <fwk_status.h>
 
 #define MOD_NAME "[MCP_PLATFORM] "
+
+#ifdef BUILD_HAS_SCMI_NOTIFICATIONS
+/* Module context */
+struct mcp_platform_ctx {
+    /*! SCMI protocol API */
+    const struct mod_scmi_from_protocol_req_api *scmi_protocol_req_api;
+};
+
+/* Module context data */
+struct mcp_platform_ctx mcp_platform_ctx;
+#endif
 
 /*
  * Framework handlers.
@@ -23,8 +41,119 @@ static int mod_mcp_platform_init(
     return FWK_SUCCESS;
 }
 
+#ifdef BUILD_HAS_SCMI_NOTIFICATIONS
+static int mod_mcp_platform_bind(fwk_id_t id, unsigned int round)
+{
+    int status = FWK_SUCCESS;
+
+    if (round == 0) {
+        /* Bind to SCMI module for SCP communication */
+        status = fwk_module_bind(
+            FWK_ID_MODULE(FWK_MODULE_IDX_SCMI),
+            FWK_ID_API(FWK_MODULE_IDX_SCMI, MOD_SCMI_API_IDX_PROTOCOL_REQ),
+            &mcp_platform_ctx.scmi_protocol_req_api);
+        if (status != FWK_SUCCESS) {
+            return status;
+        }
+    }
+
+    return status;
+}
+
+/*
+ * SCMI module -> MCP platform module interface
+ */
+static int platform_system_get_scmi_protocol_id(
+    fwk_id_t protocol_id,
+    uint8_t *scmi_protocol_id)
+{
+    *scmi_protocol_id = (uint8_t)MOD_SCMI_PROTOCOL_ID_SYS_POWER;
+
+    return FWK_SUCCESS;
+}
+
+/*
+ * Upon binding the mcp_platform module to the SCMI module, the SCMI module
+ * will also bind back to the mcp_platform module, anticipating the presence of
+ * .get_scmi_protocol_id() and .message_handler() APIs.
+ *
+ * In the current implementation of mcp_platform module, only sending SCMI
+ * message is implemented, and the mcp_platform module is not intended to
+ * receive any SCMI messages. Therefore, it is necessary to include a minimal
+ * .message_handler() API to ensure the successful binding of the SCMI module.
+ */
+static int platform_system_scmi_message_handler(
+    fwk_id_t protocol_id,
+    fwk_id_t service_id,
+    const uint32_t *payload,
+    size_t payload_size,
+    unsigned int message_id)
+{
+    return FWK_SUCCESS;
+}
+
+/* SCMI driver interface */
+const struct mod_scmi_to_protocol_api platform_system_scmi_api = {
+    .get_scmi_protocol_id = platform_system_get_scmi_protocol_id,
+    .message_handler = platform_system_scmi_message_handler,
+};
+
+static int mod_mcp_platform_process_bind(
+    fwk_id_t requester_id,
+    fwk_id_t target_id,
+    fwk_id_t api_id,
+    const void **api)
+{
+    int status;
+    enum mod_mcp_platform_api_idx api_id_type;
+
+    api_id_type = (enum mod_mcp_platform_api_idx)fwk_id_get_api_idx(api_id);
+
+    switch (api_id_type) {
+    case MOD_MCP_PLATFORM_API_IDX_SCMI_POWER_DOWN:
+        *api = &platform_system_scmi_api;
+        status = FWK_SUCCESS;
+        break;
+
+    default:
+        status = FWK_E_PARAM;
+    }
+
+    return status;
+}
+#endif
+
 static int mod_mcp_platform_start(fwk_id_t id)
 {
+#ifdef BUILD_HAS_SCMI_NOTIFICATIONS
+    /*
+     * TODO: Need to sent the SCMI message only after SCP has completed the SCMI
+     * initialization.
+     */
+    int status;
+
+    fwk_id_t mcp_scmi_prot_id = FWK_ID_ELEMENT(
+        FWK_MODULE_IDX_SCMI, MCP_CFGD_MOD_SCMI_EIDX_SCP_SCMI_SEND);
+    struct mcp_cfgd_scmi_sys_power_state_notify_payload mcp_scmi_payload;
+
+    mcp_scmi_payload.flags = 1;
+
+    status = mcp_platform_ctx.scmi_protocol_req_api->scmi_send_message(
+        MOD_SCMI_SYS_POWER_STATE_NOTIFY,
+        MOD_SCMI_PROTOCOL_ID_SYS_POWER,
+        0,
+        mcp_scmi_prot_id,
+        (void *)&mcp_scmi_payload,
+        sizeof(mcp_scmi_payload),
+        false);
+
+    if (status != FWK_SUCCESS) {
+        FWK_LOG_ERR(MOD_NAME
+                    "Failed to subscribe SCMI power state change notofication");
+        return status;
+    }
+#endif
+
     FWK_LOG_INFO(MOD_NAME "MCP RAM firmware initialized");
     return FWK_SUCCESS;
 }
@@ -32,6 +161,10 @@ static int mod_mcp_platform_start(fwk_id_t id)
 const struct fwk_module module_mcp_platform = {
     .type = FWK_MODULE_TYPE_SERVICE,
     .init = mod_mcp_platform_init,
+#ifdef BUILD_HAS_SCMI_NOTIFICATIONS
+    .bind = mod_mcp_platform_bind,
+    .process_bind_request = mod_mcp_platform_process_bind,
+#endif
     .start = mod_mcp_platform_start,
 };
 

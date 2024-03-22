@@ -1,0 +1,30 @@
+/*
+ * Arm SCP/MCP Software
+ * Copyright (c) 2024-2025, Arm Limited and Contributors. All rights reserved.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
+ * Description:
+ *     SCMI payload configuration data for Neoverse RD platform.
+ */
+
+#ifndef NRD_SCMI_H
+#define NRD_SCMI_H
+
+#include <stdint.h>
+
+// clang-format off
+
+#ifdef BUILD_HAS_SCMI_NOTIFICATIONS
+/*
+ * SCMI payload for scmi sytem power protocol, message id
+ * SYSTEM_POWER_STATE_NOTIFY
+ */
+struct mcp_cfgd_scmi_sys_power_state_notify_payload {
+    uint32_t flags;
+};
+#endif
+
+// clang-format on
+
+#endif /* NRD_SCMI_H */
