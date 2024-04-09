@@ -1,16 +1,12 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2023-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2023-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
 #include "mgi.h"
 #include "mgi_validate_header.h"
-
-#include <fwk_assert.h>
-
-#include <stddef.h>
 
 /* Get the number of monitors supported by this MGI */
 uint32_t mgi_get_num_of_monitors(struct smcf_mgi_reg *smcf_mgi)

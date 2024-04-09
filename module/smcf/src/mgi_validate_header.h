@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2023-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2023-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -9,6 +9,11 @@
 #define MGI_VALIDATE_HEADER_H
 
 #include "mgi.h"
+
+#include <fwk_assert.h>
+
+#include <stddef.h>
+
 static_assert(
     MGI_GRP_ID_OFFSET == offsetof(struct smcf_mgi_reg, GRP_ID),
     "[SMCF] MGI_GRP_ID_OFFSET mismatch");
