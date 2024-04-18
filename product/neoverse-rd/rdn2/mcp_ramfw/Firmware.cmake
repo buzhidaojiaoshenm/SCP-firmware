@@ -1,6 +1,6 @@
 #
 # Arm SCP/MCP Software
-# Copyright (c) 2022, Arm Limited and Contributors. All rights reserved.
+# Copyright (c) 2022-2025, Arm Limited and Contributors. All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -44,5 +44,5 @@ list(APPEND SCP_MODULES "gtimer")
 list(APPEND SCP_MODULES "mcp-platform")
 
 if(SCP_ENABLE_DEBUGGER)
-    list(APPEND SCP_MODULES,"debugger-cli")
+    list(APPEND SCP_MODULES "debugger-cli")
 endif()
