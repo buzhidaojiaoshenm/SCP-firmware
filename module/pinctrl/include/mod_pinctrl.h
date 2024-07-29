@@ -26,9 +26,9 @@
  * \defgroup GroupModulePinctrl pinctrl
  * \{
  */
-
+#define NO_FUNCTION_SELECTED_ID UINT32_MAX
 /*!
- * \brief Selector to differentiate between pin, group or functionality.
+ * \brief Selector to differentiate between pin, group or function.
  */
 enum mod_pinctrl_selector {
     /*! Pin selector id */
@@ -37,21 +37,21 @@ enum mod_pinctrl_selector {
     /*! Group selector id */
     MOD_PINCTRL_SELECTOR_GROUP,
 
-    /*! Functionality selector id */
+    /*! function selector id */
     MOD_PINCTRL_SELECTOR_FUNCTION,
 };
 
 /*!
  * \brief Function type to define the functins table.
  */
-struct mod_pinctrl_functionality {
-    /*! Pointer to NULL terminated string for name of functionality */
+struct mod_pinctrl_function {
+    /*! Pointer to NULL terminated string for name of function */
     char *name;
 
-    /*! Attribute to mark this functionality as GPIO */
+    /*! Attribute to mark this function as GPIO */
     bool is_gpio;
 
-    /*! Attribute to mark this functionality as used only for pins */
+    /*! Attribute to mark this function as used only for pins */
     bool is_pin_only;
 };
 
@@ -59,11 +59,14 @@ struct mod_pinctrl_functionality {
  * \brief Group type to define the Groups table.
  */
 struct mod_pinctrl_group {
-    /*! Pointer to NULL terminated string for name of functionality */
+    /*! Pointer to NULL terminated string for name of function */
     char *name;
 
-    /*! Functionality associated to the group */
-    uint16_t functionality_id;
+    /*! Allowed group functions to choose from */
+    const uint16_t *allowed_functions;
+
+    /*! Number of allowed group functions to choose from */
+    const uint16_t num_allowed_functions;
 
     /*! Pointer to the pins associated to the group */
     const uint16_t *pins;
@@ -73,7 +76,33 @@ struct mod_pinctrl_group {
 };
 
 /*!
- * \brief Attributes type to define the pin, group or functionality
+ * \brief Pin type to define all pin characteristics and pins table.
+ */
+struct mod_pinctrl_pin {
+    /*! Pointer to a NULL terminated string for name of the pin */
+    char *name;
+
+    /*! Allowed pin functions to choose from */
+    const uint16_t *allowed_functions;
+
+    /*! Number of allowed pin functions to choose from */
+    const uint16_t num_allowed_functions;
+
+    /*! Table of pin configurations */
+    const enum mod_pinctrl_drv_configuration_type *configuration;
+
+    /*! Number of pin configurations */
+    const uint8_t num_configuration;
+
+    /*! Table of read only pin configurations */
+    const enum mod_pinctrl_drv_configuration_type *read_only_configuration;
+
+    /*! Number of read only pin configurations */
+    const uint8_t num_of_read_only_configurations;
+};
+
+/*!
+ * \brief Attributes type to define the pin, group or function
  *      characteristics to be returned to SCMI.
  */
 struct mod_pinctrl_attributes {
@@ -83,37 +112,54 @@ struct mod_pinctrl_attributes {
     /*! Number of elements to be returned to SCMI*/
     uint16_t number_of_elements;
 
-    /*! Attribute to mark this functionality as used only for pins */
-    bool is_pin_only_functionality;
+    /*! Attribute to mark this function as used only for pins */
+    bool is_pin_only_function;
 
-    /*! Attribute to mark this functionality as GPIO */
-    bool is_gpio_functionality;
+    /*! Attribute to mark this function as GPIO */
+    bool is_gpio_function;
 };
 
 /*!
  * \brief Attributes type to define the total numbers of pin, and groups and
- * functionalities counts.
+ * functions counts.
  */
-struct mod_pinctrl_protocol_attributes {
+struct mod_pinctrl_info {
     /*! Number of pinctrl pins */
     uint16_t number_of_pins;
 
     /*! Number of pinctrl groups */
     uint16_t number_of_groups;
 
-    /*! Number of pinctrl functionalities */
-    uint16_t number_of_functionalities;
+    /*! Number of pinctrl functions */
+    uint16_t number_of_functions;
+};
+
+/*!
+ * \brief Driver domain configuration.
+ */
+struct mod_pinctrl_domain_config {
+    /*! Driver identifier */
+    fwk_id_t driver_id;
+
+    /*! Driver API identifier */
+    fwk_id_t driver_api_id;
+
+    /*! Driver pin base IDs*/
+    uint16_t pin_base_id;
+
+    /*! Driver pin ranges IDs*/
+    uint16_t pin_range;
 };
 
 /*!
  * \brief Module configuration.
  */
 struct mod_pinctrl_config {
-    /*! Pointer to the table of functionality descriptors. */
-    struct mod_pinctrl_functionality *functionalities_table;
+    /*! Pointer to the table of function descriptors. */
+    struct mod_pinctrl_function *functions_table;
 
-    /*! Number of functionalities */
-    uint16_t functionality_table_count;
+    /*! Number of functions */
+    uint16_t function_table_count;
 
     /*! Pointer to the table of group descriptors. */
     struct mod_pinctrl_group *groups_table;
@@ -121,11 +167,11 @@ struct mod_pinctrl_config {
     /*! Number of groups that will be associated to pins */
     uint16_t group_table_count;
 
-    /*! Driver identifier */
-    fwk_id_t driver_id;
+    /*! Pointer to the table of pins descriptors. */
+    struct mod_pinctrl_pin *pins_table;
 
-    /*! Driver API identifier */
-    fwk_id_t driver_api_id;
+    /*! Number of pins */
+    uint16_t pin_table_count;
 };
 
 /*!
@@ -144,22 +190,22 @@ enum mod_pinctrl_api_idx {
 
 struct mod_pinctrl_api {
     /*!
-     * \brief Get attributes of pin, group or functionality.
+     * \brief Get attributes of pin, group or function.
      *
-     * \param[in] index Identifier for the pin, group, or functionality.
+     * \param[in] index Identifier for the pin, group, or function.
      * \param[in] flags Selector: Whether the identifier field selects
-     *      a pin, a group, or a functionality.
+     *      a pin, a group, or a function.
      *      0 - pin
      *      1 - group
-     *      2 - functionality
+     *      2 - function
      * \param[out] attributes respond to get attribute request
      *      number_of_elements: total number of elements.
-     *      is_pin_only_functionality: enum group_pin_serving_t.
-     *      is_gpio_functionality: enum gpio_functionality_t.
+     *      is_pin_only_function: enum group_pin_serving_t.
+     *      is_gpio_function: enum gpio_function_t.
      *      name: Null-terminated ASCII string.
      * \retval ::FWK_SUCCESS The operation succeeded.
      * \retval ::FWK_E_RANGE if the identifier field pertains to a
-     *      non-existent pin, group, or functionality.
+     *      non-existent pin, group, or function.
      */
     int (*get_attributes)(
         uint16_t index,
@@ -167,33 +213,32 @@ struct mod_pinctrl_api {
         struct mod_pinctrl_attributes *attributes);
 
     /*!
-     * \brief Get attributes of pin, group or functionality.
+     * \brief Get info of pin, group or function.
      *
-     * \param[out] protocol_attributes return protocol attributes
+     * \param[out] info return protocol attributes
      *      Number of pin groups.
      *      Number of pins.
      *      Reserved, must be zero.
-     *      Number of functionality.
+     *      Number of function.
      * \retval ::FWK_SUCCESS The operation succeeded.
      */
-    int (*get_protocol_attributes)(
-        struct mod_pinctrl_protocol_attributes *protocol_attributes);
+    int (*get_info)(struct mod_pinctrl_info *info);
 
     /*!
      * \brief Get pin associated with a group, or
-     *      Get group which can enable a functionality, or
-     *      Get pin which can enable a single-pin functionality.
-     * \param[in] index Identifier for the group, or functionality.
+     *      Get group which can enable a function, or
+     *      Get pin which can enable a single-pin function.
+     * \param[in] index Identifier for the group, or function.
      * \param[in] flags Selector: Whether the identifier field selects
-     *      group, or functionality.
+     *      group, or function.
      *      1 - group
-     *      2 - functionality
+     *      2 - function
      * \param[in] first_index the index of the object {pin, group} to be
      *      returned
      * \param[out] object_id the returned object.
      * \retval ::FWK_SUCCESS The operation succeeded.
      * \retval ::FWK_E_RANGE index >= max number of pins associated with this
-     *      functionality or group.
+     *      function or group.
      * \retval ::FWK_E_PARAM the flags is pin.
      */
     int (*get_list_associations)(
@@ -204,11 +249,11 @@ struct mod_pinctrl_api {
 
     /*!
      * \brief Get the total number of associated pins or groups to index.
-     * \param[in] index Identifier for the group, or functionality.
+     * \param[in] index Identifier for the group, or function.
      * \param[in] flags Selector: Whether the identifier field selects
-     *      group, or functionality.
+     *      group, or function.
      *      1 - group
-     *      2 - functionality
+     *      2 - function
      * \param[in] total_count the total number of associations to the index
      * \retval ::FWK_SUCCESS The operation succeeded.
      * \retval ::FWK_E_PARAM index invalid index or flags == pin
@@ -219,7 +264,7 @@ struct mod_pinctrl_api {
         uint16_t *total_count);
 
     /*!
-     * \brief Get pin or group specific Configuration.
+     * \brief Get pin or group specific configuration value.
      * \param[in] index Identifier for the pin, or group.
      * \param[in] flags Selector: Whether the identifier field selects
      *      a pin or group.
@@ -238,14 +283,14 @@ struct mod_pinctrl_api {
         uint32_t *config_value);
 
     /*!
-     * \brief Get pin or group specific Configuration.
+     * \brief Get pin or group configuration by configuration index.
      * \param[in] index Identifier for the pin, or group.
      * \param[in] flags Selector: Whether the identifier field selects
      *      a pin or group.
      *      0 - pin
      *      1 - group
-     * \param[in] configration_index
-     * \param[out] config Configuration type to be retun its value.
+     * \param[in] configration_index configuration index
+     * \param[out] config configuration type and value for specific index.
      * \retval ::FWK_SUCCESS The operation succeeded.
      * \retval ::FWK_E_RANGE configration_index > total number of configurtions.
      * \retval ::FWK_E_PARAM the flags isn't pin or group. or index >= max
@@ -275,23 +320,23 @@ struct mod_pinctrl_api {
         uint16_t *number_of_configurations);
 
     /*!
-     * \brief get current pin or group enabled functionality.
+     * \brief get current pin or group enabled function.
      *
      * \param[in] index pin or group identifier.
      * \param[in] flag Selector: Whether the identifier field selects
      *      a pin or group.
      *      0 - pin
      *      1 - group
-     * \param[out] functionality_id current enabled functionality.
+     * \param[out] function_id current enabled function.
      * \retval ::FWK_SUCCESS The operation succeeded.
      * \retval ::FWK_E_RANGE pin_id >= max number of pins or the
-     *      functionality_id is not allowed for this pin_id.
+     *      function_id is not allowed for this pin_id.
      * \retval ::FWK_E_PARAM the flag isn't pin or group.
      */
-    int (*get_current_associated_functionality)(
+    int (*get_current_associated_function)(
         uint16_t index,
         enum mod_pinctrl_selector flag,
-        uint16_t *functionality_id);
+        uint32_t *function_id);
 
     /*!
      * \brief set pin or group configuration.
@@ -304,7 +349,7 @@ struct mod_pinctrl_api {
      * \param[in] config configuration to be set.
      * \retval ::FWK_SUCCESS The operation succeeded.
      * \retval ::FWK_E_RANGE pin_id >= max number of pins or the
-     *      functionality_id is not allowed for this pin_id.
+     *      function_id is not allowed for this pin_id.
      * \retval ::FWK_E_PARAM the flag isn't pin or group.
      */
     int (*set_configuration)(
@@ -313,23 +358,23 @@ struct mod_pinctrl_api {
         const struct mod_pinctrl_drv_pin_configuration *config);
 
     /*!
-     * \brief Set pin or group functionality.
+     * \brief Set pin or group function.
      *
      * \param[in] index pin or group identifier.
      * \param[in] flag Selector: Whether the identifier field selects
      *      a pin or group.
      *      0 - pin
      *      1 - group
-     * \param[in] functionality_id the fucntionality to be set.
+     * \param[in] function_id the fucntionality to be set.
      * \retval ::FWK_SUCCESS The operation succeeded.
      * \retval ::FWK_E_RANGE pin_id >= max number of pins or the
-     *      functionality_id is not allowed for this pin_id.
+     *      function_id is not allowed for this pin_id.
      * \retval ::FWK_E_PARAM the flag isn't pin or group.
      */
-    int (*set_functionality)(
+    int (*set_function)(
         uint16_t index,
         enum mod_pinctrl_selector flag,
-        uint16_t functionality_id);
+        uint32_t function_id);
 };
 
 /*!
