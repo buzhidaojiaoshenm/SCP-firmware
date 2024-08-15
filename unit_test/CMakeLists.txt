@@ -1,6 +1,6 @@
 #
 # Arm SCP/MCP Software
-# Copyright (c) 2022-2024, Arm Limited and Contributors. All rights reserved.
+# Copyright (c) 2022-2025, Arm Limited and Contributors. All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -122,6 +122,7 @@ list(APPEND UNIT_MODULE power_capping)
 list(APPEND UNIT_MODULE mpmm_v2)
 list(APPEND UNIT_MODULE perf_controller)
 list(APPEND UNIT_MODULE pid_controller)
+list(APPEND UNIT_MODULE pinctrl)
 list(APPEND UNIT_MODULE pl011)
 list(APPEND UNIT_MODULE power_distributor)
 list(APPEND UNIT_MODULE power_domain)
