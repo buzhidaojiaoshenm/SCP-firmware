@@ -7,7 +7,6 @@
 
 #include "scp_unity.h"
 #include "unity.h"
-
 #ifdef TEST_ON_TARGET
 #    include <fwk_id.h>
 #    include <fwk_module.h>
@@ -74,12 +73,24 @@ static const struct mod_scmi_notification_api scmi_notification_api = {
 };
 #endif
 
-void assert_clock_state_and_ref_count_meets_expectations(void)
+void assert_ospm0_clock_state_meets_expectations(void)
 {
     TEST_ASSERT_EQUAL_INT8_ARRAY(
-        agent_clock_state_table_expected,
-        agent_clock_state_table,
-        FAKE_SCMI_AGENT_IDX_COUNT * CLOCK_DEV_IDX_COUNT);
+        ospm0_state_table_expected,
+        scmi_clock_ctx.agent_table[FAKE_SCMI_AGENT_IDX_OSPM0].state_table,
+        SCMI_CLOCK_OSPM0_COUNT);
+}
+
+void assert_ospm1_clock_state_meets_expectations(void)
+{
+    TEST_ASSERT_EQUAL_INT8_ARRAY(
+        ospm1_state_table_expected,
+        scmi_clock_ctx.agent_table[FAKE_SCMI_AGENT_IDX_OSPM1].state_table,
+        SCMI_CLOCK_OSPM1_COUNT);
+}
+
+void assert_ref_count_meets_expectations(void)
+{
     TEST_ASSERT_EQUAL_INT8_ARRAY(
         dev_clock_ref_count_table_expected,
         dev_clock_ref_count_table,
@@ -91,9 +102,7 @@ void setup_agent_state_table(
     unsigned int scmi_clock_idx,
     enum mod_clock_state state)
 {
-    agent_clock_state_table
-        [agent_id * scmi_clock_ctx.clock_devices + scmi_clock_idx] =
-        (unsigned int)state;
+    scmi_clock_ctx.agent_table[agent_id].state_table[scmi_clock_idx] = (unsigned int)state;
 }
 
 void setup_ref_count_table(
@@ -103,14 +112,18 @@ void setup_ref_count_table(
     dev_clock_ref_count_table[clock_idx] = ref_count;
 }
 
-void setup_expected_agent_state_table(
-    unsigned int agent_id,
+void setup_expected_ospm0_state_table(
     unsigned int scmi_clock_idx,
     enum mod_clock_state state)
 {
-    agent_clock_state_table_expected
-        [agent_id * scmi_clock_ctx.clock_devices + scmi_clock_idx] =
-        (unsigned int)state;
+    ospm0_state_table_expected[scmi_clock_idx] = (unsigned int)state;
+}
+
+void setup_expected_ospm1_state_table(
+    unsigned int scmi_clock_idx,
+    enum mod_clock_state state)
+{
+    ospm1_state_table_expected[scmi_clock_idx] = (unsigned int)state;
 }
 
 void setup_expected_ref_count_table(
@@ -125,9 +138,12 @@ void setUp(void)
 {
     scmi_clock_ctx.config = config_scmi_clock.data;
     scmi_clock_ctx.max_pending_transactions = scmi_clock_ctx.config->max_pending_transactions;
-    scmi_clock_ctx.agent_table = scmi_clock_ctx.config->agent_table;
+    scmi_clock_ctx.agent_table = (struct mod_scmi_clock_agent *)scmi_clock_ctx.config->agent_table;
 
     scmi_clock_ctx.clock_devices = CLOCK_DEV_IDX_COUNT;
+
+    scmi_clock_ctx.agent_table[FAKE_SCMI_AGENT_IDX_OSPM0].state_table = ospm0_state_table;
+    scmi_clock_ctx.agent_table[FAKE_SCMI_AGENT_IDX_OSPM1].state_table = ospm1_state_table;
 
     /* Allocate a table of clock operations */
     scmi_clock_ctx.clock_ops = clock_ops_table;
@@ -150,23 +166,31 @@ void setUp(void)
 #endif
 
     scmi_clock_ctx.dev_clock_ref_count_table = dev_clock_ref_count_table;
-    scmi_clock_ctx.agent_clock_state_table = agent_clock_state_table;
+
     memcpy(
         dev_clock_ref_count_table,
         dev_clock_ref_count_table_default,
         FWK_ARRAY_SIZE(dev_clock_ref_count_table));
     memcpy(
-        agent_clock_state_table,
-        agent_clock_state_table_default,
-        FWK_ARRAY_SIZE(agent_clock_state_table));
-    memcpy(
         dev_clock_ref_count_table_expected,
         dev_clock_ref_count_table_default,
         FWK_ARRAY_SIZE(dev_clock_ref_count_table));
+
+    memcpy(ospm0_state_table,
+        ospm0_state_table_default,
+        FWK_ARRAY_SIZE(ospm0_state_table));
+    memcpy(ospm1_state_table,
+        ospm1_state_table_default,
+        FWK_ARRAY_SIZE(ospm1_state_table));
+
     memcpy(
-        agent_clock_state_table_expected,
-        agent_clock_state_table_default,
-        FWK_ARRAY_SIZE(agent_clock_state_table));
+        ospm0_state_table_expected,
+        ospm0_state_table_default,
+        FWK_ARRAY_SIZE(ospm0_state_table_default));
+    memcpy(
+        ospm1_state_table_expected,
+        ospm1_state_table_default,
+        FWK_ARRAY_SIZE(ospm1_state_table_default));
 
 }
 
@@ -326,37 +350,28 @@ void test_set_rate_with_invalid_payload_size_expect_SCMI_PROTOCOL_ERROR(void) {
 
 void test_clock_ref_count_allocate(void)
 {
-    uint8_t *agent_clock_state_table_return = (uint8_t *)0xAAAAAAAA;
     uint8_t *dev_clock_ref_count_table_return = (uint8_t *)0xAAAAAAAA;
 
     scmi_clock_ctx.dev_clock_ref_count_table = NULL;
-    scmi_clock_ctx.agent_clock_state_table = NULL;
 
-    fwk_mm_calloc_ExpectAndReturn(
-            (unsigned int)scmi_clock_ctx.config->agent_count *
-                (unsigned int)scmi_clock_ctx.clock_devices,
-            sizeof(*scmi_clock_ctx.agent_clock_state_table),
-            agent_clock_state_table_return);
     fwk_mm_calloc_ExpectAndReturn(
             (unsigned int)scmi_clock_ctx.clock_devices,
             sizeof(*scmi_clock_ctx.dev_clock_ref_count_table),
             dev_clock_ref_count_table_return);
 
     clock_ref_count_allocate();
+
     TEST_ASSERT_EQUAL_PTR(
-        scmi_clock_ctx.agent_clock_state_table,
-        agent_clock_state_table_return);
-    TEST_ASSERT_EQUAL_PTR(
-        scmi_clock_ctx.dev_clock_ref_count_table,
-        dev_clock_ref_count_table_return);
+        dev_clock_ref_count_table_return,
+        scmi_clock_ctx.dev_clock_ref_count_table);
 }
 
-void test_clock_ref_count_init(void)
+void test_clock_devices_init(void)
 {
     /* Make sure that the tables are cleared before running tests. */
-    memset(agent_clock_state_table, 0,
-        FAKE_SCMI_AGENT_IDX_COUNT * CLOCK_DEV_IDX_COUNT);
     memset(dev_clock_ref_count_table, 0, CLOCK_DEV_IDX_COUNT);
+    memset(ospm0_state_table, 1, SCMI_CLOCK_OSPM0_COUNT * sizeof(uint8_t));
+    memset(ospm1_state_table, 1, SCMI_CLOCK_OSPM1_COUNT * sizeof(uint8_t));
 
     /* OSPM0 */
     for (unsigned int i = 0; i < CLOCK_DEV_IDX_COUNT; i++) {
@@ -369,20 +384,54 @@ void test_clock_ref_count_init(void)
             FWK_ID_ELEMENT(FWK_MODULE_IDX_CLOCK, CLOCK_DEV_IDX_FAKE3),
             CLOCK_DEV_IDX_FAKE3);
 
-    clock_ref_count_init();
+    clock_devices_init();
     TEST_ASSERT_EQUAL_INT8_ARRAY(
-        agent_clock_state_table_default,
-        agent_clock_state_table,
-        FAKE_SCMI_AGENT_IDX_COUNT * CLOCK_DEV_IDX_COUNT);
+        ospm0_state_table_default,
+        scmi_clock_ctx.agent_table[FAKE_SCMI_AGENT_IDX_OSPM0].state_table,
+        SCMI_CLOCK_OSPM0_COUNT);
+    TEST_ASSERT_EQUAL_INT8_ARRAY(
+        ospm1_state_table_default,
+        scmi_clock_ctx.agent_table[FAKE_SCMI_AGENT_IDX_OSPM1].state_table,
+        SCMI_CLOCK_OSPM1_COUNT);
     TEST_ASSERT_EQUAL_INT8_ARRAY(
         dev_clock_ref_count_table_default,
         dev_clock_ref_count_table,
         CLOCK_DEV_IDX_COUNT);
 }
 
+void test_clock_agent_table_allocate(void)
+{
+    uint8_t *osmp0_state_table_return = (uint8_t *)0xAAAAAAAA;
+    uint8_t *osmp1_state_table_return = (uint8_t *)0xBB;
+
+    scmi_clock_ctx.agent_table[FAKE_SCMI_AGENT_IDX_OSPM0].state_table = NULL;
+    scmi_clock_ctx.agent_table[FAKE_SCMI_AGENT_IDX_OSPM1].state_table = NULL;
+
+    fwk_mm_calloc_ExpectAndReturn(
+            (uint8_t)scmi_clock_ctx.agent_table[FAKE_SCMI_AGENT_IDX_OSPM0].agent_config->device_count,
+            sizeof(uint8_t),
+            osmp0_state_table_return);
+
+    fwk_mm_calloc_ExpectAndReturn(
+            (uint8_t)scmi_clock_ctx.agent_table[FAKE_SCMI_AGENT_IDX_OSPM1].agent_config->device_count,
+            sizeof(uint8_t),
+            osmp1_state_table_return);
+
+    clock_agent_table_allocate();
+
+    TEST_ASSERT_EQUAL_PTR(
+        osmp0_state_table_return,
+        scmi_clock_ctx.agent_table[FAKE_SCMI_AGENT_IDX_OSPM0].state_table);
+
+    TEST_ASSERT_EQUAL_PTR(
+        osmp1_state_table_return,
+        scmi_clock_ctx.agent_table[FAKE_SCMI_AGENT_IDX_OSPM1].state_table);
+}
+
 void test_mod_scmi_clock_request_state_check_no_change_running(void)
 {
     enum mod_scmi_clock_policy_status status;
+    fwk_id_get_element_idx_ExpectAnyArgsAndReturn(CLOCK_DEV_IDX_FAKE0);
 
     /* Set `SCMI_CLOCK_OSPM0_IDX0` as RUNNING and ref_count == 1 */
     setup_agent_state_table(
@@ -391,10 +440,9 @@ void test_mod_scmi_clock_request_state_check_no_change_running(void)
         MOD_CLOCK_STATE_RUNNING);
     setup_ref_count_table(CLOCK_DEV_IDX_FAKE0, 1);
 
-    status = mod_scmi_clock_request_state_check(
+    status = scmi_clock_ref_count_table_check(
         FAKE_SCMI_AGENT_IDX_OSPM0,
         SCMI_CLOCK_OSPM0_IDX0,
-        CLOCK_DEV_IDX_FAKE0,
         MOD_CLOCK_STATE_RUNNING);
     TEST_ASSERT_EQUAL(MOD_SCMI_CLOCK_SKIP_MESSAGE_HANDLER, status);
 }
@@ -402,6 +450,7 @@ void test_mod_scmi_clock_request_state_check_no_change_running(void)
 void test_mod_scmi_clock_request_state_check_no_change_stopped(void)
 {
     enum mod_scmi_clock_policy_status status;
+    fwk_id_get_element_idx_ExpectAnyArgsAndReturn(CLOCK_DEV_IDX_FAKE0);
 
     /* Set `SCMI_CLOCK_OSPM0_IDX0` as STOPPED and ref_count == 0  */
     setup_agent_state_table(
@@ -410,10 +459,9 @@ void test_mod_scmi_clock_request_state_check_no_change_stopped(void)
         MOD_CLOCK_STATE_STOPPED);
     setup_ref_count_table(CLOCK_DEV_IDX_FAKE0, 0);
 
-    status = mod_scmi_clock_request_state_check(
+    status = scmi_clock_ref_count_table_check(
         FAKE_SCMI_AGENT_IDX_OSPM0,
         SCMI_CLOCK_OSPM0_IDX0,
-        CLOCK_DEV_IDX_FAKE0,
         MOD_CLOCK_STATE_STOPPED);
     TEST_ASSERT_EQUAL(MOD_SCMI_CLOCK_SKIP_MESSAGE_HANDLER, status);
 }
@@ -421,6 +469,7 @@ void test_mod_scmi_clock_request_state_check_no_change_stopped(void)
 void test_mod_scmi_clock_request_state_check_ref_count_0_running(void)
 {
     enum mod_scmi_clock_policy_status status;
+    fwk_id_get_element_idx_ExpectAnyArgsAndReturn(CLOCK_DEV_IDX_FAKE0);
 
     /* Set `SCMI_CLOCK_OSPM0_IDX0` as STOPPED and ref_count == 0 */
     setup_agent_state_table(
@@ -429,10 +478,9 @@ void test_mod_scmi_clock_request_state_check_ref_count_0_running(void)
         MOD_CLOCK_STATE_STOPPED);
     setup_ref_count_table(CLOCK_DEV_IDX_FAKE0, 0);
 
-    status = mod_scmi_clock_request_state_check(
+    status = scmi_clock_ref_count_table_check(
         FAKE_SCMI_AGENT_IDX_OSPM0,
         SCMI_CLOCK_OSPM0_IDX0,
-        CLOCK_DEV_IDX_FAKE0,
         MOD_CLOCK_STATE_RUNNING);
     TEST_ASSERT_EQUAL(MOD_SCMI_CLOCK_EXECUTE_MESSAGE_HANDLER, status);
 }
@@ -441,6 +489,7 @@ void test_mod_scmi_clock_request_state_check_ref_count_1_stopped(void)
 {
 
     enum mod_scmi_clock_policy_status status;
+    fwk_id_get_element_idx_ExpectAnyArgsAndReturn(CLOCK_DEV_IDX_FAKE0);
 
     /* Set `SCMI_CLOCK_OSPM0_IDX0` as RUNNING and ref_count == 1 */
     setup_agent_state_table(
@@ -449,10 +498,9 @@ void test_mod_scmi_clock_request_state_check_ref_count_1_stopped(void)
         MOD_CLOCK_STATE_RUNNING);
     setup_ref_count_table(CLOCK_DEV_IDX_FAKE0, 1);
 
-    status = mod_scmi_clock_request_state_check(
+    status = scmi_clock_ref_count_table_check(
         FAKE_SCMI_AGENT_IDX_OSPM0,
         SCMI_CLOCK_OSPM0_IDX0,
-        CLOCK_DEV_IDX_FAKE0,
         MOD_CLOCK_STATE_STOPPED);
     TEST_ASSERT_EQUAL(MOD_SCMI_CLOCK_EXECUTE_MESSAGE_HANDLER, status);
 }
@@ -460,6 +508,7 @@ void test_mod_scmi_clock_request_state_check_ref_count_1_stopped(void)
 void test_mod_scmi_clock_request_state_check_ref_count_0_stopped(void)
 {
     enum mod_scmi_clock_policy_status status;
+    fwk_id_get_element_idx_ExpectAnyArgsAndReturn(CLOCK_DEV_IDX_FAKE0);
 
     /*
      * Create an invalid situation where it is set `SCMI_CLOCK_OSPM0_IDX0`
@@ -471,10 +520,9 @@ void test_mod_scmi_clock_request_state_check_ref_count_0_stopped(void)
         MOD_CLOCK_STATE_RUNNING);
     setup_ref_count_table(CLOCK_DEV_IDX_FAKE0, 0);
 
-    status = mod_scmi_clock_request_state_check(
+    status = scmi_clock_ref_count_table_check(
         FAKE_SCMI_AGENT_IDX_OSPM0,
         SCMI_CLOCK_OSPM0_IDX0,
-        CLOCK_DEV_IDX_FAKE0,
         MOD_CLOCK_STATE_STOPPED);
     TEST_ASSERT_EQUAL(MOD_SCMI_CLOCK_SKIP_MESSAGE_HANDLER, status);
 }
@@ -482,6 +530,7 @@ void test_mod_scmi_clock_request_state_check_ref_count_0_stopped(void)
 void test_mod_scmi_clock_request_state_check_ref_count_1_running(void)
 {
     enum mod_scmi_clock_policy_status status;
+    fwk_id_get_element_idx_ExpectAnyArgsAndReturn(CLOCK_DEV_IDX_FAKE3);
 
     /*
      * Set `SCMI_CLOCK_OSPM0_IDX3` as RUNNING,
@@ -498,10 +547,9 @@ void test_mod_scmi_clock_request_state_check_ref_count_1_running(void)
         MOD_CLOCK_STATE_STOPPED);
     setup_ref_count_table(CLOCK_DEV_IDX_FAKE3, 1);
 
-    status = mod_scmi_clock_request_state_check(
+    status = scmi_clock_ref_count_table_check(
         FAKE_SCMI_AGENT_IDX_OSPM1,
         SCMI_CLOCK_OSPM1_IDX0,
-        CLOCK_DEV_IDX_FAKE3,
         MOD_CLOCK_STATE_RUNNING);
     TEST_ASSERT_EQUAL(MOD_SCMI_CLOCK_SKIP_MESSAGE_HANDLER, status);
 }
@@ -509,6 +557,7 @@ void test_mod_scmi_clock_request_state_check_ref_count_1_running(void)
 void test_mod_scmi_clock_request_state_check_ref_count_2_stopped(void)
 {
     enum mod_scmi_clock_policy_status status;
+    fwk_id_get_element_idx_ExpectAnyArgsAndReturn(CLOCK_DEV_IDX_FAKE3);
 
     /*
      * Set `SCMI_CLOCK_OSPM0_IDX3` as RUNNING,
@@ -525,10 +574,9 @@ void test_mod_scmi_clock_request_state_check_ref_count_2_stopped(void)
         MOD_CLOCK_STATE_RUNNING);
     setup_ref_count_table(CLOCK_DEV_IDX_FAKE3, 2);
 
-    status = mod_scmi_clock_request_state_check(
+    status = scmi_clock_ref_count_table_check(
         FAKE_SCMI_AGENT_IDX_OSPM1,
         SCMI_CLOCK_OSPM1_IDX0,
-        CLOCK_DEV_IDX_FAKE3,
         MOD_CLOCK_STATE_STOPPED);
     TEST_ASSERT_EQUAL(MOD_SCMI_CLOCK_SKIP_MESSAGE_HANDLER, status);
 }
@@ -536,7 +584,13 @@ void test_mod_scmi_clock_request_state_check_ref_count_2_stopped(void)
 void test_mod_scmi_clock_state_update_no_change_running(void)
 {
     int status;
+    uint32_t agent_id = FAKE_SCMI_AGENT_IDX_OSPM0;
+    fwk_id_t service_id = FWK_ID_ELEMENT_INIT(FAKE_MODULE_IDX, agent_id);
+    enum mod_clock_state requested_state = MOD_CLOCK_STATE_RUNNING;
+    enum mod_scmi_clock_policy_status policy_status = MOD_SCMI_CLOCK_SKIP_MESSAGE_HANDLER;
 
+    mod_scmi_from_protocol_api_get_agent_id_ExpectAnyArgsAndReturn(FWK_SUCCESS);
+    mod_scmi_from_protocol_api_get_agent_id_ReturnThruPtr_agent_id(&agent_id);
     /*
      * Set `SCMI_CLOCK_OSPM0_IDX0` as RUNNING,
      * set expected `SCMI_CLOCK_OSPM0_IDX0` as RUNNING and
@@ -548,24 +602,33 @@ void test_mod_scmi_clock_state_update_no_change_running(void)
         MOD_CLOCK_STATE_RUNNING);
     setup_ref_count_table(CLOCK_DEV_IDX_FAKE0, 1);
 
-    setup_expected_agent_state_table(
-        FAKE_SCMI_AGENT_IDX_OSPM0,
+    setup_expected_ospm0_state_table(
         SCMI_CLOCK_OSPM0_IDX0,
         MOD_CLOCK_STATE_RUNNING);
     setup_expected_ref_count_table(CLOCK_DEV_IDX_FAKE0, 1);
 
-    status = mod_scmi_clock_state_update(
-        FAKE_SCMI_AGENT_IDX_OSPM0,
-        SCMI_CLOCK_OSPM0_IDX0,
-        CLOCK_DEV_IDX_FAKE0,
-        MOD_CLOCK_STATE_RUNNING);
+    status = mod_scmi_clock_config_set_policy(
+        &policy_status,
+        &requested_state,
+        MOD_SCMI_CLOCK_PRE_MESSAGE_HANDLER,
+        service_id,
+        SCMI_CLOCK_OSPM0_IDX0);
+
     TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
-    assert_clock_state_and_ref_count_meets_expectations();
+    assert_ospm0_clock_state_meets_expectations();
+    assert_ref_count_meets_expectations();
 }
 
 void test_mod_scmi_clock_state_update_no_change_stopped(void)
 {
     int status;
+    uint32_t agent_id = FAKE_SCMI_AGENT_IDX_OSPM0;
+    fwk_id_t service_id = FWK_ID_ELEMENT_INIT(FAKE_MODULE_IDX, agent_id);
+    enum mod_clock_state requested_state = MOD_CLOCK_STATE_STOPPED;
+    enum mod_scmi_clock_policy_status policy_status = MOD_SCMI_CLOCK_SKIP_MESSAGE_HANDLER;
+
+    mod_scmi_from_protocol_api_get_agent_id_ExpectAnyArgsAndReturn(FWK_SUCCESS);
+    mod_scmi_from_protocol_api_get_agent_id_ReturnThruPtr_agent_id(&agent_id);
 
     /*
      * Set `SCMI_CLOCK_OSPM0_IDX0` as STOPPED,
@@ -578,19 +641,21 @@ void test_mod_scmi_clock_state_update_no_change_stopped(void)
         MOD_CLOCK_STATE_STOPPED);
     setup_ref_count_table(CLOCK_DEV_IDX_FAKE0, 0);
 
-    setup_expected_agent_state_table(
-        FAKE_SCMI_AGENT_IDX_OSPM0,
+    setup_expected_ospm0_state_table(
         SCMI_CLOCK_OSPM0_IDX0,
         MOD_CLOCK_STATE_STOPPED);
     setup_expected_ref_count_table(CLOCK_DEV_IDX_FAKE0, 0);
 
-    status = mod_scmi_clock_state_update(
-        FAKE_SCMI_AGENT_IDX_OSPM0,
-        SCMI_CLOCK_OSPM0_IDX0,
-        CLOCK_DEV_IDX_FAKE0,
-        MOD_CLOCK_STATE_STOPPED);
+    status = mod_scmi_clock_config_set_policy(
+        &policy_status,
+        &requested_state,
+        MOD_SCMI_CLOCK_PRE_MESSAGE_HANDLER,
+        service_id,
+        SCMI_CLOCK_OSPM0_IDX0);
     TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
-    assert_clock_state_and_ref_count_meets_expectations();
+
+    assert_ospm0_clock_state_meets_expectations();
+    assert_ref_count_meets_expectations();
 }
 
 void test_mod_scmi_clock_state_update_ref_count_0_running(void)
@@ -608,19 +673,21 @@ void test_mod_scmi_clock_state_update_ref_count_0_running(void)
         MOD_CLOCK_STATE_STOPPED);
     setup_ref_count_table(CLOCK_DEV_IDX_FAKE0, 0);
 
-    setup_expected_agent_state_table(
-        FAKE_SCMI_AGENT_IDX_OSPM0,
+    setup_expected_ospm0_state_table(
         SCMI_CLOCK_OSPM0_IDX0,
         MOD_CLOCK_STATE_RUNNING);
     setup_expected_ref_count_table(CLOCK_DEV_IDX_FAKE0, 1);
 
+    fwk_id_get_element_idx_ExpectAnyArgsAndReturn(CLOCK_DEV_IDX_FAKE0);
+
     status = mod_scmi_clock_state_update(
         FAKE_SCMI_AGENT_IDX_OSPM0,
         SCMI_CLOCK_OSPM0_IDX0,
-        CLOCK_DEV_IDX_FAKE0,
         MOD_CLOCK_STATE_RUNNING);
     TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
-    assert_clock_state_and_ref_count_meets_expectations();
+
+    assert_ospm0_clock_state_meets_expectations();
+    assert_ref_count_meets_expectations();
 }
 
 void test_mod_scmi_clock_state_update_ref_count_1_running(void)
@@ -644,23 +711,25 @@ void test_mod_scmi_clock_state_update_ref_count_1_running(void)
         MOD_CLOCK_STATE_STOPPED);
     setup_ref_count_table(CLOCK_DEV_IDX_FAKE3, 1);
 
-    setup_expected_agent_state_table(
-        FAKE_SCMI_AGENT_IDX_OSPM0,
+    setup_expected_ospm0_state_table(
         SCMI_CLOCK_OSPM0_IDX3,
         MOD_CLOCK_STATE_RUNNING);
-    setup_expected_agent_state_table(
-        FAKE_SCMI_AGENT_IDX_OSPM1,
+    setup_expected_ospm1_state_table(
         SCMI_CLOCK_OSPM1_IDX0,
         MOD_CLOCK_STATE_RUNNING);
     setup_expected_ref_count_table(CLOCK_DEV_IDX_FAKE3, 2);
 
+    fwk_id_get_element_idx_ExpectAnyArgsAndReturn(CLOCK_DEV_IDX_FAKE3);
+
     status = mod_scmi_clock_state_update(
         FAKE_SCMI_AGENT_IDX_OSPM1,
         SCMI_CLOCK_OSPM1_IDX0,
-        CLOCK_DEV_IDX_FAKE3,
         MOD_CLOCK_STATE_RUNNING);
     TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
-    assert_clock_state_and_ref_count_meets_expectations();
+
+    assert_ospm0_clock_state_meets_expectations();
+    assert_ospm1_clock_state_meets_expectations();
+    assert_ref_count_meets_expectations();
 }
 
 void test_mod_scmi_clock_state_update_ref_count_2_stopped(void)
@@ -684,23 +753,25 @@ void test_mod_scmi_clock_state_update_ref_count_2_stopped(void)
         MOD_CLOCK_STATE_RUNNING);
     setup_ref_count_table(CLOCK_DEV_IDX_FAKE3, 2);
 
-    setup_expected_agent_state_table(
-        FAKE_SCMI_AGENT_IDX_OSPM0,
+    setup_expected_ospm0_state_table(
         SCMI_CLOCK_OSPM0_IDX3,
         MOD_CLOCK_STATE_RUNNING);
-    setup_expected_agent_state_table(
-        FAKE_SCMI_AGENT_IDX_OSPM1,
+    setup_expected_ospm1_state_table(
         SCMI_CLOCK_OSPM1_IDX0,
         MOD_CLOCK_STATE_STOPPED);
     setup_expected_ref_count_table(CLOCK_DEV_IDX_FAKE3, 1);
 
+    fwk_id_get_element_idx_ExpectAnyArgsAndReturn(CLOCK_DEV_IDX_FAKE3);
+
     status = mod_scmi_clock_state_update(
         FAKE_SCMI_AGENT_IDX_OSPM1,
         SCMI_CLOCK_OSPM1_IDX0,
-        CLOCK_DEV_IDX_FAKE3,
         MOD_CLOCK_STATE_STOPPED);
     TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
-    assert_clock_state_and_ref_count_meets_expectations();
+
+    assert_ospm0_clock_state_meets_expectations();
+    assert_ospm1_clock_state_meets_expectations();
+    assert_ref_count_meets_expectations();
 }
 
 void test_mod_scmi_clock_state_update_ref_count_1_stopped(void)
@@ -718,19 +789,21 @@ void test_mod_scmi_clock_state_update_ref_count_1_stopped(void)
         MOD_CLOCK_STATE_RUNNING);
     setup_expected_ref_count_table(CLOCK_DEV_IDX_FAKE0, 0);
 
-    setup_expected_agent_state_table(
-        FAKE_SCMI_AGENT_IDX_OSPM0,
+    setup_expected_ospm0_state_table(
         SCMI_CLOCK_OSPM0_IDX0,
         MOD_CLOCK_STATE_STOPPED);
     setup_ref_count_table(CLOCK_DEV_IDX_FAKE0, 1);
 
+    fwk_id_get_element_idx_ExpectAnyArgsAndReturn(CLOCK_DEV_IDX_FAKE0);
+
     status = mod_scmi_clock_state_update(
         FAKE_SCMI_AGENT_IDX_OSPM0,
         SCMI_CLOCK_OSPM0_IDX0,
-        CLOCK_DEV_IDX_FAKE0,
         MOD_CLOCK_STATE_STOPPED);
     TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
-    assert_clock_state_and_ref_count_meets_expectations();
+
+    assert_ospm0_clock_state_meets_expectations();
+    assert_ref_count_meets_expectations();
 }
 
 int clock_attributes_invalid_clock_id_callback(
@@ -825,6 +898,7 @@ void test_mod_scmi_clock_attributes_handler_get_state(void)
     mod_scmi_from_protocol_api_get_agent_id_ReturnThruPtr_agent_id(&agent_id);
 
     fwk_module_is_valid_element_id_ExpectAnyArgsAndReturn(true);
+    fwk_id_get_element_idx_Stub(get_element_idx_callback);
 
 #ifdef BUILD_HAS_AGENT_LOGICAL_DOMAIN
     mod_scmi_from_protocol_api_get_agent_id_ExpectAnyArgsAndReturn(FWK_SUCCESS);
@@ -1092,6 +1166,7 @@ void test_process_request_event_get_state(void)
 
     fwk_id_get_event_idx_ExpectAnyArgsAndReturn(
         SCMI_CLOCK_EVENT_IDX_CLOCK_ATTRIBUTES);
+
     mod_scmi_from_protocol_api_get_agent_id_ExpectAnyArgsAndReturn(
         FWK_SUCCESS);
     mod_scmi_from_protocol_api_get_agent_id_ReturnThruPtr_agent_id(&agent_id);
@@ -1352,6 +1427,7 @@ void test_clock_rate_changed_notify_handler_add_subscriber(void)
     mod_scmi_from_protocol_api_get_agent_id_ExpectAnyArgsAndReturn(
         FWK_SUCCESS);
     mod_scmi_from_protocol_api_get_agent_id_ReturnThruPtr_agent_id(&agent_id);
+
     fwk_module_is_valid_element_id_ExpectAnyArgsAndReturn(true);
     mod_scmi_from_protocol_api_get_agent_id_ExpectAnyArgsAndReturn(
         FWK_SUCCESS);
@@ -1639,7 +1715,8 @@ void test_mod_scmi_clock_process_notification_rate_change_requested(void)
 
     fwk_id_get_notification_idx_ExpectAnyArgsAndReturn(
         MOD_CLOCK_NOTIFICATION_IDX_RATE_CHANGE_REQUESTED);
-    fwk_id_get_element_idx_Stub(get_element_idx_callback);
+    fwk_id_get_element_idx_ExpectAnyArgsAndReturn(CLOCK_DEV_IDX_FAKE3);
+    fwk_id_get_element_idx_ExpectAnyArgsAndReturn(CLOCK_DEV_IDX_FAKE3);
 
     scmi_notification_notify_Stub(
         scmi_notification_notify_rate_change_requested_callback);
@@ -1722,6 +1799,44 @@ void test_mod_scmi_clock_bind(void)
 }
 #endif
 
+void test_find_agent_scmi_clock_idx(void)
+{
+    int status;
+    fwk_id_t clock_id = FWK_ID_ELEMENT_INIT(FAKE_MODULE_IDX, CLOCK_DEV_IDX_FAKE3);
+    unsigned int scmi_clock_idx;
+
+    fwk_id_get_element_idx_Stub(get_element_idx_callback);
+
+    /* agent id is 0, i.e. platform*/
+    status = find_agent_scmi_clock_idx(0, clock_id, &scmi_clock_idx);
+
+    TEST_ASSERT_EQUAL(status, FWK_E_DATA);
+
+    /* agent id is FAKE_SCMI_AGENT_IDX_PSCI */
+    status = find_agent_scmi_clock_idx(FAKE_SCMI_AGENT_IDX_PSCI, clock_id, &scmi_clock_idx);
+
+    TEST_ASSERT_EQUAL(status, FWK_E_DATA);
+
+    /* agent id is FAKE_SCMI_AGENT_IDX_OSPM0 */
+    status = find_agent_scmi_clock_idx(FAKE_SCMI_AGENT_IDX_OSPM0, clock_id, &scmi_clock_idx);
+
+    TEST_ASSERT_EQUAL(status, FWK_SUCCESS);
+    TEST_ASSERT_EQUAL(scmi_clock_idx, SCMI_CLOCK_OSPM0_IDX3);
+
+    /* agent id is FAKE_SCMI_AGENT_IDX_OSPM1 */
+    status = find_agent_scmi_clock_idx(FAKE_SCMI_AGENT_IDX_OSPM1, clock_id, &scmi_clock_idx);
+
+    TEST_ASSERT_EQUAL(status, FWK_SUCCESS);
+    TEST_ASSERT_EQUAL(scmi_clock_idx, SCMI_CLOCK_OSPM1_IDX0);
+
+    /* agent id is FAKE_SCMI_AGENT_IDX_OSPM1 but the clock is not accessible by
+    the agent */
+    clock_id = FWK_ID_ELEMENT(FAKE_MODULE_IDX, CLOCK_DEV_IDX_FAKE0);
+    status = find_agent_scmi_clock_idx(FAKE_SCMI_AGENT_IDX_OSPM1, clock_id, &scmi_clock_idx);
+
+    TEST_ASSERT_EQUAL(status, FWK_E_DATA);
+}
+
 int scmi_test_main(void)
 {
     UNITY_BEGIN();
@@ -1734,7 +1849,8 @@ int scmi_test_main(void)
             test_set_rate_with_invalid_payload_size_expect_SCMI_PROTOCOL_ERROR);
 
         RUN_TEST(test_clock_ref_count_allocate);
-        RUN_TEST(test_clock_ref_count_init);
+        RUN_TEST(test_clock_devices_init);
+        RUN_TEST(test_clock_agent_table_allocate);
         RUN_TEST(test_mod_scmi_clock_request_state_check_no_change_running);
         RUN_TEST(test_mod_scmi_clock_request_state_check_no_change_stopped);
         RUN_TEST(test_mod_scmi_clock_request_state_check_ref_count_0_running);
@@ -1783,6 +1899,7 @@ int scmi_test_main(void)
         RUN_TEST(test_mod_scmi_clock_start);
         RUN_TEST(test_mod_scmi_clock_bind);
 #endif
+        RUN_TEST(test_find_agent_scmi_clock_idx);
 
     #endif
     return UNITY_END();

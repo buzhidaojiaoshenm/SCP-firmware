@@ -1,6 +1,6 @@
 /*
  * Renesas SCP/MCP Software
- * Copyright (c) 2020-2021, Renesas Electronics Corporation. All rights
+ * Copyright (c) 2020-2025, Renesas Electronics Corporation. All rights
  * reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
@@ -1027,20 +1027,28 @@ static const struct mod_scmi_clock_device agent_device_table_ospm[] = {
 static const struct mod_scmi_clock_agent agent_table[] = {
     [SCMI_AGENT_ID_PSCI] = { 0 /* No access */ },
     [SCMI_AGENT_ID_OSPM] = {
-        .device_table = agent_device_table_ospm,
-        .device_count = FWK_ARRAY_SIZE(agent_device_table_ospm),
+        .agent_config = &((struct mod_scmi_clock_agent_config){
+            .device_table = agent_device_table_ospm,
+            .device_count = FWK_ARRAY_SIZE(agent_device_table_ospm),
+        }),
     },
     [SCMI_AGENT_ID_VMM] = {
-        .device_table = agent_device_table_ospm,
-        .device_count = FWK_ARRAY_SIZE(agent_device_table_ospm),
+        .agent_config = &((struct mod_scmi_clock_agent_config){
+            .device_table = agent_device_table_ospm,
+            .device_count = FWK_ARRAY_SIZE(agent_device_table_ospm),
+        }),
     },
     [SCMI_AGENT_ID_VM1] = {
-        .device_table = agent_device_table_ospm,
-        .device_count = FWK_ARRAY_SIZE(agent_device_table_ospm),
+        .agent_config = &((struct mod_scmi_clock_agent_config){
+            .device_table = agent_device_table_ospm,
+            .device_count = FWK_ARRAY_SIZE(agent_device_table_ospm),
+        }),
     },
     [SCMI_AGENT_ID_VM2] = {
-        .device_table = agent_device_table_ospm,
-        .device_count = FWK_ARRAY_SIZE(agent_device_table_ospm),
+        .agent_config = &((struct mod_scmi_clock_agent_config){
+            .device_table = agent_device_table_ospm,
+            .device_count = FWK_ARRAY_SIZE(agent_device_table_ospm),
+        }),
     },
 };
 

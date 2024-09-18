@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2015-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2015-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -51,6 +51,38 @@ enum scmi_clock_ospm1_idx {
     SCMI_CLOCK_OSPM1_COUNT
 };
 
+static uint8_t dev_clock_ref_count_table[CLOCK_DEV_IDX_COUNT];
+
+static uint8_t ospm0_state_table[SCMI_CLOCK_OSPM0_COUNT];
+static uint8_t ospm1_state_table[SCMI_CLOCK_OSPM1_COUNT];
+
+static uint8_t ospm0_state_table_expected
+    [SCMI_CLOCK_OSPM0_COUNT];
+
+static uint8_t ospm1_state_table_expected
+    [SCMI_CLOCK_OSPM1_COUNT];
+
+static uint8_t dev_clock_ref_count_table_expected[CLOCK_DEV_IDX_COUNT];
+
+static uint8_t ospm0_state_table_default
+    [SCMI_CLOCK_OSPM0_COUNT] = {
+        MOD_CLOCK_STATE_RUNNING,
+        MOD_CLOCK_STATE_RUNNING,
+        MOD_CLOCK_STATE_RUNNING,
+        MOD_CLOCK_STATE_RUNNING,
+    };
+
+static uint8_t ospm1_state_table_default
+    [SCMI_CLOCK_OSPM1_COUNT] = {
+        MOD_CLOCK_STATE_RUNNING,
+    };
+
+static const uint8_t dev_clock_ref_count_table_default[CLOCK_DEV_IDX_COUNT] = {
+    1,
+    1,
+    1,
+    2,
+};
 
 static const struct mod_scmi_clock_device agent_device_table_ospm0
     [SCMI_CLOCK_OSPM0_COUNT] = {
@@ -96,16 +128,20 @@ static const struct mod_scmi_clock_device agent_device_table_ospm1
     },
 };
 
-static const struct mod_scmi_clock_agent agent_table
+static struct mod_scmi_clock_agent agent_table
         [FAKE_SCMI_AGENT_IDX_COUNT] = {
     [FAKE_SCMI_AGENT_IDX_PSCI] = { 0 /* No access */ },
     [FAKE_SCMI_AGENT_IDX_OSPM0] = {
-        .device_table = agent_device_table_ospm0,
-        .device_count = FWK_ARRAY_SIZE(agent_device_table_ospm0),
+        .agent_config = &((struct mod_scmi_clock_agent_config){
+            .device_table = agent_device_table_ospm0,
+            .device_count = FWK_ARRAY_SIZE(agent_device_table_ospm0),
+        }),
     },
     [FAKE_SCMI_AGENT_IDX_OSPM1] = {
-        .device_table = agent_device_table_ospm1,
-        .device_count = FWK_ARRAY_SIZE(agent_device_table_ospm1),
+        .agent_config = &((struct mod_scmi_clock_agent_config){
+            .device_table = agent_device_table_ospm1,
+            .device_count = FWK_ARRAY_SIZE(agent_device_table_ospm1),
+        }),
     },
 };
 
@@ -118,44 +154,3 @@ struct fwk_module_config config_scmi_clock = {
 };
 
 static struct clock_operations clock_ops_table[CLOCK_DEV_IDX_COUNT];
-
-static uint8_t agent_clock_state_table
-    [FAKE_SCMI_AGENT_IDX_COUNT * CLOCK_DEV_IDX_COUNT];
-
-static uint8_t dev_clock_ref_count_table[CLOCK_DEV_IDX_COUNT];
-
-static uint8_t agent_clock_state_table_expected
-    [FAKE_SCMI_AGENT_IDX_COUNT * CLOCK_DEV_IDX_COUNT];
-
-static uint8_t dev_clock_ref_count_table_expected[CLOCK_DEV_IDX_COUNT];
-
-static const uint8_t agent_clock_state_table_default
-    [FAKE_SCMI_AGENT_IDX_COUNT * CLOCK_DEV_IDX_COUNT] = {
-        /* INVALID AGENT */
-        MOD_CLOCK_STATE_STOPPED,
-        MOD_CLOCK_STATE_STOPPED,
-        MOD_CLOCK_STATE_STOPPED,
-        MOD_CLOCK_STATE_STOPPED,
-        /* FAKE_SCMI_AGENT_IDX_PSCI */
-        MOD_CLOCK_STATE_STOPPED,
-        MOD_CLOCK_STATE_STOPPED,
-        MOD_CLOCK_STATE_STOPPED,
-        MOD_CLOCK_STATE_STOPPED,
-        /* FAKE_SCMI_AGENT_IDX_OSPM0 */
-        MOD_CLOCK_STATE_RUNNING,
-        MOD_CLOCK_STATE_RUNNING,
-        MOD_CLOCK_STATE_RUNNING,
-        MOD_CLOCK_STATE_RUNNING,
-        /* FAKE_SCMI_AGENT_IDX_OSPM1 */
-        MOD_CLOCK_STATE_RUNNING,
-        MOD_CLOCK_STATE_STOPPED,
-        MOD_CLOCK_STATE_STOPPED,
-        MOD_CLOCK_STATE_STOPPED,
-    };
-
-static const uint8_t dev_clock_ref_count_table_default[CLOCK_DEV_IDX_COUNT] = {
-    1,
-    1,
-    1,
-    2,
-};

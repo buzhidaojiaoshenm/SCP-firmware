@@ -67,10 +67,9 @@ struct mod_scmi_clock_ctx {
     uint8_t max_pending_transactions;
 
     /*!
-     * Pointer to the table of agent descriptors, used to provide per-agent
-     * views of clocks in the system.
+     * Pointer to the table of agent descriptors.
      */
-    const struct mod_scmi_clock_agent *agent_table;
+    struct mod_scmi_clock_agent *agent_table;
 
     /* SCMI module API */
     const struct mod_scmi_from_protocol_api *scmi_api;
@@ -86,9 +85,6 @@ struct mod_scmi_clock_ctx {
 
     /* Pointer to a table of clock reference counts */
     uint8_t *dev_clock_ref_count_table;
-
-    /* Pointer to a table of agent:clock_states */
-    uint8_t *agent_clock_state_table;
 
 #ifdef BUILD_HAS_MOD_RESOURCE_PERMS
     /* SCMI Resource Permissions API */
@@ -248,11 +244,11 @@ static int scmi_clock_get_clock_device_entry(
         return status;
     }
 
-    if (scmi_clock_idx >= agent_entry->device_count) {
+    if (scmi_clock_idx >= agent_entry->agent_config->device_count) {
         return FWK_E_RANGE;
     }
 
-    *clock_device = &agent_entry->device_table[scmi_clock_idx];
+    *clock_device = &agent_entry->agent_config->device_table[scmi_clock_idx];
 
     fwk_assert(fwk_module_is_valid_element_id((*clock_device)->element_id));
 
@@ -270,7 +266,7 @@ static inline unsigned int scmi_clock_get_clock_device_idx(
     fwk_id_t dev_clock_id;
 
     dev_clock_id = scmi_clock_ctx.agent_table[agent_id]
-                       .device_table[scmi_clock_idx]
+                       .agent_config->device_table[scmi_clock_idx]
                        .element_id;
 
     return fwk_id_get_element_idx(dev_clock_id);
@@ -284,11 +280,8 @@ static inline enum mod_clock_state scmi_clock_get_agent_clock_state(
     unsigned int agent_id,
     unsigned int scmi_clock_idx)
 {
-    unsigned int idx;
-
-    idx = (agent_id * scmi_clock_ctx.clock_devices) + scmi_clock_idx;
-
-    return (enum mod_clock_state)scmi_clock_ctx.agent_clock_state_table[idx];
+    return (enum mod_clock_state)scmi_clock_ctx.agent_table[agent_id]
+        .state_table[scmi_clock_idx];
 }
 
 /*
@@ -300,10 +293,7 @@ static inline void scmi_clock_set_agent_clock_state(
     unsigned int scmi_clock_idx,
     uint8_t state)
 {
-    int idx;
-
-    idx = (int)((agent_id * scmi_clock_ctx.clock_devices) + scmi_clock_idx);
-    scmi_clock_ctx.agent_clock_state_table[idx] = state;
+    scmi_clock_ctx.agent_table[agent_id].state_table[scmi_clock_idx] = state;
 }
 
 /*
@@ -330,14 +320,16 @@ static int scmi_clock_ref_count_table_update(
 }
 
 /*
- * Given a clock device index, checks the reference count for that clock.
+ * Given the scmi index, this checks the reference count for that clock.
  */
 static enum mod_scmi_clock_policy_status scmi_clock_ref_count_table_check(
     unsigned int agent_id,
     unsigned int scmi_clock_idx,
-    unsigned int dev_clock_idx,
     enum mod_clock_state requested_state)
 {
+    unsigned int dev_clock_idx =
+        scmi_clock_get_clock_device_idx(agent_id, scmi_clock_idx);
+
     switch (requested_state) {
     case MOD_CLOCK_STATE_RUNNING:
         /*
@@ -382,24 +374,45 @@ static enum mod_scmi_clock_policy_status scmi_clock_ref_count_table_check(
     return MOD_SCMI_CLOCK_SKIP_MESSAGE_HANDLER;
 }
 
+/*
+ * Given the agent id and and device index, find its scmi index.
+ */
+static int find_agent_scmi_clock_idx(
+    unsigned int agent_id,
+    fwk_id_t clock_id,
+    unsigned int *clock_scmi_idx)
+{
+    unsigned int clock_dev_idx = fwk_id_get_element_idx(clock_id);
+
+    struct mod_scmi_clock_agent_config *agent_config =
+        (struct mod_scmi_clock_agent_config *)scmi_clock_ctx
+            .agent_table[agent_id]
+            .agent_config;
+
+    /* Find the scmi clock index for the agent. */
+    if (agent_config != NULL) {
+        for (unsigned int idx = 0;
+             idx < (unsigned int)agent_config->device_count;
+             idx++) {
+            if (fwk_id_get_element_idx(
+                    agent_config->device_table[idx].element_id) ==
+                clock_dev_idx) {
+                *clock_scmi_idx = idx;
+                return FWK_SUCCESS;
+            }
+        }
+    }
+    return FWK_E_DATA;
+}
+
 static int mod_scmi_clock_state_update(
     uint32_t agent_id,
     uint32_t scmi_clock_idx,
-    unsigned int dev_clock_idx,
     enum mod_clock_state requested_state)
 {
-    enum mod_clock_state clock_state;
+    unsigned int dev_clock_idx;
 
-    /*
-     * clock state is the last state this agent successfully set
-     * for this clock.
-     */
-    clock_state = scmi_clock_get_agent_clock_state(agent_id, scmi_clock_idx);
-
-    /* The agent has already requested to set state to the current state */
-    if (requested_state == clock_state) {
-        return FWK_SUCCESS;
-    }
+    dev_clock_idx = scmi_clock_get_clock_device_idx(agent_id, scmi_clock_idx);
 
     scmi_clock_set_agent_clock_state(
         agent_id, scmi_clock_idx, (uint8_t)requested_state);
@@ -407,68 +420,54 @@ static int mod_scmi_clock_state_update(
     return scmi_clock_ref_count_table_update(dev_clock_idx, requested_state);
 }
 
-static enum mod_scmi_clock_policy_status mod_scmi_clock_request_state_check(
-    uint32_t agent_id,
-    uint32_t scmi_clock_idx,
-    unsigned int dev_clock_idx,
-    enum mod_clock_state requested_state)
+static void clock_agent_table_allocate(void)
 {
-    enum mod_clock_state clock_state;
-    /*
-     * clock state is the last state this agent successfully set
-     * for this clock.
-     */
-    clock_state = scmi_clock_get_agent_clock_state(agent_id, scmi_clock_idx);
-
-    /* The agent has already requested to set state to the current state */
-    if (requested_state == clock_state) {
-        return MOD_SCMI_CLOCK_SKIP_MESSAGE_HANDLER;
+    for (unsigned int i = 0; i < scmi_clock_ctx.config->agent_count; i++) {
+        if (scmi_clock_ctx.agent_table[i].agent_config != NULL) {
+            scmi_clock_ctx.agent_table[i].state_table = fwk_mm_calloc(
+                scmi_clock_ctx.agent_table[i].agent_config->device_count,
+                sizeof(uint8_t));
+        }
     }
-
-    return scmi_clock_ref_count_table_check(
-        agent_id, scmi_clock_idx, dev_clock_idx, requested_state);
 }
 
 static void clock_ref_count_allocate(void)
 {
-    unsigned int agent_count, clock_devices;
-
-    agent_count = scmi_clock_ctx.config->agent_count;
-    clock_devices = (unsigned int)scmi_clock_ctx.clock_devices;
-
-    /* Allocate table of agent:clock_states */
-    scmi_clock_ctx.agent_clock_state_table = fwk_mm_calloc(
-        agent_count * clock_devices,
-        sizeof(*scmi_clock_ctx.agent_clock_state_table));
+    unsigned int clock_devices = (unsigned int)scmi_clock_ctx.clock_devices;
 
     /* Allocate table of clock reference counts */
     scmi_clock_ctx.dev_clock_ref_count_table = fwk_mm_calloc(
         clock_devices, sizeof(*scmi_clock_ctx.dev_clock_ref_count_table));
 }
 
-static void clock_ref_count_init(void)
+static void clock_devices_init(void)
 {
-    unsigned int agent_id, ref_count_table_idx, clock_idx, agent_count,
-        clock_devices;
-    const struct mod_scmi_clock_agent *agent;
+    unsigned int agent_id, ref_count_table_idx, agent_count;
+    uint8_t clock_idx, device_count;
+    fwk_id_t clock_id;
+    struct mod_scmi_clock_agent *agent;
 
     agent_count = scmi_clock_ctx.config->agent_count;
-    clock_devices = (unsigned int)scmi_clock_ctx.clock_devices;
 
     /* Set all clocks in RUNNING state if provided by the configuration */
     for (agent_id = 0; agent_id < agent_count; agent_id++) {
-        agent = &scmi_clock_ctx.agent_table[agent_id];
-        for (clock_idx = 0; clock_idx < (unsigned int)agent->device_count;
-             clock_idx++) {
-            if (agent->device_table[clock_idx].starts_enabled) {
-                ref_count_table_idx = (agent_id * clock_devices) + clock_idx;
-                scmi_clock_ctx.agent_clock_state_table[ref_count_table_idx] =
-                    (uint8_t)MOD_CLOCK_STATE_RUNNING;
+        if (scmi_clock_ctx.agent_table[agent_id].agent_config == NULL) {
+            continue;
+        }
 
-                ref_count_table_idx = fwk_id_get_element_idx(
-                    agent->device_table[clock_idx].element_id);
-                scmi_clock_ctx.dev_clock_ref_count_table[ref_count_table_idx]++;
+        agent = &scmi_clock_ctx.agent_table[agent_id];
+        device_count = agent->agent_config->device_count;
+
+        for (clock_idx = 0; clock_idx < device_count; clock_idx++) {
+            if (!agent->agent_config->device_table[clock_idx].starts_enabled) {
+                continue;
             }
+
+            agent->state_table[clock_idx] = (uint8_t)MOD_CLOCK_STATE_RUNNING;
+
+            clock_id = agent->agent_config->device_table[clock_idx].element_id;
+            ref_count_table_idx = fwk_id_get_element_idx(clock_id);
+            scmi_clock_ctx.dev_clock_ref_count_table[ref_count_table_idx]++;
         }
     }
 }
@@ -530,30 +529,8 @@ static inline bool clock_has_extended_name(
     unsigned int scmi_clock_idx)
 {
     return scmi_clock_ctx.agent_table[agent_id]
-        .device_table[scmi_clock_idx]
+        .agent_config->device_table[scmi_clock_idx]
         .supports_extended_name;
-}
-
-static int find_agent_scmi_clock_idx(
-    unsigned int agent_id,
-    fwk_id_t clock_id,
-    unsigned int *clock_scmi_idx)
-{
-    unsigned int clock_dev_idx;
-    const struct mod_scmi_clock_agent *agent;
-
-    clock_dev_idx = fwk_id_get_element_idx(clock_id);
-    agent = &scmi_clock_ctx.agent_table[agent_id];
-
-    /* Find the scmi clock index for the agent. */
-    for (unsigned int idx = 0; idx < (unsigned int)agent->device_count; idx++) {
-        if (fwk_id_get_element_idx(agent->device_table[idx].element_id) ==
-            clock_dev_idx) {
-            *clock_scmi_idx = idx;
-            return FWK_SUCCESS;
-        }
-    }
-    return FWK_E_DATA;
 }
 
 /*
@@ -569,7 +546,6 @@ static void clock_attributes_respond(
     bool has_extended_name = false;
     unsigned int agent_id, scmi_clock_idx;
     size_t response_size;
-    const struct mod_scmi_clock_agent *agent;
     struct scmi_clock_attributes_p2a return_values = { 0 };
     bool supports_rate_changed_notification = false;
     bool supports_rate_change_requested_notification = false;
@@ -579,20 +555,24 @@ static void clock_attributes_respond(
         if (status != FWK_SUCCESS) {
             FWK_LOG_DEBUG("[SCMI-CLK] %s @%d", __func__, __LINE__);
         } else {
-            agent = &scmi_clock_ctx.agent_table[agent_id];
-
             status = find_agent_scmi_clock_idx(
                 agent_id, clock_dev_id, &scmi_clock_idx);
             if (status != FWK_SUCCESS) {
                 FWK_LOG_DEBUG("[SCMI-CLK] %s @%d", __func__, __LINE__);
             } else {
                 has_extended_name =
-                    agent->device_table[scmi_clock_idx].supports_extended_name;
+                    scmi_clock_ctx.agent_table[agent_id]
+                        .agent_config->device_table[scmi_clock_idx]
+                        .supports_extended_name;
 #ifdef BUILD_HAS_SCMI_NOTIFICATIONS
                 supports_rate_change_requested_notification =
-                    agent->device_table[scmi_clock_idx].notify_requested_rate;
+                    scmi_clock_ctx.agent_table[agent_id]
+                        .agent_config->device_table[scmi_clock_idx]
+                        .notify_requested_rate;
                 supports_rate_changed_notification =
-                    agent->device_table[scmi_clock_idx].notify_changed_rate;
+                    scmi_clock_ctx.agent_table[agent_id]
+                        .agent_config->device_table[scmi_clock_idx]
+                        .notify_changed_rate;
 #endif
             }
         }
@@ -743,14 +723,14 @@ FWK_WEAK int mod_scmi_clock_rate_set_policy(
 
 int mod_scmi_clock_config_set_policy(
     enum mod_scmi_clock_policy_status *policy_status,
-    enum mod_clock_state *state,
+    enum mod_clock_state *requested_state,
     enum mod_scmi_clock_policy_commit policy_commit,
     fwk_id_t service_id,
     uint32_t scmi_clock_idx)
 {
     unsigned int agent_id;
-    unsigned int dev_clock_idx;
     int status;
+    enum mod_clock_state current_state;
 
     *policy_status = MOD_SCMI_CLOCK_SKIP_MESSAGE_HANDLER;
 
@@ -759,12 +739,21 @@ int mod_scmi_clock_config_set_policy(
         return status;
     }
 
-    dev_clock_idx = scmi_clock_get_clock_device_idx(agent_id, scmi_clock_idx);
+    /*
+     * clock state is the last state this agent successfully set
+     * for this clock.
+     */
+    current_state = scmi_clock_get_agent_clock_state(agent_id, scmi_clock_idx);
+
+    /* The agent has already requested to set state to the current state */
+    if (*requested_state == current_state) {
+        return FWK_SUCCESS;
+    }
 
     switch (policy_commit) {
     case MOD_SCMI_CLOCK_PRE_MESSAGE_HANDLER:
-        *policy_status = mod_scmi_clock_request_state_check(
-            agent_id, scmi_clock_idx, dev_clock_idx, *state);
+        *policy_status = scmi_clock_ref_count_table_check(
+            agent_id, scmi_clock_idx, *requested_state);
         if (*policy_status == MOD_SCMI_CLOCK_SKIP_MESSAGE_HANDLER) {
             /*
              * If the requested state is different from the current state of the
@@ -774,12 +763,12 @@ int mod_scmi_clock_config_set_policy(
              * will be bypassed.
              */
             return mod_scmi_clock_state_update(
-                agent_id, scmi_clock_idx, dev_clock_idx, *state);
+                agent_id, scmi_clock_idx, *requested_state);
         }
         return FWK_SUCCESS;
     case MOD_SCMI_CLOCK_POST_MESSAGE_HANDLER:
         return mod_scmi_clock_state_update(
-            agent_id, scmi_clock_idx, dev_clock_idx, *state);
+            agent_id, scmi_clock_idx, *requested_state);
 
     default:
         return FWK_E_PARAM;
@@ -934,9 +923,8 @@ static int scmi_clock_protocol_attributes_handler(fwk_id_t service_id,
     }
 
     return_values.attributes = SCMI_CLOCK_PROTOCOL_ATTRIBUTES(
-            scmi_clock_ctx.max_pending_transactions,
-            agent->device_count
-        );
+        scmi_clock_ctx.max_pending_transactions,
+        agent->agent_config->device_count);
 
 exit:
     respond_status = scmi_clock_ctx.scmi_api->respond(
@@ -1747,7 +1735,8 @@ static int scmi_clock_init(fwk_id_t module_id, unsigned int element_count,
 
     scmi_clock_ctx.config = config;
     scmi_clock_ctx.max_pending_transactions = config->max_pending_transactions;
-    scmi_clock_ctx.agent_table = config->agent_table;
+    scmi_clock_ctx.agent_table =
+        (struct mod_scmi_clock_agent *)config->agent_table;
 
     clock_devices = fwk_module_get_element_count(fwk_module_id_clock);
     if (clock_devices == FWK_E_PARAM) {
@@ -1766,9 +1755,14 @@ static int scmi_clock_init(fwk_id_t module_id, unsigned int element_count,
         scmi_clock_ctx.clock_ops[i].service_id = FWK_ID_NONE;
     }
 
-    /* Initialize clock reference counter table */
+    /* Allocate memory to Agent Table */
+    clock_agent_table_allocate();
+
+    /* Allocate memory to device reference count */
     clock_ref_count_allocate();
-    clock_ref_count_init();
+
+    /* Initialize agent table variables */
+    clock_devices_init();
 
     return FWK_SUCCESS;
 }

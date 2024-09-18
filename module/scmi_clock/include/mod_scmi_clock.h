@@ -105,13 +105,12 @@ struct mod_scmi_clock_device {
 };
 
 /*!
- * \brief Agent descriptor.
+ * \brief Agent Configuration.
  *
- * \details Describes an agent that uses the SCMI Clock Management protocol.
- *      Provides a pointer to the agent's clock device table and the number of
- *      devices within the table.
+ * \details Describes agent configuration. Provides a pointer to the agent's
+ *          clock device table and the number of devices within the table.
  */
-struct mod_scmi_clock_agent {
+struct mod_scmi_clock_agent_config {
     /*! Pointer to a table of clock devices that are visible to the agent */
     const struct mod_scmi_clock_device *device_table;
 
@@ -120,6 +119,20 @@ struct mod_scmi_clock_agent {
      *      pointed to by \c device_table.
      */
     uint8_t device_count;
+};
+
+/*!
+ * \brief Agent descriptor.
+ *
+ * \details Describes an agent that uses the SCMI Clock Management protocol.
+ *
+ */
+struct mod_scmi_clock_agent {
+    /*! Pointer to agent config */
+    const struct mod_scmi_clock_agent_config *agent_config;
+
+    /* Pointer to a table of agent:clock_states */
+    uint8_t *state_table;
 };
 
 /*!

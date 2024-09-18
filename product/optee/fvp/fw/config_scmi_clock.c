@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2022-2024, Linaro Limited and Contributors. All rights
+ * Copyright (c) 2022-2025, Linaro Limited and Contributors. All rights
  * reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
@@ -90,13 +90,17 @@ static const struct mod_scmi_clock_device agent_device_table_perf[] = {
 
 static const struct mod_scmi_clock_agent agent_table[SCMI_AGENT_ID_COUNT] = {
     [SCMI_AGENT_ID_OSPM] = {
-        .device_table = agent_device_table_ospm,
-        .device_count = FWK_ARRAY_SIZE(agent_device_table_ospm),
+        .agent_config = &((struct mod_scmi_clock_agent_config){
+            .device_table = agent_device_table_ospm,
+            .device_count = FWK_ARRAY_SIZE(agent_device_table_ospm),
+        }),
     },
     [SCMI_AGENT_ID_PSCI] = { 0 /* No access */ },
     [SCMI_AGENT_ID_PERF] = {
-        .device_table = agent_device_table_perf,
-        .device_count = FWK_ARRAY_SIZE(agent_device_table_perf),
+        .agent_config = &((struct mod_scmi_clock_agent_config){
+            .device_table = agent_device_table_perf,
+            .device_count = FWK_ARRAY_SIZE(agent_device_table_perf),
+        }),
     },
 };
 
