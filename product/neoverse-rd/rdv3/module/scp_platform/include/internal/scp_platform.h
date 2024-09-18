@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -14,6 +14,17 @@
 #include <mod_scp_platform.h>
 
 #define MOD_NAME "[SCP_PLATFORM]"
+
+/*!
+ * \brief Module context.
+ */
+struct scp_platform_ctx {
+    /* Module config data */
+    const struct mod_scp_platform_config *config;
+
+    /* System Information HAL API pointer */
+    struct mod_system_info_get_info_api *system_info_api;
+};
 
 /*
  * RSS communication interface helper functions.

@@ -24,15 +24,6 @@
 #include <fwk_notification.h>
 #include <fwk_status.h>
 
-/* Module context */
-struct scp_platform_ctx {
-    /* Module config data */
-    const struct mod_scp_platform_config *config;
-
-    /* System Information HAL API pointer */
-    struct mod_system_info_get_info_api *system_info_api;
-};
-
 /* Module context data */
 struct scp_platform_ctx scp_platform_ctx;
 
