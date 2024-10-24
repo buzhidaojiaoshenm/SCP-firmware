@@ -25,13 +25,13 @@
 #include <stdint.h>
 
 #if (PLATFORM_VARIANT == 0)
-#    define MMAP_TABLE_COUNT 17
+#    define MMAP_TABLE_COUNT 18
 #    define SNF_TABLE_COUNT  32
 #elif (PLATFORM_VARIANT == 1)
-#    define MMAP_TABLE_COUNT 13
+#    define MMAP_TABLE_COUNT 14
 #    define SNF_TABLE_COUNT  8
 #elif (PLATFORM_VARIANT == 2)
-#    define MMAP_TABLE_COUNT 13
+#    define MMAP_TABLE_COUNT 14
 #    define SNF_TABLE_COUNT  32
 #endif
 
@@ -183,12 +183,22 @@ static const struct mod_cmn_cyprus_mem_region_map mmap[MMAP_TABLE_COUNT] = {
     {
         /*
          * Peripherals
-         * Map: 0x00_2F40_0000 - 0x00_5FFF_FFFF (780 MB)
+         * Map: 0x00_2F40_0000 - 0x00_5FFF_0000 (779 MB)
          */
         .base = UINT64_C(0x002F400000),
-        .size = UINT64_C(780) * FWK_MIB,
+        .size = UINT64_C(779) * FWK_MIB,
         .type = MOD_CMN_CYPRUS_MEM_REGION_TYPE_IO,
         .node_id = NODE_ID_HND,
+    },
+    {
+        /*
+         * HNI for RGIC2LGIC routing from CMN to GIC
+         * Map: 0x00_5FFF_0000 - 0x00_5FFF_FFFF (64 KiB)
+         */
+        .base = UINT64_C(0x005FFF0000),
+        .size = UINT64_C(64) * FWK_KIB,
+        .type = MOD_CMN_CYPRUS_MEM_REGION_TYPE_IO,
+        .node_id = NODE_ID_HNI_GIC,
     },
     {
         /*

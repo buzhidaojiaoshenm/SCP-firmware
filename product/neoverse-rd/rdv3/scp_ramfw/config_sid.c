@@ -19,9 +19,9 @@
 #if (PLATFORM_VARIANT == 0 || PLATFORM_VARIANT == 2)
 #    define RD_V3_PART_NUMBER 0x7EE
 #elif (PLATFORM_VARIANT == 1)
-#define RD_V3_PART_NUMBER 0x7F9
+#    define RD_V3_PART_NUMBER 0x7F9
 #else
-#error "Unsupported platform variant"
+#    error "Unsupported platform variant"
 #endif
 
 /* Module 'sid' element count */
