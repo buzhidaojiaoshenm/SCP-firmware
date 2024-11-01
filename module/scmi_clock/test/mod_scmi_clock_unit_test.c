@@ -17,6 +17,7 @@
 #    include <Mockfwk_module.h>
 #    include <Mockfwk_notification.h>
 #    include <internal/Mockfwk_core_internal.h>
+#    include <internal/Mockfwk_id_internal.h>
 #endif
 #include <Mockmod_scmi_clock_extra.h>
 #include <mod_clock.h>
@@ -175,6 +176,8 @@ void tearDown(void)
     Mockmod_scmi_clock_extra_Destroy();
     Mockfwk_core_internal_Verify();
     Mockfwk_core_internal_Destroy();
+    Mockfwk_id_Verify();
+    Mockfwk_id_Destroy();
 }
 
 int fwk_put_event_callback(struct fwk_event *event, int numCalls)
@@ -1350,7 +1353,6 @@ void test_clock_rate_changed_notify_handler_add_subscriber(void)
         FWK_SUCCESS);
     mod_scmi_from_protocol_api_get_agent_id_ReturnThruPtr_agent_id(&agent_id);
     fwk_module_is_valid_element_id_ExpectAnyArgsAndReturn(true);
-    fwk_id_get_element_idx_ExpectAnyArgsAndReturn(SCMI_CLOCK_OSPM0_IDX1);
     mod_scmi_from_protocol_api_get_agent_id_ExpectAnyArgsAndReturn(
         FWK_SUCCESS);
     mod_scmi_from_protocol_api_get_agent_id_ReturnThruPtr_agent_id(&agent_id);
@@ -1405,7 +1407,6 @@ void test_clock_rate_changed_notify_handler_remove_subscriber(void)
         FWK_SUCCESS);
     mod_scmi_from_protocol_api_get_agent_id_ReturnThruPtr_agent_id(&agent_id);
     fwk_module_is_valid_element_id_ExpectAnyArgsAndReturn(true);
-    fwk_id_get_element_idx_ExpectAnyArgsAndReturn(SCMI_CLOCK_OSPM0_IDX1);
     mod_scmi_from_protocol_api_get_agent_id_ExpectAnyArgsAndReturn(
         FWK_SUCCESS);
     mod_scmi_from_protocol_api_get_agent_id_ReturnThruPtr_agent_id(&agent_id);
