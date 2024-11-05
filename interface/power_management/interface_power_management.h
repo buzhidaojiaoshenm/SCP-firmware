@@ -69,6 +69,16 @@ struct interface_power_management_api {
      * \retval One of the standard framework status codes.
      */
     int (*set_power_limit)(fwk_id_t id, uint32_t power_limit);
+    /*!
+     * \brief Set the power demand for an entity to be registered. This doesn't
+     *        necessarily mean the power demand is satisfied physically.
+     * \param id Identifier of the entity to set the limit to.
+     * \param power_demand The power demand asked for the entity.
+     *
+     * \retval ::FWK_SUCCESS The power demand is set successfully
+     * \retval One of the standard framework status codes.
+     */
+    int (*set_power_demand)(fwk_id_t id, uint32_t power_demand);
 };
 
 /*!
