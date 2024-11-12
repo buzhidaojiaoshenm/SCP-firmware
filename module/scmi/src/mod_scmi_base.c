@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2022-2023, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2022-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -35,28 +35,27 @@ static const char *const default_agent_names[SCMI_AGENT_TYPE_COUNT] = {
     [SCMI_AGENT_TYPE_OTHER] = "OTHER",
 };
 
-static const unsigned int
-    base_payload_size_table[MOD_SCMI_BASE_COMMAND_COUNT] = {
-        [MOD_SCMI_PROTOCOL_VERSION] = 0,
-        [MOD_SCMI_PROTOCOL_ATTRIBUTES] = 0,
-        [MOD_SCMI_PROTOCOL_MESSAGE_ATTRIBUTES] =
-            (unsigned int)sizeof(struct scmi_protocol_message_attributes_a2p),
-        [MOD_SCMI_BASE_DISCOVER_VENDOR] = 0,
-        [MOD_SCMI_BASE_DISCOVER_SUB_VENDOR] = 0,
-        [MOD_SCMI_BASE_DISCOVER_IMPLEMENTATION_VERSION] = 0,
-        [MOD_SCMI_BASE_DISCOVER_LIST_PROTOCOLS] =
-            (unsigned int)sizeof(struct scmi_base_discover_list_protocols_a2p),
-        [MOD_SCMI_BASE_DISCOVER_AGENT] =
-            (unsigned int)sizeof(struct scmi_base_discover_agent_a2p),
+static const size_t base_payload_size_table[MOD_SCMI_BASE_COMMAND_COUNT] = {
+    [MOD_SCMI_PROTOCOL_VERSION] = 0,
+    [MOD_SCMI_PROTOCOL_ATTRIBUTES] = 0,
+    [MOD_SCMI_PROTOCOL_MESSAGE_ATTRIBUTES] =
+        (unsigned int)sizeof(struct scmi_protocol_message_attributes_a2p),
+    [MOD_SCMI_BASE_DISCOVER_VENDOR] = 0,
+    [MOD_SCMI_BASE_DISCOVER_SUB_VENDOR] = 0,
+    [MOD_SCMI_BASE_DISCOVER_IMPLEMENTATION_VERSION] = 0,
+    [MOD_SCMI_BASE_DISCOVER_LIST_PROTOCOLS] =
+        (unsigned int)sizeof(struct scmi_base_discover_list_protocols_a2p),
+    [MOD_SCMI_BASE_DISCOVER_AGENT] =
+        (unsigned int)sizeof(struct scmi_base_discover_agent_a2p),
 #ifdef BUILD_HAS_MOD_RESOURCE_PERMS
-        [MOD_SCMI_BASE_SET_DEVICE_PERMISSIONS] =
-            sizeof(struct scmi_base_set_device_permissions_a2p),
-        [MOD_SCMI_BASE_SET_PROTOCOL_PERMISSIONS] =
-            sizeof(struct scmi_base_set_protocol_permissions_a2p),
-        [MOD_SCMI_BASE_RESET_AGENT_CONFIG] =
-            sizeof(struct scmi_base_reset_agent_config_a2p),
+    [MOD_SCMI_BASE_SET_DEVICE_PERMISSIONS] =
+        sizeof(struct scmi_base_set_device_permissions_a2p),
+    [MOD_SCMI_BASE_SET_PROTOCOL_PERMISSIONS] =
+        sizeof(struct scmi_base_set_protocol_permissions_a2p),
+    [MOD_SCMI_BASE_RESET_AGENT_CONFIG] =
+        sizeof(struct scmi_base_reset_agent_config_a2p),
 #endif
-    };
+};
 
 static int scmi_base_protocol_version_handler(
     fwk_id_t service_id,
@@ -82,6 +81,9 @@ static int scmi_base_discover_list_protocols_handler(
 static int scmi_base_discover_agent_handler(
     fwk_id_t service_id,
     const uint32_t *payload);
+static int scmi_base_message_not_supported(
+    fwk_id_t service_id,
+    const uint32_t *payload);
 #ifdef BUILD_HAS_MOD_RESOURCE_PERMS
 static int scmi_base_set_device_permissions(
     fwk_id_t service_id,
@@ -94,9 +96,7 @@ static int scmi_base_reset_agent_config(
     const uint32_t *payload);
 #endif
 
-static int (*const base_handler_table[MOD_SCMI_BASE_COMMAND_COUNT])(
-    fwk_id_t,
-    const uint32_t *) = {
+static const handler_table_t base_handler_table[MOD_SCMI_BASE_COMMAND_COUNT] = {
     [MOD_SCMI_PROTOCOL_VERSION] = scmi_base_protocol_version_handler,
     [MOD_SCMI_PROTOCOL_ATTRIBUTES] = scmi_base_protocol_attributes_handler,
     [MOD_SCMI_PROTOCOL_MESSAGE_ATTRIBUTES] =
@@ -108,11 +108,16 @@ static int (*const base_handler_table[MOD_SCMI_BASE_COMMAND_COUNT])(
     [MOD_SCMI_BASE_DISCOVER_LIST_PROTOCOLS] =
         scmi_base_discover_list_protocols_handler,
     [MOD_SCMI_BASE_DISCOVER_AGENT] = scmi_base_discover_agent_handler,
+    [MOD_SCMI_BASE_NOTIFY_ERRORS] = scmi_base_message_not_supported,
 #ifdef BUILD_HAS_MOD_RESOURCE_PERMS
     [MOD_SCMI_BASE_SET_DEVICE_PERMISSIONS] = scmi_base_set_device_permissions,
     [MOD_SCMI_BASE_SET_PROTOCOL_PERMISSIONS] =
         scmi_base_set_protocol_permissions,
     [MOD_SCMI_BASE_RESET_AGENT_CONFIG] = scmi_base_reset_agent_config,
+#else
+    [MOD_SCMI_BASE_SET_DEVICE_PERMISSIONS] = scmi_base_message_not_supported,
+    [MOD_SCMI_BASE_SET_PROTOCOL_PERMISSIONS] = scmi_base_message_not_supported,
+    [MOD_SCMI_BASE_RESET_AGENT_CONFIG] = scmi_base_message_not_supported,
 #endif
 };
 /*
@@ -232,7 +237,8 @@ static int scmi_base_protocol_message_attributes_handler(
     message_id = parameters->message_id;
 
     if ((message_id < FWK_ARRAY_SIZE(base_handler_table)) &&
-        (base_handler_table[message_id] != NULL)) {
+        (base_handler_table[message_id] != NULL) &&
+        (base_handler_table[message_id] != &scmi_base_message_not_supported)) {
         return_values.status = (int32_t)SCMI_SUCCESS;
     }
 
@@ -597,6 +603,13 @@ exit:
                                                  sizeof(return_values.status));
 }
 
+static int scmi_base_message_not_supported(
+    fwk_id_t service_id,
+    const uint32_t *payload)
+{
+    return FWK_E_SUPPORT;
+}
+
 #ifdef BUILD_HAS_MOD_RESOURCE_PERMS
 
 /*
@@ -790,42 +803,6 @@ exit:
         (return_values.status == SCMI_SUCCESS) ? sizeof(return_values) :
                                                  sizeof(return_values.status));
 }
-
-/*
- * SCMI Resource Permissions handler
- */
-static int scmi_base_permissions_handler(
-    fwk_id_t service_id,
-    const uint32_t *payload,
-    size_t payload_size,
-    unsigned int message_id)
-{
-    enum mod_res_perms_permissions perms;
-    unsigned int agent_id;
-    int status;
-
-    status = protocol_api->get_agent_id(service_id, &agent_id);
-    if (status != FWK_SUCCESS) {
-        return FWK_E_ACCESS;
-    }
-
-    if (message_id < 3) {
-        return FWK_SUCCESS;
-    }
-
-    /*
-     * Check that the agent has permissions to access the message.
-     */
-    perms = shared_scmi_ctx->res_perms_api->agent_has_message_permission(
-        agent_id, MOD_SCMI_PROTOCOL_ID_BASE, message_id);
-
-    if (perms == MOD_RES_PERMS_ACCESS_ALLOWED) {
-        return FWK_SUCCESS;
-    } else {
-        return FWK_E_ACCESS;
-    }
-}
-
 #endif
 
 int scmi_base_message_handler(
@@ -836,34 +813,32 @@ int scmi_base_message_handler(
     unsigned int message_id)
 {
     int32_t return_value;
+    int validation_result;
 
     static_assert(
         FWK_ARRAY_SIZE(base_handler_table) ==
             FWK_ARRAY_SIZE(base_payload_size_table),
         "[SCMI] Base protocol table sizes not consistent");
-    fwk_assert(payload != NULL);
 
-    if (message_id >= FWK_ARRAY_SIZE(base_handler_table)) {
-        return_value = (int32_t)SCMI_NOT_FOUND;
-        goto error;
+    validation_result = protocol_api->scmi_message_validation(
+        MOD_SCMI_PROTOCOL_ID_BASE,
+        service_id,
+        payload,
+        payload_size,
+        message_id,
+        base_payload_size_table,
+        (unsigned int)MOD_SCMI_BASE_COMMAND_COUNT,
+        base_handler_table);
+
+    if (validation_result != SCMI_SUCCESS) {
+        return_value = (int32_t)validation_result;
+    } else if (
+        base_handler_table[message_id] == &scmi_base_message_not_supported) {
+        return_value = (int32_t)SCMI_NOT_SUPPORTED;
+    } else {
+        return base_handler_table[message_id](service_id, payload);
     }
 
-    if (payload_size != base_payload_size_table[message_id]) {
-        return_value = (int32_t)SCMI_PROTOCOL_ERROR;
-        goto error;
-    }
-
-#ifdef BUILD_HAS_MOD_RESOURCE_PERMS
-    if (scmi_base_permissions_handler(
-            service_id, payload, payload_size, message_id) != FWK_SUCCESS) {
-        return_value = (int32_t)SCMI_DENIED;
-        goto error;
-    }
-#endif
-
-    return base_handler_table[message_id](service_id, payload);
-
-error:
     return protocol_api->respond(
         service_id, &return_value, sizeof(return_value));
 }
