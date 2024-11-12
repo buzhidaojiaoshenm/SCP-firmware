@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2018-2023, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2018-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -132,9 +132,19 @@ static int get_scmi_protocol_id(fwk_id_t protocol_id, uint8_t *scmi_protocol_id)
     return FWK_SUCCESS;
 }
 
-static int (*const handler_table[])(fwk_id_t, const uint32_t *) = {
+static int scmi_agent_message_not_supported(
+    fwk_id_t service_id,
+    const uint32_t *payload)
+{
+    return FWK_E_SUPPORT;
+}
+
+static const handler_table_t handler_table[] = {
     [SCMI_MANAGEMENT_PROTOCOL_VERSION_GET] =
         scmi_agent_protocol_version_handler,
+    [SCMI_MANAGEMENT_PROTOCOL_ATTRIBUTES_GET] =
+        scmi_agent_message_not_supported,
+    [SCMI_MANAGEMENT_MESSAGE_ATTRIBUTES_GET] = scmi_agent_message_not_supported,
     [SCMI_MANAGEMENT_CLOCK_STATUS_GET] = scmi_agent_clock_status_get_handler,
     [SCMI_MANAGEMENT_CHIPID_INFO_GET] = scmi_agent_chipid_info_get_handler,
 };
@@ -158,7 +168,11 @@ static int scmi_message_handler(
         return FWK_E_PARAM;
     }
 
-    handler_status = handler_table[message_id](service_id, payload);
+    if (handler_table[message_id] == NULL) {
+        handler_status = FWK_E_SUPPORT;
+    } else {
+        handler_status = handler_table[message_id](service_id, payload);
+    }
 
     resp_status = ctx.scmi_api->response_message_handler(service_id);
 
