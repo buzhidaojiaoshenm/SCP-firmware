@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2022, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2022-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -57,18 +57,33 @@ static int scmi_sensor_req_ret_reading_handler(
     fwk_id_t service_id,
     const uint32_t *payload,
     size_t payload_size);
-
+static int scmi_sensor_req_message_not_supported(
+    fwk_id_t service_id,
+    const uint32_t *payload,
+    size_t payload_size);
 /*
  * Internal variables.
  */
 static struct scmi_sensor_req_context scmi_sensor_req_ctx;
 
-static int (*handler_table[MOD_SCMI_SENSOR_COMMAND_COUNT])(
-    fwk_id_t,
-    const uint32_t *,
-    size_t) = {
-    [MOD_SCMI_SENSOR_READING_GET] = scmi_sensor_req_ret_reading_handler
-};
+static scmi_sensor_req_handler_table_t
+    handler_table[MOD_SCMI_SENSOR_COMMAND_COUNT] = {
+        [MOD_SCMI_PROTOCOL_VERSION] = scmi_sensor_req_message_not_supported,
+        [MOD_SCMI_PROTOCOL_ATTRIBUTES] = scmi_sensor_req_message_not_supported,
+        [MOD_SCMI_PROTOCOL_MESSAGE_ATTRIBUTES] =
+            scmi_sensor_req_message_not_supported,
+        [MOD_SCMI_SENSOR_DESCRIPTION_GET] =
+            scmi_sensor_req_message_not_supported,
+        [MOD_SCMI_SENSOR_TRIP_POINT_NOTIFY] =
+            scmi_sensor_req_message_not_supported,
+        [MOD_SCMI_SENSOR_TRIP_POINT_CONFIG] =
+            scmi_sensor_req_message_not_supported,
+        [MOD_SCMI_SENSOR_READING_GET] = scmi_sensor_req_ret_reading_handler
+#ifdef BUILD_HAS_SCMI_SENSOR_V2
+            [MOD_SCMI_SENSOR_AXIS_DESCRIPTION_GET] =
+                scmi_sensor_req_message_not_supported,
+#endif
+    };
 
 static unsigned int payload_size_table[MOD_SCMI_SENSOR_COMMAND_COUNT] = {
     [MOD_SCMI_SENSOR_READING_GET] =
@@ -149,6 +164,14 @@ static int scmi_sensor_req_ret_reading_handler(
     }
 
     return status;
+}
+
+static int scmi_sensor_req_message_not_supported(
+    fwk_id_t service_id,
+    const uint32_t *payload,
+    size_t payload_size)
+{
+    return FWK_E_SUPPORT;
 }
 
 /*
@@ -241,8 +264,12 @@ static int scmi_sensor_req_message_handler(
         return FWK_E_PARAM;
     }
 
-    handler_status =
-        handler_table[message_id](service_id, payload, payload_size);
+    if (handler_table[message_id] == NULL) {
+        handler_status = FWK_E_SUPPORT;
+    } else {
+        handler_status =
+            handler_table[message_id](service_id, payload, payload_size);
+    }
 
     resp_status =
         scmi_sensor_req_ctx.scmi_api->response_message_handler(service_id);

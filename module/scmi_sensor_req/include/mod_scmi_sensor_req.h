@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2022, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2022-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -68,6 +68,12 @@ struct scmi_sensor_req_config {
      */
     enum scmi_sensor_req_async_flag async_flag;
 };
+
+/*!
+ * \brief Message handler table per protocol.
+ */
+typedef int (
+    *scmi_sensor_req_handler_table_t)(fwk_id_t, const uint32_t *, size_t);
 
 /*!
  * \}
