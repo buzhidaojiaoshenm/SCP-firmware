@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2015-2023, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2015-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -25,10 +25,6 @@
 
 #include <stddef.h>
 
-#ifdef BUILD_HAS_MOD_RESOURCE_PERMS
-#    include <mod_resource_perms.h>
-#endif
-
 #define INVALID_AGENT_ID UINT32_MAX
 
 struct mod_scmi_sys_power_ctx {
@@ -42,10 +38,6 @@ struct mod_scmi_sys_power_ctx {
     unsigned int agent_count;
     fwk_id_t *system_power_notifications;
 #endif
-#ifdef BUILD_HAS_MOD_RESOURCE_PERMS
-    /* SCMI Resource Permissions API */
-    const struct mod_res_permissions_api *res_perms_api;
-#endif
 };
 
 static int scmi_sys_power_version_handler(fwk_id_t service_id,
@@ -58,6 +50,9 @@ static int scmi_sys_power_state_set_handler(fwk_id_t service_id,
     const uint32_t *payload);
 static int scmi_sys_power_state_get_handler(fwk_id_t service_id,
     const uint32_t *payload);
+static int scmi_sys_power_message_not_supported(
+    fwk_id_t service_id,
+    const uint32_t *payload);
 #ifdef BUILD_HAS_SCMI_NOTIFICATIONS
 static int scmi_sys_power_state_notify_handler(fwk_id_t service_id,
     const uint32_t *payload);
@@ -68,9 +63,7 @@ static int scmi_sys_power_state_notify_handler(fwk_id_t service_id,
  */
 static struct mod_scmi_sys_power_ctx scmi_sys_power_ctx;
 
-static int (*const handler_table[MOD_SCMI_SYS_POWER_COMMAND_COUNT])(
-    fwk_id_t,
-    const uint32_t *) = {
+static const handler_table_t handler_table[MOD_SCMI_SYS_POWER_COMMAND_COUNT] = {
     [MOD_SCMI_PROTOCOL_VERSION] = scmi_sys_power_version_handler,
     [MOD_SCMI_PROTOCOL_ATTRIBUTES] = scmi_sys_power_attributes_handler,
     [MOD_SCMI_PROTOCOL_MESSAGE_ATTRIBUTES] =
@@ -79,23 +72,24 @@ static int (*const handler_table[MOD_SCMI_SYS_POWER_COMMAND_COUNT])(
     [MOD_SCMI_SYS_POWER_STATE_GET] = scmi_sys_power_state_get_handler,
 #ifdef BUILD_HAS_SCMI_NOTIFICATIONS
     [MOD_SCMI_SYS_POWER_STATE_NOTIFY] = scmi_sys_power_state_notify_handler,
+#else
+    [MOD_SCMI_SYS_POWER_STATE_NOTIFY] = scmi_sys_power_message_not_supported,
 #endif
 };
 
-static const unsigned int
-    payload_size_table[MOD_SCMI_SYS_POWER_COMMAND_COUNT] = {
-        [MOD_SCMI_PROTOCOL_VERSION] = 0,
-        [MOD_SCMI_PROTOCOL_ATTRIBUTES] = 0,
-        [MOD_SCMI_PROTOCOL_MESSAGE_ATTRIBUTES] =
-            (unsigned int)sizeof(struct scmi_protocol_message_attributes_a2p),
-        [MOD_SCMI_SYS_POWER_STATE_SET] =
-            (unsigned int)sizeof(struct scmi_sys_power_state_set_a2p),
-        [MOD_SCMI_SYS_POWER_STATE_GET] = 0,
+static const size_t payload_size_table[MOD_SCMI_SYS_POWER_COMMAND_COUNT] = {
+    [MOD_SCMI_PROTOCOL_VERSION] = 0,
+    [MOD_SCMI_PROTOCOL_ATTRIBUTES] = 0,
+    [MOD_SCMI_PROTOCOL_MESSAGE_ATTRIBUTES] =
+        (unsigned int)sizeof(struct scmi_protocol_message_attributes_a2p),
+    [MOD_SCMI_SYS_POWER_STATE_SET] =
+        (unsigned int)sizeof(struct scmi_sys_power_state_set_a2p),
+    [MOD_SCMI_SYS_POWER_STATE_GET] = 0,
 #ifdef BUILD_HAS_SCMI_NOTIFICATIONS
-        [MOD_SCMI_SYS_POWER_STATE_NOTIFY] =
-            sizeof(struct scmi_sys_power_state_notify_a2p),
+    [MOD_SCMI_SYS_POWER_STATE_NOTIFY] =
+        sizeof(struct scmi_sys_power_state_notify_a2p),
 #endif
-    };
+};
 
 static enum mod_pd_system_shutdown
     system_state2system_shutdown[SCMI_SYSTEM_STATE_MAX] = {
@@ -249,6 +243,11 @@ static int scmi_sys_power_msg_attributes_handler(fwk_id_t service_id,
     if ((message_id >= FWK_ARRAY_SIZE(handler_table)) ||
         (handler_table[message_id] == NULL)) {
         return_values.status = (int32_t)SCMI_NOT_FOUND;
+        goto exit;
+    }
+
+    if (handler_table[message_id] == &scmi_sys_power_message_not_supported) {
+        return_values.status = (int32_t)SCMI_NOT_SUPPORTED;
         goto exit;
     }
 
@@ -535,6 +534,13 @@ exit:
     return status;
 }
 
+static int scmi_sys_power_message_not_supported(
+    fwk_id_t service_id,
+    const uint32_t *payload)
+{
+    return FWK_E_SUPPORT;
+}
+
 #ifdef BUILD_HAS_SCMI_NOTIFICATIONS
 /*
  * SYSTEM_POWER_STATE_NOTIFY
@@ -639,45 +645,6 @@ FWK_WEAK int scmi_sys_power_state_set_policy(
     return FWK_SUCCESS;
 }
 
-#ifdef BUILD_HAS_MOD_RESOURCE_PERMS
-
-/*
- * SCMI Resource Permissions handler
- */
-static int scmi_sys_power_permissions_handler(
-    fwk_id_t service_id,
-    const uint32_t *payload,
-    size_t payload_size,
-    unsigned int message_id)
-{
-    enum mod_res_perms_permissions perms;
-    unsigned int agent_id;
-    int status;
-
-    status = scmi_sys_power_ctx.scmi_api->get_agent_id(service_id, &agent_id);
-    if (status != FWK_SUCCESS) {
-        return FWK_E_ACCESS;
-    }
-
-    if (message_id < 3) {
-        return FWK_SUCCESS;
-    }
-
-    /*
-     * We check that the agent has permssions to access the command
-     */
-    perms = scmi_sys_power_ctx.res_perms_api->agent_has_message_permission(
-        agent_id, MOD_SCMI_PROTOCOL_ID_BASE, message_id);
-
-    if (perms == MOD_RES_PERMS_ACCESS_ALLOWED) {
-        return FWK_SUCCESS;
-    } else {
-        return FWK_E_ACCESS;
-    }
-}
-
-#endif
-
 /*
  * SCMI module -> SCMI system power module interface
  */
@@ -696,39 +663,31 @@ static int scmi_sys_power_handler(fwk_id_t protocol_id,
                                   unsigned int message_id)
 {
     int32_t return_value;
-#ifdef BUILD_HAS_MOD_RESOURCE_PERMS
-    int status;
-#endif
+    int validation_result;
 
     static_assert(FWK_ARRAY_SIZE(handler_table) ==
                   FWK_ARRAY_SIZE(payload_size_table),
                   "[SCMI] System power protocol table sizes not consistent");
 
-    fwk_assert(payload != NULL);
+    validation_result = scmi_sys_power_ctx.scmi_api->scmi_message_validation(
+        MOD_SCMI_PROTOCOL_ID_SYS_POWER,
+        service_id,
+        payload,
+        payload_size,
+        message_id,
+        payload_size_table,
+        (unsigned int)MOD_SCMI_SYS_POWER_COMMAND_COUNT,
+        handler_table);
 
-    if (message_id >= FWK_ARRAY_SIZE(handler_table)) {
-        return_value = (int32_t)SCMI_NOT_FOUND;
-        goto error;
+    if (validation_result != SCMI_SUCCESS) {
+        return_value = (int32_t)validation_result;
+    } else if (
+        handler_table[message_id] == &scmi_sys_power_message_not_supported) {
+        return_value = (int32_t)SCMI_NOT_SUPPORTED;
+    } else {
+        return handler_table[message_id](service_id, payload);
     }
 
-    if (payload_size != payload_size_table[message_id]) {
-        /* Incorrect payload size or message is not supported */
-        return_value = (int32_t)SCMI_PROTOCOL_ERROR;
-        goto error;
-    }
-
-#ifdef BUILD_HAS_MOD_RESOURCE_PERMS
-    status = scmi_sys_power_permissions_handler(
-        service_id, payload, payload_size, message_id);
-    if (status != FWK_SUCCESS) {
-        return_value = (int32_t)SCMI_DENIED;
-        goto error;
-    }
-#endif
-
-    return handler_table[message_id](service_id, payload);
-
-error:
     return scmi_sys_power_ctx.scmi_api->respond(
         service_id, &return_value, sizeof(return_value));
 }
@@ -792,16 +751,6 @@ static int scmi_sys_power_bind(fwk_id_t id, unsigned int round)
     if (status != FWK_SUCCESS) {
         return status;
     }
-
-#ifdef BUILD_HAS_MOD_RESOURCE_PERMS
-    status = fwk_module_bind(
-        FWK_ID_MODULE(FWK_MODULE_IDX_RESOURCE_PERMS),
-        FWK_ID_API(FWK_MODULE_IDX_RESOURCE_PERMS, MOD_RES_PERM_RESOURCE_PERMS),
-        &scmi_sys_power_ctx.res_perms_api);
-    if (status != FWK_SUCCESS) {
-        return status;
-    }
-#endif
 
     /* Bind to POWER DOMAIN module */
     status = fwk_module_bind(fwk_module_id_power_domain,
