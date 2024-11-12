@@ -8,4 +8,4 @@
 
 #include "fwk_event.h"
 
-int get_limit(fwk_id_t id, uint32_t *power_limit);
+int get_power_limit(fwk_id_t id, uint32_t *power_limit);

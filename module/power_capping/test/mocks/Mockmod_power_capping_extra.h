@@ -24,28 +24,28 @@ void Mockmod_power_capping_extra_Verify(void);
 
 
 
-#define get_limit_IgnoreAndReturn(cmock_retval) get_limit_CMockIgnoreAndReturn(__LINE__, cmock_retval)
-void get_limit_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return);
-#define get_limit_StopIgnore() get_limit_CMockStopIgnore()
-void get_limit_CMockStopIgnore(void);
-#define get_limit_ExpectAnyArgsAndReturn(cmock_retval) get_limit_CMockExpectAnyArgsAndReturn(__LINE__, cmock_retval)
-void get_limit_CMockExpectAnyArgsAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return);
-#define get_limit_ExpectAndReturn(id, power_limit, cmock_retval) get_limit_CMockExpectAndReturn(__LINE__, id, power_limit, cmock_retval)
-void get_limit_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, fwk_id_t id, uint32_t* power_limit, int cmock_to_return);
-typedef int (* CMOCK_get_limit_CALLBACK)(fwk_id_t id, uint32_t* power_limit, int cmock_num_calls);
-void get_limit_AddCallback(CMOCK_get_limit_CALLBACK Callback);
-void get_limit_Stub(CMOCK_get_limit_CALLBACK Callback);
-#define get_limit_StubWithCallback get_limit_Stub
-#define get_limit_ExpectWithArrayAndReturn(id, power_limit, power_limit_Depth, cmock_retval) get_limit_CMockExpectWithArrayAndReturn(__LINE__, id, power_limit, power_limit_Depth, cmock_retval)
-void get_limit_CMockExpectWithArrayAndReturn(UNITY_LINE_TYPE cmock_line, fwk_id_t id, uint32_t* power_limit, int power_limit_Depth, int cmock_to_return);
-#define get_limit_ReturnThruPtr_power_limit(power_limit) get_limit_CMockReturnMemThruPtr_power_limit(__LINE__, power_limit, sizeof(uint32_t))
-#define get_limit_ReturnArrayThruPtr_power_limit(power_limit, cmock_len) get_limit_CMockReturnMemThruPtr_power_limit(__LINE__, power_limit, cmock_len * sizeof(*power_limit))
-#define get_limit_ReturnMemThruPtr_power_limit(power_limit, cmock_size) get_limit_CMockReturnMemThruPtr_power_limit(__LINE__, power_limit, cmock_size)
-void get_limit_CMockReturnMemThruPtr_power_limit(UNITY_LINE_TYPE cmock_line, uint32_t* power_limit, size_t cmock_size);
-#define get_limit_IgnoreArg_id() get_limit_CMockIgnoreArg_id(__LINE__)
-void get_limit_CMockIgnoreArg_id(UNITY_LINE_TYPE cmock_line);
-#define get_limit_IgnoreArg_power_limit() get_limit_CMockIgnoreArg_power_limit(__LINE__)
-void get_limit_CMockIgnoreArg_power_limit(UNITY_LINE_TYPE cmock_line);
+#define get_power_limit_IgnoreAndReturn(cmock_retval) get_power_limit_CMockIgnoreAndReturn(__LINE__, cmock_retval)
+void get_power_limit_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return);
+#define get_power_limit_StopIgnore() get_power_limit_CMockStopIgnore()
+void get_power_limit_CMockStopIgnore(void);
+#define get_power_limit_ExpectAnyArgsAndReturn(cmock_retval) get_power_limit_CMockExpectAnyArgsAndReturn(__LINE__, cmock_retval)
+void get_power_limit_CMockExpectAnyArgsAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return);
+#define get_power_limit_ExpectAndReturn(id, power_limit, cmock_retval) get_power_limit_CMockExpectAndReturn(__LINE__, id, power_limit, cmock_retval)
+void get_power_limit_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, fwk_id_t id, uint32_t* power_limit, int cmock_to_return);
+typedef int (* CMOCK_get_power_limit_CALLBACK)(fwk_id_t id, uint32_t* power_limit, int cmock_num_calls);
+void get_power_limit_AddCallback(CMOCK_get_power_limit_CALLBACK Callback);
+void get_power_limit_Stub(CMOCK_get_power_limit_CALLBACK Callback);
+#define get_power_limit_StubWithCallback get_power_limit_Stub
+#define get_power_limit_ExpectWithArrayAndReturn(id, power_limit, power_limit_Depth, cmock_retval) get_power_limit_CMockExpectWithArrayAndReturn(__LINE__, id, power_limit, power_limit_Depth, cmock_retval)
+void get_power_limit_CMockExpectWithArrayAndReturn(UNITY_LINE_TYPE cmock_line, fwk_id_t id, uint32_t* power_limit, int power_limit_Depth, int cmock_to_return);
+#define get_power_limit_ReturnThruPtr_power_limit(power_limit) get_power_limit_CMockReturnMemThruPtr_power_limit(__LINE__, power_limit, sizeof(uint32_t))
+#define get_power_limit_ReturnArrayThruPtr_power_limit(power_limit, cmock_len) get_power_limit_CMockReturnMemThruPtr_power_limit(__LINE__, power_limit, cmock_len * sizeof(*power_limit))
+#define get_power_limit_ReturnMemThruPtr_power_limit(power_limit, cmock_size) get_power_limit_CMockReturnMemThruPtr_power_limit(__LINE__, power_limit, cmock_size)
+void get_power_limit_CMockReturnMemThruPtr_power_limit(UNITY_LINE_TYPE cmock_line, uint32_t* power_limit, size_t cmock_size);
+#define get_power_limit_IgnoreArg_id() get_power_limit_CMockIgnoreArg_id(__LINE__)
+void get_power_limit_CMockIgnoreArg_id(UNITY_LINE_TYPE cmock_line);
+#define get_power_limit_IgnoreArg_power_limit() get_power_limit_CMockIgnoreArg_power_limit(__LINE__)
+void get_power_limit_CMockIgnoreArg_power_limit(UNITY_LINE_TYPE cmock_line);
 
 #if defined(__GNUC__) && !defined(__ICC) && !defined(__TMS470__)
 #if __GNUC__ > 4 || (__GNUC__ == 4 && (__GNUC_MINOR__ > 6 || (__GNUC_MINOR__ == 6 && __GNUC_PATCHLEVEL__ > 0)))

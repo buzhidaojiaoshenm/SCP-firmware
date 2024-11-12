@@ -101,7 +101,9 @@ static struct mod_perf_controller_perf_api perf_api = {
     .set_performance_level = mod_perf_controller_set_performance_level,
 };
 
-static int mod_perf_controller_set_limit(fwk_id_t core_id, uint32_t power_limit)
+static int mod_perf_controller_set_power_limit(
+    fwk_id_t core_id,
+    uint32_t power_limit)
 {
     unsigned int core_idx;
     unsigned int cluster_idx;
@@ -123,7 +125,7 @@ static int mod_perf_controller_set_limit(fwk_id_t core_id, uint32_t power_limit)
 }
 
 static struct interface_power_management_api power_api = {
-    .set_limit = mod_perf_controller_set_limit,
+    .set_power_limit = mod_perf_controller_set_power_limit,
 };
 
 static int mod_perf_controller_apply_performance_granted(void)

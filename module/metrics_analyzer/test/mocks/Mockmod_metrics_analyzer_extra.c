@@ -5,12 +5,12 @@
 #include "cmock.h"
 #include "Mockmod_metrics_analyzer_extra.h"
 
-static const char* CMockString_get_limit = "get_limit";
+static const char* CMockString_get_power_limit = "get_power_limit";
 static const char* CMockString_id = "id";
 static const char* CMockString_power_limit = "power_limit";
-static const char* CMockString_set_limit = "set_limit";
+static const char* CMockString_set_power_limit = "set_power_limit";
 
-typedef struct _CMOCK_get_limit_CALL_INSTANCE
+typedef struct _CMOCK_get_power_limit_CALL_INSTANCE
 {
   UNITY_LINE_TYPE LineNumber;
   char ExpectAnyArgsBool;
@@ -24,9 +24,9 @@ typedef struct _CMOCK_get_limit_CALL_INSTANCE
   char IgnoreArg_id;
   char IgnoreArg_power_limit;
 
-} CMOCK_get_limit_CALL_INSTANCE;
+} CMOCK_get_power_limit_CALL_INSTANCE;
 
-typedef struct _CMOCK_set_limit_CALL_INSTANCE
+typedef struct _CMOCK_set_power_limit_CALL_INSTANCE
 {
   UNITY_LINE_TYPE LineNumber;
   char ExpectAnyArgsBool;
@@ -36,22 +36,22 @@ typedef struct _CMOCK_set_limit_CALL_INSTANCE
   char IgnoreArg_id;
   char IgnoreArg_power_limit;
 
-} CMOCK_set_limit_CALL_INSTANCE;
+} CMOCK_set_power_limit_CALL_INSTANCE;
 
 static struct Mockmod_metrics_analyzer_extraInstance
 {
-  char get_limit_IgnoreBool;
-  int get_limit_FinalReturn;
-  char get_limit_CallbackBool;
-  CMOCK_get_limit_CALLBACK get_limit_CallbackFunctionPointer;
-  int get_limit_CallbackCalls;
-  CMOCK_MEM_INDEX_TYPE get_limit_CallInstance;
-  char set_limit_IgnoreBool;
-  int set_limit_FinalReturn;
-  char set_limit_CallbackBool;
-  CMOCK_set_limit_CALLBACK set_limit_CallbackFunctionPointer;
-  int set_limit_CallbackCalls;
-  CMOCK_MEM_INDEX_TYPE set_limit_CallInstance;
+  char get_power_limit_IgnoreBool;
+  int get_power_limit_FinalReturn;
+  char get_power_limit_CallbackBool;
+  CMOCK_get_power_limit_CALLBACK get_power_limit_CallbackFunctionPointer;
+  int get_power_limit_CallbackCalls;
+  CMOCK_MEM_INDEX_TYPE get_power_limit_CallInstance;
+  char set_power_limit_IgnoreBool;
+  int set_power_limit_FinalReturn;
+  char set_power_limit_CallbackBool;
+  CMOCK_set_power_limit_CALLBACK set_power_limit_CallbackFunctionPointer;
+  int set_power_limit_CallbackCalls;
+  CMOCK_MEM_INDEX_TYPE set_power_limit_CallInstance;
 } Mock;
 
 extern jmp_buf AbortFrame;
@@ -60,28 +60,28 @@ void Mockmod_metrics_analyzer_extra_Verify(void)
 {
   UNITY_LINE_TYPE cmock_line = TEST_LINE_NUM;
   CMOCK_MEM_INDEX_TYPE call_instance;
-  call_instance = Mock.get_limit_CallInstance;
-  if (Mock.get_limit_IgnoreBool)
+  call_instance = Mock.get_power_limit_CallInstance;
+  if (Mock.get_power_limit_IgnoreBool)
     call_instance = CMOCK_GUTS_NONE;
   if (CMOCK_GUTS_NONE != call_instance)
   {
-    UNITY_SET_DETAIL(CMockString_get_limit);
+    UNITY_SET_DETAIL(CMockString_get_power_limit);
     UNITY_TEST_FAIL(cmock_line, CMockStringCalledLess);
   }
-  if (Mock.get_limit_CallbackFunctionPointer != NULL)
+  if (Mock.get_power_limit_CallbackFunctionPointer != NULL)
   {
     call_instance = CMOCK_GUTS_NONE;
     (void)call_instance;
   }
-  call_instance = Mock.set_limit_CallInstance;
-  if (Mock.set_limit_IgnoreBool)
+  call_instance = Mock.set_power_limit_CallInstance;
+  if (Mock.set_power_limit_IgnoreBool)
     call_instance = CMOCK_GUTS_NONE;
   if (CMOCK_GUTS_NONE != call_instance)
   {
-    UNITY_SET_DETAIL(CMockString_set_limit);
+    UNITY_SET_DETAIL(CMockString_set_power_limit);
     UNITY_TEST_FAIL(cmock_line, CMockStringCalledLess);
   }
-  if (Mock.set_limit_CallbackFunctionPointer != NULL)
+  if (Mock.set_power_limit_CallbackFunctionPointer != NULL)
   {
     call_instance = CMOCK_GUTS_NONE;
     (void)call_instance;
@@ -99,25 +99,25 @@ void Mockmod_metrics_analyzer_extra_Destroy(void)
   memset(&Mock, 0, sizeof(Mock));
 }
 
-int get_limit(fwk_id_t id, uint32_t* power_limit)
+int get_power_limit(fwk_id_t id, uint32_t* power_limit)
 {
   UNITY_LINE_TYPE cmock_line = TEST_LINE_NUM;
-  CMOCK_get_limit_CALL_INSTANCE* cmock_call_instance;
-  UNITY_SET_DETAIL(CMockString_get_limit);
-  cmock_call_instance = (CMOCK_get_limit_CALL_INSTANCE*)CMock_Guts_GetAddressFor(Mock.get_limit_CallInstance);
-  Mock.get_limit_CallInstance = CMock_Guts_MemNext(Mock.get_limit_CallInstance);
-  if (Mock.get_limit_IgnoreBool)
+  CMOCK_get_power_limit_CALL_INSTANCE* cmock_call_instance;
+  UNITY_SET_DETAIL(CMockString_get_power_limit);
+  cmock_call_instance = (CMOCK_get_power_limit_CALL_INSTANCE*)CMock_Guts_GetAddressFor(Mock.get_power_limit_CallInstance);
+  Mock.get_power_limit_CallInstance = CMock_Guts_MemNext(Mock.get_power_limit_CallInstance);
+  if (Mock.get_power_limit_IgnoreBool)
   {
     UNITY_CLR_DETAILS();
     if (cmock_call_instance == NULL)
-      return Mock.get_limit_FinalReturn;
-    Mock.get_limit_FinalReturn = cmock_call_instance->ReturnVal;
+      return Mock.get_power_limit_FinalReturn;
+    Mock.get_power_limit_FinalReturn = cmock_call_instance->ReturnVal;
     return cmock_call_instance->ReturnVal;
   }
-  if (!Mock.get_limit_CallbackBool &&
-      Mock.get_limit_CallbackFunctionPointer != NULL)
+  if (!Mock.get_power_limit_CallbackBool &&
+      Mock.get_power_limit_CallbackFunctionPointer != NULL)
   {
-    int cmock_cb_ret = Mock.get_limit_CallbackFunctionPointer(id, power_limit, Mock.get_limit_CallbackCalls++);
+    int cmock_cb_ret = Mock.get_power_limit_CallbackFunctionPointer(id, power_limit, Mock.get_power_limit_CallbackCalls++);
     UNITY_CLR_DETAILS();
     return cmock_cb_ret;
   }
@@ -127,21 +127,21 @@ int get_limit(fwk_id_t id, uint32_t* power_limit)
   {
   if (!cmock_call_instance->IgnoreArg_id)
   {
-    UNITY_SET_DETAILS(CMockString_get_limit,CMockString_id);
+    UNITY_SET_DETAILS(CMockString_get_power_limit,CMockString_id);
     UNITY_TEST_ASSERT_EQUAL_MEMORY((void*)(&cmock_call_instance->Expected_id), (void*)(&id), sizeof(fwk_id_t), cmock_line, CMockStringMismatch);
   }
   if (!cmock_call_instance->IgnoreArg_power_limit)
   {
-    UNITY_SET_DETAILS(CMockString_get_limit,CMockString_power_limit);
+    UNITY_SET_DETAILS(CMockString_get_power_limit,CMockString_power_limit);
     if (cmock_call_instance->Expected_power_limit == NULL)
       { UNITY_TEST_ASSERT_NULL(power_limit, cmock_line, CMockStringExpNULL); }
     else
       { UNITY_TEST_ASSERT_EQUAL_HEX32_ARRAY(cmock_call_instance->Expected_power_limit, power_limit, cmock_call_instance->Expected_power_limit_Depth, cmock_line, CMockStringMismatch); }
   }
   }
-  if (Mock.get_limit_CallbackFunctionPointer != NULL)
+  if (Mock.get_power_limit_CallbackFunctionPointer != NULL)
   {
-    cmock_call_instance->ReturnVal = Mock.get_limit_CallbackFunctionPointer(id, power_limit, Mock.get_limit_CallbackCalls++);
+    cmock_call_instance->ReturnVal = Mock.get_power_limit_CallbackFunctionPointer(id, power_limit, Mock.get_power_limit_CallbackCalls++);
   }
   if (cmock_call_instance->ReturnThruPtr_power_limit_Used)
   {
@@ -153,8 +153,8 @@ int get_limit(fwk_id_t id, uint32_t* power_limit)
   return cmock_call_instance->ReturnVal;
 }
 
-void CMockExpectParameters_get_limit(CMOCK_get_limit_CALL_INSTANCE* cmock_call_instance, fwk_id_t id, uint32_t* power_limit, int power_limit_Depth);
-void CMockExpectParameters_get_limit(CMOCK_get_limit_CALL_INSTANCE* cmock_call_instance, fwk_id_t id, uint32_t* power_limit, int power_limit_Depth)
+void CMockExpectParameters_get_power_limit(CMOCK_get_power_limit_CALL_INSTANCE* cmock_call_instance, fwk_id_t id, uint32_t* power_limit, int power_limit_Depth);
+void CMockExpectParameters_get_power_limit(CMOCK_get_power_limit_CALL_INSTANCE* cmock_call_instance, fwk_id_t id, uint32_t* power_limit, int power_limit_Depth)
 {
   memcpy((void*)(&cmock_call_instance->Expected_id), (void*)(&id),
          sizeof(fwk_id_t[sizeof(id) == sizeof(fwk_id_t) ? 1 : -1])); /* add fwk_id_t to :treat_as_array if this causes an error */
@@ -165,125 +165,125 @@ void CMockExpectParameters_get_limit(CMOCK_get_limit_CALL_INSTANCE* cmock_call_i
   cmock_call_instance->ReturnThruPtr_power_limit_Used = 0;
 }
 
-void get_limit_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return)
+void get_power_limit_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return)
 {
-  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_get_limit_CALL_INSTANCE));
-  CMOCK_get_limit_CALL_INSTANCE* cmock_call_instance = (CMOCK_get_limit_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
+  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_get_power_limit_CALL_INSTANCE));
+  CMOCK_get_power_limit_CALL_INSTANCE* cmock_call_instance = (CMOCK_get_power_limit_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
   UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringOutOfMemory);
   memset(cmock_call_instance, 0, sizeof(*cmock_call_instance));
-  Mock.get_limit_CallInstance = CMock_Guts_MemChain(Mock.get_limit_CallInstance, cmock_guts_index);
-  Mock.get_limit_IgnoreBool = (char)0;
+  Mock.get_power_limit_CallInstance = CMock_Guts_MemChain(Mock.get_power_limit_CallInstance, cmock_guts_index);
+  Mock.get_power_limit_IgnoreBool = (char)0;
   cmock_call_instance->LineNumber = cmock_line;
   cmock_call_instance->ExpectAnyArgsBool = (char)0;
   cmock_call_instance->ReturnVal = cmock_to_return;
-  Mock.get_limit_IgnoreBool = (char)1;
+  Mock.get_power_limit_IgnoreBool = (char)1;
 }
 
-void get_limit_CMockStopIgnore(void)
+void get_power_limit_CMockStopIgnore(void)
 {
-  if(Mock.get_limit_IgnoreBool)
-    Mock.get_limit_CallInstance = CMock_Guts_MemNext(Mock.get_limit_CallInstance);
-  Mock.get_limit_IgnoreBool = (char)0;
+  if(Mock.get_power_limit_IgnoreBool)
+    Mock.get_power_limit_CallInstance = CMock_Guts_MemNext(Mock.get_power_limit_CallInstance);
+  Mock.get_power_limit_IgnoreBool = (char)0;
 }
 
-void get_limit_CMockExpectAnyArgsAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return)
+void get_power_limit_CMockExpectAnyArgsAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return)
 {
-  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_get_limit_CALL_INSTANCE));
-  CMOCK_get_limit_CALL_INSTANCE* cmock_call_instance = (CMOCK_get_limit_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
+  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_get_power_limit_CALL_INSTANCE));
+  CMOCK_get_power_limit_CALL_INSTANCE* cmock_call_instance = (CMOCK_get_power_limit_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
   UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringOutOfMemory);
   memset(cmock_call_instance, 0, sizeof(*cmock_call_instance));
-  Mock.get_limit_CallInstance = CMock_Guts_MemChain(Mock.get_limit_CallInstance, cmock_guts_index);
-  Mock.get_limit_IgnoreBool = (char)0;
+  Mock.get_power_limit_CallInstance = CMock_Guts_MemChain(Mock.get_power_limit_CallInstance, cmock_guts_index);
+  Mock.get_power_limit_IgnoreBool = (char)0;
   cmock_call_instance->LineNumber = cmock_line;
   cmock_call_instance->ExpectAnyArgsBool = (char)0;
   cmock_call_instance->ReturnVal = cmock_to_return;
   cmock_call_instance->ExpectAnyArgsBool = (char)1;
 }
 
-void get_limit_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, fwk_id_t id, uint32_t* power_limit, int cmock_to_return)
+void get_power_limit_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, fwk_id_t id, uint32_t* power_limit, int cmock_to_return)
 {
-  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_get_limit_CALL_INSTANCE));
-  CMOCK_get_limit_CALL_INSTANCE* cmock_call_instance = (CMOCK_get_limit_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
+  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_get_power_limit_CALL_INSTANCE));
+  CMOCK_get_power_limit_CALL_INSTANCE* cmock_call_instance = (CMOCK_get_power_limit_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
   UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringOutOfMemory);
   memset(cmock_call_instance, 0, sizeof(*cmock_call_instance));
-  Mock.get_limit_CallInstance = CMock_Guts_MemChain(Mock.get_limit_CallInstance, cmock_guts_index);
-  Mock.get_limit_IgnoreBool = (char)0;
+  Mock.get_power_limit_CallInstance = CMock_Guts_MemChain(Mock.get_power_limit_CallInstance, cmock_guts_index);
+  Mock.get_power_limit_IgnoreBool = (char)0;
   cmock_call_instance->LineNumber = cmock_line;
   cmock_call_instance->ExpectAnyArgsBool = (char)0;
-  CMockExpectParameters_get_limit(cmock_call_instance, id, power_limit, 1);
+  CMockExpectParameters_get_power_limit(cmock_call_instance, id, power_limit, 1);
   cmock_call_instance->ReturnVal = cmock_to_return;
 }
 
-void get_limit_AddCallback(CMOCK_get_limit_CALLBACK Callback)
+void get_power_limit_AddCallback(CMOCK_get_power_limit_CALLBACK Callback)
 {
-  Mock.get_limit_IgnoreBool = (char)0;
-  Mock.get_limit_CallbackBool = (char)1;
-  Mock.get_limit_CallbackFunctionPointer = Callback;
+  Mock.get_power_limit_IgnoreBool = (char)0;
+  Mock.get_power_limit_CallbackBool = (char)1;
+  Mock.get_power_limit_CallbackFunctionPointer = Callback;
 }
 
-void get_limit_Stub(CMOCK_get_limit_CALLBACK Callback)
+void get_power_limit_Stub(CMOCK_get_power_limit_CALLBACK Callback)
 {
-  Mock.get_limit_IgnoreBool = (char)0;
-  Mock.get_limit_CallbackBool = (char)0;
-  Mock.get_limit_CallbackFunctionPointer = Callback;
+  Mock.get_power_limit_IgnoreBool = (char)0;
+  Mock.get_power_limit_CallbackBool = (char)0;
+  Mock.get_power_limit_CallbackFunctionPointer = Callback;
 }
 
-void get_limit_CMockExpectWithArrayAndReturn(UNITY_LINE_TYPE cmock_line, fwk_id_t id, uint32_t* power_limit, int power_limit_Depth, int cmock_to_return)
+void get_power_limit_CMockExpectWithArrayAndReturn(UNITY_LINE_TYPE cmock_line, fwk_id_t id, uint32_t* power_limit, int power_limit_Depth, int cmock_to_return)
 {
-  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_get_limit_CALL_INSTANCE));
-  CMOCK_get_limit_CALL_INSTANCE* cmock_call_instance = (CMOCK_get_limit_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
+  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_get_power_limit_CALL_INSTANCE));
+  CMOCK_get_power_limit_CALL_INSTANCE* cmock_call_instance = (CMOCK_get_power_limit_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
   UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringOutOfMemory);
   memset(cmock_call_instance, 0, sizeof(*cmock_call_instance));
-  Mock.get_limit_CallInstance = CMock_Guts_MemChain(Mock.get_limit_CallInstance, cmock_guts_index);
-  Mock.get_limit_IgnoreBool = (char)0;
+  Mock.get_power_limit_CallInstance = CMock_Guts_MemChain(Mock.get_power_limit_CallInstance, cmock_guts_index);
+  Mock.get_power_limit_IgnoreBool = (char)0;
   cmock_call_instance->LineNumber = cmock_line;
   cmock_call_instance->ExpectAnyArgsBool = (char)0;
-  CMockExpectParameters_get_limit(cmock_call_instance, id, power_limit, power_limit_Depth);
+  CMockExpectParameters_get_power_limit(cmock_call_instance, id, power_limit, power_limit_Depth);
   cmock_call_instance->ReturnVal = cmock_to_return;
 }
 
-void get_limit_CMockReturnMemThruPtr_power_limit(UNITY_LINE_TYPE cmock_line, uint32_t* power_limit, size_t cmock_size)
+void get_power_limit_CMockReturnMemThruPtr_power_limit(UNITY_LINE_TYPE cmock_line, uint32_t* power_limit, size_t cmock_size)
 {
-  CMOCK_get_limit_CALL_INSTANCE* cmock_call_instance = (CMOCK_get_limit_CALL_INSTANCE*)CMock_Guts_GetAddressFor(CMock_Guts_MemEndOfChain(Mock.get_limit_CallInstance));
+  CMOCK_get_power_limit_CALL_INSTANCE* cmock_call_instance = (CMOCK_get_power_limit_CALL_INSTANCE*)CMock_Guts_GetAddressFor(CMock_Guts_MemEndOfChain(Mock.get_power_limit_CallInstance));
   UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringPtrPreExp);
   cmock_call_instance->ReturnThruPtr_power_limit_Used = 1;
   cmock_call_instance->ReturnThruPtr_power_limit_Val = power_limit;
   cmock_call_instance->ReturnThruPtr_power_limit_Size = cmock_size;
 }
 
-void get_limit_CMockIgnoreArg_id(UNITY_LINE_TYPE cmock_line)
+void get_power_limit_CMockIgnoreArg_id(UNITY_LINE_TYPE cmock_line)
 {
-  CMOCK_get_limit_CALL_INSTANCE* cmock_call_instance = (CMOCK_get_limit_CALL_INSTANCE*)CMock_Guts_GetAddressFor(CMock_Guts_MemEndOfChain(Mock.get_limit_CallInstance));
+  CMOCK_get_power_limit_CALL_INSTANCE* cmock_call_instance = (CMOCK_get_power_limit_CALL_INSTANCE*)CMock_Guts_GetAddressFor(CMock_Guts_MemEndOfChain(Mock.get_power_limit_CallInstance));
   UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringIgnPreExp);
   cmock_call_instance->IgnoreArg_id = 1;
 }
 
-void get_limit_CMockIgnoreArg_power_limit(UNITY_LINE_TYPE cmock_line)
+void get_power_limit_CMockIgnoreArg_power_limit(UNITY_LINE_TYPE cmock_line)
 {
-  CMOCK_get_limit_CALL_INSTANCE* cmock_call_instance = (CMOCK_get_limit_CALL_INSTANCE*)CMock_Guts_GetAddressFor(CMock_Guts_MemEndOfChain(Mock.get_limit_CallInstance));
+  CMOCK_get_power_limit_CALL_INSTANCE* cmock_call_instance = (CMOCK_get_power_limit_CALL_INSTANCE*)CMock_Guts_GetAddressFor(CMock_Guts_MemEndOfChain(Mock.get_power_limit_CallInstance));
   UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringIgnPreExp);
   cmock_call_instance->IgnoreArg_power_limit = 1;
 }
 
-int set_limit(fwk_id_t id, uint32_t power_limit)
+int set_power_limit(fwk_id_t id, uint32_t power_limit)
 {
   UNITY_LINE_TYPE cmock_line = TEST_LINE_NUM;
-  CMOCK_set_limit_CALL_INSTANCE* cmock_call_instance;
-  UNITY_SET_DETAIL(CMockString_set_limit);
-  cmock_call_instance = (CMOCK_set_limit_CALL_INSTANCE*)CMock_Guts_GetAddressFor(Mock.set_limit_CallInstance);
-  Mock.set_limit_CallInstance = CMock_Guts_MemNext(Mock.set_limit_CallInstance);
-  if (Mock.set_limit_IgnoreBool)
+  CMOCK_set_power_limit_CALL_INSTANCE* cmock_call_instance;
+  UNITY_SET_DETAIL(CMockString_set_power_limit);
+  cmock_call_instance = (CMOCK_set_power_limit_CALL_INSTANCE*)CMock_Guts_GetAddressFor(Mock.set_power_limit_CallInstance);
+  Mock.set_power_limit_CallInstance = CMock_Guts_MemNext(Mock.set_power_limit_CallInstance);
+  if (Mock.set_power_limit_IgnoreBool)
   {
     UNITY_CLR_DETAILS();
     if (cmock_call_instance == NULL)
-      return Mock.set_limit_FinalReturn;
-    Mock.set_limit_FinalReturn = cmock_call_instance->ReturnVal;
+      return Mock.set_power_limit_FinalReturn;
+    Mock.set_power_limit_FinalReturn = cmock_call_instance->ReturnVal;
     return cmock_call_instance->ReturnVal;
   }
-  if (!Mock.set_limit_CallbackBool &&
-      Mock.set_limit_CallbackFunctionPointer != NULL)
+  if (!Mock.set_power_limit_CallbackBool &&
+      Mock.set_power_limit_CallbackFunctionPointer != NULL)
   {
-    int cmock_cb_ret = Mock.set_limit_CallbackFunctionPointer(id, power_limit, Mock.set_limit_CallbackCalls++);
+    int cmock_cb_ret = Mock.set_power_limit_CallbackFunctionPointer(id, power_limit, Mock.set_power_limit_CallbackCalls++);
     UNITY_CLR_DETAILS();
     return cmock_cb_ret;
   }
@@ -293,25 +293,25 @@ int set_limit(fwk_id_t id, uint32_t power_limit)
   {
   if (!cmock_call_instance->IgnoreArg_id)
   {
-    UNITY_SET_DETAILS(CMockString_set_limit,CMockString_id);
+    UNITY_SET_DETAILS(CMockString_set_power_limit,CMockString_id);
     UNITY_TEST_ASSERT_EQUAL_MEMORY((void*)(&cmock_call_instance->Expected_id), (void*)(&id), sizeof(fwk_id_t), cmock_line, CMockStringMismatch);
   }
   if (!cmock_call_instance->IgnoreArg_power_limit)
   {
-    UNITY_SET_DETAILS(CMockString_set_limit,CMockString_power_limit);
+    UNITY_SET_DETAILS(CMockString_set_power_limit,CMockString_power_limit);
     UNITY_TEST_ASSERT_EQUAL_HEX32(cmock_call_instance->Expected_power_limit, power_limit, cmock_line, CMockStringMismatch);
   }
   }
-  if (Mock.set_limit_CallbackFunctionPointer != NULL)
+  if (Mock.set_power_limit_CallbackFunctionPointer != NULL)
   {
-    cmock_call_instance->ReturnVal = Mock.set_limit_CallbackFunctionPointer(id, power_limit, Mock.set_limit_CallbackCalls++);
+    cmock_call_instance->ReturnVal = Mock.set_power_limit_CallbackFunctionPointer(id, power_limit, Mock.set_power_limit_CallbackCalls++);
   }
   UNITY_CLR_DETAILS();
   return cmock_call_instance->ReturnVal;
 }
 
-void CMockExpectParameters_set_limit(CMOCK_set_limit_CALL_INSTANCE* cmock_call_instance, fwk_id_t id, uint32_t power_limit);
-void CMockExpectParameters_set_limit(CMOCK_set_limit_CALL_INSTANCE* cmock_call_instance, fwk_id_t id, uint32_t power_limit)
+void CMockExpectParameters_set_power_limit(CMOCK_set_power_limit_CALL_INSTANCE* cmock_call_instance, fwk_id_t id, uint32_t power_limit);
+void CMockExpectParameters_set_power_limit(CMOCK_set_power_limit_CALL_INSTANCE* cmock_call_instance, fwk_id_t id, uint32_t power_limit)
 {
   memcpy((void*)(&cmock_call_instance->Expected_id), (void*)(&id),
          sizeof(fwk_id_t[sizeof(id) == sizeof(fwk_id_t) ? 1 : -1])); /* add fwk_id_t to :treat_as_array if this causes an error */
@@ -320,79 +320,79 @@ void CMockExpectParameters_set_limit(CMOCK_set_limit_CALL_INSTANCE* cmock_call_i
   cmock_call_instance->IgnoreArg_power_limit = 0;
 }
 
-void set_limit_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return)
+void set_power_limit_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return)
 {
-  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_set_limit_CALL_INSTANCE));
-  CMOCK_set_limit_CALL_INSTANCE* cmock_call_instance = (CMOCK_set_limit_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
+  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_set_power_limit_CALL_INSTANCE));
+  CMOCK_set_power_limit_CALL_INSTANCE* cmock_call_instance = (CMOCK_set_power_limit_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
   UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringOutOfMemory);
   memset(cmock_call_instance, 0, sizeof(*cmock_call_instance));
-  Mock.set_limit_CallInstance = CMock_Guts_MemChain(Mock.set_limit_CallInstance, cmock_guts_index);
-  Mock.set_limit_IgnoreBool = (char)0;
+  Mock.set_power_limit_CallInstance = CMock_Guts_MemChain(Mock.set_power_limit_CallInstance, cmock_guts_index);
+  Mock.set_power_limit_IgnoreBool = (char)0;
   cmock_call_instance->LineNumber = cmock_line;
   cmock_call_instance->ExpectAnyArgsBool = (char)0;
   cmock_call_instance->ReturnVal = cmock_to_return;
-  Mock.set_limit_IgnoreBool = (char)1;
+  Mock.set_power_limit_IgnoreBool = (char)1;
 }
 
-void set_limit_CMockStopIgnore(void)
+void set_power_limit_CMockStopIgnore(void)
 {
-  if(Mock.set_limit_IgnoreBool)
-    Mock.set_limit_CallInstance = CMock_Guts_MemNext(Mock.set_limit_CallInstance);
-  Mock.set_limit_IgnoreBool = (char)0;
+  if(Mock.set_power_limit_IgnoreBool)
+    Mock.set_power_limit_CallInstance = CMock_Guts_MemNext(Mock.set_power_limit_CallInstance);
+  Mock.set_power_limit_IgnoreBool = (char)0;
 }
 
-void set_limit_CMockExpectAnyArgsAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return)
+void set_power_limit_CMockExpectAnyArgsAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return)
 {
-  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_set_limit_CALL_INSTANCE));
-  CMOCK_set_limit_CALL_INSTANCE* cmock_call_instance = (CMOCK_set_limit_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
+  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_set_power_limit_CALL_INSTANCE));
+  CMOCK_set_power_limit_CALL_INSTANCE* cmock_call_instance = (CMOCK_set_power_limit_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
   UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringOutOfMemory);
   memset(cmock_call_instance, 0, sizeof(*cmock_call_instance));
-  Mock.set_limit_CallInstance = CMock_Guts_MemChain(Mock.set_limit_CallInstance, cmock_guts_index);
-  Mock.set_limit_IgnoreBool = (char)0;
+  Mock.set_power_limit_CallInstance = CMock_Guts_MemChain(Mock.set_power_limit_CallInstance, cmock_guts_index);
+  Mock.set_power_limit_IgnoreBool = (char)0;
   cmock_call_instance->LineNumber = cmock_line;
   cmock_call_instance->ExpectAnyArgsBool = (char)0;
   cmock_call_instance->ReturnVal = cmock_to_return;
   cmock_call_instance->ExpectAnyArgsBool = (char)1;
 }
 
-void set_limit_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, fwk_id_t id, uint32_t power_limit, int cmock_to_return)
+void set_power_limit_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, fwk_id_t id, uint32_t power_limit, int cmock_to_return)
 {
-  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_set_limit_CALL_INSTANCE));
-  CMOCK_set_limit_CALL_INSTANCE* cmock_call_instance = (CMOCK_set_limit_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
+  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_set_power_limit_CALL_INSTANCE));
+  CMOCK_set_power_limit_CALL_INSTANCE* cmock_call_instance = (CMOCK_set_power_limit_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
   UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringOutOfMemory);
   memset(cmock_call_instance, 0, sizeof(*cmock_call_instance));
-  Mock.set_limit_CallInstance = CMock_Guts_MemChain(Mock.set_limit_CallInstance, cmock_guts_index);
-  Mock.set_limit_IgnoreBool = (char)0;
+  Mock.set_power_limit_CallInstance = CMock_Guts_MemChain(Mock.set_power_limit_CallInstance, cmock_guts_index);
+  Mock.set_power_limit_IgnoreBool = (char)0;
   cmock_call_instance->LineNumber = cmock_line;
   cmock_call_instance->ExpectAnyArgsBool = (char)0;
-  CMockExpectParameters_set_limit(cmock_call_instance, id, power_limit);
+  CMockExpectParameters_set_power_limit(cmock_call_instance, id, power_limit);
   cmock_call_instance->ReturnVal = cmock_to_return;
 }
 
-void set_limit_AddCallback(CMOCK_set_limit_CALLBACK Callback)
+void set_power_limit_AddCallback(CMOCK_set_power_limit_CALLBACK Callback)
 {
-  Mock.set_limit_IgnoreBool = (char)0;
-  Mock.set_limit_CallbackBool = (char)1;
-  Mock.set_limit_CallbackFunctionPointer = Callback;
+  Mock.set_power_limit_IgnoreBool = (char)0;
+  Mock.set_power_limit_CallbackBool = (char)1;
+  Mock.set_power_limit_CallbackFunctionPointer = Callback;
 }
 
-void set_limit_Stub(CMOCK_set_limit_CALLBACK Callback)
+void set_power_limit_Stub(CMOCK_set_power_limit_CALLBACK Callback)
 {
-  Mock.set_limit_IgnoreBool = (char)0;
-  Mock.set_limit_CallbackBool = (char)0;
-  Mock.set_limit_CallbackFunctionPointer = Callback;
+  Mock.set_power_limit_IgnoreBool = (char)0;
+  Mock.set_power_limit_CallbackBool = (char)0;
+  Mock.set_power_limit_CallbackFunctionPointer = Callback;
 }
 
-void set_limit_CMockIgnoreArg_id(UNITY_LINE_TYPE cmock_line)
+void set_power_limit_CMockIgnoreArg_id(UNITY_LINE_TYPE cmock_line)
 {
-  CMOCK_set_limit_CALL_INSTANCE* cmock_call_instance = (CMOCK_set_limit_CALL_INSTANCE*)CMock_Guts_GetAddressFor(CMock_Guts_MemEndOfChain(Mock.set_limit_CallInstance));
+  CMOCK_set_power_limit_CALL_INSTANCE* cmock_call_instance = (CMOCK_set_power_limit_CALL_INSTANCE*)CMock_Guts_GetAddressFor(CMock_Guts_MemEndOfChain(Mock.set_power_limit_CallInstance));
   UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringIgnPreExp);
   cmock_call_instance->IgnoreArg_id = 1;
 }
 
-void set_limit_CMockIgnoreArg_power_limit(UNITY_LINE_TYPE cmock_line)
+void set_power_limit_CMockIgnoreArg_power_limit(UNITY_LINE_TYPE cmock_line)
 {
-  CMOCK_set_limit_CALL_INSTANCE* cmock_call_instance = (CMOCK_set_limit_CALL_INSTANCE*)CMock_Guts_GetAddressFor(CMock_Guts_MemEndOfChain(Mock.set_limit_CallInstance));
+  CMOCK_set_power_limit_CALL_INSTANCE* cmock_call_instance = (CMOCK_set_power_limit_CALL_INSTANCE*)CMock_Guts_GetAddressFor(CMock_Guts_MemEndOfChain(Mock.set_power_limit_CallInstance));
   UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringIgnPreExp);
   cmock_call_instance->IgnoreArg_power_limit = 1;
 }

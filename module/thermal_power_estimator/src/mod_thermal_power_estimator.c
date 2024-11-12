@@ -144,8 +144,8 @@ static int thermal_power_estimator_set_limit(fwk_id_t id, uint32_t power_limit)
 }
 
 static struct interface_power_management_api thermal_power_estimator_api = {
-    .get_limit = thermal_power_estimator_get_limit,
-    .set_limit = thermal_power_estimator_set_limit,
+    .get_power_limit = thermal_power_estimator_get_limit,
+    .set_power_limit = thermal_power_estimator_set_limit,
 };
 
 /*

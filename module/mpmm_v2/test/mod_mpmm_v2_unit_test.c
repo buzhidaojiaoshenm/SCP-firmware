@@ -742,7 +742,7 @@ void utest_mpmm_v2_evaluate_power_limit_2_cores_online_least_aggressive_gear(
     TEST_ASSERT_EQUAL(expected_power_limit, eval_power_limit);
 }
 
-void utest_mpmm_v2_get_limit_success(void)
+void utest_mpmm_v2_get_power_limit_success(void)
 {
     int status;
     struct mod_mpmm_v2_domain_ctx *domain_ctx = mpmm_v2_ctx.domain_ctx;
@@ -756,12 +756,12 @@ void utest_mpmm_v2_get_limit_success(void)
     fwk_id_is_equal_ExpectAndReturn(
         domain_ctx->domain_config->perf_id, perf_id, true);
 
-    status = mpmm_v2_get_limit(domain_ctx->domain_id, &power_limit);
+    status = mpmm_v2_get_power_limit(domain_ctx->domain_id, &power_limit);
     TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
     TEST_ASSERT_EQUAL(domain_ctx->power_limit, power_limit);
 }
 
-void utest_mpmm_v2_get_limit_domain_idx_not_found(void)
+void utest_mpmm_v2_get_power_limit_domain_idx_not_found(void)
 {
     int status;
     uint32_t power_limit = UINT32_MAX;
@@ -772,12 +772,12 @@ void utest_mpmm_v2_get_limit_domain_idx_not_found(void)
     fwk_id_is_equal_ExpectAndReturn(
         mpmm_v2_ctx.domain_ctx->domain_config->perf_id, perf_id, false);
 
-    status = mpmm_v2_get_limit(mpmm_v2_domain_id, &power_limit);
+    status = mpmm_v2_get_power_limit(mpmm_v2_domain_id, &power_limit);
     TEST_ASSERT_EQUAL(FWK_E_PARAM, status);
     TEST_ASSERT_EQUAL(UINT32_MAX, power_limit);
 }
 
-void utest_mpmm_v2_get_limit_no_cores_online(void)
+void utest_mpmm_v2_get_power_limit_no_cores_online(void)
 {
     int status;
     struct mod_mpmm_v2_domain_ctx *domain_ctx = mpmm_v2_ctx.domain_ctx;
@@ -791,12 +791,12 @@ void utest_mpmm_v2_get_limit_no_cores_online(void)
     fwk_id_is_equal_ExpectAndReturn(
         mpmm_v2_ctx.domain_ctx->domain_config->perf_id, perf_id, true);
 
-    status = mpmm_v2_get_limit(mpmm_v2_domain_id, &power_limit);
+    status = mpmm_v2_get_power_limit(mpmm_v2_domain_id, &power_limit);
     TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
     TEST_ASSERT_EQUAL(domain_ctx->domain_config->max_power, power_limit);
 }
 
-void utest_mpmm_v2_get_limit_wait_for_perf_trasition(void)
+void utest_mpmm_v2_get_power_limit_wait_for_perf_trasition(void)
 {
     int status;
     struct mod_mpmm_v2_domain_ctx *domain_ctx = mpmm_v2_ctx.domain_ctx;
@@ -829,7 +829,7 @@ void utest_mpmm_v2_get_limit_wait_for_perf_trasition(void)
     amu_mmap_get_counters_ReturnMemThruPtr_counter_buff(
         &(test_amu_counter[AMU_AUX0]), sizeof(uint64_t) * config->num_of_gears);
 
-    status = mpmm_v2_get_limit(mpmm_v2_domain_id, &power_limit);
+    status = mpmm_v2_get_power_limit(mpmm_v2_domain_id, &power_limit);
     TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
     TEST_ASSERT_EQUAL(power_limit, config->max_power);
     TEST_ASSERT_TRUE(mpmm_v2_ctx.domain_ctx->wait_for_perf_transition);
@@ -1244,10 +1244,10 @@ int mod_mpmm_v2_test_main(void)
     RUN_TEST(
         utest_mpmm_v2_evaluate_power_limit_2_cores_online_least_aggressive_gear);
 
-    RUN_TEST(utest_mpmm_v2_get_limit_success);
-    RUN_TEST(utest_mpmm_v2_get_limit_domain_idx_not_found);
-    RUN_TEST(utest_mpmm_v2_get_limit_no_cores_online);
-    RUN_TEST(utest_mpmm_v2_get_limit_wait_for_perf_trasition);
+    RUN_TEST(utest_mpmm_v2_get_power_limit_success);
+    RUN_TEST(utest_mpmm_v2_get_power_limit_domain_idx_not_found);
+    RUN_TEST(utest_mpmm_v2_get_power_limit_no_cores_online);
+    RUN_TEST(utest_mpmm_v2_get_power_limit_wait_for_perf_trasition);
 
     RUN_TEST(utest_mpmm_v2_controller_noti_not_waiting_perf_transition_success);
     RUN_TEST(

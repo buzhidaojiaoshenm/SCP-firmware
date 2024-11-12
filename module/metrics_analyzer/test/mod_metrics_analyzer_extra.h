@@ -13,7 +13,7 @@
 
 #include <fwk_id.h>
 
-int get_limit(fwk_id_t id, uint32_t *power_limit);
-int set_limit(fwk_id_t id, uint32_t power_limit);
+int get_power_limit(fwk_id_t id, uint32_t *power_limit);
+int set_power_limit(fwk_id_t id, uint32_t power_limit);
 
 #endif /* MOD_METRICS_ANALYZER_EXTRA_H */

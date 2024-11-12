@@ -31,8 +31,8 @@ static struct mod_domain_ctx domains[METRICS_ANALYZER_DOMAIN_IDX_COUNT];
 static struct mod_metric_ctx metrics[METRICS_ANALYZER_DOMAIN_IDX_COUNT]
                                     [METRICS_ANALYZER_METRIC_IDX_COUNT];
 struct interface_power_management_api limit_api = {
-    .get_limit = &get_limit,
-    .set_limit = &set_limit,
+    .get_power_limit = &get_power_limit,
+    .set_power_limit = &set_power_limit,
 };
 
 void setUp(void)
@@ -306,12 +306,13 @@ void test_collect_domain_limits_first_time(void)
 
     /* Expected calls */
     for (size_t i = 0; i < domain_ctx.metrics_count; ++i) {
-        get_limit_ExpectAndReturn(
+        get_power_limit_ExpectAndReturn(
             limit_provider_config[i].domain_id, NULL, FWK_SUCCESS);
-        get_limit_IgnoreArg_power_limit();
-        get_limit_ReturnMemThruPtr_power_limit(&limits[i], sizeof(limits[i]));
+        get_power_limit_IgnoreArg_power_limit();
+        get_power_limit_ReturnMemThruPtr_power_limit(
+            &limits[i], sizeof(limits[i]));
     }
-    get_limit_StopIgnore();
+    get_power_limit_StopIgnore();
 
     /* Test */
     status = collect_domain_limits(&domain_ctx);
@@ -363,13 +364,13 @@ void test_collect_domain_limits(void)
 
     /* Expected calls */
     for (size_t i = 0; i < domain_ctx.metrics_count; ++i) {
-        get_limit_ExpectAndReturn(
+        get_power_limit_ExpectAndReturn(
             limit_provider_config[i].domain_id, NULL, FWK_SUCCESS);
-        get_limit_IgnoreArg_power_limit();
-        get_limit_ReturnMemThruPtr_power_limit(
+        get_power_limit_IgnoreArg_power_limit();
+        get_power_limit_ReturnMemThruPtr_power_limit(
             &new_limits[i], sizeof(new_limits[i]));
     }
-    get_limit_StopIgnore();
+    get_power_limit_StopIgnore();
 
     /* Test */
     status = collect_domain_limits(&domain_ctx);
@@ -421,13 +422,13 @@ void test_collect_domain_limits_no_power_limit(void)
 
     /* Expected calls */
     for (size_t i = 0; i < domain_ctx.metrics_count; ++i) {
-        get_limit_ExpectAndReturn(
+        get_power_limit_ExpectAndReturn(
             limit_provider_config[i].domain_id, NULL, FWK_SUCCESS);
-        get_limit_IgnoreArg_power_limit();
-        get_limit_ReturnMemThruPtr_power_limit(
+        get_power_limit_IgnoreArg_power_limit();
+        get_power_limit_ReturnMemThruPtr_power_limit(
             &new_limits[i], sizeof(new_limits[i]));
     }
-    get_limit_StopIgnore();
+    get_power_limit_StopIgnore();
 
     /* Test */
     status = collect_domain_limits(&domain_ctx);
@@ -478,12 +479,13 @@ void test_collect_domain_limits_no_change_domain(void)
 
     /* Expected calls */
     for (size_t i = 0; i < domain_ctx.metrics_count; ++i) {
-        get_limit_ExpectAndReturn(
+        get_power_limit_ExpectAndReturn(
             limit_provider_config[i].domain_id, NULL, FWK_SUCCESS);
-        get_limit_IgnoreArg_power_limit();
-        get_limit_ReturnMemThruPtr_power_limit(&limits[i], sizeof(limits[i]));
+        get_power_limit_IgnoreArg_power_limit();
+        get_power_limit_ReturnMemThruPtr_power_limit(
+            &limits[i], sizeof(limits[i]));
     }
-    get_limit_StopIgnore();
+    get_power_limit_StopIgnore();
 
     /* Test */
     status = collect_domain_limits(&domain_ctx);
@@ -525,7 +527,7 @@ void test_report_domain_aggregate_limit(void)
     };
 
     /* Expected calls */
-    set_limit_ExpectAndReturn(
+    set_power_limit_ExpectAndReturn(
         domain_ctx.config->limit_consumer.domain_id,
         domain_ctx.aggregate_limit,
         FWK_SUCCESS);

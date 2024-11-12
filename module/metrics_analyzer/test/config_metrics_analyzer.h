@@ -64,10 +64,11 @@ enum metric_idx {
 #define ID(module, domain) \
     FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_##module, module##_DOMAIN_IDX_##domain)
 
-/* Assume that all providers has their get_limit API index equal to zero */
+/* Assume that all providers has their get_power_limit API index equal to zero
+ */
 #define PROVIDER_API_ID(module) FWK_ID_API_INIT(FWK_MODULE_IDX_##module, 0)
 
-/* Assume that the consumer has set_limit API index equal to zero */
+/* Assume that the consumer has set_power_limit API index equal to zero */
 #define CONSUMER_API_ID FWK_ID_API_INIT(FWK_MODULE_IDX_CONSUMER, 0)
 
 #define PROVIDER_ENTRY(name, domain) \

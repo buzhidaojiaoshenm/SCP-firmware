@@ -29,7 +29,7 @@
 struct pcapping_domain_ctx test_ctx_table[TEST_DOMAIN_COUNT];
 
 struct interface_power_management_api test_power_management_api = {
-    .get_limit = get_limit,
+    .get_power_limit = get_power_limit,
 };
 
 void setUp(void)
@@ -164,7 +164,7 @@ void utest_mod_pcapping_get_applied_cap_e_param(void)
     TEST_ASSERT_EQUAL(status, FWK_E_PARAM);
 }
 
-void utest_mod_pcapping_get_limit_success(void)
+void utest_mod_pcapping_get_power_limit_success(void)
 {
     int status;
     fwk_id_t domain_id;
@@ -178,13 +178,13 @@ void utest_mod_pcapping_get_limit_success(void)
 
         domain_ctx->requested_cap = requested_cap;
 
-        status = mod_pcapping_get_limit(domain_id, &limit);
+        status = mod_pcapping_get_power_limit(domain_id, &limit);
         TEST_ASSERT_EQUAL(status, FWK_SUCCESS);
         TEST_ASSERT_EQUAL(requested_cap, limit);
     }
 }
 
-void utest_mod_pcapping_get_limit_e_param(void)
+void utest_mod_pcapping_get_power_limit_e_param(void)
 {
     int status;
     uint32_t limit;
@@ -192,7 +192,7 @@ void utest_mod_pcapping_get_limit_e_param(void)
     fwk_id_t domain_id =
         FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_POWER_CAPPING, TEST_DOMAIN_COUNT);
 
-    status = mod_pcapping_get_limit(domain_id, &limit);
+    status = mod_pcapping_get_power_limit(domain_id, &limit);
 
     TEST_ASSERT_EQUAL(status, FWK_E_PARAM);
 }
@@ -244,10 +244,10 @@ void utest_mod_pcapping_process_notification_success(void)
         };
 
         uint32_t applied_cap = 44U + index;
-        get_limit_ExpectAndReturn(
+        get_power_limit_ExpectAndReturn(
             domain_ctx->config->power_limiter_id, NULL, FWK_SUCCESS);
-        get_limit_IgnoreArg_power_limit();
-        get_limit_ReturnThruPtr_power_limit(&applied_cap);
+        get_power_limit_IgnoreArg_power_limit();
+        get_power_limit_ReturnThruPtr_power_limit(&applied_cap);
         struct fwk_event outbound_notification = {
             .source_id = domain_id,
             .id = FWK_ID_NOTIFICATION_INIT(
@@ -416,8 +416,8 @@ int power_capping_test_main(void)
     RUN_TEST(utest_mod_pcapping_request_cap_e_param);
     RUN_TEST(utest_mod_pcapping_get_applied_cap_success);
     RUN_TEST(utest_mod_pcapping_get_applied_cap_e_param);
-    RUN_TEST(utest_mod_pcapping_get_limit_success);
-    RUN_TEST(utest_mod_pcapping_get_limit_e_param);
+    RUN_TEST(utest_mod_pcapping_get_power_limit_success);
+    RUN_TEST(utest_mod_pcapping_get_power_limit_e_param);
     RUN_TEST(utest_pcapping_init_success);
     RUN_TEST(utest_pcapping_domain_init_success);
     RUN_TEST(utest_mod_pcapping_process_notification_success);

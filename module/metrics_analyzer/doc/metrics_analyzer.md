@@ -19,7 +19,7 @@ The system domains are bound by the lowest power limit metric.
 
 This module **consumes** `power limits` from multiple providers.
 
-Limits providers must implement `get_limit` API which returns the power_limit
+Limits providers must implement `get_power_limit` API which returns the power_limit
 for the givin domain.
 
 The following diagram shows the data flow for each domain (domain view)
@@ -58,19 +58,19 @@ sequenceDiagram
   Coordinator->>Metrics_Analyzer: analyze()
   loop for each domain
     Metrics_Analyzer->>Metrics_Analyzer: Set aggregate limit to max
-    Metrics_Analyzer->>Provider_0: get_limit(domain_id, &power_limit)
+    Metrics_Analyzer->>Provider_0: get_power_limit(domain_id, &power_limit)
     Provider_0--)Metrics_Analyzer: status
     Metrics_Analyzer->>Metrics_Analyzer: Update aggregate limit
-    Metrics_Analyzer->>Provider_1: get_limit(domain_id, &power_limit)
+    Metrics_Analyzer->>Provider_1: get_power_limit(domain_id, &power_limit)
     Provider_1--)Metrics_Analyzer: status
     Metrics_Analyzer->>Metrics_Analyzer: Update aggregate limit
-    Metrics_Analyzer->>Provider_m: get_limit(domain_id, &power_limit)
+    Metrics_Analyzer->>Provider_m: get_power_limit(domain_id, &power_limit)
     Provider_m--)Metrics_Analyzer: status
     Metrics_Analyzer->>Metrics_Analyzer: Update aggregate limit
     opt if evaluation is necessary
         Metrics_Analyzer->>Metrics_Analyzer: evaluate_minimum(domain_id)
     end
-    Metrics_Analyzer->>Consumer: set_limit(domain_id, power_limit)
+    Metrics_Analyzer->>Consumer: set_power_limit(domain_id, power_limit)
     Consumer--)Metrics_Analyzer: status
   end
   Metrics_Analyzer--)Coordinator: status

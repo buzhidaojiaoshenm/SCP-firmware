@@ -53,7 +53,7 @@ static int collect_domain_limits(struct mod_domain_ctx *domain_ctx)
     for (size_t i = 0; i < domain_ctx->metrics_count; ++i) {
         uint32_t power_limit;
         struct mod_metric_ctx *metric_ctx = &domain_ctx->metrics[i];
-        status = metric_ctx->limit_provider_api->get_limit(
+        status = metric_ctx->limit_provider_api->get_power_limit(
             metric_ctx->limit_provider_config->domain_id, &power_limit);
         if (status == FWK_SUCCESS) {
             metric_ctx->limit = power_limit;
@@ -73,11 +73,11 @@ static int report_domain_aggregate_limit(struct mod_domain_ctx *domain_ctx)
         return FWK_E_PARAM;
     }
     if (domain_ctx->limit_consumer_api == NULL ||
-        domain_ctx->limit_consumer_api->set_limit == NULL) {
+        domain_ctx->limit_consumer_api->set_power_limit == NULL) {
         return FWK_E_PANIC;
     }
 
-    return domain_ctx->limit_consumer_api->set_limit(
+    return domain_ctx->limit_consumer_api->set_power_limit(
         domain_ctx->config->limit_consumer.domain_id,
         domain_ctx->aggregate_limit);
 }

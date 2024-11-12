@@ -87,7 +87,9 @@ static int mod_pcapping_get_applied_cap(fwk_id_t domain_id, uint32_t *cap)
     return FWK_SUCCESS;
 }
 
-static int mod_pcapping_get_limit(fwk_id_t domain_id, uint32_t *power_limit)
+static int mod_pcapping_get_power_limit(
+    fwk_id_t domain_id,
+    uint32_t *power_limit)
 {
     int status;
     struct pcapping_domain_ctx *domain_ctx;
@@ -108,7 +110,7 @@ struct mod_power_capping_api pcapping_api = {
 };
 
 struct interface_power_management_api power_management_api = {
-    .get_limit = mod_pcapping_get_limit,
+    .get_power_limit = mod_pcapping_get_power_limit,
 };
 
 int pcapping_init(
@@ -153,7 +155,7 @@ static int mod_pcapping_process_notification(
 
     if (fwk_id_is_equal(
             event->id, domain_ctx->config->power_limit_set_notification_id)) {
-        status = domain_ctx->power_management_api->get_limit(
+        status = domain_ctx->power_management_api->get_power_limit(
             domain_ctx->config->power_limiter_id, &applied_cap);
 
         if (status != FWK_SUCCESS) {

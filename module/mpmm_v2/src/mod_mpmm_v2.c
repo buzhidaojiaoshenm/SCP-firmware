@@ -429,7 +429,7 @@ static int handle_pd_notification(
     return FWK_SUCCESS;
 }
 
-static int mpmm_v2_get_limit(fwk_id_t domain_id, uint32_t *power_limit)
+static int mpmm_v2_get_power_limit(fwk_id_t domain_id, uint32_t *power_limit)
 {
     struct mod_mpmm_v2_domain_ctx *domain_ctx;
     uint32_t domain_idx;
@@ -481,8 +481,8 @@ static int mpmm_v2_get_limit(fwk_id_t domain_id, uint32_t *power_limit)
 }
 
 static struct interface_power_management_api mpmm_v2_pm_api = {
-    .get_limit = mpmm_v2_get_limit,
-    .set_limit = NULL,
+    .get_power_limit = mpmm_v2_get_power_limit,
+    .set_power_limit = NULL,
 };
 
 /*

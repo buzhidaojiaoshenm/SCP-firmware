@@ -58,7 +58,7 @@ struct interface_power_management_api {
      *      - The `power_limit` parameter is a null pointer.
      * \retval ::FWK_E_BUSY Limit for the requested id is not ready yet.
      */
-    int (*get_limit)(fwk_id_t id, uint32_t *power_limit);
+    int (*get_power_limit)(fwk_id_t id, uint32_t *power_limit);
     /*!
      * \brief Set the power limit for an entity to be registered. This doesn't
      *        necessarily mean the power limit is set physically.
@@ -68,7 +68,7 @@ struct interface_power_management_api {
      * \retval ::FWK_SUCCESS The power limit is set successfully
      * \retval One of the standard framework status codes.
      */
-    int (*set_limit)(fwk_id_t id, uint32_t power_limit);
+    int (*set_power_limit)(fwk_id_t id, uint32_t power_limit);
 };
 
 /*!

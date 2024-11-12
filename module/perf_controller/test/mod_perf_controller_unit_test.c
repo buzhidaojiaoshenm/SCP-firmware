@@ -141,7 +141,7 @@ void test_set_performance_level_out_of_limits(void)
     }
 }
 
-void test_set_limit_success(void)
+void test_set_power_limit_success(void)
 {
     int status;
     fwk_id_t core_id;
@@ -162,7 +162,7 @@ void test_set_limit_success(void)
                             .core_ctx_table[core_idx];
 
             power_limit = 20U;
-            status = mod_perf_controller_set_limit(core_id, power_limit);
+            status = mod_perf_controller_set_power_limit(core_id, power_limit);
 
             TEST_ASSERT_EQUAL(core_ctx->power_limit, power_limit);
             TEST_ASSERT_EQUAL(status, FWK_SUCCESS);
@@ -326,7 +326,7 @@ int perf_controller_test_main(void)
 
     RUN_TEST(test_set_performance_level_within_limits);
     RUN_TEST(test_set_performance_level_out_of_limits);
-    RUN_TEST(test_set_limit_success);
+    RUN_TEST(test_set_power_limit_success);
     RUN_TEST(test_get_cores_min_power_limit);
     RUN_TEST(test_controller_apply_performance_granted_within_limits);
     RUN_TEST(test_controller_apply_performance_granted_out_of_limits);
