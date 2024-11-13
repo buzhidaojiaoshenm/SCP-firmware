@@ -89,6 +89,14 @@ string(APPEND CMAKE_EXE_LINKER_FLAGS_INIT "-I\"${LLVM_SYSROOT_PATH}/include\" ")
 
 if(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
     string(APPEND CMAKE_EXE_LINKER_FLAGS_INIT "-L${GCC_LIBGCC_PATH} ")
+    foreach(crtobj IN ITEMS crti)
+        execute_process(
+            COMMAND "${SCP_LLVM_SYSROOT_CC}" "--print-file-name=${crtobj}.o"
+            OUTPUT_VARIABLE gcc-${crtobj}
+            OUTPUT_STRIP_TRAILING_WHITESPACE)
+        cmake_path(NORMAL_PATH gcc-${crtobj} OUTPUT_VARIABLE gcc-${crtobj})
+        string(APPEND CMAKE_EXE_LINKER_FLAGS_INIT "${gcc-${crtobj}} ")
+    endforeach()
 else()
     string(APPEND CMAKE_EXE_LINKER_FLAGS_INIT
            "-L${LLVM_SYSROOT_PATH}/lib/${gcc-multi-dir} ")

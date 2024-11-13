@@ -10,6 +10,9 @@
 
     .section .entrypoint, "ax"
 
+#ifdef USE_NEWLIB
+    .extern __libc_init_array
+#endif
     .extern arm_main
 
     .global arch_exception_reset;
@@ -109,6 +112,11 @@ skip_bss:
     /* Setup stack */
     ldr x0, =stack_top
     mov	sp, x0
+
+#ifdef USE_NEWLIB
+    /* Call FWK_CONSTRUCTOR functions */
+    bl __libc_init_array
+#endif
 
     bl  arm_main
 

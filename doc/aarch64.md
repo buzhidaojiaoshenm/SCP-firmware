@@ -15,6 +15,9 @@ Note that AArch64 support only uses one exception level, the initial EL at boot.
 For Armv8-R64, this means the firmware runs exclusively at secure EL2, and no
 attempts are made to initialize the EL1/0 environment.
 
+Newlib is required to use certain SCP-firmware features on AArch64 that require
+early initialization, such as notifications.
+
 Both GCC and Clang are supported, but not Arm Clang.
 
 ## Interrupt handling
