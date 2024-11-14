@@ -165,9 +165,8 @@ static struct mod_dvfs_opp operating_points_gpu[5] = {
 static const struct mod_dvfs_domain_config cpu_group_little = {
     .psu_id =
         FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_PSU, PSU_ELEMENT_IDX_GROUP_LITTLE),
-    .clock_id = FWK_ID_ELEMENT_INIT(
-        FWK_MODULE_IDX_CLOCK,
-        CLOCK_IDX_CPU_GROUP_GROUP_LITTLE),
+    .clock_id =
+        FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_CLOCK, CLOCK_IDX_CPU_GROUP_LITTLE),
     .alarm_id = FWK_ID_SUB_ELEMENT_INIT(
         FWK_MODULE_IDX_TIMER,
         0,
@@ -181,9 +180,8 @@ static const struct mod_dvfs_domain_config cpu_group_little = {
 static const struct mod_dvfs_domain_config cpu_group_mid = {
     .psu_id =
         FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_PSU, PSU_ELEMENT_IDX_GROUP_MID),
-    .clock_id = FWK_ID_ELEMENT_INIT(
-        FWK_MODULE_IDX_CLOCK,
-        CLOCK_IDX_CPU_GROUP_GROUP_MID),
+    .clock_id =
+        FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_CLOCK, CLOCK_IDX_CPU_GROUP_MID),
     .alarm_id = FWK_ID_SUB_ELEMENT_INIT(
         FWK_MODULE_IDX_TIMER,
         0,
@@ -197,9 +195,8 @@ static const struct mod_dvfs_domain_config cpu_group_mid = {
 static const struct mod_dvfs_domain_config cpu_group_big = {
     .psu_id =
         FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_PSU, PSU_ELEMENT_IDX_GROUP_BIG),
-    .clock_id = FWK_ID_ELEMENT_INIT(
-        FWK_MODULE_IDX_CLOCK,
-        CLOCK_IDX_CPU_GROUP_GROUP_BIG),
+    .clock_id =
+        FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_CLOCK, CLOCK_IDX_CPU_GROUP_BIG),
     .alarm_id = FWK_ID_SUB_ELEMENT_INIT(
         FWK_MODULE_IDX_TIMER,
         0,

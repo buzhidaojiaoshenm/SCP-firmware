@@ -39,9 +39,8 @@ static_assert(
 const struct mod_sds_config sds_module_config = {
     .regions = sds_module_regions,
     .region_count = TC_SDS_REGION_COUNT,
-    .clock_id = FWK_ID_ELEMENT_INIT(
-        FWK_MODULE_IDX_CLOCK,
-        CLOCK_IDX_CPU_GROUP_GROUP_LITTLE)
+    .clock_id =
+        FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_CLOCK, CLOCK_IDX_CPU_GROUP_LITTLE)
 };
 
 static struct fwk_element sds_element_table[3] = {

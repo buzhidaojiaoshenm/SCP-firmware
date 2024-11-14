@@ -28,7 +28,7 @@ static const struct fwk_element gtimer_dev_table[2] = {
                 .frequency = CLOCK_RATE_GTCLK,
                 .clock_id = FWK_ID_ELEMENT_INIT(
                    FWK_MODULE_IDX_CLOCK,
-                   CLOCK_IDX_CPU_GROUP_GROUP_LITTLE),
+                   CLOCK_IDX_CPU_GROUP_LITTLE),
         }),
     },
     [1] = { 0 },

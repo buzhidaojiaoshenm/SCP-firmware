@@ -20,7 +20,7 @@
 #include <fwk_module_idx.h>
 
 static const struct fwk_element clock_dev_desc_table[CLOCK_IDX_COUNT + 1] = {
-    [CLOCK_IDX_CPU_GROUP_GROUP_LITTLE] =
+    [CLOCK_IDX_CPU_GROUP_LITTLE] =
         {
             .name = "CPU_GROUP_" TC4_GROUP_LITTLE_NAME,
             .data = &((struct mod_clock_dev_config){
@@ -32,7 +32,7 @@ static const struct fwk_element clock_dev_desc_table[CLOCK_IDX_COUNT + 1] = {
                     MOD_CSS_CLOCK_API_TYPE_CLOCK),
             }),
         },
-    [CLOCK_IDX_CPU_GROUP_GROUP_MID] =
+    [CLOCK_IDX_CPU_GROUP_MID] =
         {
             .name = "CPU_GROUP_" TC4_GROUP_MID_NAME,
             .data = &((struct mod_clock_dev_config){
@@ -44,7 +44,7 @@ static const struct fwk_element clock_dev_desc_table[CLOCK_IDX_COUNT + 1] = {
                     MOD_CSS_CLOCK_API_TYPE_CLOCK),
             }),
         },
-    [CLOCK_IDX_CPU_GROUP_GROUP_BIG] =
+    [CLOCK_IDX_CPU_GROUP_BIG] =
         {
             .name = "CPU_GROUP_" TC4_GROUP_BIG_NAME,
             .data = &((struct mod_clock_dev_config){
