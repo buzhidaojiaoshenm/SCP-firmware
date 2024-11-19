@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2022-2023, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2022-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -132,6 +132,7 @@ static const struct mod_scmi_from_protocol_api from_protocol_api = {
     .get_max_payload_size = mod_scmi_from_protocol_get_max_payload_size,
     .write_payload = mod_scmi_from_protocol_write_payload,
     .respond = mod_scmi_from_protocol_respond,
+    .scmi_message_validation = mod_scmi_from_protocol_scmi_message_validation,
     .notify = mod_scmi_from_protocol_notify,
 };
 
@@ -246,6 +247,16 @@ void test_send_to_message_handler(void)
     ctx.scmi_protocol_id = 0x12;
     protocol = &scmi_ctx.protocol_table[PROTOCOL_TABLE_BASE_PROTOCOL_IDX];
 
+    mod_scmi_from_protocol_scmi_message_validation_ExpectAndReturn(
+        MOD_SCMI_PROTOCOL_ID_BASE,
+        event.target_id,
+        &payload,
+        sizeof(payload),
+        ctx.scmi_message_id,
+        base_payload_size_table,
+        (unsigned int)MOD_SCMI_BASE_COMMAND_COUNT,
+        base_handler_table,
+        FWK_SUCCESS);
     mod_scmi_from_protocol_respond_ExpectAnyArgsAndReturn(FWK_SUCCESS);
 
     test_mod_scmi_notification_message_handler_ExpectAnyArgsAndReturn(
@@ -274,6 +285,16 @@ void test_send_to_notification_handler(void)
     ctx.scmi_protocol_id = 0x12;
     protocol = &scmi_ctx.protocol_table[PROTOCOL_TABLE_BASE_PROTOCOL_IDX];
 
+    mod_scmi_from_protocol_scmi_message_validation_ExpectAndReturn(
+        MOD_SCMI_PROTOCOL_ID_BASE,
+        event.target_id,
+        &payload,
+        sizeof(payload),
+        ctx.scmi_message_id,
+        base_payload_size_table,
+        (unsigned int)MOD_SCMI_BASE_COMMAND_COUNT,
+        base_handler_table,
+        FWK_SUCCESS);
     mod_scmi_from_protocol_respond_ExpectAnyArgsAndReturn(FWK_SUCCESS);
 
     test_mod_scmi_notification_message_handler_ExpectAnyArgsAndReturn(
@@ -281,6 +302,91 @@ void test_send_to_notification_handler(void)
     status = send_to_message_handler(
         &ctx, protocol, (const uint32_t *)&payload, sizeof(payload), &event);
     TEST_ASSERT_EQUAL(status, FWK_SUCCESS);
+}
+
+void test_message_validation_invalid_params(void)
+{
+    int status;
+    fwk_id_t service_id =
+        FWK_ID_ELEMENT_INIT(FAKE_MODULE_ID, FAKE_SERVICE_IDX_OSPM);
+    struct scmi_base_discover_list_protocols_a2p payload = { 0 };
+    size_t payload_size = sizeof(struct scmi_base_discover_list_protocols_a2p);
+    size_t message_id = MOD_SCMI_BASE_DISCOVER_LIST_PROTOCOLS;
+
+    status = scmi_message_validation(
+        MOD_SCMI_MESSAGE_ID_ATTRIBUTE,
+        service_id,
+        (const uint32_t *)&payload,
+        payload_size,
+        message_id,
+        base_payload_size_table,
+        MOD_SCMI_BASE_COMMAND_COUNT,
+        base_handler_table);
+    TEST_ASSERT_EQUAL(status, SCMI_INVALID_PARAMETERS);
+}
+
+void test_message_validation_not_found(void)
+{
+    int status;
+    fwk_id_t service_id =
+        FWK_ID_ELEMENT_INIT(FAKE_MODULE_ID, FAKE_SERVICE_IDX_OSPM);
+    struct scmi_base_discover_list_protocols_a2p payload = { 0 };
+    size_t payload_size = sizeof(struct scmi_base_discover_list_protocols_a2p);
+    size_t message_id = MOD_SCMI_BASE_RESET_AGENT_CONFIG + 1;
+
+    status = scmi_message_validation(
+        MOD_SCMI_PROTOCOL_ID_BASE,
+        service_id,
+        (const uint32_t *)&payload,
+        payload_size,
+        message_id,
+        base_payload_size_table,
+        MOD_SCMI_BASE_COMMAND_COUNT,
+        base_handler_table);
+    TEST_ASSERT_EQUAL(status, SCMI_NOT_FOUND);
+}
+
+void test_message_validation_protocol_error(void)
+{
+    int status;
+    fwk_id_t service_id =
+        FWK_ID_ELEMENT_INIT(FAKE_MODULE_ID, FAKE_SERVICE_IDX_OSPM);
+    struct scmi_base_discover_list_protocols_a2p payload = { 0 };
+    size_t payload_size = 0;
+    size_t message_id = MOD_SCMI_BASE_DISCOVER_LIST_PROTOCOLS;
+
+    status = scmi_message_validation(
+        MOD_SCMI_PROTOCOL_ID_BASE,
+        service_id,
+        (const uint32_t *)&payload,
+        payload_size,
+        message_id,
+        base_payload_size_table,
+        MOD_SCMI_BASE_COMMAND_COUNT,
+        base_handler_table);
+    TEST_ASSERT_EQUAL(status, SCMI_PROTOCOL_ERROR);
+}
+
+void test_message_validation_success(void)
+{
+    int status;
+    fwk_id_t service_id =
+        FWK_ID_ELEMENT_INIT(FAKE_MODULE_ID, FAKE_SERVICE_IDX_OSPM);
+    struct scmi_base_discover_list_protocols_a2p payload = { 0 };
+    size_t payload_size = sizeof(struct scmi_base_discover_list_protocols_a2p);
+    size_t message_id = MOD_SCMI_BASE_DISCOVER_LIST_PROTOCOLS;
+
+    status = scmi_message_validation(
+        MOD_SCMI_PROTOCOL_ID_BASE,
+        service_id,
+        (const uint32_t *)&payload,
+        payload_size,
+        message_id,
+        base_payload_size_table,
+        MOD_SCMI_BASE_COMMAND_COUNT,
+        base_handler_table);
+
+    TEST_ASSERT_EQUAL(status, SCMI_SUCCESS);
 }
 
 int scmi_test_main(void)
@@ -292,6 +398,11 @@ int scmi_test_main(void)
 
     RUN_TEST(test_send_to_message_handler);
     RUN_TEST(test_send_to_notification_handler);
+
+    RUN_TEST(test_message_validation_invalid_params);
+    RUN_TEST(test_message_validation_not_found);
+    RUN_TEST(test_message_validation_protocol_error);
+    RUN_TEST(test_message_validation_success);
     return UNITY_END();
 }
 
