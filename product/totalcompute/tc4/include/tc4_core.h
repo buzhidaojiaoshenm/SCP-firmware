@@ -10,9 +10,9 @@
 
 #include <fwk_assert.h>
 
-#define TC4_GROUP_LITTLE_NAME "GROUP_LITTLE"
-#define TC4_GROUP_MID_NAME    "GROUP_MID"
-#define TC4_GROUP_BIG_NAME    "GROUP_BIG"
+#define TC4_GROUP_LITTLE_NAME "NEVIS"
+#define TC4_GROUP_MID_NAME    "GELAS"
+#define TC4_GROUP_BIG_NAME    "TRAVIS"
 
 #define TC4_CORES_PER_CLUSTER  (8)
 #define TC4_CMES_PER_CLUSTER   (2)
