@@ -146,6 +146,9 @@ e.g. For ARM Juno platform. See below
 
 - `SCP_ENABLE_STATISTICS`: Enable/disable Juno statistics.
 
+- `SCP_ENABLE_AE_EXTENSION`: Enable/disable AE extension. This
+  should be enabled, if the processor has an AE extension.
+
 ## Modifying build options
 There are a number of ways to configure a specific option.
 

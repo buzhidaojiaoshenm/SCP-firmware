@@ -139,11 +139,11 @@ void test_ppu_v1_core_pd_set_state_sleep(void)
     ppu_v1_is_dynamic_enabled_ExpectAnyArgsAndReturn(false);
     ppu_v1_dynamic_enable_ExpectAnyArgs();
     ppu_v1_set_input_edge_sensitivity_Expect(
-        pd_ctx_temp->ppu, PPU_V1_MODE_ON, PPU_V1_EDGE_SENSITIVITY_MASKED);
+        &pd_ctx_temp->ppu, PPU_V1_MODE_ON, PPU_V1_EDGE_SENSITIVITY_MASKED);
     ppu_v1_lock_off_enable_ExpectAnyArgs();
     ppu_v1_interrupt_unmask_ExpectAnyArgs();
     ppu_v1_set_input_edge_sensitivity_Expect(
-        pd_ctx_temp->ppu, PPU_V1_MODE_ON, PPU_V1_EDGE_SENSITIVITY_MASKED);
+        &pd_ctx_temp->ppu, PPU_V1_MODE_ON, PPU_V1_EDGE_SENSITIVITY_MASKED);
     fwk_id_get_element_idx_ExpectAnyArgsAndReturn(0);
     fwk_id_get_element_idx_ExpectAnyArgsAndReturn(0);
     start_alarm_api_ExpectAndReturn(
@@ -199,13 +199,13 @@ void test_deeper_locking_alarm_callback(void)
     struct ppu_v1_pd_ctx *pd_ctx_temp;
     pd_ctx_temp = &ppu_v1_ctx.pd_ctx_table[0];
 
-    ppu_v1_lock_off_disable_Expect(pd_ctx_temp->ppu);
+    ppu_v1_lock_off_disable_Expect(&pd_ctx_temp->ppu);
     ppu_v1_off_unlock_ExpectAnyArgs();
 
     deeper_locking_alarm_callback(param);
 }
 
-int scmi_test_main(void)
+int mod_ppu_v1_test_main(void)
 {
     UNITY_BEGIN();
 
@@ -222,5 +222,5 @@ int scmi_test_main(void)
 
 int main(void)
 {
-    return scmi_test_main();
+    return mod_ppu_v1_test_main();
 }

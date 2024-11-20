@@ -5,6 +5,48 @@
 # SPDX-License-Identifier: BSD-3-Clause
 #
 
+################################################################################
+# Test ppu_v1.c without BUILD_HAS_AE_EXTENSION                                 #
+################################################################################
+set(TEST_SRC ppu_v1)
+set(TEST_FILE ppu_v1)
+
+set(UNIT_TEST_TARGET ${TEST_MODULE}_unit_test)
+
+set(MODULE_SRC ${MODULE_ROOT}/${TEST_MODULE}/src)
+set(MODULE_INC ${MODULE_ROOT}/${TEST_MODULE}/include)
+list(APPEND OTHER_MODULE_INC ${MODULE_ROOT}/power_domain/include)
+list(APPEND OTHER_MODULE_INC ${MODULE_ROOT}/timer/include)
+set(MODULE_UT_SRC ${CMAKE_CURRENT_LIST_DIR})
+
+list(APPEND MOCK_REPLACEMENTS fwk_module)
+
+include(${SCP_ROOT}/unit_test/module_common.cmake)
+
+################################################################################
+# Test ppu_v1.c with BUILD_HAS_AE_EXTENSION                                    #
+################################################################################
+set(TEST_SRC ppu_v1)
+set(TEST_FILE ppu_v1)
+
+set(UNIT_TEST_TARGET ${TEST_MODULE}_unit_test_ae)
+
+set(MODULE_SRC ${MODULE_ROOT}/${TEST_MODULE}/src)
+set(MODULE_INC ${MODULE_ROOT}/${TEST_MODULE}/include)
+list(APPEND OTHER_MODULE_INC ${MODULE_ROOT}/power_domain/include)
+list(APPEND OTHER_MODULE_INC ${MODULE_ROOT}/timer/include)
+set(MODULE_UT_SRC ${CMAKE_CURRENT_LIST_DIR})
+
+list(APPEND MOCK_REPLACEMENTS fwk_module)
+
+include(${SCP_ROOT}/unit_test/module_common.cmake)
+
+target_compile_definitions(${UNIT_TEST_TARGET}
+        PUBLIC "BUILD_HAS_AE_EXTENSION")
+
+################################################################################
+# Test mod_ppu_v1.c                                                            #
+################################################################################
 set(TEST_SRC mod_ppu_v1)
 set(TEST_FILE mod_ppu_v1)
 

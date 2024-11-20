@@ -134,6 +134,11 @@ struct mod_ppu_v1_pd_config {
     /*! PPU descriptor */
     struct mod_ppu_v1 ppu;
 
+#ifdef BUILD_HAS_AE_EXTENSION
+    /*! Base address of the Cluster AE registers */
+    uintptr_t cluster_ae_reg_base;
+#endif
+
     /*!
      *  In the case of a core power domain, identifier of the cluster power
      *  domain it belongs to. If the power domain is not a core power domain,

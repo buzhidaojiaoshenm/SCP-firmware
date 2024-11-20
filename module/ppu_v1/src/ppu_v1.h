@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2015-2021, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2015-2024, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -23,41 +23,41 @@
 /*
  * PPU 1.1 register definitions
  */
-struct ppu_v1_reg {
-  FWK_RW  uint32_t PWPR;
-  FWK_RW  uint32_t PMER;
-  FWK_R   uint32_t PWSR;
-          uint32_t RESERVED0;
-  FWK_R   uint32_t DISR;
-  FWK_R   uint32_t MISR;
-  FWK_R   uint32_t STSR;
-  FWK_RW  uint32_t UNLK;
-  FWK_RW  uint32_t PWCR;
-  FWK_RW  uint32_t PTCR;
-          uint32_t RESERVED1[2];
-  FWK_RW  uint32_t IMR;
-  FWK_RW  uint32_t AIMR;
-  FWK_RW  uint32_t ISR;
-  FWK_RW  uint32_t AISR;
-  FWK_RW  uint32_t IESR;
-  FWK_RW  uint32_t OPSR;
-          uint32_t RESERVED2[2];
-  FWK_RW  uint32_t FUNRR;
-  FWK_RW  uint32_t FULRR;
-  FWK_RW  uint32_t MEMRR;
-          uint8_t  RESERVED3[0x160 - 0x5C];
-  FWK_RW  uint32_t EDTR0;
-  FWK_RW  uint32_t EDTR1;
-          uint32_t RESERVED4[2];
-  FWK_RW  uint32_t DCCR0;
-  FWK_RW  uint32_t DCCR1;
-          uint8_t  RESERVED5[0xFB0 - 0x178];
-  FWK_R   uint32_t IDR0;
-  FWK_R   uint32_t IDR1;
-          uint8_t  RESERVED6[0xFC8 - 0xFB8];
-  FWK_R   uint32_t IIDR;
-  FWK_R   uint32_t AIDR;
-          uint8_t  RESERVED7[0x1000 - 0xFD0];
+struct ppu_v1_ppu_reg {
+    FWK_RW uint32_t PWPR;
+    FWK_RW uint32_t PMER;
+    FWK_R uint32_t PWSR;
+    uint32_t RESERVED0;
+    FWK_R uint32_t DISR;
+    FWK_R uint32_t MISR;
+    FWK_R uint32_t STSR;
+    FWK_RW uint32_t UNLK;
+    FWK_RW uint32_t PWCR;
+    FWK_RW uint32_t PTCR;
+    uint32_t RESERVED1[2];
+    FWK_RW uint32_t IMR;
+    FWK_RW uint32_t AIMR;
+    FWK_RW uint32_t ISR;
+    FWK_RW uint32_t AISR;
+    FWK_RW uint32_t IESR;
+    FWK_RW uint32_t OPSR;
+    uint32_t RESERVED2[2];
+    FWK_RW uint32_t FUNRR;
+    FWK_RW uint32_t FULRR;
+    FWK_RW uint32_t MEMRR;
+    uint8_t RESERVED3[0x160 - 0x5C];
+    FWK_RW uint32_t EDTR0;
+    FWK_RW uint32_t EDTR1;
+    uint32_t RESERVED4[2];
+    FWK_RW uint32_t DCCR0;
+    FWK_RW uint32_t DCCR1;
+    uint8_t RESERVED5[0xFB0 - 0x178];
+    FWK_R uint32_t IDR0;
+    FWK_R uint32_t IDR1;
+    uint8_t RESERVED6[0xFC8 - 0xFB8];
+    FWK_R uint32_t IIDR;
+    FWK_R uint32_t AIDR;
+    uint8_t RESERVED7[0x1000 - 0xFD0];
 };
 
 enum ppu_v1_mode {
@@ -231,6 +231,41 @@ enum ppu_v1_edge_sensitivity {
 #define PPU_V1_IDR0_NUM_OPMODE        UINT32_C(0x000000F0)
 
 /*
+ * Cluster AE register definitions
+ */
+struct ppu_v1_cluster_ae_reg {
+    /* Only available in case of DSU-AE cluster. */
+    FWK_R uint64_t CLUSTERSLCFR;
+    FWK_R uint64_t CLUSTERSLCTLR;
+    FWK_R uint64_t CLUSTERSLSTAT;
+    uint64_t RESERVED0;
+    FWK_R uint64_t CORESLCFR;
+    uint64_t RESERVED1;
+    FWK_R uint64_t CORESLCTLR;
+    uint64_t RESERVED2;
+    FWK_R uint64_t CORESLSTAT;
+    uint64_t RESERVED3;
+    FWK_RW uint64_t CLUSTERRECOV;
+    uint64_t RESERVED4;
+
+    /* This is 64-bit in case of DSU-AE cluster and 32-bit in case of,
+       the AE core cluster. Only bits 0-7 will be used. */
+    FWK_W uint32_t CLUSTERWRITEKEY;
+};
+
+/*
+ * Bit definition for CLUSTERWRITEKEY
+ */
+#define CLUSTER_AE_KEY_VALUE 0x000000BA
+
+struct ppu_v1_regs {
+    struct ppu_v1_ppu_reg *ppu_reg;
+#ifdef BUILD_HAS_AE_EXTENSION
+    struct ppu_v1_cluster_ae_reg *cluster_ae_reg;
+#endif
+};
+
+/*
  * Timer context to be passed to set_power_mode function.
  */
 struct ppu_v1_timer_ctx {
@@ -243,7 +278,7 @@ struct ppu_v1_timer_ctx {
  * Initializes the PPU by masking all interrupts and acknowledging any
  * previously pending interrupt.
  */
-void ppu_v1_init(struct ppu_v1_reg *ppu);
+void ppu_v1_init(struct ppu_v1_regs *ppu);
 
 /*
  * Set PPU's power mode and wait for the transition.
@@ -251,171 +286,189 @@ void ppu_v1_init(struct ppu_v1_reg *ppu);
  *       limited error detection.
  */
 int ppu_v1_set_power_mode(
-    struct ppu_v1_reg *ppu,
+    struct ppu_v1_regs *ppu,
     enum ppu_v1_mode ppu_mode,
     struct ppu_v1_timer_ctx *timer_ctx);
 
 /*
  * Request PPU's power mode and don't wait for the transition.
  */
-int ppu_v1_request_power_mode(struct ppu_v1_reg *ppu,
-                              enum ppu_v1_mode ppu_mode);
+int ppu_v1_request_power_mode(
+    struct ppu_v1_regs *ppu,
+    enum ppu_v1_mode ppu_mode);
 
 /*
  * Request a change to the PPU's operating mode.
  */
-int ppu_v1_request_operating_mode(struct ppu_v1_reg *ppu,
-                                  enum ppu_v1_opmode op_mode);
+int ppu_v1_request_operating_mode(
+    struct ppu_v1_regs *ppu,
+    enum ppu_v1_opmode op_mode);
 
 /*
  * Enable PPU's dynamic operating mode transitions
  */
-void ppu_v1_opmode_dynamic_enable(struct ppu_v1_reg *ppu,
-                                  enum ppu_v1_opmode min_dyn_mode);
+void ppu_v1_opmode_dynamic_enable(
+    struct ppu_v1_regs *ppu,
+    enum ppu_v1_opmode min_dyn_mode);
 
 /*
  * Enable PPU's dynamic power mode transitions
  */
-void ppu_v1_dynamic_enable(struct ppu_v1_reg *ppu,
-                           enum ppu_v1_mode min_dyn_state);
+void ppu_v1_dynamic_enable(
+    struct ppu_v1_regs *ppu,
+    enum ppu_v1_mode min_dyn_state);
 
 /*
  * Enable the lock in the OFF state
  */
-void ppu_v1_lock_off_enable(struct ppu_v1_reg *ppu);
+void ppu_v1_lock_off_enable(struct ppu_v1_regs *ppu);
 
 /*
  * Disable the lock in the OFF state
  */
-void ppu_v1_lock_off_disable(struct ppu_v1_reg *ppu);
+void ppu_v1_lock_off_disable(struct ppu_v1_regs *ppu);
 
 /*
  * Get the current power mode.
  */
-enum ppu_v1_mode ppu_v1_get_power_mode(struct ppu_v1_reg *ppu);
+enum ppu_v1_mode ppu_v1_get_power_mode(struct ppu_v1_regs *ppu);
 
 /*
  * Get the current programmed power policy mode.
  */
-enum ppu_v1_mode ppu_v1_get_programmed_power_mode(struct ppu_v1_reg *ppu);
+enum ppu_v1_mode ppu_v1_get_programmed_power_mode(struct ppu_v1_regs *ppu);
 
 /*
  * Get the current operating mode.
  */
-enum ppu_v1_opmode ppu_v1_get_operating_mode(struct ppu_v1_reg *ppu);
+enum ppu_v1_opmode ppu_v1_get_operating_mode(struct ppu_v1_regs *ppu);
 
 /*
  * Get the current programmed operating mode policy.
  */
-enum ppu_v1_opmode ppu_v1_get_programmed_operating_mode(struct ppu_v1_reg *ppu);
+enum ppu_v1_opmode ppu_v1_get_programmed_operating_mode(
+    struct ppu_v1_regs *ppu);
 
 /*
  * Check whether the dynamic transitions are enabled or not.
  */
-bool ppu_v1_is_dynamic_enabled(struct ppu_v1_reg *ppu);
+bool ppu_v1_is_dynamic_enabled(struct ppu_v1_regs *ppu);
 
 /*
  * Check whether the locked in the MEM_RET or OFF state.
  */
-bool ppu_v1_is_locked(struct ppu_v1_reg *ppu);
+bool ppu_v1_is_locked(struct ppu_v1_regs *ppu);
 
 /*
  * Check if the DEVACTIVE signal associated to a power mode is high.
  */
-bool ppu_v1_is_power_devactive_high(struct ppu_v1_reg *ppu,
-                                    enum ppu_v1_mode ppu_mode);
+bool ppu_v1_is_power_devactive_high(
+    struct ppu_v1_regs *ppu,
+    enum ppu_v1_mode ppu_mode);
 
 /*
  * Check if the DEVACTIVE signal associated to an operating mode is high.
  */
-bool ppu_v1_is_op_devactive_high(struct ppu_v1_reg *ppu,
-                                 enum ppu_v1_op_devactive op_devactive);
+bool ppu_v1_is_op_devactive_high(
+    struct ppu_v1_regs *ppu,
+    enum ppu_v1_op_devactive op_devactive);
 
 /*
  * Unlock the power domain from the OFF power mode.
  */
-void ppu_v1_off_unlock(struct ppu_v1_reg *ppu);
+void ppu_v1_off_unlock(struct ppu_v1_regs *ppu);
 
 /*
  * Disable the check of the DEVACTIVE signals by the PPU logic for state
  * transition.
  */
-void ppu_v1_disable_devactive(struct ppu_v1_reg *ppu);
+void ppu_v1_disable_devactive(struct ppu_v1_regs *ppu);
 
 /*
  * Disable the handshake with the P-channel or the Q-channels
  */
-void ppu_v1_disable_handshake(struct ppu_v1_reg *ppu);
+void ppu_v1_disable_handshake(struct ppu_v1_regs *ppu);
 
 /*
  * Set one or more bits of the interrupt mask register.
  */
-void ppu_v1_interrupt_mask(struct ppu_v1_reg *ppu, unsigned int mask);
+void ppu_v1_interrupt_mask(struct ppu_v1_regs *ppu, unsigned int mask);
 
 /*
  * Set one or more bits of the additional interrupt mask register.
  */
-void ppu_v1_additional_interrupt_mask(struct ppu_v1_reg *ppu,
+void ppu_v1_additional_interrupt_mask(
+    struct ppu_v1_regs *ppu,
     unsigned int mask);
 
 /*
  * Clear one or more bits of the interrupt mask register.
  */
-void ppu_v1_interrupt_unmask(struct ppu_v1_reg *ppu, unsigned int mask);
+void ppu_v1_interrupt_unmask(struct ppu_v1_regs *ppu, unsigned int mask);
 
 /*
  * Clear one or more bits of the additional interrupt mask register.
  */
-void ppu_v1_additional_interrupt_unmask(struct ppu_v1_reg *ppu,
+void ppu_v1_additional_interrupt_unmask(
+    struct ppu_v1_regs *ppu,
     unsigned int mask);
 
 /*
  * Check if some additional interrupts are pending.
  */
-bool ppu_v1_is_additional_interrupt_pending(struct ppu_v1_reg *ppu,
+bool ppu_v1_is_additional_interrupt_pending(
+    struct ppu_v1_regs *ppu,
     unsigned int mask);
 
 /*
  * Acknowledge one or more interrupts.
  */
-void ppu_v1_ack_interrupt(struct ppu_v1_reg *ppu, unsigned int mask);
+void ppu_v1_ack_interrupt(struct ppu_v1_regs *ppu, unsigned int mask);
 
 /*
  * Acknowledge one or more additional interrupts.
  */
-void ppu_v1_ack_additional_interrupt(struct ppu_v1_reg *ppu, unsigned int mask);
+void ppu_v1_ack_additional_interrupt(
+    struct ppu_v1_regs *ppu,
+    unsigned int mask);
 
 /*
  * Set input edge sensitivity. See 'enum ppu_v1_edge_sensitivity' for the
  * available sensitivities.
  */
-void ppu_v1_set_input_edge_sensitivity(struct ppu_v1_reg *ppu,
-    enum ppu_v1_mode ppu_mode, enum ppu_v1_edge_sensitivity edge_sensitivity);
+void ppu_v1_set_input_edge_sensitivity(
+    struct ppu_v1_regs *ppu,
+    enum ppu_v1_mode ppu_mode,
+    enum ppu_v1_edge_sensitivity edge_sensitivity);
 
 /*
  * Get input edge sensitivity. See 'enum ppu_v1_edge_sensitivity' for the
  * available sensitivities.
  */
 enum ppu_v1_edge_sensitivity ppu_v1_get_input_edge_sensitivity(
-    struct ppu_v1_reg *ppu, enum ppu_v1_mode ppu_mode);
+    struct ppu_v1_regs *ppu,
+    enum ppu_v1_mode ppu_mode);
 
 /*
  * Acknowledge a power active edge interrupt.
  */
-void ppu_v1_ack_power_active_edge_interrupt(struct ppu_v1_reg *ppu,
-                                            enum ppu_v1_mode ppu_mode);
+void ppu_v1_ack_power_active_edge_interrupt(
+    struct ppu_v1_regs *ppu,
+    enum ppu_v1_mode ppu_mode);
 
 /*
  * Check if a power active edge interrupt is pending.
  */
-bool ppu_v1_is_power_active_edge_interrupt(struct ppu_v1_reg *ppu,
-                                           enum ppu_v1_mode ppu_mode);
+bool ppu_v1_is_power_active_edge_interrupt(
+    struct ppu_v1_regs *ppu,
+    enum ppu_v1_mode ppu_mode);
 
 /*
  * Set operating mode active edge sensitivity. See
  * 'enum ppu_v1_edge_sensitivity' for the available sensitivities.
  */
-void ppu_v1_set_op_active_edge_sensitivity(struct ppu_v1_reg *ppu,
+void ppu_v1_set_op_active_edge_sensitivity(
+    struct ppu_v1_regs *ppu,
     enum ppu_v1_op_devactive op_devactive,
     enum ppu_v1_edge_sensitivity edge_sensitivity);
 
@@ -424,34 +477,37 @@ void ppu_v1_set_op_active_edge_sensitivity(struct ppu_v1_reg *ppu,
  * See 'enum ppu_v1_edge_sensitivity for the available sensitivities.
  */
 enum ppu_v1_edge_sensitivity ppu_v1_get_op_active_edge_sensitivity(
-    struct ppu_v1_reg *ppu, enum ppu_v1_op_devactive op_devactive);
+    struct ppu_v1_regs *ppu,
+    enum ppu_v1_op_devactive op_devactive);
 
 /*
  * Acknowledge operating mode active edge interrupt.
  */
-void ppu_v1_ack_op_active_edge_interrupt(struct ppu_v1_reg *ppu,
+void ppu_v1_ack_op_active_edge_interrupt(
+    struct ppu_v1_regs *ppu,
     enum ppu_v1_op_devactive op_devactive);
 
 /*
  * Check if an operating mode active edge interrupt is pending.
  */
-bool ppu_v1_is_op_active_edge_interrupt(struct ppu_v1_reg *ppu,
+bool ppu_v1_is_op_active_edge_interrupt(
+    struct ppu_v1_regs *ppu,
     enum ppu_v1_op_devactive op_devactive);
 
 /*
  * Check if the DYN input edge interrupt is pending.
  */
-bool ppu_v1_is_dyn_policy_min_interrupt(struct ppu_v1_reg *ppu);
+bool ppu_v1_is_dyn_policy_min_interrupt(struct ppu_v1_regs *ppu);
 
 /*
  * Get the number of operating modes.
  */
-unsigned int ppu_v1_get_num_opmode(struct ppu_v1_reg *ppu);
+unsigned int ppu_v1_get_num_opmode(struct ppu_v1_regs *ppu);
 
 /*
  * Get the PPU architecture ID.
  */
-unsigned int ppu_v1_get_arch_id(struct ppu_v1_reg *ppu);
+unsigned int ppu_v1_get_arch_id(struct ppu_v1_regs *ppu);
 
 /*!
  * \endcond

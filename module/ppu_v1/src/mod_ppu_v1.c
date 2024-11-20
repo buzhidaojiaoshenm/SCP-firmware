@@ -37,8 +37,8 @@ struct ppu_v1_pd_ctx {
     /* Power domain configuration data */
     const struct mod_ppu_v1_pd_config *config;
 
-    /* PPU registers */
-    struct ppu_v1_reg *ppu;
+    /* PPU register sets */
+    struct ppu_v1_regs ppu;
 
     /* Identifier of the entity bound to the power domain driver API */
     fwk_id_t bound_id;
@@ -117,11 +117,11 @@ static const uint8_t ppu_mode_to_power_state[] = {
 static void deeper_locking_alarm_callback(uintptr_t param)
 {
     struct ppu_v1_pd_ctx *pd_ctx;
-    struct ppu_v1_reg *ppu;
+    struct ppu_v1_regs *ppu;
     unsigned int pd_id = (unsigned int)param;
 
     pd_ctx = ppu_v1_ctx.pd_ctx_table + pd_id;
-    ppu = pd_ctx->ppu;
+    ppu = &pd_ctx->ppu;
 
     /* Disable the lock at off and unlock */
     ppu_v1_lock_off_disable(ppu);
@@ -149,7 +149,7 @@ static int start_deeper_locking_alarm(fwk_id_t core_pd_id)
 }
 #endif
 
-static int get_state(struct ppu_v1_reg *ppu, unsigned int *state)
+static int get_state(struct ppu_v1_regs *ppu, unsigned int *state)
 {
     enum ppu_v1_mode mode;
 
@@ -185,11 +185,11 @@ static int ppu_v1_pd_set_state(fwk_id_t pd_id, unsigned int state)
     switch (state) {
     case MOD_PD_STATE_ON:
         status = ppu_v1_set_power_mode(
-            pd_ctx->ppu, PPU_V1_MODE_ON, pd_ctx->timer_ctx);
+            &pd_ctx->ppu, PPU_V1_MODE_ON, pd_ctx->timer_ctx);
         if (status == FWK_SUCCESS) {
             pd_mod_state = state;
         } else {
-            get_state(pd_ctx->ppu, &pd_mod_state);
+            get_state(&pd_ctx->ppu, &pd_mod_state);
         }
 
         status = pd_ctx->pd_driver_input_api->report_power_state_transition(
@@ -199,11 +199,11 @@ static int ppu_v1_pd_set_state(fwk_id_t pd_id, unsigned int state)
 
     case MOD_PD_STATE_OFF:
         status = ppu_v1_set_power_mode(
-            pd_ctx->ppu, PPU_V1_MODE_OFF, pd_ctx->timer_ctx);
+            &pd_ctx->ppu, PPU_V1_MODE_OFF, pd_ctx->timer_ctx);
         if (status == FWK_SUCCESS) {
             pd_mod_state = state;
         } else {
-            get_state(pd_ctx->ppu, &pd_mod_state);
+            get_state(&pd_ctx->ppu, &pd_mod_state);
         }
 
         status = pd_ctx->pd_driver_input_api->report_power_state_transition(
@@ -226,7 +226,7 @@ static int ppu_v1_pd_get_state(fwk_id_t pd_id, unsigned int *state)
 
     pd_ctx = ppu_v1_ctx.pd_ctx_table + fwk_id_get_element_idx(pd_id);
 
-    return get_state(pd_ctx->ppu, state);
+    return get_state(&pd_ctx->ppu, state);
 }
 
 static int ppu_v1_pd_reset(fwk_id_t pd_id)
@@ -238,10 +238,10 @@ static int ppu_v1_pd_reset(fwk_id_t pd_id)
 
     /* Model does not support warm reset at the moment. Using OFF instead. */
     status =
-        ppu_v1_set_power_mode(pd_ctx->ppu, PPU_V1_MODE_OFF, pd_ctx->timer_ctx);
+        ppu_v1_set_power_mode(&pd_ctx->ppu, PPU_V1_MODE_OFF, pd_ctx->timer_ctx);
     if (status == FWK_SUCCESS) {
         status = ppu_v1_set_power_mode(
-            pd_ctx->ppu, PPU_V1_MODE_ON, pd_ctx->timer_ctx);
+            &pd_ctx->ppu, PPU_V1_MODE_ON, pd_ctx->timer_ctx);
     }
 
     return status;
@@ -266,7 +266,7 @@ static const struct mod_pd_driver_api pd_driver = {
 static int ppu_v1_core_pd_init(struct ppu_v1_pd_ctx *pd_ctx)
 {
     int status;
-    struct ppu_v1_reg *ppu = pd_ctx->ppu;
+    struct ppu_v1_regs *ppu = &pd_ctx->ppu;
     unsigned int state;
 
     ppu_v1_init(ppu);
@@ -289,10 +289,10 @@ static int ppu_v1_core_pd_set_state(fwk_id_t core_pd_id, unsigned int state)
 {
     int status;
     struct ppu_v1_pd_ctx *pd_ctx;
-    struct ppu_v1_reg *ppu;
+    struct ppu_v1_regs *ppu;
 
     pd_ctx = ppu_v1_ctx.pd_ctx_table + fwk_id_get_element_idx(core_pd_id);
-    ppu = pd_ctx->ppu;
+    ppu = &pd_ctx->ppu;
 
     switch (state) {
     case MOD_PD_STATE_OFF:
@@ -364,10 +364,10 @@ static int ppu_v1_core_pd_reset(fwk_id_t core_pd_id)
 static int ppu_v1_core_pd_prepare_for_system_suspend(fwk_id_t core_pd_id)
 {
     struct ppu_v1_pd_ctx *pd_ctx;
-    struct ppu_v1_reg *ppu;
+    struct ppu_v1_regs *ppu;
 
     pd_ctx = ppu_v1_ctx.pd_ctx_table + fwk_id_get_element_idx(core_pd_id);
-    ppu = pd_ctx->ppu;
+    ppu = &pd_ctx->ppu;
 
     ppu_v1_set_input_edge_sensitivity(ppu,
                                       PPU_V1_MODE_ON,
@@ -381,9 +381,9 @@ static int ppu_v1_core_pd_prepare_for_system_suspend(fwk_id_t core_pd_id)
 static void core_pd_ppu_interrupt_handler(struct ppu_v1_pd_ctx *pd_ctx)
 {
     int status;
-    struct ppu_v1_reg *ppu;
+    struct ppu_v1_regs *ppu;
 
-    ppu = pd_ctx->ppu;
+    ppu = &pd_ctx->ppu;
 
     /* ON request interrupt */
     if (ppu_v1_is_power_active_edge_interrupt(ppu, PPU_V1_MODE_ON)) {
@@ -456,7 +456,7 @@ static const struct mod_pd_driver_api core_pd_driver = {
 static void unlock_all_cores(struct ppu_v1_pd_ctx *pd_ctx)
 {
     struct ppu_v1_cluster_pd_ctx *cluster_pd_ctx;
-    struct ppu_v1_reg *cpu_ppu;
+    struct ppu_v1_regs *core_ppu;
     unsigned int core_idx;
 
     fwk_assert(pd_ctx != NULL);
@@ -464,16 +464,16 @@ static void unlock_all_cores(struct ppu_v1_pd_ctx *pd_ctx)
     cluster_pd_ctx = pd_ctx->data;
 
     for (core_idx = 0; core_idx < cluster_pd_ctx->core_count; ++core_idx) {
-        cpu_ppu = cluster_pd_ctx->core_pd_ctx_table[core_idx]->ppu;
-        ppu_v1_lock_off_disable(cpu_ppu);
-        ppu_v1_off_unlock(cpu_ppu);
+        core_ppu = &cluster_pd_ctx->core_pd_ctx_table[core_idx]->ppu;
+        ppu_v1_lock_off_disable(core_ppu);
+        ppu_v1_off_unlock(core_ppu);
     }
 }
 
 static bool lock_all_dynamic_cores(struct ppu_v1_pd_ctx *pd_ctx)
 {
     struct ppu_v1_cluster_pd_ctx *cluster_pd_ctx;
-    struct ppu_v1_reg *cpu_ppu;
+    struct ppu_v1_regs *core_ppu;
     unsigned int core_idx;
 
     fwk_assert(pd_ctx != NULL);
@@ -481,19 +481,19 @@ static bool lock_all_dynamic_cores(struct ppu_v1_pd_ctx *pd_ctx)
     cluster_pd_ctx = pd_ctx->data;
 
     for (core_idx = 0; core_idx < cluster_pd_ctx->core_count; ++core_idx) {
-        cpu_ppu = cluster_pd_ctx->core_pd_ctx_table[core_idx]->ppu;
+        core_ppu = &cluster_pd_ctx->core_pd_ctx_table[core_idx]->ppu;
 
-        if (!ppu_v1_is_dynamic_enabled(cpu_ppu)) {
+        if (!ppu_v1_is_dynamic_enabled(core_ppu)) {
             continue;
         }
 
-        ppu_v1_lock_off_enable(cpu_ppu);
-        while ((!ppu_v1_is_locked(cpu_ppu)) &&
-               (!ppu_v1_is_power_devactive_high(cpu_ppu, PPU_V1_MODE_ON))) {
+        ppu_v1_lock_off_enable(core_ppu);
+        while ((!ppu_v1_is_locked(core_ppu)) &&
+               (!ppu_v1_is_power_devactive_high(core_ppu, PPU_V1_MODE_ON))) {
             continue;
         }
 
-        if (ppu_v1_is_power_devactive_high(cpu_ppu, PPU_V1_MODE_ON)) {
+        if (ppu_v1_is_power_devactive_high(core_ppu, PPU_V1_MODE_ON)) {
             return false;
         }
     }
@@ -503,12 +503,12 @@ static bool lock_all_dynamic_cores(struct ppu_v1_pd_ctx *pd_ctx)
 
 static bool cluster_off(struct ppu_v1_pd_ctx *pd_ctx)
 {
-    struct ppu_v1_reg *ppu;
+    struct ppu_v1_regs *ppu;
     bool lock_successful;
 
     fwk_assert(pd_ctx != NULL);
 
-    ppu = pd_ctx->ppu;
+    ppu = &pd_ctx->ppu;
 
     ppu_v1_set_input_edge_sensitivity(ppu,
                                       PPU_V1_MODE_ON,
@@ -527,11 +527,11 @@ static bool cluster_off(struct ppu_v1_pd_ctx *pd_ctx)
 static void cluster_on(struct ppu_v1_pd_ctx *pd_ctx)
 {
     int status;
-    struct ppu_v1_reg *ppu;
+    struct ppu_v1_regs *ppu;
 
     fwk_assert(pd_ctx != NULL);
 
-    ppu = pd_ctx->ppu;
+    ppu = &pd_ctx->ppu;
 
     ppu_v1_set_input_edge_sensitivity(ppu,
                                       PPU_V1_MODE_ON,
@@ -561,7 +561,7 @@ static void cluster_on(struct ppu_v1_pd_ctx *pd_ctx)
 static int ppu_v1_cluster_pd_init(struct ppu_v1_pd_ctx *pd_ctx)
 {
     int status;
-    struct ppu_v1_reg *ppu = pd_ctx->ppu;
+    struct ppu_v1_regs *ppu = &pd_ctx->ppu;
     unsigned int state;
 
     ppu_v1_init(ppu);
@@ -628,8 +628,8 @@ static void cluster_pd_ppu_dyn_policy_min_int_handler(
 {
     int status;
 
-    ppu_v1_ack_interrupt(pd_ctx->ppu, PPU_V1_ISR_DYN_POLICY_MIN_IRQ);
-    ppu_v1_interrupt_mask(pd_ctx->ppu, PPU_V1_IMR_DYN_POLICY_MIN_IRQ_MASK);
+    ppu_v1_ack_interrupt(&pd_ctx->ppu, PPU_V1_ISR_DYN_POLICY_MIN_IRQ);
+    ppu_v1_interrupt_mask(&pd_ctx->ppu, PPU_V1_IMR_DYN_POLICY_MIN_IRQ_MASK);
 
     status = pd_ctx->pd_driver_input_api->report_power_state_transition(
         pd_ctx->bound_id, MOD_PD_STATE_SLEEP);
@@ -642,9 +642,9 @@ static void cluster_pd_ppu_normal_mode_int_handler(struct ppu_v1_pd_ctx *pd_ctx)
 {
     int status;
     enum ppu_v1_mode current_mode;
-    struct ppu_v1_reg *ppu;
+    struct ppu_v1_regs *ppu;
 
-    ppu = pd_ctx->ppu;
+    ppu = &pd_ctx->ppu;
 
     if (!ppu_v1_is_power_active_edge_interrupt(ppu, PPU_V1_MODE_ON)) {
         return; /* Spurious interrupt */
@@ -701,7 +701,7 @@ static void cluster_pd_ppu_interrupt_handler(struct ppu_v1_pd_ctx *pd_ctx)
     fwk_assert(pd_ctx != NULL);
 
     /* Minimum policy reached interrupt */
-    if (ppu_v1_is_dyn_policy_min_interrupt(pd_ctx->ppu)) {
+    if (ppu_v1_is_dyn_policy_min_interrupt(&pd_ctx->ppu)) {
         return cluster_pd_ppu_dyn_policy_min_int_handler(pd_ctx);
     }
 
@@ -757,7 +757,7 @@ static int ppu_power_mode_on(fwk_id_t pd_id)
     pd_ctx = ppu_v1_ctx.pd_ctx_table + fwk_id_get_element_idx(pd_id);
 
     return ppu_v1_set_power_mode(
-        pd_ctx->ppu, PPU_V1_MODE_ON, pd_ctx->timer_ctx);
+        &pd_ctx->ppu, PPU_V1_MODE_ON, pd_ctx->timer_ctx);
 }
 
 static const struct ppu_v1_boot_api boot_api = {
@@ -806,7 +806,11 @@ static int ppu_v1_pd_init(fwk_id_t pd_id, unsigned int unused, const void *data)
 
     pd_ctx = ppu_v1_ctx.pd_ctx_table + fwk_id_get_element_idx(pd_id);
     pd_ctx->config = config;
-    pd_ctx->ppu = (struct ppu_v1_reg *)(config->ppu.reg_base);
+    pd_ctx->ppu.ppu_reg = (struct ppu_v1_ppu_reg *)(config->ppu.reg_base);
+#ifdef BUILD_HAS_AE_EXTENSION
+    pd_ctx->ppu.cluster_ae_reg =
+        (struct ppu_v1_cluster_ae_reg *)(config->cluster_ae_reg_base);
+#endif
     pd_ctx->bound_id = FWK_ID_NONE;
 
     if (config->ppu.irq != FWK_INTERRUPT_NONE) {
@@ -861,8 +865,8 @@ static int ppu_v1_pd_init(fwk_id_t pd_id, unsigned int unused, const void *data)
         case MOD_PD_TYPE_DEVICE_DEBUG:
             /* Fall through */
         case MOD_PD_TYPE_SYSTEM:
-            ppu_v1_init(pd_ctx->ppu);
-            return ppu_v1_set_power_mode(pd_ctx->ppu, PPU_V1_MODE_ON, NULL);
+            ppu_v1_init(&pd_ctx->ppu);
+            return ppu_v1_set_power_mode(&pd_ctx->ppu, PPU_V1_MODE_ON, NULL);
 
         default:
             fwk_unexpected();
@@ -1174,7 +1178,7 @@ static int ppu_v1_process_notification(
         return ppu_v1_cluster_pd_init(pd_ctx);
 
     default:
-        ppu_v1_init(pd_ctx->ppu);
+        ppu_v1_init(&pd_ctx->ppu);
         return FWK_SUCCESS;
     }
 }

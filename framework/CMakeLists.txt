@@ -143,6 +143,10 @@ if(SCP_ENABLE_AGENT_LOGICAL_DOMAIN)
     target_compile_definitions(framework PUBLIC "BUILD_HAS_AGENT_LOGICAL_DOMAIN")
 endif()
 
+if(SCP_ENABLE_AE_EXTENSION)
+    target_compile_definitions(framework PUBLIC "BUILD_HAS_AE_EXTENSION")
+endif()
+
 #
 # Handle the framework logging filter level.
 #
