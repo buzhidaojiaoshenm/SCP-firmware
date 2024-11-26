@@ -238,6 +238,48 @@ void utest_mod_distributor_post_init_success(void)
             .node.children_count);
 }
 
+void utest_mod_distributor_set_power_limit_demand_api_success(void)
+{
+    int status = FWK_E_DATA;
+    for (size_t i = 0; i < TEST_DOMAIN_COUNT; ++i) {
+        fwk_id_t elem_id = FWK_ID_ELEMENT(FWK_MODULE_IDX_POWER_DISTRIBUTOR, i);
+        status = set_power_limit(elem_id, i);
+        TEST_ASSERT_EQUAL(
+            i, power_distributor_ctx.domain[i].node.data.power_limit);
+        TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
+        status = set_power_demand(elem_id, i);
+        TEST_ASSERT_EQUAL(
+            i, power_distributor_ctx.domain[i].node.data.power_demand);
+        TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
+    }
+}
+
+void utest_mod_distributor_set_power_limit_demand_api_invalid_params(void)
+{
+    int status = FWK_E_DATA;
+    fwk_id_t invalid_elem_id =
+        FWK_ID_ELEMENT(FWK_MODULE_IDX_POWER_DISTRIBUTOR, TEST_DOMAIN_COUNT);
+    fwk_id_t invalid_elem_id2 = FWK_ID_ELEMENT(
+        FWK_MODULE_IDX_POWER_DISTRIBUTOR, TEST_DOMAIN_COUNT + 10);
+    fwk_id_t invalid_module_elem_id =
+        FWK_ID_ELEMENT(FWK_MODULE_IDX_COUNT, TEST_DOMAIN_CPU);
+
+    status = set_power_limit(invalid_elem_id, 0);
+    TEST_ASSERT_EQUAL(FWK_E_PARAM, status);
+    status = set_power_demand(invalid_elem_id, 0);
+    TEST_ASSERT_EQUAL(FWK_E_PARAM, status);
+
+    status = set_power_limit(invalid_elem_id2, 0);
+    TEST_ASSERT_EQUAL(FWK_E_PARAM, status);
+    status = set_power_demand(invalid_elem_id2, 0);
+    TEST_ASSERT_EQUAL(FWK_E_PARAM, status);
+
+    status = set_power_limit(invalid_module_elem_id, 0);
+    TEST_ASSERT_EQUAL(FWK_E_PARAM, status);
+    status = set_power_demand(invalid_module_elem_id, 0);
+    TEST_ASSERT_EQUAL(FWK_E_PARAM, status);
+}
+
 void tearDown(void)
 {
 }
@@ -254,6 +296,8 @@ int power_distributor_test_main(void)
     RUN_TEST(utest_mod_distributor_process_bind_request_invalid_api);
     RUN_TEST(utest_mod_distributor_process_bind_request_invalid_module);
     RUN_TEST(utest_mod_distributor_post_init_success);
+    RUN_TEST(utest_mod_distributor_set_power_limit_demand_api_success);
+    RUN_TEST(utest_mod_distributor_set_power_limit_demand_api_invalid_params);
 
     return UNITY_END();
 }

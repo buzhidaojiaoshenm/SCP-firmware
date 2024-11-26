@@ -47,10 +47,17 @@ static struct mod_power_distributor_ctx power_distributor_ctx;
 
 static int subtree_power_distribute(fwk_id_t subtree_root_id);
 static int system_power_distribute(void);
+static int set_power_limit(fwk_id_t id, uint32_t power_limit);
+static int set_power_demand(fwk_id_t id, uint32_t power_demand);
 
 static struct mod_power_distributor_api distribution_api = {
     .subtree_power_distribute = subtree_power_distribute,
     .system_power_distribute = system_power_distribute,
+};
+
+struct interface_power_management_api power_management_api = {
+    .set_power_demand = set_power_demand,
+    .set_power_limit = set_power_limit,
 };
 
 static inline struct mod_power_distributor_domain_ctx *get_domain_ctx(
@@ -106,6 +113,12 @@ static inline void set_domain_relations(void)
     }
 }
 
+static inline bool is_element_id_valid(fwk_id_t id)
+{
+    return fwk_id_get_module_idx(id) == FWK_MODULE_IDX_POWER_DISTRIBUTOR &&
+        fwk_id_get_element_idx(id) < power_distributor_ctx.domain_count;
+}
+
 static int subtree_power_distribute(fwk_id_t subtree_root_id)
 {
     return FWK_SUCCESS;
@@ -113,6 +126,30 @@ static int subtree_power_distribute(fwk_id_t subtree_root_id)
 
 static int system_power_distribute(void)
 {
+    return FWK_SUCCESS;
+}
+
+int set_power_limit(fwk_id_t id, uint32_t power_limit)
+{
+    if (!is_element_id_valid(id)) {
+        return FWK_E_PARAM;
+    }
+
+    struct mod_power_distributor_domain_ctx *domain_ctx =
+        &power_distributor_ctx.domain[fwk_id_get_element_idx(id)];
+    domain_ctx->node.data.power_limit = power_limit;
+    return FWK_SUCCESS;
+}
+
+int set_power_demand(fwk_id_t id, uint32_t power_demand)
+{
+    if (!is_element_id_valid(id)) {
+        return FWK_E_PARAM;
+    }
+
+    struct mod_power_distributor_domain_ctx *domain_ctx =
+        &power_distributor_ctx.domain[fwk_id_get_element_idx(id)];
+    domain_ctx->node.data.power_demand = power_demand;
     return FWK_SUCCESS;
 }
 
@@ -194,15 +231,24 @@ static int power_distributor_process_bind_request(
     fwk_id_t api_id,
     const void **api)
 {
-    if (!fwk_id_is_equal(
-            api_id,
-            FWK_ID_API(
-                FWK_MODULE_IDX_POWER_DISTRIBUTOR,
-                MOD_POWER_DISTRIBUTOR_API_IDX_DISTRIBUTION))) {
+    if ((enum fwk_module_idx)fwk_id_get_module_idx(api_id) !=
+        FWK_MODULE_IDX_POWER_DISTRIBUTOR) {
         return FWK_E_PARAM;
     }
 
-    *api = &distribution_api;
+    enum mod_power_distributor_api_idx api_idx =
+        (enum mod_power_distributor_api_idx)fwk_id_get_api_idx(api_id);
+
+    switch (api_idx) {
+    case MOD_POWER_DISTRIBUTOR_API_IDX_DISTRIBUTION:
+        *api = &distribution_api;
+        break;
+    case MOD_POWER_DISTRIBUTOR_API_IDX_POWER_MANAGEMENT:
+        *api = &power_management_api;
+        break;
+    default:
+        return FWK_E_PARAM;
+    }
 
     return FWK_SUCCESS;
 }

@@ -29,6 +29,8 @@
 enum mod_power_distributor_api_idx {
     /*! Power Distributor API distribution idx */
     MOD_POWER_DISTRIBUTOR_API_IDX_DISTRIBUTION,
+    /*! Power Distributor API power management idx */
+    MOD_POWER_DISTRIBUTOR_API_IDX_POWER_MANAGEMENT,
     /*! Power Distributor API count */
     MOD_POWER_DISTRIBUTOR_API_IDX_COUNT,
 };
