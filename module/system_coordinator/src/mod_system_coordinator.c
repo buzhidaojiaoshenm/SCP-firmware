@@ -26,6 +26,15 @@ enum mod_system_coordinator_event_idx {
     MOD_SYSTEM_COORDINATOR_EVENT_IDX_COUNT,
 };
 
+/* Event parameter for EVENT_IDX_PHASE */
+struct phase_event_params {
+    /* The phase index of the API to be call in process_event() */
+    unsigned int phase_idx;
+
+    /* The cycle count which the phase originate */
+    uint32_t cycle_count;
+};
+
 /* Phase context */
 struct mod_system_coordinator_phase_ctx {
     /* Phase configuration */
@@ -51,6 +60,9 @@ struct mod_system_coordinator_ctx {
 
     /* Total phase count */
     uint32_t phase_count;
+
+    /* Cycle count */
+    uint32_t cycle_count;
 };
 
 static const fwk_id_t mod_system_coordinator_event_phase = FWK_ID_EVENT_INIT(
@@ -59,17 +71,18 @@ static const fwk_id_t mod_system_coordinator_event_phase = FWK_ID_EVENT_INIT(
 
 static struct mod_system_coordinator_ctx system_coordinator_ctx;
 
-static int send_phase_event(uint32_t phase_idx)
+static int send_phase_event(struct phase_event_params *params)
 {
     int status;
-
     struct fwk_event phase_event = {
         .source_id = FWK_ID_MODULE(FWK_MODULE_IDX_SYSTEM_COORDINATOR),
-        .target_id = fwk_id_build_element_id(
-            fwk_module_id_system_coordinator, phase_idx),
+        .target_id = FWK_ID_MODULE(FWK_MODULE_IDX_SYSTEM_COORDINATOR),
         .id = mod_system_coordinator_event_phase,
     };
+    struct phase_event_params *evt_params =
+        (struct phase_event_params *)&phase_event.params;
 
+    *evt_params = *params;
     status = fwk_put_event(&phase_event);
     if (status != FWK_SUCCESS) {
         FWK_LOG_ERR(
@@ -77,7 +90,7 @@ static int send_phase_event(uint32_t phase_idx)
             __func__,
             __LINE__,
             status,
-            phase_idx);
+            params->phase_idx);
     }
 
     return status;
@@ -89,52 +102,62 @@ static int send_phase_event(uint32_t phase_idx)
 
 static void system_coordinator_cycle_alarm_callback(uintptr_t param)
 {
-    send_phase_event(FIRST_PHASE_INDEX);
+    uint32_t *cycle_count = &system_coordinator_ctx.cycle_count;
+    struct phase_event_params first_phase_params = { 0 };
+
+    (*cycle_count)++;
+
+    first_phase_params.phase_idx = FIRST_PHASE_INDEX;
+    first_phase_params.cycle_count = *cycle_count;
+
+    send_phase_event(&first_phase_params);
 }
 
 static void system_coordinator_phase_alarm_callback(uintptr_t param)
 {
-    uint32_t phase_index = (uint32_t)param;
-
-    send_phase_event(phase_index);
+    send_phase_event((struct phase_event_params *)param);
 }
 
 static int start_timer_for_next_phase(
     const struct mod_system_coordinator_phase_ctx *phase_ctx,
-    const uint32_t *phase_idx)
+    const struct phase_event_params *evt_params)
 {
     return system_coordinator_ctx.phase_alarm_api->start(
         system_coordinator_ctx.config->phase_alarm_id,
         phase_ctx->phase_config->phase_us,
         MOD_TIMER_ALARM_TYPE_ONCE,
         system_coordinator_phase_alarm_callback,
-        (uintptr_t)*phase_idx);
-
-    return FWK_SUCCESS;
+        (uintptr_t)evt_params);
 }
 
-static int process_current_phase(uint32_t phase_idx)
+static int process_current_phase(const struct phase_event_params *params)
 {
-    int status;
-    uint32_t next_phase_idx;
+    int status = FWK_SUCCESS;
+    struct phase_event_params next_phase_params = { 0 };
     struct mod_system_coordinator_phase_ctx *phase_ctx;
 
-    if (phase_idx >= system_coordinator_ctx.phase_count) {
+    if (params->phase_idx >= system_coordinator_ctx.phase_count) {
         return FWK_E_RANGE;
     }
 
-    next_phase_idx = phase_idx + 1;
-    phase_ctx = &system_coordinator_ctx.phase_ctx[phase_idx];
+    if (params->cycle_count != system_coordinator_ctx.cycle_count) {
+        FWK_LOG_ERR(MOD_NAME "Cycle count mismatch");
+        return FWK_E_STATE;
+    }
+
+    phase_ctx = &system_coordinator_ctx.phase_ctx[params->phase_idx];
+    next_phase_params.phase_idx = params->phase_idx + 1;
+    next_phase_params.cycle_count = params->cycle_count;
 
     if (phase_ctx->phase_config->phase_us == 0) {
         /* Send event to process next phase if current phase timer is 0 */
-        status = send_phase_event(next_phase_idx);
-    } else if (phase_idx < (system_coordinator_ctx.phase_count - 1)) {
+        status = send_phase_event(&next_phase_params);
+    } else if (params->phase_idx < (system_coordinator_ctx.phase_count - 1)) {
         /*
          * Start timer for next phase. Timer will be skip if the phase is the
          * last phase or the phase time value is 0.
          */
-        status = start_timer_for_next_phase(phase_ctx, &next_phase_idx);
+        status = start_timer_for_next_phase(phase_ctx, &next_phase_params);
     }
 
     if (status != FWK_SUCCESS) {
@@ -257,10 +280,13 @@ static int system_coordinator_bind(fwk_id_t id, unsigned int round)
 static int system_coordinator_start(fwk_id_t id)
 {
     int status;
+    struct phase_event_params params;
 
     if (!fwk_id_is_type(id, FWK_ID_TYPE_MODULE)) {
         return FWK_SUCCESS;
     }
+
+    system_coordinator_ctx.cycle_count = 0;
 
     /* Start cycle timer */
     status = system_coordinator_ctx.cycle_alarm_api->start(
@@ -273,8 +299,11 @@ static int system_coordinator_start(fwk_id_t id)
         return status;
     }
 
+    params.cycle_count = system_coordinator_ctx.cycle_count;
+    params.phase_idx = FIRST_PHASE_INDEX;
+
     /* Start first phase */
-    status = process_current_phase(FIRST_PHASE_INDEX);
+    status = process_current_phase(&params);
 
     return status;
 }
@@ -283,9 +312,7 @@ static int system_coordinator_process_event(
     const struct fwk_event *event,
     struct fwk_event *resp_event)
 {
-    uint32_t phase_idx;
-
-    phase_idx = fwk_id_get_element_idx(event->target_id);
+    struct phase_event_params *params;
 
     /*
      * Event from cycle and phase timer callback. Both timer callback send the
@@ -293,7 +320,8 @@ static int system_coordinator_process_event(
      * callback process the current phase.
      */
     if (fwk_id_is_equal(event->id, mod_system_coordinator_event_phase)) {
-        return process_current_phase(phase_idx);
+        params = (struct phase_event_params *)event->params;
+        return process_current_phase(params);
     }
 
     return FWK_E_PARAM;

@@ -20,6 +20,7 @@
 
 #include UNIT_TEST_SRC
 
+#define CYCLE_COUNT 100
 #define MOD_SYSTEM_COORDINATOR_ID \
     FWK_ID_MODULE(FWK_MODULE_IDX_SYSTEM_COORDINATOR)
 
@@ -45,6 +46,7 @@ void setUp(void)
     system_coordinator_ctx.cycle_alarm_api = &alarm_api_driver;
     system_coordinator_ctx.phase_alarm_api = &alarm_api_driver;
     system_coordinator_ctx.phase_count = SYS_COOR_PHASE_COUNT;
+    system_coordinator_ctx.cycle_count = CYCLE_COUNT;
 
     /* Initialise each phase */
     for (int i = 0; i < SYS_COOR_PHASE_COUNT; i++) {
@@ -65,31 +67,101 @@ void tearDown(void)
     Mockfwk_module_Destroy();
 }
 
+int start_alarm_callback(
+    fwk_id_t alarm_id,
+    unsigned int microseconds,
+    enum mod_timer_alarm_type type,
+    cmock_mod_system_coordinator_extra_func_ptr1 callback,
+    uintptr_t param,
+    int cmock_num_calls)
+{
+    struct phase_event_params *evt_params = (struct phase_event_params *)param;
+
+    TEST_ASSERT_EQUAL(SYS_COOR_PHASE_TWO, evt_params->phase_idx);
+
+    return FWK_SUCCESS;
+}
+
+void utest_cycle_alarm_callback_cycle_increment(void)
+{
+    struct fwk_event event = {
+        .source_id = FWK_ID_MODULE(FWK_MODULE_IDX_SYSTEM_COORDINATOR),
+        .target_id = FWK_ID_MODULE(FWK_MODULE_IDX_SYSTEM_COORDINATOR),
+        .id = mod_system_coordinator_event_phase,
+    };
+    struct phase_event_params *evt_params =
+        (struct phase_event_params *)event.params;
+
+    evt_params->phase_idx = SYS_COOR_PHASE_ONE;
+    evt_params->cycle_count = CYCLE_COUNT + 1;
+
+    __fwk_put_event_ExpectAndReturn(&event, FWK_SUCCESS);
+
+    system_coordinator_cycle_alarm_callback((uintptr_t)NULL);
+
+    TEST_ASSERT_EQUAL(CYCLE_COUNT + 1, system_coordinator_ctx.cycle_count);
+}
+
+void utest_cycle_alarm_callback_cycle_count_wraparound(void)
+{
+    struct fwk_event event = {
+        .source_id = FWK_ID_MODULE(FWK_MODULE_IDX_SYSTEM_COORDINATOR),
+        .target_id = FWK_ID_MODULE(FWK_MODULE_IDX_SYSTEM_COORDINATOR),
+        .id = mod_system_coordinator_event_phase,
+    };
+    struct phase_event_params *evt_params =
+        (struct phase_event_params *)event.params;
+
+    system_coordinator_ctx.cycle_count = UINT32_MAX;
+    evt_params->phase_idx = SYS_COOR_PHASE_ONE;
+    evt_params->cycle_count = 0;
+
+    __fwk_put_event_ExpectAndReturn(&event, FWK_SUCCESS);
+
+    system_coordinator_cycle_alarm_callback((uintptr_t)NULL);
+
+    TEST_ASSERT_EQUAL(0, system_coordinator_ctx.cycle_count);
+}
+
 void utest_process_current_phase_phase_count_invalid(void)
 {
     int status = FWK_E_INIT;
+    struct phase_event_params params = {
+        .phase_idx = SYS_COOR_PHASE_COUNT,
+        .cycle_count = CYCLE_COUNT,
+    };
 
-    status = process_current_phase(SYS_COOR_PHASE_COUNT);
+    status = process_current_phase(&params);
 
     TEST_ASSERT_EQUAL(FWK_E_RANGE, status);
 }
 
-void utest_process_current_phase_call_phase(void)
+void utest_process_current_phase_cycle_count_mismatch(void)
 {
     int status = FWK_E_INIT;
+    struct phase_event_params params = {
+        .phase_idx = SYS_COOR_PHASE_ONE,
+        .cycle_count = CYCLE_COUNT - 1,
+    };
 
-    start_alarm_api_ExpectAndReturn(
-        system_coordinator_ctx.config->phase_alarm_id,
-        system_coordinator_ctx.phase_ctx[SYS_COOR_PHASE_ONE]
-            .phase_config->phase_us,
-        MOD_TIMER_ALARM_TYPE_ONCE,
-        system_coordinator_phase_alarm_callback,
-        SYS_COOR_PHASE_TWO,
-        FWK_SUCCESS);
+    status = process_current_phase(&params);
+
+    TEST_ASSERT_EQUAL(FWK_E_STATE, status);
+}
+
+void utest_process_current_phase_start_phase_timer(void)
+{
+    int status = FWK_E_INIT;
+    struct phase_event_params params = {
+        .phase_idx = SYS_COOR_PHASE_ONE,
+        .cycle_count = CYCLE_COUNT,
+    };
+
+    start_alarm_api_StubWithCallback(start_alarm_callback);
 
     phase_api_stub_ExpectAndReturn(FWK_SUCCESS);
 
-    status = process_current_phase(SYS_COOR_PHASE_ONE);
+    status = process_current_phase(&params);
 
     TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
 }
@@ -97,10 +169,14 @@ void utest_process_current_phase_call_phase(void)
 void utest_process_current_phase_alarm_error(void)
 {
     int status = FWK_E_INIT;
+    struct phase_event_params params = {
+        .phase_idx = SYS_COOR_PHASE_ONE,
+        .cycle_count = CYCLE_COUNT,
+    };
 
     start_alarm_api_ExpectAnyArgsAndReturn(FWK_E_PARAM);
 
-    status = process_current_phase(SYS_COOR_PHASE_ONE);
+    status = process_current_phase(&params);
 
     TEST_ASSERT_EQUAL(FWK_E_PARAM, status);
 }
@@ -108,10 +184,14 @@ void utest_process_current_phase_alarm_error(void)
 void utest_process_current_phase_last_phase(void)
 {
     int status = FWK_E_INIT;
+    struct phase_event_params params = {
+        .phase_idx = SYS_COOR_PHASE_COUNT - 1,
+        .cycle_count = CYCLE_COUNT,
+    };
 
     phase_api_stub_ExpectAndReturn(FWK_SUCCESS);
 
-    status = process_current_phase(SYS_COOR_PHASE_COUNT - 1);
+    status = process_current_phase(&params);
 
     TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
 }
@@ -119,11 +199,25 @@ void utest_process_current_phase_last_phase(void)
 void utest_process_current_phase_phase_time_zero(void)
 {
     int status = FWK_E_INIT;
+    struct phase_event_params params = {
+        .phase_idx = SYS_COOR_PHASE_TWO,
+        .cycle_count = CYCLE_COUNT,
+    };
+    struct fwk_event event = {
+        .source_id = FWK_ID_MODULE(FWK_MODULE_IDX_SYSTEM_COORDINATOR),
+        .target_id = FWK_ID_MODULE(FWK_MODULE_IDX_SYSTEM_COORDINATOR),
+        .id = mod_system_coordinator_event_phase,
+    };
+    struct phase_event_params *evt_params =
+        (struct phase_event_params *)event.params;
+
+    evt_params->phase_idx = SYS_COOR_PHASE_THREE;
+    evt_params->cycle_count = CYCLE_COUNT;
 
     phase_api_stub_ExpectAndReturn(FWK_SUCCESS);
-    __fwk_put_event_ExpectAnyArgsAndReturn(FWK_SUCCESS);
+    __fwk_put_event_ExpectAndReturn(&event, FWK_SUCCESS);
 
-    status = process_current_phase(SYS_COOR_PHASE_TWO);
+    status = process_current_phase(&params);
 
     TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
 }
@@ -274,20 +368,14 @@ void utest_system_coordinator_start_success(void)
         0,
         FWK_SUCCESS);
 
-    start_alarm_api_ExpectAndReturn(
-        system_coordinator_ctx.config->phase_alarm_id,
-        system_coordinator_ctx.phase_ctx[SYS_COOR_PHASE_ONE]
-            .phase_config->phase_us,
-        MOD_TIMER_ALARM_TYPE_ONCE,
-        system_coordinator_phase_alarm_callback,
-        SYS_COOR_PHASE_TWO,
-        FWK_SUCCESS);
+    start_alarm_api_ExpectAnyArgsAndReturn(FWK_SUCCESS);
 
     phase_api_stub_ExpectAndReturn(FWK_SUCCESS);
 
     status = system_coordinator_start(fwk_module_id_system_coordinator);
 
     TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
+    TEST_ASSERT_EQUAL(0, system_coordinator_ctx.cycle_count);
 }
 
 void utest_system_coordinator_process_event_event_not_found(void)
@@ -310,8 +398,12 @@ int system_coordinator_test_main(void)
 {
     UNITY_BEGIN();
 
+    RUN_TEST(utest_cycle_alarm_callback_cycle_increment);
+    RUN_TEST(utest_cycle_alarm_callback_cycle_count_wraparound);
+
     RUN_TEST(utest_process_current_phase_phase_count_invalid);
-    RUN_TEST(utest_process_current_phase_call_phase);
+    RUN_TEST(utest_process_current_phase_cycle_count_mismatch);
+    RUN_TEST(utest_process_current_phase_start_phase_timer);
     RUN_TEST(utest_process_current_phase_alarm_error);
     RUN_TEST(utest_process_current_phase_last_phase);
     RUN_TEST(utest_process_current_phase_phase_time_zero);
