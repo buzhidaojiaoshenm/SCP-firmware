@@ -92,8 +92,6 @@ enum scmi_power_capping_notification_id {
     (~(SCMI_POWER_CAPPING_IGN_DEL_RES_FLAG_MASK | \
        SCMI_POWER_CAPPING_ASYNC_FLAG_MASK))
 
-#define SCMI_POWER_CAPPING_DISABLE_CAP_VALUE ((uint32_t)0)
-
 #define SCMI_POWER_CAPPING_PAI_RESERVED_FLAG 0u
 
 #define UNSUPPORTED_CONFIG_PAI_VALUE 1u
@@ -262,27 +260,16 @@ struct scmi_power_capping_measurements_changed_p2a {
 /*
  * Framework interface.
  */
-void pcapping_protocol_init(struct mod_scmi_power_capping_context *ctx);
-
-int pcapping_protocol_domain_init(
-    uint32_t domain_idx,
-    const struct mod_scmi_power_capping_domain_config *config);
-
 int pcapping_protocol_bind(void);
 
-int pcapping_protocol_start(fwk_id_t id);
-
-int pcapping_protocol_process_fwk_notification(const struct fwk_event *event);
+int pcapping_protocol_start(void);
 
 int pcapping_protocol_process_bind_request(fwk_id_t api_id, const void **api);
 
-void pcapping_protocol_set_power_apis(
-    struct mod_scmi_power_capping_power_apis *power_management_apis);
-
-#ifdef BUILD_HAS_SCMI_NOTIFICATIONS
 int pcapping_protocol_process_cap_pai_notify_event(
     const struct fwk_event *event);
 
+#ifdef BUILD_HAS_SCMI_NOTIFICATIONS
 int pcapping_protocol_process_measurements_notify_event(
     const struct fwk_event *event);
 #endif

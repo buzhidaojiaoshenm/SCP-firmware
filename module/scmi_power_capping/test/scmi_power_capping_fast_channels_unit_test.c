@@ -71,8 +71,6 @@ static const struct mod_scmi_power_capping_domain_config
         .fch_config = fch_config,
         .power_capping_domain_id =
             FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_POWER_CAPPING, __LINE__),
-        .power_coordinator_domain_id =
-            FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_POWER_COORDINATOR, __LINE__),
     };
 
 static const struct mod_transport_fast_channels_api transport_fch_api = {

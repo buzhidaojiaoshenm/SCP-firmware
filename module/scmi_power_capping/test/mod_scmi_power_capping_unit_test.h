@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2023, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2023-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -42,9 +42,6 @@ enum fake_power_capping_domains {
 
 #define ASYNC_FLAG(x)        (x << 1)
 #define IGN_DEL_RESP_FLAG(x) (x)
-
-#define MIN_DEFAULT_PAI (10u)
-#define MAX_DEFAULT_PAI (MIN_DEFAULT_PAI * 10u)
 
 #define MIN_DEFAULT_POWER_CAP (10u)
 #define MAX_DEFAULT_POWER_CAP (MIN_DEFAULT_POWER_CAP * 10u)

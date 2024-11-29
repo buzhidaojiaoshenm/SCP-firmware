@@ -68,7 +68,6 @@ struct scmi_pcapping_fch_config {
  * \brief SCMI Power capping domain configuration.
  */
 struct mod_scmi_power_capping_domain_config {
-#ifdef BUILD_HAS_SCMI_POWER_CAPPING_STD_COMMANDS
     /*!
      * \brief Minimum power cap.
      *
@@ -94,6 +93,12 @@ struct mod_scmi_power_capping_domain_config {
     uint32_t power_cap_step;
 
     /*!
+     * \brief PAI configuration support.
+     */
+    bool pai_config_support;
+
+#ifdef BUILD_HAS_SCMI_POWER_CAPPING_STD_COMMANDS
+    /*!
      * \brief Sustainable Power.
      *
      * \details The maximum sustainable power consumption
@@ -101,11 +106,6 @@ struct mod_scmi_power_capping_domain_config {
      *     all known external factors like thermal constraints.
      */
     uint32_t max_sustainable_power;
-
-    /*!
-     * \brief PAI configuration support.
-     */
-    bool pai_config_support;
 
     /*!
      * \brief Parent id.
@@ -149,16 +149,6 @@ struct mod_scmi_power_capping_domain_config {
      * \brief ID of the corresponding power capping domain.
      */
     fwk_id_t power_capping_domain_id;
-
-    /*!
-     * \brief ID of the corresponding power coordinator domain.
-     */
-    fwk_id_t power_coordinator_domain_id;
-
-    /*!
-     * \brief ID of the corresponding power meter domain.
-     */
-    fwk_id_t power_meter_domain_id;
 };
 
 /*!

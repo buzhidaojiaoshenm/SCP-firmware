@@ -16,6 +16,7 @@
 #include <Mockmod_power_capping_extra.h>
 #include <Mockmod_resource_perms_extra.h>
 #include <Mockmod_scmi_extra.h>
+#include <Mockscmi_power_capping_core.h>
 #include <internal/Mockfwk_core_internal.h>
 
 #include <mod_scmi_power_capping_unit_test.h>
@@ -40,23 +41,15 @@
 
 #define TEST_SCMI_COMMAND_NO_PAYLOAD(message_id) \
     do { \
-        status = scmi_power_capping_message_handler( \
-            dummy_protocol_id, \
-            service_id_1, \
-            (void *)&dummy_protocol_id, \
-            0, \
-            message_id); \
+        status = handler_table[message_id]( \
+            service_id_1, (void *)&dummy_protocol_id); \
         TEST_ASSERT_EQUAL(status, FWK_SUCCESS); \
     } while (0)
 
 #define TEST_SCMI_COMMAND(message_id, cmd_payload) \
     do { \
-        status = scmi_power_capping_message_handler( \
-            dummy_protocol_id, \
-            service_id_1, \
-            (void *)&cmd_payload, \
-            sizeof(cmd_payload), \
-            message_id); \
+        status = \
+            handler_table[message_id](service_id_1, (void *)&cmd_payload); \
         TEST_ASSERT_EQUAL(status, FWK_SUCCESS); \
     } while (0)
 
@@ -67,13 +60,6 @@
             MOD_RES_PERMS_ACCESS_ALLOWED); \
     } while (0)
 
-#define RESOURCE_PERMISSION_PROTOCOL_PASS_TEST() \
-    do { \
-        get_agent_id_ExpectAnyArgsAndReturn(FWK_SUCCESS); \
-        agent_has_protocol_permission_ExpectAnyArgsAndReturn( \
-            MOD_RES_PERMS_ACCESS_ALLOWED); \
-    } while (0)
-
 static int status;
 
 static const struct mod_scmi_from_protocol_api scmi_api = {
@@ -81,16 +67,6 @@ static const struct mod_scmi_from_protocol_api scmi_api = {
     .get_agent_id = get_agent_id,
     .get_agent_count = get_agent_count,
     .scmi_message_validation = mod_scmi_from_protocol_api_scmi_frame_validation,
-};
-
-static const struct mod_power_capping_api power_capping_api = {
-    .get_applied_cap = get_applied_cap,
-    .request_cap = request_cap,
-    .get_average_power = get_average_power,
-    .get_averaging_interval = get_averaging_interval,
-    .get_averaging_interval_range = get_averaging_interval_range,
-    .get_averaging_interval_step = get_averaging_interval_step,
-    .set_averaging_interval = set_averaging_interval,
 };
 
 #ifdef BUILD_HAS_MOD_RESOURCE_PERMS
@@ -109,72 +85,11 @@ static const struct mod_scmi_notification_api scmi_notification_api = {
 };
 #endif
 
-static const struct mod_scmi_power_capping_power_apis power_management_apis = {
-    .power_capping_api = &power_capping_api,
-};
-
 static fwk_id_t service_id_1 =
     FWK_ID_ELEMENT_INIT(FAKE_SCMI_MODULE_ID, FAKE_SERVICE_IDX_1);
 static fwk_id_t dummy_protocol_id;
-static uint32_t dummy_payload;
 
-static const struct mod_scmi_power_capping_domain_config
-    scmi_power_capping_default_config = {
-        .parent_idx = __LINE__,
-        .power_capping_domain_id =
-            FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_POWER_CAPPING, __LINE__),
-#ifdef BUILD_HAS_SCMI_NOTIFICATIONS
-        .cap_pai_change_notification_support = true,
-#endif
-        .min_power_cap = MIN_DEFAULT_POWER_CAP,
-        .max_power_cap = MAX_DEFAULT_POWER_CAP,
-        .power_cap_step = 1,
-        .pai_config_support = true,
-    };
-
-static const struct mod_scmi_power_capping_domain_config
-    scmi_power_capping_config_1 = {
-        .parent_idx = __LINE__,
-        .power_capping_domain_id =
-            FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_POWER_CAPPING, __LINE__),
-        .min_power_cap = MIN_DEFAULT_POWER_CAP,
-        .max_power_cap = MIN_DEFAULT_POWER_CAP,
-        .pai_config_support = true,
-    };
-
-static struct mod_scmi_power_capping_domain_context
-    domain_ctx_table[FAKE_POWER_CAPPING_IDX_COUNT];
-
-/* Helper functions */
-static void test_set_domain_cap_pending_service_id(
-    unsigned int domain_idx,
-    fwk_id_t service_id)
-{
-    domain_ctx_table[domain_idx].cap_pending_service_id = service_id;
-}
-
-#ifdef BUILD_HAS_SCMI_NOTIFICATIONS
-static void test_set_domain_cap_notification_service_id(
-    unsigned int domain_idx,
-    fwk_id_t service_id)
-{
-    domain_ctx_table[domain_idx].cap_notification_service_id = service_id;
-}
-
-static void test_set_domain_pai_notification_service_id(
-    unsigned int domain_idx,
-    fwk_id_t service_id)
-{
-    domain_ctx_table[domain_idx].pai_notification_service_id = service_id;
-}
-#endif
-
-static void test_request_cap_config_supported(
-    unsigned int domain_idx,
-    bool cap_config_supported)
-{
-    domain_ctx_table[domain_idx].cap_config_support = cap_config_supported;
-}
+static const uint32_t message_handler_helper_payload = __LINE__;
 
 /* Test functions */
 /* Initialize the tests */
@@ -188,32 +103,15 @@ static void test_init(void)
 #ifdef BUILD_HAS_SCMI_NOTIFICATIONS
     pcapping_protocol_ctx.scmi_notification_api = &scmi_notification_api;
 #endif
-    pcapping_protocol_ctx.power_management_apis = &power_management_apis;
-    pcapping_protocol_ctx.power_capping_domain_count =
-        FAKE_POWER_CAPPING_IDX_COUNT;
 }
 
 void setUp(void)
 {
     status = FWK_E_STATE;
-    pcapping_protocol_ctx.power_capping_domain_ctx_table = domain_ctx_table;
-    memset(domain_ctx_table, 0u, sizeof(domain_ctx_table));
-    for (unsigned int domain_id = 0; domain_id < FAKE_POWER_CAPPING_IDX_COUNT;
-         domain_id++) {
-        domain_ctx_table[domain_id].config = &scmi_power_capping_default_config;
-        test_set_domain_cap_pending_service_id(domain_id, FWK_ID_NONE);
-#ifdef BUILD_HAS_SCMI_NOTIFICATIONS
-        test_set_domain_cap_notification_service_id(domain_id, FWK_ID_NONE);
-        test_set_domain_pai_notification_service_id(domain_id, FWK_ID_NONE);
-#endif
-    }
-    pcapping_protocol_ctx.power_capping_domain_count =
-        FAKE_POWER_CAPPING_IDX_COUNT;
 }
 
 void tearDown(void)
 {
-    Mockmod_power_capping_extra_Verify();
     Mockmod_scmi_extra_Verify();
     Mockfwk_id_Verify();
 #ifdef BUILD_HAS_MOD_RESOURCE_PERMS
@@ -232,47 +130,62 @@ void utest_get_scmi_protocol_id(void)
     TEST_ASSERT_EQUAL(status, FWK_SUCCESS);
 }
 
-void utest_message_handler_cmd_error(void)
+void utest_message_handler_scmi_validation_respond_error(void)
 {
-    struct scmi_protocol_version_p2a ret_payload = {
-        .status = SCMI_PROTOCOL_ERROR,
-    };
+    fwk_id_t protocol_id = dummy_protocol_id;
+    const uint32_t *payload = &message_handler_helper_payload;
+    unsigned int message_id = __LINE__;
+    int validation_result = SCMI_PROTOCOL_ERROR;
 
-    mod_scmi_from_protocol_api_scmi_frame_validation_ExpectAnyArgsAndReturn(
-        SCMI_PROTOCOL_ERROR);
-    EXPECT_RESPONSE_ERROR(ret_payload);
-    /* Add payload to a command that normally doesn't expect a payload */
-    TEST_SCMI_COMMAND(MOD_SCMI_PROTOCOL_VERSION, dummy_payload);
+    mod_scmi_from_protocol_api_scmi_frame_validation_ExpectAndReturn(
+        MOD_SCMI_PROTOCOL_ID_POWER_CAPPING,
+        service_id_1,
+        payload,
+        sizeof(*payload),
+        message_id,
+        payload_size_table,
+        (unsigned int)MOD_SCMI_POWER_CAPPING_COMMAND_COUNT,
+        handler_table,
+        validation_result);
+
+    EXPECT_RESPONSE(validation_result, sizeof(validation_result));
+
+    scmi_power_capping_message_handler(
+        protocol_id, service_id_1, payload, sizeof(*payload), message_id);
 }
 
-void utest_message_handler_invalid_cmd(void)
+int message_handler_helper_mock(fwk_id_t service_id, const uint32_t *payload)
 {
-    struct scmi_protocol_version_p2a ret_payload = {
-        .status = SCMI_NOT_FOUND,
-    };
+    TEST_ASSERT_EQUAL_MEMORY(&service_id, &service_id_1, sizeof(service_id));
+    TEST_ASSERT_EQUAL(message_handler_helper_payload, *payload);
 
-    mod_scmi_from_protocol_api_scmi_frame_validation_ExpectAnyArgsAndReturn(
-        SCMI_NOT_FOUND);
-    EXPECT_RESPONSE_ERROR(ret_payload);
-    TEST_SCMI_COMMAND_NO_PAYLOAD(MOD_SCMI_POWER_CAPPING_COMMAND_COUNT);
+    return FWK_SUCCESS;
 }
 
-void utest_message_handler_un_implemented_message(void)
+void utest_message_handler_scmi_validation_respond_success(void)
 {
-    int (*temp_handle)(fwk_id_t, const uint32_t *);
-    struct scmi_protocol_version_p2a ret_payload = {
-        .status = SCMI_NOT_SUPPORTED,
-    };
+    fwk_id_t protocol_id = dummy_protocol_id;
+    const uint32_t *payload = &message_handler_helper_payload;
+    unsigned int message_id = MOD_SCMI_PROTOCOL_VERSION;
+    int validation_result = SCMI_SUCCESS;
 
-    temp_handle = handler_table[MOD_SCMI_PROTOCOL_VERSION];
-    handler_table[MOD_SCMI_PROTOCOL_VERSION] = NULL;
+    mod_scmi_from_protocol_api_scmi_frame_validation_ExpectAndReturn(
+        MOD_SCMI_PROTOCOL_ID_POWER_CAPPING,
+        service_id_1,
+        payload,
+        sizeof(*payload),
+        message_id,
+        payload_size_table,
+        (unsigned int)MOD_SCMI_POWER_CAPPING_COMMAND_COUNT,
+        handler_table,
+        validation_result);
+    handler_table_t message_handler_temp_ptr = handler_table[message_id];
+    handler_table[message_id] = message_handler_helper_mock;
 
-    mod_scmi_from_protocol_api_scmi_frame_validation_ExpectAnyArgsAndReturn(
-        SCMI_NOT_SUPPORTED);
-    EXPECT_RESPONSE_ERROR(ret_payload);
-    TEST_SCMI_COMMAND_NO_PAYLOAD(MOD_SCMI_PROTOCOL_VERSION);
+    scmi_power_capping_message_handler(
+        protocol_id, service_id_1, payload, sizeof(*payload), message_id);
 
-    handler_table[MOD_SCMI_PROTOCOL_VERSION] = temp_handle;
+    handler_table[message_id] = message_handler_temp_ptr;
 }
 
 void utest_message_handler_protocol_version(void)
@@ -282,55 +195,23 @@ void utest_message_handler_protocol_version(void)
         .version = SCMI_PROTOCOL_VERSION_POWER_CAPPING,
     };
 
-    mod_scmi_from_protocol_api_scmi_frame_validation_ExpectAnyArgsAndReturn(
-        SCMI_SUCCESS);
     EXPECT_RESPONSE_SUCCESS(ret_payload);
     TEST_SCMI_COMMAND_NO_PAYLOAD(MOD_SCMI_PROTOCOL_VERSION);
 }
 
 void utest_message_handler_protocol_attributes(void)
 {
+    uint32_t domain_count = FAKE_POWER_CAPPING_IDX_COUNT;
+
     struct scmi_protocol_attributes_p2a ret_payload = {
         .status = SCMI_SUCCESS,
-        .attributes = FAKE_POWER_CAPPING_IDX_COUNT,
+        .attributes = domain_count,
     };
 
-    mod_scmi_from_protocol_api_scmi_frame_validation_ExpectAnyArgsAndReturn(
-        SCMI_SUCCESS);
+    pcapping_core_get_domain_count_ExpectAndReturn(domain_count);
+
     EXPECT_RESPONSE_SUCCESS(ret_payload);
     TEST_SCMI_COMMAND_NO_PAYLOAD(MOD_SCMI_PROTOCOL_ATTRIBUTES);
-}
-
-void utest_message_handler_protocol_msg_attributes_unsupported_msgs(void)
-{
-    struct scmi_protocol_message_attributes_a2p cmd_payload = {
-        .message_id = MOD_SCMI_POWER_CAPPING_COMMAND_COUNT
-    };
-    struct scmi_protocol_message_attributes_p2a ret_payload = {
-        .status = SCMI_NOT_FOUND
-    };
-
-    mod_scmi_from_protocol_api_scmi_frame_validation_ExpectAnyArgsAndReturn(
-        SCMI_NOT_FOUND);
-    /* Test unsupported messages */
-    EXPECT_RESPONSE_ERROR(ret_payload);
-    TEST_SCMI_COMMAND(MOD_SCMI_PROTOCOL_MESSAGE_ATTRIBUTES, cmd_payload);
-}
-
-void utest_message_handler_protocol_msg_attributes_maxlimits(void)
-{
-    struct scmi_protocol_message_attributes_a2p cmd_payload = {
-        .message_id = UINT32_MAX
-    };
-    struct scmi_protocol_message_attributes_p2a ret_payload = {
-        .status = SCMI_NOT_FOUND
-    };
-
-    mod_scmi_from_protocol_api_scmi_frame_validation_ExpectAnyArgsAndReturn(
-        SCMI_NOT_FOUND);
-    /* Test unsupported messages */
-    EXPECT_RESPONSE_ERROR(ret_payload);
-    TEST_SCMI_COMMAND(MOD_SCMI_PROTOCOL_MESSAGE_ATTRIBUTES, cmd_payload);
 }
 
 void utest_message_handler_protocol_msg_attributes_supported_msgs(void)
@@ -346,8 +227,6 @@ void utest_message_handler_protocol_msg_attributes_supported_msgs(void)
          message_id++) {
         cmd_payload.message_id = message_id;
 
-        mod_scmi_from_protocol_api_scmi_frame_validation_ExpectAnyArgsAndReturn(
-            SCMI_SUCCESS);
 #ifdef BUILD_HAS_MOD_RESOURCE_PERMS
         RESOURCE_PERMISSION_RESOURCE_PASS_TEST();
 #endif
@@ -356,85 +235,82 @@ void utest_message_handler_protocol_msg_attributes_supported_msgs(void)
     }
 }
 
-void utest_message_handler_domain_invalid(void)
-{
-    struct scmi_power_capping_domain_attributes_a2p cmd_payload = {
-        .domain_id = FAKE_POWER_CAPPING_IDX_COUNT
-    };
-
-    struct scmi_power_capping_domain_attributes_p2a ret_payload = {
-        .status = SCMI_NOT_FOUND,
-    };
-
-    mod_scmi_from_protocol_api_scmi_frame_validation_ExpectAnyArgsAndReturn(
-        SCMI_NOT_FOUND);
-    EXPECT_RESPONSE_ERROR(ret_payload);
-    TEST_SCMI_COMMAND(MOD_SCMI_POWER_CAPPING_DOMAIN_ATTRIBUTES, cmd_payload);
-}
-
 void utest_message_handler_domain_attributes_valid(void)
 {
-    uint32_t min_pai = MIN_DEFAULT_PAI;
-    uint32_t max_pai = MAX_DEFAULT_PAI;
-    uint32_t pai_step = 1;
-
-    struct mod_scmi_power_capping_domain_context *domain_ctx =
-        &domain_ctx_table[FAKE_POWER_CAPPING_IDX_1];
-    const struct mod_scmi_power_capping_domain_config *config =
-        domain_ctx->config;
-
     struct scmi_power_capping_domain_attributes_a2p cmd_payload = {
-        .domain_id = FAKE_POWER_CAPPING_IDX_1
+        .domain_id = FAKE_POWER_CAPPING_IDX_1,
     };
 
-    domain_ctx->cap_config_support = true;
+    const struct mod_scmi_power_capping_domain_config config = {
+        .parent_idx = __LINE__,
+        .power_capping_domain_id =
+            FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_POWER_CAPPING, __LINE__),
+#ifdef BUILD_HAS_SCMI_NOTIFICATIONS
+        .cap_pai_change_notification_support = true,
+#endif
+        .min_power_cap = MIN_DEFAULT_POWER_CAP,
+        .max_power_cap = MAX_DEFAULT_POWER_CAP,
+        .power_cap_step = 1u,
+        .max_sustainable_power = 50u,
+        .pai_config_support = true,
+    };
+
+    const struct mod_scmi_power_capping_domain_config *config_ptr = &config;
+
+    uint32_t min_pai = 1u;
+    uint32_t max_pai = 100u;
+    uint32_t pai_step = 2u;
 
     struct scmi_power_capping_domain_attributes_p2a ret_payload = {
         .status = SCMI_SUCCESS,
-        .attributes = 1u << POWER_CAP_CONF_SUP_POS | 1u << PAI_CONF_SUP_POS |
-            config->power_cap_unit << POWER_UNIT_POS,
+        .attributes = 1u << POWER_CAP_CONF_SUP_POS |
+            config.power_cap_unit << POWER_UNIT_POS |
+            config.pai_config_support << PAI_CONF_SUP_POS,
         .name = "TestPowerCap",
         .min_pai = min_pai,
         .max_pai = max_pai,
         .pai_step = pai_step,
-        .min_power_cap = config->min_power_cap,
-        .max_power_cap = config->max_power_cap,
-        .power_cap_step = config->power_cap_step,
-        .max_sustainable_power = config->max_sustainable_power,
-        .parent_id = config->parent_idx,
+        .min_power_cap = config.min_power_cap,
+        .max_power_cap = config.max_power_cap,
+        .power_cap_step = config.power_cap_step,
+        .max_sustainable_power = config.max_sustainable_power,
+        .parent_id = config.parent_idx,
     };
 
-    uint32_t expected_pai_step = pai_step;
-    uint32_t expected_min_pai = min_pai;
-    uint32_t expected_max_pai = max_pai;
-
-    get_averaging_interval_step_ExpectAndReturn(
-        config->power_capping_domain_id, NULL, FWK_SUCCESS);
-    get_averaging_interval_step_IgnoreArg_pai_step();
-    get_averaging_interval_step_ReturnThruPtr_pai_step(&expected_pai_step);
-
-    get_averaging_interval_range_ExpectAndReturn(
-        config->power_capping_domain_id, NULL, NULL, FWK_SUCCESS);
-    get_averaging_interval_range_IgnoreArg_min_pai();
-    get_averaging_interval_range_IgnoreArg_max_pai();
-    get_averaging_interval_range_ReturnThruPtr_min_pai(&expected_min_pai);
-    get_averaging_interval_range_ReturnThruPtr_max_pai(&expected_max_pai);
-
 #ifdef BUILD_HAS_SCMI_NOTIFICATIONS
-    ret_payload.attributes |= config->cap_pai_change_notification_support
+    ret_payload.attributes |= config.cap_pai_change_notification_support
         << POWER_CAPPING_NOTIF_SUP_POS;
     ret_payload.attributes |=
-        config->power_measurements_change_notification_support
+        config.power_measurements_change_notification_support
         << POWER_MEAS_NOTIF_SUP_POS;
 #endif
+
+    pcapping_core_get_pai_info_ExpectAndReturn(
+        cmd_payload.domain_id, NULL, NULL, NULL, FWK_SUCCESS);
+    pcapping_core_get_pai_info_IgnoreArg_min_pai();
+    pcapping_core_get_pai_info_IgnoreArg_max_pai();
+    pcapping_core_get_pai_info_IgnoreArg_pai_step();
+
+    pcapping_core_get_pai_info_ReturnThruPtr_min_pai(&min_pai);
+    pcapping_core_get_pai_info_ReturnThruPtr_max_pai(&max_pai);
+    pcapping_core_get_pai_info_ReturnThruPtr_pai_step(&pai_step);
+
+    pcapping_core_get_config_ExpectAndReturn(
+        cmd_payload.domain_id, NULL, FWK_SUCCESS);
+    pcapping_core_get_config_IgnoreArg_config();
+    pcapping_core_get_config_ReturnThruPtr_config(&config_ptr);
+
+    pcapping_core_get_cap_support_ExpectAndReturn(
+        cmd_payload.domain_id, NULL, FWK_SUCCESS);
+    pcapping_core_get_cap_support_IgnoreArg_support();
+    bool cap_support = true;
+    pcapping_core_get_cap_support_ReturnThruPtr_support(&cap_support);
 
     fwk_module_get_element_name_ExpectAndReturn(
         FWK_ID_ELEMENT(
             FWK_MODULE_IDX_SCMI_POWER_CAPPING, cmd_payload.domain_id),
         (char *)ret_payload.name);
 
-    mod_scmi_from_protocol_api_scmi_frame_validation_ExpectAnyArgsAndReturn(
-        SCMI_SUCCESS);
     EXPECT_RESPONSE_SUCCESS(ret_payload);
     TEST_SCMI_COMMAND(MOD_SCMI_POWER_CAPPING_DOMAIN_ATTRIBUTES, cmd_payload);
 }
@@ -452,16 +328,11 @@ void utest_message_handler_power_capping_get_valid(void)
         .power_cap = cap,
     };
 
-    get_applied_cap_ExpectWithArrayAndReturn(
-        scmi_power_capping_default_config.power_capping_domain_id,
-        &cap,
-        sizeof(cap),
-        FWK_SUCCESS);
-    get_applied_cap_IgnoreArg_cap();
-    get_applied_cap_ReturnMemThruPtr_cap(&cap, sizeof(cap));
+    pcapping_core_get_cap_ExpectWithArrayAndReturn(
+        cmd_payload.domain_id, &cap, sizeof(cap), FWK_SUCCESS);
+    pcapping_core_get_cap_IgnoreArg_cap();
+    pcapping_core_get_cap_ReturnMemThruPtr_cap(&cap, sizeof(cap));
 
-    mod_scmi_from_protocol_api_scmi_frame_validation_ExpectAnyArgsAndReturn(
-        SCMI_SUCCESS);
     EXPECT_RESPONSE_SUCCESS(ret_payload);
     TEST_SCMI_COMMAND(MOD_SCMI_POWER_CAPPING_CAP_GET, cmd_payload);
 }
@@ -478,15 +349,10 @@ void utest_message_handler_power_capping_get_failure(void)
         .status = SCMI_GENERIC_ERROR,
     };
 
-    get_applied_cap_ExpectWithArrayAndReturn(
-        scmi_power_capping_default_config.power_capping_domain_id,
-        &cap,
-        sizeof(cap),
-        FWK_E_DEVICE);
-    get_applied_cap_IgnoreArg_cap();
+    pcapping_core_get_cap_ExpectWithArrayAndReturn(
+        cmd_payload.domain_id, &cap, sizeof(cap), FWK_E_DEVICE);
+    pcapping_core_get_cap_IgnoreArg_cap();
 
-    mod_scmi_from_protocol_api_scmi_frame_validation_ExpectAnyArgsAndReturn(
-        SCMI_SUCCESS);
     EXPECT_RESPONSE_ERROR(ret_payload);
     TEST_SCMI_COMMAND(MOD_SCMI_POWER_CAPPING_CAP_GET, cmd_payload);
 }
@@ -502,28 +368,27 @@ void utest_message_handler_power_capping_set_invalid_flags(void)
         .status = SCMI_INVALID_PARAMETERS,
     };
 
-    mod_scmi_from_protocol_api_scmi_frame_validation_ExpectAnyArgsAndReturn(
-        SCMI_INVALID_PARAMETERS);
     EXPECT_RESPONSE_ERROR(ret_payload);
     TEST_SCMI_COMMAND(MOD_SCMI_POWER_CAPPING_CAP_SET, cmd_payload);
 }
 
 void utest_message_handler_power_capping_set_config_not_supported(void)
 {
+    uint32_t cap = 12U;
+
     struct scmi_power_capping_cap_set_a2p cmd_payload = {
         .domain_id = FAKE_POWER_CAPPING_IDX_1,
         .flags = ASYNC_FLAG(1) | IGN_DEL_RESP_FLAG(1),
+        .power_cap = cap,
     };
 
     struct scmi_power_capping_cap_set_p2a ret_payload = {
         .status = SCMI_NOT_SUPPORTED,
     };
 
-    domain_ctx_table[FAKE_POWER_CAPPING_IDX_1].config =
-        &scmi_power_capping_config_1;
+    pcapping_core_set_cap_ExpectAndReturn(
+        service_id_1, cmd_payload.domain_id, true, cap, FWK_E_SUPPORT);
 
-    mod_scmi_from_protocol_api_scmi_frame_validation_ExpectAnyArgsAndReturn(
-        SCMI_NOT_SUPPORTED);
     EXPECT_RESPONSE_SUCCESS(ret_payload);
     TEST_SCMI_COMMAND(MOD_SCMI_POWER_CAPPING_CAP_SET, cmd_payload);
 }
@@ -539,8 +404,6 @@ void utest_message_handler_power_capping_set_async_del_not_supported(void)
         .status = SCMI_NOT_SUPPORTED,
     };
 
-    mod_scmi_from_protocol_api_scmi_frame_validation_ExpectAnyArgsAndReturn(
-        SCMI_NOT_SUPPORTED);
     EXPECT_RESPONSE_SUCCESS(ret_payload);
     TEST_SCMI_COMMAND(MOD_SCMI_POWER_CAPPING_CAP_SET, cmd_payload);
 }
@@ -558,19 +421,14 @@ void utest_message_handler_power_capping_set_domain_busy(void)
         .status = SCMI_BUSY,
     };
 
-    test_set_domain_cap_pending_service_id(cmd_payload.domain_id, service_id_1);
+    pcapping_core_set_cap_ExpectAndReturn(
+        service_id_1, cmd_payload.domain_id, false, cap, FWK_E_BUSY);
 
-    test_request_cap_config_supported(cmd_payload.domain_id, true);
-
-    fwk_id_is_equal_ExpectAndReturn(service_id_1, FWK_ID_NONE, false);
-
-    mod_scmi_from_protocol_api_scmi_frame_validation_ExpectAnyArgsAndReturn(
-        SCMI_SUCCESS);
     EXPECT_RESPONSE_ERROR(ret_payload);
     TEST_SCMI_COMMAND(MOD_SCMI_POWER_CAPPING_CAP_SET, cmd_payload);
 }
 
-void utest_message_handler_power_capping_set_less_than_min_cap(void)
+void utest_message_handler_power_capping_set_out_of_range(void)
 {
     uint32_t cap = MIN_DEFAULT_POWER_CAP - 1u;
     struct scmi_power_capping_cap_set_a2p cmd_payload = {
@@ -583,31 +441,9 @@ void utest_message_handler_power_capping_set_less_than_min_cap(void)
         .status = SCMI_OUT_OF_RANGE,
     };
 
-    test_request_cap_config_supported(cmd_payload.domain_id, true);
+    pcapping_core_set_cap_ExpectAndReturn(
+        service_id_1, cmd_payload.domain_id, false, cap, FWK_E_RANGE);
 
-    mod_scmi_from_protocol_api_scmi_frame_validation_ExpectAnyArgsAndReturn(
-        SCMI_SUCCESS);
-    EXPECT_RESPONSE_ERROR(ret_payload);
-    TEST_SCMI_COMMAND(MOD_SCMI_POWER_CAPPING_CAP_SET, cmd_payload);
-}
-
-void utest_message_handler_power_capping_set_more_than_max_cap(void)
-{
-    uint32_t cap = MAX_DEFAULT_POWER_CAP + 1u;
-    struct scmi_power_capping_cap_set_a2p cmd_payload = {
-        .domain_id = FAKE_POWER_CAPPING_IDX_1,
-        .power_cap = cap,
-        .flags = ASYNC_FLAG(0),
-    };
-
-    struct scmi_power_capping_cap_set_p2a ret_payload = {
-        .status = SCMI_OUT_OF_RANGE,
-    };
-
-    test_request_cap_config_supported(cmd_payload.domain_id, true);
-
-    mod_scmi_from_protocol_api_scmi_frame_validation_ExpectAnyArgsAndReturn(
-        SCMI_SUCCESS);
     EXPECT_RESPONSE_ERROR(ret_payload);
     TEST_SCMI_COMMAND(MOD_SCMI_POWER_CAPPING_CAP_SET, cmd_payload);
 }
@@ -623,33 +459,13 @@ void utest_message_handler_power_capping_set_success_pending(void)
         .flags = ASYNC_FLAG(0),
     };
 
-    test_request_cap_config_supported(cmd_payload.domain_id, true);
+    pcapping_core_set_cap_ExpectAndReturn(
+        service_id_1, cmd_payload.domain_id, false, cap, FWK_PENDING);
 
-    request_cap_ExpectAndReturn(
-        scmi_power_capping_default_config.power_capping_domain_id,
-        cmd_payload.power_cap,
-        FWK_PENDING);
-
-    fwk_id_is_equal_ExpectAndReturn(FWK_ID_NONE, FWK_ID_NONE, true);
-
-#ifdef BUILD_HAS_SCMI_NOTIFICATIONS
-    fwk_id_is_equal_ExpectAndReturn(FWK_ID_NONE, FWK_ID_NONE, true);
-#endif
-
-    mod_scmi_from_protocol_api_scmi_frame_validation_ExpectAnyArgsAndReturn(
-        SCMI_SUCCESS);
-
-    status = scmi_power_capping_message_handler(
-        dummy_protocol_id,
-        service_id_1,
-        (void *)&cmd_payload,
-        sizeof(cmd_payload),
-        MOD_SCMI_POWER_CAPPING_CAP_SET);
+    status = handler_table[MOD_SCMI_POWER_CAPPING_CAP_SET](
+        service_id_1, (void *)&cmd_payload);
 
     TEST_ASSERT_EQUAL_UINT32(status, FWK_SUCCESS);
-    TEST_ASSERT_EQUAL_UINT32(
-        domain_ctx_table[cmd_payload.domain_id].cap_pending_service_id.value,
-        service_id_1.value);
 }
 
 void utest_message_handler_power_capping_set_success_sync(void)
@@ -665,53 +481,9 @@ void utest_message_handler_power_capping_set_success_sync(void)
         .status = SCMI_SUCCESS,
     };
 
-    test_request_cap_config_supported(cmd_payload.domain_id, true);
+    pcapping_core_set_cap_ExpectAndReturn(
+        service_id_1, cmd_payload.domain_id, false, cap, FWK_SUCCESS);
 
-    request_cap_ExpectAndReturn(
-        scmi_power_capping_default_config.power_capping_domain_id,
-        cmd_payload.power_cap,
-        FWK_SUCCESS);
-
-    fwk_id_is_equal_ExpectAndReturn(FWK_ID_NONE, FWK_ID_NONE, true);
-
-#ifdef BUILD_HAS_SCMI_NOTIFICATIONS
-    fwk_id_is_equal_ExpectAndReturn(FWK_ID_NONE, FWK_ID_NONE, true);
-#endif
-
-    mod_scmi_from_protocol_api_scmi_frame_validation_ExpectAnyArgsAndReturn(
-        SCMI_SUCCESS);
-    EXPECT_RESPONSE_SUCCESS(ret_payload);
-    TEST_SCMI_COMMAND(MOD_SCMI_POWER_CAPPING_CAP_SET, cmd_payload);
-}
-
-void utest_message_handler_power_capping_set_success_sync_uncap(void)
-{
-    uint32_t cap = DISABLE_CAP_VALUE;
-    struct scmi_power_capping_cap_set_a2p cmd_payload = {
-        .domain_id = FAKE_POWER_CAPPING_IDX_1,
-        .power_cap = cap,
-        .flags = ASYNC_FLAG(0),
-    };
-
-    struct scmi_power_capping_cap_set_p2a ret_payload = {
-        .status = SCMI_SUCCESS,
-    };
-
-    test_request_cap_config_supported(cmd_payload.domain_id, true);
-
-    request_cap_ExpectAndReturn(
-        scmi_power_capping_default_config.power_capping_domain_id,
-        cmd_payload.power_cap,
-        FWK_SUCCESS);
-
-    fwk_id_is_equal_ExpectAndReturn(FWK_ID_NONE, FWK_ID_NONE, true);
-
-#ifdef BUILD_HAS_SCMI_NOTIFICATIONS
-    fwk_id_is_equal_ExpectAndReturn(FWK_ID_NONE, FWK_ID_NONE, true);
-#endif
-
-    mod_scmi_from_protocol_api_scmi_frame_validation_ExpectAnyArgsAndReturn(
-        SCMI_SUCCESS);
     EXPECT_RESPONSE_SUCCESS(ret_payload);
     TEST_SCMI_COMMAND(MOD_SCMI_POWER_CAPPING_CAP_SET, cmd_payload);
 }
@@ -729,15 +501,13 @@ void utest_message_handler_power_capping_get_pai_valid(void)
         .pai = pai,
     };
 
-    get_averaging_interval_ExpectAndReturn(
-        scmi_power_capping_default_config.power_capping_domain_id,
-        NULL,
-        FWK_SUCCESS);
-    get_averaging_interval_IgnoreArg_pai();
-    get_averaging_interval_ReturnThruPtr_pai(&pai);
+    pcapping_core_get_pai_ExpectAndReturn(
+        cmd_payload.domain_id, NULL, FWK_SUCCESS);
 
-    mod_scmi_from_protocol_api_scmi_frame_validation_ExpectAnyArgsAndReturn(
-        SCMI_SUCCESS);
+    pcapping_core_get_pai_IgnoreArg_pai();
+
+    pcapping_core_get_pai_ReturnThruPtr_pai(&pai);
+
     EXPECT_RESPONSE_SUCCESS(ret_payload);
     TEST_SCMI_COMMAND(MOD_SCMI_POWER_CAPPING_PAI_GET, cmd_payload);
 }
@@ -752,21 +522,15 @@ void utest_message_handler_power_capping_get_pai_failure(void)
         .status = SCMI_GENERIC_ERROR,
     };
 
-    get_averaging_interval_ExpectAndReturn(
-        scmi_power_capping_default_config.power_capping_domain_id,
-        NULL,
-        FWK_E_DEVICE);
-    get_averaging_interval_IgnoreArg_pai();
+    pcapping_core_get_pai_ExpectAnyArgsAndReturn(FWK_E_STATE);
 
-    mod_scmi_from_protocol_api_scmi_frame_validation_ExpectAnyArgsAndReturn(
-        SCMI_SUCCESS);
     EXPECT_RESPONSE_ERROR(ret_payload);
     TEST_SCMI_COMMAND(MOD_SCMI_POWER_CAPPING_PAI_GET, cmd_payload);
 }
 
 void utest_message_handler_power_capping_set_pai_valid(void)
 {
-    uint32_t pai = MIN_DEFAULT_PAI;
+    uint32_t pai = 2u;
 
     struct scmi_power_capping_pai_set_a2p cmd_payload = {
         .domain_id = FAKE_POWER_CAPPING_IDX_1,
@@ -777,24 +541,16 @@ void utest_message_handler_power_capping_set_pai_valid(void)
         .status = SCMI_SUCCESS,
     };
 
-#ifdef BUILD_HAS_SCMI_NOTIFICATIONS
-    fwk_id_is_equal_ExpectAndReturn(FWK_ID_NONE, FWK_ID_NONE, true);
-#endif
+    pcapping_core_set_pai_ExpectAndReturn(
+        service_id_1, cmd_payload.domain_id, pai, FWK_SUCCESS);
 
-    set_averaging_interval_ExpectAndReturn(
-        scmi_power_capping_default_config.power_capping_domain_id,
-        pai,
-        FWK_SUCCESS);
-
-    mod_scmi_from_protocol_api_scmi_frame_validation_ExpectAnyArgsAndReturn(
-        SCMI_SUCCESS);
     EXPECT_RESPONSE_SUCCESS(ret_payload);
     TEST_SCMI_COMMAND(MOD_SCMI_POWER_CAPPING_PAI_SET, cmd_payload);
 }
 
 void utest_message_handler_power_capping_set_pai_failure(void)
 {
-    uint32_t pai = MAX_DEFAULT_PAI;
+    uint32_t pai = 3u;
 
     struct scmi_power_capping_pai_set_a2p cmd_payload = {
         .domain_id = FAKE_POWER_CAPPING_IDX_1,
@@ -805,24 +561,16 @@ void utest_message_handler_power_capping_set_pai_failure(void)
         .status = SCMI_GENERIC_ERROR,
     };
 
-#ifdef BUILD_HAS_SCMI_NOTIFICATIONS
-    fwk_id_is_equal_ExpectAndReturn(FWK_ID_NONE, FWK_ID_NONE, true);
-#endif
+    pcapping_core_set_pai_ExpectAndReturn(
+        service_id_1, cmd_payload.domain_id, pai, FWK_E_DEVICE);
 
-    set_averaging_interval_ExpectAndReturn(
-        scmi_power_capping_default_config.power_capping_domain_id,
-        pai,
-        FWK_E_DEVICE);
-
-    mod_scmi_from_protocol_api_scmi_frame_validation_ExpectAnyArgsAndReturn(
-        SCMI_SUCCESS);
     EXPECT_RESPONSE_ERROR(ret_payload);
     TEST_SCMI_COMMAND(MOD_SCMI_POWER_CAPPING_PAI_SET, cmd_payload);
 }
 
-void utest_message_handler_power_capping_set_less_than_min_pai(void)
+void utest_message_handler_power_capping_set_pai_out_of_range(void)
 {
-    uint32_t pai = MIN_DEFAULT_PAI - 1u;
+    uint32_t pai = 3u;
     struct scmi_power_capping_pai_set_a2p cmd_payload = {
         .domain_id = FAKE_POWER_CAPPING_IDX_1,
         .pai = pai,
@@ -832,44 +580,9 @@ void utest_message_handler_power_capping_set_less_than_min_pai(void)
         .status = SCMI_OUT_OF_RANGE,
     };
 
-#ifdef BUILD_HAS_SCMI_NOTIFICATIONS
-    fwk_id_is_equal_ExpectAndReturn(FWK_ID_NONE, FWK_ID_NONE, true);
-#endif
+    pcapping_core_set_pai_ExpectAndReturn(
+        service_id_1, cmd_payload.domain_id, pai, FWK_E_RANGE);
 
-    set_averaging_interval_ExpectAndReturn(
-        scmi_power_capping_default_config.power_capping_domain_id,
-        pai,
-        FWK_E_RANGE);
-
-    mod_scmi_from_protocol_api_scmi_frame_validation_ExpectAnyArgsAndReturn(
-        SCMI_SUCCESS);
-    EXPECT_RESPONSE_ERROR(ret_payload);
-    TEST_SCMI_COMMAND(MOD_SCMI_POWER_CAPPING_PAI_SET, cmd_payload);
-}
-
-void utest_message_handler_power_capping_set_more_than_max_pai(void)
-{
-    uint32_t pai = MAX_DEFAULT_PAI + 1u;
-    struct scmi_power_capping_pai_set_a2p cmd_payload = {
-        .domain_id = FAKE_POWER_CAPPING_IDX_1,
-        .pai = pai,
-    };
-
-    struct scmi_power_capping_cap_set_p2a ret_payload = {
-        .status = SCMI_OUT_OF_RANGE,
-    };
-
-#ifdef BUILD_HAS_SCMI_NOTIFICATIONS
-    fwk_id_is_equal_ExpectAndReturn(FWK_ID_NONE, FWK_ID_NONE, true);
-#endif
-
-    set_averaging_interval_ExpectAndReturn(
-        scmi_power_capping_default_config.power_capping_domain_id,
-        pai,
-        FWK_E_RANGE);
-
-    mod_scmi_from_protocol_api_scmi_frame_validation_ExpectAnyArgsAndReturn(
-        SCMI_SUCCESS);
     EXPECT_RESPONSE_ERROR(ret_payload);
     TEST_SCMI_COMMAND(MOD_SCMI_POWER_CAPPING_PAI_SET, cmd_payload);
 }
@@ -889,27 +602,26 @@ void utest_message_handler_power_capping_get_power_measurement_valid(void)
         .pai = pai,
     };
 
-    get_average_power_ExpectAndReturn(
-        scmi_power_capping_default_config.power_capping_domain_id,
-        NULL,
-        FWK_SUCCESS);
-    get_average_power_IgnoreArg_power();
-    get_average_power_ReturnThruPtr_power(&power);
+    pcapping_core_get_power_ExpectAndReturn(
+        cmd_payload.domain_id, NULL, FWK_SUCCESS);
 
-    get_averaging_interval_ExpectAndReturn(
-        scmi_power_capping_default_config.power_capping_domain_id,
-        NULL,
-        FWK_SUCCESS);
-    get_averaging_interval_IgnoreArg_pai();
-    get_averaging_interval_ReturnThruPtr_pai(&pai);
+    pcapping_core_get_power_IgnoreArg_power();
 
-    mod_scmi_from_protocol_api_scmi_frame_validation_ExpectAnyArgsAndReturn(
-        SCMI_SUCCESS);
+    pcapping_core_get_power_ReturnThruPtr_power(&power);
+
+    pcapping_core_get_pai_ExpectAndReturn(
+        cmd_payload.domain_id, NULL, FWK_SUCCESS);
+
+    pcapping_core_get_pai_IgnoreArg_pai();
+
+    pcapping_core_get_pai_ReturnThruPtr_pai(&pai);
+
     EXPECT_RESPONSE_SUCCESS(ret_payload);
     TEST_SCMI_COMMAND(MOD_SCMI_POWER_CAPPING_MEASUREMENTS_GET, cmd_payload);
 }
 
-void utest_message_handler_power_capping_get_power_measurement_failure(void)
+void utest_message_handler_power_capping_get_power_measurement_failure_power(
+    void)
 {
     struct scmi_power_capping_measurements_get_a2p cmd_payload = {
         .domain_id = FAKE_POWER_CAPPING_IDX_1,
@@ -919,14 +631,25 @@ void utest_message_handler_power_capping_get_power_measurement_failure(void)
         .status = SCMI_GENERIC_ERROR,
     };
 
-    get_average_power_ExpectAndReturn(
-        scmi_power_capping_default_config.power_capping_domain_id,
-        NULL,
-        FWK_E_DEVICE);
-    get_average_power_IgnoreArg_power();
+    pcapping_core_get_power_ExpectAnyArgsAndReturn(FWK_E_DEVICE);
 
-    mod_scmi_from_protocol_api_scmi_frame_validation_ExpectAnyArgsAndReturn(
-        SCMI_SUCCESS);
+    EXPECT_RESPONSE_ERROR(ret_payload);
+    TEST_SCMI_COMMAND(MOD_SCMI_POWER_CAPPING_MEASUREMENTS_GET, cmd_payload);
+}
+
+void utest_message_handler_power_capping_get_power_measurement_failure_pai(void)
+{
+    struct scmi_power_capping_measurements_get_a2p cmd_payload = {
+        .domain_id = FAKE_POWER_CAPPING_IDX_1,
+    };
+
+    struct scmi_power_capping_measurements_get_p2a ret_payload = {
+        .status = SCMI_GENERIC_ERROR,
+    };
+
+    pcapping_core_get_power_ExpectAnyArgsAndReturn(FWK_SUCCESS);
+    pcapping_core_get_pai_ExpectAnyArgsAndReturn(FWK_E_DEVICE);
+
     EXPECT_RESPONSE_ERROR(ret_payload);
     TEST_SCMI_COMMAND(MOD_SCMI_POWER_CAPPING_MEASUREMENTS_GET, cmd_payload);
 }
@@ -950,8 +673,6 @@ void utest_message_handler_power_capping_cap_notify_valid_enable(void)
         service_id_1,
         FWK_SUCCESS);
 
-    mod_scmi_from_protocol_api_scmi_frame_validation_ExpectAnyArgsAndReturn(
-        SCMI_SUCCESS);
     EXPECT_RESPONSE_SUCCESS(ret_payload);
     TEST_SCMI_COMMAND(MOD_SCMI_POWER_CAPPING_CAP_NOTIFY, cmd_payload);
 }
@@ -980,8 +701,6 @@ void utest_message_handler_power_capping_cap_notify_valid_disable(void)
         MOD_SCMI_POWER_CAPPING_CAP_NOTIFY,
         FWK_SUCCESS);
 
-    mod_scmi_from_protocol_api_scmi_frame_validation_ExpectAnyArgsAndReturn(
-        SCMI_SUCCESS);
     EXPECT_RESPONSE_SUCCESS(ret_payload);
     TEST_SCMI_COMMAND(MOD_SCMI_POWER_CAPPING_CAP_NOTIFY, cmd_payload);
 }
@@ -1004,8 +723,6 @@ void utest_message_handler_power_capping_measurements_notify_valid_enable(void)
         service_id_1,
         FWK_SUCCESS);
 
-    mod_scmi_from_protocol_api_scmi_frame_validation_ExpectAnyArgsAndReturn(
-        SCMI_SUCCESS);
     EXPECT_RESPONSE_SUCCESS(ret_payload);
     TEST_SCMI_COMMAND(MOD_SCMI_POWER_CAPPING_MEASUREMENTS_NOTIFY, cmd_payload);
 }
@@ -1034,8 +751,6 @@ void utest_message_handler_power_capping_measurements_notify_valid_disable(void)
         MOD_SCMI_POWER_CAPPING_MEASUREMENTS_NOTIFY,
         FWK_SUCCESS);
 
-    mod_scmi_from_protocol_api_scmi_frame_validation_ExpectAnyArgsAndReturn(
-        SCMI_SUCCESS);
     EXPECT_RESPONSE_SUCCESS(ret_payload);
     TEST_SCMI_COMMAND(MOD_SCMI_POWER_CAPPING_MEASUREMENTS_NOTIFY, cmd_payload);
 }
@@ -1046,11 +761,12 @@ void utest_pcapping_protocol_process_cap_pai_notify_event_success(void)
     uint32_t cap = __LINE__;
     uint32_t pai = __LINE__;
     int status = FWK_SUCCESS;
-    struct fwk_event cap_pai_notify_event;
 
-    struct pcapping_protocol_event_parameters event_params = {
+    struct pcapping_core_cap_pai_event_parameters event_params = {
         .domain_idx = FAKE_POWER_CAPPING_IDX_1,
         .service_id = service_id_1,
+        .cap = cap,
+        .pai = pai,
     };
 
     struct scmi_power_capping_cap_changed_p2a payload = {
@@ -1060,32 +776,20 @@ void utest_pcapping_protocol_process_cap_pai_notify_event_success(void)
         .pai = pai,
     };
 
-    struct pcapping_protocol_event_parameters *event_params_ptr =
-        (struct pcapping_protocol_event_parameters *)
+    struct fwk_event cap_pai_notify_event;
+
+    struct pcapping_core_cap_pai_event_parameters *event_params_ptr =
+        (struct pcapping_core_cap_pai_event_parameters *)
             cap_pai_notify_event.params;
 
     *event_params_ptr = event_params;
 
+    pcapping_core_is_cap_request_async_ExpectAndReturn(
+        event_params.domain_idx, true);
     fwk_id_is_equal_ExpectAndReturn(service_id_1, FWK_ID_NONE, false);
     get_agent_id_ExpectAndReturn(service_id_1, NULL, FWK_SUCCESS);
     get_agent_id_IgnoreArg_agent_id();
     get_agent_id_ReturnMemThruPtr_agent_id(&agent_id, sizeof(agent_id));
-
-    get_applied_cap_ExpectWithArrayAndReturn(
-        scmi_power_capping_default_config.power_capping_domain_id,
-        &cap,
-        sizeof(cap),
-        FWK_SUCCESS);
-    get_applied_cap_IgnoreArg_cap();
-    get_applied_cap_ReturnMemThruPtr_cap(&cap, sizeof(cap));
-
-    get_averaging_interval_ExpectWithArrayAndReturn(
-        scmi_power_capping_default_config.power_capping_domain_id,
-        &pai,
-        sizeof(pai),
-        FWK_SUCCESS);
-    get_averaging_interval_IgnoreArg_pai();
-    get_averaging_interval_ReturnThruPtr_pai(&pai);
 
     scmi_notification_notify_ExpectWithArrayAndReturn(
         MOD_SCMI_PROTOCOL_ID_POWER_CAPPING,
@@ -1108,9 +812,10 @@ void utest_pcapping_protocol_process_measurements_notify_event_success(void)
     int status = FWK_SUCCESS;
     struct fwk_event measurements_notify_event;
 
-    struct pcapping_protocol_event_parameters event_params = {
+    struct pcapping_core_pwr_meas_event_parameters event_params = {
         .domain_idx = FAKE_POWER_CAPPING_IDX_1,
         .service_id = service_id_1,
+        .power = power,
     };
 
     struct scmi_power_capping_measurements_changed_p2a payload = {
@@ -1119,18 +824,11 @@ void utest_pcapping_protocol_process_measurements_notify_event_success(void)
         .power = power,
     };
 
-    struct pcapping_protocol_event_parameters *event_params_ptr =
-        (struct pcapping_protocol_event_parameters *)
+    struct pcapping_core_pwr_meas_event_parameters *event_params_ptr =
+        (struct pcapping_core_pwr_meas_event_parameters *)
             measurements_notify_event.params;
 
     *event_params_ptr = event_params;
-
-    get_average_power_ExpectAndReturn(
-        scmi_power_capping_default_config.power_capping_domain_id,
-        NULL,
-        FWK_SUCCESS);
-    get_average_power_IgnoreArg_power();
-    get_average_power_ReturnThruPtr_power(&power);
 
     scmi_notification_notify_ExpectWithArrayAndReturn(
         MOD_SCMI_PROTOCOL_ID_POWER_CAPPING,
@@ -1146,26 +844,9 @@ void utest_pcapping_protocol_process_measurements_notify_event_success(void)
 
     TEST_ASSERT_EQUAL(status, FWK_SUCCESS);
 }
-
 #endif
 
 #ifdef BUILD_HAS_MOD_RESOURCE_PERMS
-void utest_message_handler_invalid_agent_id(void)
-{
-    struct scmi_power_capping_domain_attributes_a2p cmd_payload = {
-        .domain_id = FAKE_POWER_CAPPING_IDX_1
-    };
-
-    struct scmi_power_capping_domain_attributes_p2a ret_payload = {
-        .status = SCMI_DENIED
-    };
-
-    mod_scmi_from_protocol_api_scmi_frame_validation_ExpectAnyArgsAndReturn(
-        SCMI_DENIED);
-    EXPECT_RESPONSE_ERROR(ret_payload);
-    TEST_SCMI_COMMAND(MOD_SCMI_POWER_CAPPING_DOMAIN_ATTRIBUTES, cmd_payload);
-}
-
 void utest_message_handler_invalid_resource_permissions(void)
 {
     uint32_t message_id;
@@ -1196,48 +877,7 @@ void utest_message_handler_invalid_resource_permissions(void)
         TEST_ASSERT_EQUAL(status, FWK_E_ACCESS);
     }
 }
-
 #endif
-
-void utest_pcapping_protocol_init(void)
-{
-    int domain_count = __LINE__;
-    struct mod_scmi_power_capping_context ctx;
-    struct mod_scmi_power_capping_domain_context *fake_table_pointer =
-        (struct mod_scmi_power_capping_domain_context *)__LINE__;
-
-    ctx.domain_count = domain_count;
-    ctx.power_capping_domain_ctx_table = fake_table_pointer;
-    pcapping_protocol_init(&ctx);
-    TEST_ASSERT_EQUAL(
-        pcapping_protocol_ctx.power_capping_domain_count, domain_count);
-    TEST_ASSERT_EQUAL(
-        pcapping_protocol_ctx.power_capping_domain_ctx_table,
-        fake_table_pointer);
-}
-
-void utest_pcapping_protocol_domain_init_success(void)
-{
-    int status;
-
-    status = pcapping_protocol_domain_init(
-        FAKE_POWER_CAPPING_IDX_2, &scmi_power_capping_config_1);
-    TEST_ASSERT_EQUAL_PTR(
-        domain_ctx_table[FAKE_POWER_CAPPING_IDX_2].config,
-        &scmi_power_capping_config_1);
-    TEST_ASSERT_EQUAL(status, FWK_SUCCESS);
-}
-
-void utest_pcapping_protocol_domain_init_failure(void)
-{
-    int status;
-    int domain_idx = __LINE__;
-    pcapping_protocol_ctx.power_capping_domain_count = domain_idx;
-
-    status =
-        pcapping_protocol_domain_init(domain_idx, &scmi_power_capping_config_1);
-    TEST_ASSERT_EQUAL(status, FWK_E_PARAM);
-}
 
 void utest_pcapping_protocol_bind_scmi_failure(void)
 {
@@ -1282,108 +922,30 @@ void utest_pcapping_protocol_bind(void)
     TEST_ASSERT_EQUAL(status, FWK_SUCCESS);
 }
 
-void utest_pcapping_protocol_start_module(void)
-{
-    int status;
-    fwk_id_t module_id = FWK_ID_MODULE_INIT(FWK_MODULE_IDX_SCMI_POWER_CAPPING);
-
-    fwk_id_is_type_ExpectAndReturn(module_id, FWK_ID_TYPE_MODULE, true);
-
-    status = pcapping_protocol_start(module_id);
-    TEST_ASSERT_EQUAL(status, FWK_SUCCESS);
-}
-
-void utest_pcapping_protocol_start_element(void)
-{
-    int status;
-    const unsigned int element_idx = FAKE_POWER_CAPPING_IDX_2;
-    fwk_id_t element_id =
-        FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_SCMI_POWER_CAPPING, element_idx);
-
-    fwk_id_get_element_idx_ExpectAndReturn(element_id, element_idx);
-
-    fwk_id_is_type_ExpectAndReturn(element_id, FWK_ID_TYPE_MODULE, false);
-
-    fwk_notification_subscribe_ExpectAndReturn(
-        FWK_ID_NOTIFICATION(
-            FWK_MODULE_IDX_POWER_CAPPING,
-            MOD_POWER_CAPPING_NOTIFICATION_IDX_CAP_CHANGE),
-        domain_ctx_table[element_idx].config->power_capping_domain_id,
-        element_id,
-        FWK_SUCCESS);
-
 #ifdef BUILD_HAS_SCMI_NOTIFICATIONS
+void utest_pcapping_protocol_start(void)
+{
+    int status;
     unsigned int agent_count = __LINE__;
-
-    fwk_notification_subscribe_ExpectAndReturn(
-        FWK_ID_NOTIFICATION(
-            FWK_MODULE_IDX_POWER_CAPPING,
-            MOD_POWER_CAPPING_NOTIFICATION_IDX_PAI_CHANGED),
-        FWK_ID_MODULE(FWK_MODULE_IDX_POWER_CAPPING),
-        element_id,
-        FWK_SUCCESS);
-
-    fwk_notification_subscribe_ExpectAndReturn(
-        FWK_ID_NOTIFICATION(
-            FWK_MODULE_IDX_POWER_CAPPING,
-            MOD_POWER_CAPPING_NOTIFICATION_IDX_MEASUREMENTS_CHANGED),
-        FWK_ID_MODULE(FWK_MODULE_IDX_POWER_CAPPING),
-        element_id,
-        FWK_SUCCESS);
+    unsigned int domain_count = 4U;
 
     get_agent_count_ExpectAnyArgsAndReturn(FWK_SUCCESS);
     get_agent_count_ReturnMemThruPtr_agent_count(
         &agent_count, sizeof(agent_count));
 
+    pcapping_core_get_domain_count_ExpectAndReturn(domain_count);
+
     scmi_notification_init_ExpectAndReturn(
         MOD_SCMI_PROTOCOL_ID_POWER_CAPPING,
         agent_count,
-        FAKE_POWER_CAPPING_IDX_COUNT,
+        domain_count,
         MOD_SCMI_POWER_CAPPING_NOTIFICATION_COUNT,
         FWK_SUCCESS);
-#endif
-    status = pcapping_protocol_start(element_id);
+
+    status = pcapping_protocol_start();
     TEST_ASSERT_EQUAL(status, FWK_SUCCESS);
 }
-
-void utest_pcapping_protocol_process_notification(void)
-{
-    int status;
-    const unsigned int element_idx = 0u;
-
-    struct fwk_event notification_event = {
-        .id = pcapping_protocol_cap_notification,
-        .target_id =
-            FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_SCMI_POWER_CAPPING, element_idx),
-    };
-
-    domain_ctx_table[element_idx].cap_pending_service_id = service_id_1;
-
-    struct scmi_power_capping_cap_set_p2a ret_payload = {
-        .status = SCMI_SUCCESS,
-    };
-
-    fwk_id_get_element_idx_ExpectAndReturn(
-        notification_event.target_id, element_idx);
-
-    fwk_id_is_equal_ExpectAndReturn(
-        notification_event.id, pcapping_protocol_cap_notification, true);
-
-#ifdef BUILD_HAS_SCMI_NOTIFICATIONS
-    __fwk_put_event_ExpectAnyArgsAndReturn(FWK_SUCCESS);
 #endif
-
-    fwk_id_is_equal_ExpectAndReturn(service_id_1, FWK_ID_NONE, false);
-
-    EXPECT_RESPONSE_SUCCESS(ret_payload);
-
-    status = pcapping_protocol_process_fwk_notification(&notification_event);
-
-    TEST_ASSERT_EQUAL(status, FWK_SUCCESS);
-    TEST_ASSERT_EQUAL(
-        domain_ctx_table[element_idx].cap_pending_service_id.value,
-        FWK_ID_NONE.value);
-}
 
 void utest_pcapping_protocol_process_bind_request_success(void)
 {
@@ -1418,15 +980,12 @@ void utest_pcapping_protocol_process_bind_request_failure(void)
 int scmi_power_capping_protocol_test_main(void)
 {
     test_init();
+    RUN_TEST(utest_message_handler_scmi_validation_respond_error);
+    RUN_TEST(utest_message_handler_scmi_validation_respond_success);
     RUN_TEST(utest_get_scmi_protocol_id);
-    RUN_TEST(utest_message_handler_cmd_error);
-    RUN_TEST(utest_message_handler_invalid_cmd);
     RUN_TEST(utest_message_handler_protocol_version);
     RUN_TEST(utest_message_handler_protocol_attributes);
-    RUN_TEST(utest_message_handler_protocol_msg_attributes_unsupported_msgs);
-    RUN_TEST(utest_message_handler_protocol_msg_attributes_maxlimits);
     RUN_TEST(utest_message_handler_protocol_msg_attributes_supported_msgs);
-    RUN_TEST(utest_message_handler_domain_invalid);
     RUN_TEST(utest_message_handler_domain_attributes_valid);
     RUN_TEST(utest_message_handler_power_capping_get_valid);
     RUN_TEST(utest_message_handler_power_capping_get_failure);
@@ -1434,19 +993,19 @@ int scmi_power_capping_protocol_test_main(void)
     RUN_TEST(utest_message_handler_power_capping_set_config_not_supported);
     RUN_TEST(utest_message_handler_power_capping_set_async_del_not_supported);
     RUN_TEST(utest_message_handler_power_capping_set_domain_busy);
-    RUN_TEST(utest_message_handler_power_capping_set_less_than_min_cap);
-    RUN_TEST(utest_message_handler_power_capping_set_more_than_max_cap);
+    RUN_TEST(utest_message_handler_power_capping_set_out_of_range);
     RUN_TEST(utest_message_handler_power_capping_set_success_pending);
     RUN_TEST(utest_message_handler_power_capping_set_success_sync);
-    RUN_TEST(utest_message_handler_power_capping_set_success_sync_uncap);
     RUN_TEST(utest_message_handler_power_capping_get_pai_valid);
     RUN_TEST(utest_message_handler_power_capping_get_pai_failure);
     RUN_TEST(utest_message_handler_power_capping_set_pai_valid);
     RUN_TEST(utest_message_handler_power_capping_set_pai_failure);
-    RUN_TEST(utest_message_handler_power_capping_set_less_than_min_pai);
-    RUN_TEST(utest_message_handler_power_capping_set_more_than_max_pai);
+    RUN_TEST(utest_message_handler_power_capping_set_pai_out_of_range);
     RUN_TEST(utest_message_handler_power_capping_get_power_measurement_valid);
-    RUN_TEST(utest_message_handler_power_capping_get_power_measurement_failure);
+    RUN_TEST(
+        utest_message_handler_power_capping_get_power_measurement_failure_power);
+    RUN_TEST(
+        utest_message_handler_power_capping_get_power_measurement_failure_pai);
 #ifdef BUILD_HAS_SCMI_NOTIFICATIONS
     RUN_TEST(utest_message_handler_power_capping_cap_notify_valid_enable);
     RUN_TEST(utest_message_handler_power_capping_cap_notify_valid_disable);
@@ -1456,20 +1015,13 @@ int scmi_power_capping_protocol_test_main(void)
         utest_message_handler_power_capping_measurements_notify_valid_disable);
     RUN_TEST(utest_pcapping_protocol_process_cap_pai_notify_event_success);
     RUN_TEST(utest_pcapping_protocol_process_measurements_notify_event_success);
+    RUN_TEST(utest_pcapping_protocol_start);
 #endif
-    RUN_TEST(utest_message_handler_un_implemented_message);
 #ifdef BUILD_HAS_MOD_RESOURCE_PERMS
-    RUN_TEST(utest_message_handler_invalid_agent_id);
     RUN_TEST(utest_message_handler_invalid_resource_permissions);
 #endif
-    RUN_TEST(utest_pcapping_protocol_init);
-    RUN_TEST(utest_pcapping_protocol_domain_init_success);
-    RUN_TEST(utest_pcapping_protocol_domain_init_failure);
     RUN_TEST(utest_pcapping_protocol_bind_scmi_failure);
     RUN_TEST(utest_pcapping_protocol_bind);
-    RUN_TEST(utest_pcapping_protocol_start_module);
-    RUN_TEST(utest_pcapping_protocol_start_element);
-    RUN_TEST(utest_pcapping_protocol_process_notification);
     RUN_TEST(utest_pcapping_protocol_process_bind_request_success);
     RUN_TEST(utest_pcapping_protocol_process_bind_request_failure);
     return UNITY_END();

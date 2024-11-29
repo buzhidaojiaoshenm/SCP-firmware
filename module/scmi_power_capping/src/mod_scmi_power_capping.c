@@ -9,6 +9,7 @@
  */
 #include "fwk_mm.h"
 #include "fwk_module_idx.h"
+#include "internal/scmi_power_capping_core.h"
 #include "internal/scmi_power_capping_protocol.h"
 #include "mod_power_capping.h"
 
@@ -19,8 +20,6 @@
 
 #include <fwk_module.h>
 
-static struct mod_scmi_power_capping_power_apis power_management_apis;
-
 #ifdef BUILD_HAS_SCMI_POWER_CAPPING_FAST_CHANNELS_COMMANDS
 static const fwk_id_t mod_scmi_power_capping_event_id_fch_callback =
     FWK_ID_EVENT_INIT(
@@ -28,24 +27,16 @@ static const fwk_id_t mod_scmi_power_capping_event_id_fch_callback =
         SCMI_POWER_CAPPING_EVENT_IDX_FAST_CHANNELS_PROCESS);
 #endif
 
-static int scmi_power_capping_power_api_bind(
-    struct mod_scmi_power_capping_power_apis *power_apis)
-{
-    return fwk_module_bind(
-        FWK_ID_MODULE(FWK_MODULE_IDX_POWER_CAPPING),
-        FWK_ID_API(FWK_MODULE_IDX_POWER_CAPPING, MOD_POWER_CAPPING_API_IDX_CAP),
-        &(power_apis->power_capping_api));
-}
-
-#ifdef BUILD_HAS_SCMI_NOTIFICATIONS
 static const fwk_id_t mod_scmi_power_capping_event_id_cap_pai_notify =
     FWK_ID_EVENT_INIT(
         FWK_MODULE_IDX_SCMI_POWER_CAPPING,
-        SCMI_POWER_CAPPING_EVENT_IDX_CAP_PAI_NOTIFY_PROCESS);
+        SCMI_POWER_CAPPING_EVENT_IDX_PROCESS_HAL_CAP_PAI_NOTIFICATION);
+
+#ifdef BUILD_HAS_SCMI_NOTIFICATIONS
 static const fwk_id_t mod_scmi_power_capping_event_id_measurement_notify =
     FWK_ID_EVENT_INIT(
         FWK_MODULE_IDX_SCMI_POWER_CAPPING,
-        SCMI_POWER_CAPPING_EVENT_IDX_MEASUREMENT_NOTIFY_PROCESS);
+        SCMI_POWER_CAPPING_EVENT_IDX_PROCESS_HAL_MEASUREMENT_NOTIF);
 #endif
 
 static int scmi_power_capping_init(
@@ -57,17 +48,13 @@ static int scmi_power_capping_init(
         return FWK_E_SUPPORT;
     }
 
-    struct mod_scmi_power_capping_context ctx = { 0 };
-
-    ctx.power_capping_domain_ctx_table = fwk_mm_calloc(
-        element_count, sizeof(struct mod_scmi_power_capping_domain_context));
-    ctx.domain_count = element_count;
-#ifdef BUILD_HAS_SCMI_POWER_CAPPING_STD_COMMANDS
-    pcapping_protocol_init(&ctx);
-#endif
+    pcapping_core_init(element_count);
 
 #ifdef BUILD_HAS_SCMI_POWER_CAPPING_FAST_CHANNELS_COMMANDS
-    pcapping_fast_channel_ctx_init(&ctx);
+    struct scmi_power_capping_config *config =
+        (struct scmi_power_capping_config)data;
+
+    pcapping_fast_channel_ctx_init(config->fch_config_table, config->fch_count);
 #endif
 
     return FWK_SUCCESS;
@@ -91,12 +78,10 @@ static int scmi_power_capping_element_init(
     config = (const struct mod_scmi_power_capping_domain_config *)data;
     domain_idx = fwk_id_get_element_idx(element_id);
 
-#ifdef BUILD_HAS_SCMI_POWER_CAPPING_STD_COMMANDS
-    status = pcapping_protocol_domain_init(domain_idx, config);
+    status = pcapping_core_domain_init(domain_idx, config);
     if (status != FWK_SUCCESS) {
         return status;
     }
-#endif
 
 #ifdef BUILD_HAS_SCMI_POWER_CAPPING_FAST_CHANNELS_COMMANDS
     pcapping_fast_channel_set_domain_config(domain_idx, config);
@@ -111,52 +96,44 @@ static int scmi_power_capping_bind(fwk_id_t id, unsigned int round)
     if ((round == 1) || (fwk_id_is_type(id, FWK_ID_TYPE_ELEMENT))) {
         return FWK_SUCCESS;
     }
-    status = scmi_power_capping_power_api_bind(&power_management_apis);
+
+    status = pcapping_core_bind();
+
 #ifdef BUILD_HAS_SCMI_POWER_CAPPING_STD_COMMANDS
     if (status != FWK_SUCCESS) {
         return status;
     }
 
     status = pcapping_protocol_bind();
-
-    if (status != FWK_SUCCESS) {
-        return status;
-    }
-    pcapping_protocol_set_power_apis(&power_management_apis);
 #endif
 
 #ifdef BUILD_HAS_SCMI_POWER_CAPPING_FAST_CHANNELS_COMMANDS
     status = pcapping_fast_channel_bind();
-    if (status != FWK_SUCCESS) {
-        return status;
-    }
-    pcapping_fast_channel_set_power_apis(&power_management_apis);
 #endif
     return status;
 }
 
 static int scmi_power_capping_start(fwk_id_t id)
 {
+    if (fwk_id_is_type(id, FWK_ID_TYPE_MODULE)) {
 #ifdef BUILD_HAS_SCMI_POWER_CAPPING_FAST_CHANNELS_COMMANDS
-    pcapping_fast_channel_start();
+        pcapping_fast_channel_start();
 #endif
+#if defined(BUILD_HAS_SCMI_POWER_CAPPING_STD_COMMANDS) && \
+    defined(BUILD_HAS_SCMI_NOTIFICATIONS)
+        return pcapping_protocol_start();
+#endif
+        return FWK_SUCCESS;
+    }
 
-#ifdef BUILD_HAS_SCMI_POWER_CAPPING_STD_COMMANDS
-    return pcapping_protocol_start(id);
-#else
-    return FWK_SUCCESS;
-#endif
+    return pcapping_core_start(fwk_id_get_element_idx(id));
 }
 
 static int scmi_power_capping_process_notification(
     const struct fwk_event *event,
     struct fwk_event *resp_event)
 {
-#ifdef BUILD_HAS_SCMI_POWER_CAPPING_STD_COMMANDS
-    return pcapping_protocol_process_fwk_notification(event);
-#else
-    return FWK_SUCCESS;
-#endif
+    return pcapping_core_process_fwk_notification(event);
 }
 
 #ifdef BUILD_HAS_SCMI_POWER_CAPPING_STD_COMMANDS
@@ -185,12 +162,12 @@ static int scmi_power_capping_process_event(
     }
 #endif
 
-#ifdef BUILD_HAS_SCMI_NOTIFICATIONS
     if (fwk_id_is_equal(
             event->id, mod_scmi_power_capping_event_id_cap_pai_notify)) {
         return pcapping_protocol_process_cap_pai_notify_event(event);
     }
 
+#ifdef BUILD_HAS_SCMI_NOTIFICATIONS
     if (fwk_id_is_equal(
             event->id, mod_scmi_power_capping_event_id_measurement_notify)) {
         return pcapping_protocol_process_measurements_notify_event(event);

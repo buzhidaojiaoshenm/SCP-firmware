@@ -33,9 +33,9 @@
  * SCMI power cap event IDs
  */
 enum scmi_power_capping_event_idx {
+    SCMI_POWER_CAPPING_EVENT_IDX_PROCESS_HAL_CAP_PAI_NOTIFICATION,
 #ifdef BUILD_HAS_SCMI_NOTIFICATIONS
-    SCMI_POWER_CAPPING_EVENT_IDX_CAP_PAI_NOTIFY_PROCESS,
-    SCMI_POWER_CAPPING_EVENT_IDX_MEASUREMENT_NOTIFY_PROCESS,
+    SCMI_POWER_CAPPING_EVENT_IDX_PROCESS_HAL_MEASUREMENT_NOTIF,
 #endif
 #ifdef BUILD_HAS_SCMI_POWER_CAPPING_FAST_CHANNELS_COMMANDS
     SCMI_POWER_CAPPING_EVENT_IDX_FAST_CHANNELS_PROCESS,
@@ -92,6 +92,11 @@ struct mod_scmi_power_capping_domain_context {
      * \brief Power capping configuration support.
      */
     bool cap_config_support;
+
+    /*!
+     * \brief Indicates if the cap request is asynchronous or not.
+     */
+    bool is_cap_request_async;
 };
 
 struct mod_scmi_power_capping_context {

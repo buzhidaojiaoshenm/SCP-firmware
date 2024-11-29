@@ -21,6 +21,51 @@ set(MODULE_UT_INC ${CMAKE_CURRENT_LIST_DIR})
 set(MODULE_UT_MOCK_SRC ${CMAKE_CURRENT_LIST_DIR}/mocks)
 
 ################################################################################
+# Test scmi_power_capping_core.c                                               #
+################################################################################
+set(TEST_SRC scmi_power_capping_core)
+set(TEST_FILE scmi_power_capping_core)
+
+list(APPEND MOCK_REPLACEMENTS fwk_module)
+list(APPEND MOCK_REPLACEMENTS fwk_core)
+list(APPEND MOCK_REPLACEMENTS fwk_mm)
+list(APPEND MOCK_REPLACEMENTS fwk_notification)
+
+if(NOT TEST_ON_TARGET)
+    set(UNIT_TEST_TARGET mod_${TEST_MODULE}_core_unit_test)
+endif()
+
+include(${SCP_ROOT}/unit_test/module_common.cmake)
+target_compile_definitions(${UNIT_TEST_TARGET} PUBLIC "BUILD_HAS_SCMI_POWER_CAPPING_STD_COMMANDS")
+
+target_sources(${UNIT_TEST_TARGET}
+    PRIVATE
+        ${MODULE_UT_MOCK_SRC}/Mockmod_power_capping_extra.c)
+
+################################################################################
+# Test scmi_power_capping_core.c + notifications                               #
+################################################################################
+set(TEST_SRC scmi_power_capping_core)
+set(TEST_FILE scmi_power_capping_core)
+
+list(APPEND MOCK_REPLACEMENTS fwk_module)
+list(APPEND MOCK_REPLACEMENTS fwk_core)
+list(APPEND MOCK_REPLACEMENTS fwk_mm)
+list(APPEND MOCK_REPLACEMENTS fwk_notification)
+
+if(NOT TEST_ON_TARGET)
+    set(UNIT_TEST_TARGET mod_${TEST_MODULE}_core_notification_unit_test)
+endif()
+
+include(${SCP_ROOT}/unit_test/module_common.cmake)
+target_compile_definitions(${UNIT_TEST_TARGET} PUBLIC "BUILD_HAS_SCMI_POWER_CAPPING_STD_COMMANDS")
+target_compile_definitions(${UNIT_TEST_TARGET} PUBLIC "BUILD_HAS_SCMI_NOTIFICATIONS")
+
+target_sources(${UNIT_TEST_TARGET}
+    PRIVATE
+        ${MODULE_UT_MOCK_SRC}/Mockmod_power_capping_extra.c)
+
+################################################################################
 # Test mod_scmi_power_capping.c                                                #
 ################################################################################
 set(TEST_SRC mod_scmi_power_capping)
@@ -40,7 +85,8 @@ target_compile_definitions(${UNIT_TEST_TARGET} PUBLIC "BUILD_HAS_SCMI_POWER_CAPP
 
 target_sources(${UNIT_TEST_TARGET}
     PRIVATE
-        ${MODULE_UT_MOCK_SRC}/Mockscmi_power_capping_protocol.c)
+        ${MODULE_UT_MOCK_SRC}/Mockscmi_power_capping_protocol.c
+        ${MODULE_UT_MOCK_SRC}/Mockscmi_power_capping_core.c)
 
 ################################################################################
 # Test scmi_power_capping_protocol.c                                           #
@@ -60,7 +106,6 @@ list(APPEND MOCK_REPLACEMENTS fwk_module)
 list(APPEND MOCK_REPLACEMENTS fwk_id)
 list(APPEND MOCK_REPLACEMENTS fwk_core)
 list(APPEND MOCK_REPLACEMENTS fwk_mm)
-list(APPEND MOCK_REPLACEMENTS fwk_notification)
 
 if(NOT TEST_ON_TARGET)
     set(UNIT_TEST_TARGET mod_${TEST_MODULE}_protocol_unit_test)
@@ -72,7 +117,8 @@ target_compile_definitions(${UNIT_TEST_TARGET} PUBLIC "BUILD_HAS_SCMI_POWER_CAPP
 target_sources(${UNIT_TEST_TARGET}
     PRIVATE
         ${MODULE_UT_MOCK_SRC}/Mockmod_scmi_extra.c
-        ${MODULE_UT_MOCK_SRC}/Mockmod_power_capping_extra.c)
+        ${MODULE_UT_MOCK_SRC}/Mockmod_power_capping_extra.c
+        ${MODULE_UT_MOCK_SRC}/Mockscmi_power_capping_core.c)
 
 ################################################################################
 # Test scmi_power_capping_protocol.c + resource permissions                    #
@@ -106,7 +152,8 @@ target_sources(${UNIT_TEST_TARGET}
     PRIVATE
         ${MODULE_UT_MOCK_SRC}/Mockmod_scmi_extra.c
         ${MODULE_UT_MOCK_SRC}/Mockmod_power_capping_extra.c
-        ${MODULE_UT_MOCK_SRC}/Mockmod_resource_perms_extra.c)
+        ${MODULE_UT_MOCK_SRC}/Mockmod_resource_perms_extra.c
+        ${MODULE_UT_MOCK_SRC}/Mockscmi_power_capping_core.c)
 
 ################################################################################
 # Test scmi_power_capping_protocol.c + notifications                           #
@@ -138,7 +185,8 @@ target_compile_definitions(${UNIT_TEST_TARGET} PUBLIC "BUILD_HAS_SCMI_NOTIFICATI
 target_sources(${UNIT_TEST_TARGET}
     PRIVATE
         ${MODULE_UT_MOCK_SRC}/Mockmod_scmi_extra.c
-        ${MODULE_UT_MOCK_SRC}/Mockmod_power_capping_extra.c)
+        ${MODULE_UT_MOCK_SRC}/Mockmod_power_capping_extra.c
+        ${MODULE_UT_MOCK_SRC}/Mockscmi_power_capping_core.c)
 
 ################################################################################
 # Test scmi_power_capping_fast_channels.c with standard protocol commands      #
@@ -171,7 +219,8 @@ target_compile_definitions(${UNIT_TEST_TARGET} PUBLIC "BUILD_HAS_SCMI_POWER_CAPP
 target_sources(${UNIT_TEST_TARGET}
     PRIVATE
         ${MODULE_UT_MOCK_SRC}/Mockmod_power_capping_extra.c
-        ${MODULE_UT_MOCK_SRC}/Mockmod_transport_extra.c)
+        ${MODULE_UT_MOCK_SRC}/Mockmod_transport_extra.c
+        ${MODULE_UT_MOCK_SRC}/Mockscmi_power_capping_core.c)
 
 ################################################################################
 # Test scmi_power_capping_fast_channels.c without standard protocol commands   #
@@ -203,4 +252,5 @@ target_compile_definitions(${UNIT_TEST_TARGET} PUBLIC "BUILD_HAS_SCMI_POWER_CAPP
 target_sources(${UNIT_TEST_TARGET}
     PRIVATE
         ${MODULE_UT_MOCK_SRC}/Mockmod_power_capping_extra.c
-        ${MODULE_UT_MOCK_SRC}/Mockmod_transport_extra.c)
+        ${MODULE_UT_MOCK_SRC}/Mockmod_transport_extra.c
+        ${MODULE_UT_MOCK_SRC}/Mockscmi_power_capping_core.c)
