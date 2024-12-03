@@ -179,6 +179,65 @@ void utest_mod_distributor_process_bind_request_invalid_module(void)
     TEST_ASSERT_EQUAL(FWK_E_PARAM, status);
 }
 
+void utest_mod_distributor_post_init_success(void)
+{
+    int status = FWK_E_DATA;
+    struct mod_power_distibutor_domain_config config[TEST_DOMAIN_COUNT] = {
+        [TEST_DOMAIN_SOC] = { .parent_idx = TEST_DOMAIN_NONE,},
+        [TEST_DOMAIN_CPU] = { .parent_idx = TEST_DOMAIN_SOC, },
+        [TEST_DOMAIN_GPU] = { .parent_idx = TEST_DOMAIN_SOC, },
+        [TEST_DOMAIN_CPU_BIG] = { .parent_idx = TEST_DOMAIN_CPU, },
+        [TEST_DOMAIN_CPU_LITTLE] = { .parent_idx = TEST_DOMAIN_CPU, },
+    };
+    size_t children_of_soc[2];
+    size_t children_of_cpu[2];
+    power_distributor_ctx.domain_count = TEST_DOMAIN_COUNT;
+
+    for (size_t i = 0; i < TEST_DOMAIN_COUNT; ++i) {
+        power_distributor_ctx.domain[i].config = &config[i];
+    }
+
+    fwk_mm_calloc_ExpectAndReturn(
+        2, sizeof(children_of_soc[0]), &children_of_soc);
+    fwk_mm_calloc_ExpectAndReturn(
+        2, sizeof(children_of_cpu[0]), &children_of_cpu);
+
+    status = power_distributor_post_init(
+        FWK_ID_MODULE(FWK_MODULE_IDX_POWER_DISTRIBUTOR));
+
+    TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
+    TEST_ASSERT_EQUAL_PTR(
+        &children_of_soc,
+        power_distributor_ctx.domain[TEST_DOMAIN_SOC].node.children_idx_table);
+    TEST_ASSERT_EQUAL(
+        2, power_distributor_ctx.domain[TEST_DOMAIN_SOC].node.children_count);
+    TEST_ASSERT_EQUAL_PTR(
+        &children_of_cpu,
+        power_distributor_ctx.domain[TEST_DOMAIN_CPU].node.children_idx_table);
+    TEST_ASSERT_EQUAL(
+        2, power_distributor_ctx.domain[TEST_DOMAIN_CPU].node.children_count);
+    TEST_ASSERT_EQUAL_PTR(
+        NULL,
+        power_distributor_ctx.domain[TEST_DOMAIN_GPU].node.children_idx_table);
+    TEST_ASSERT_EQUAL(
+        0, power_distributor_ctx.domain[TEST_DOMAIN_GPU].node.children_count);
+    TEST_ASSERT_EQUAL_PTR(
+        NULL,
+        power_distributor_ctx.domain[TEST_DOMAIN_CPU_BIG]
+            .node.children_idx_table);
+    TEST_ASSERT_EQUAL(
+        0,
+        power_distributor_ctx.domain[TEST_DOMAIN_CPU_BIG].node.children_count);
+    TEST_ASSERT_EQUAL_PTR(
+        NULL,
+        power_distributor_ctx.domain[TEST_DOMAIN_CPU_LITTLE]
+            .node.children_idx_table);
+    TEST_ASSERT_EQUAL(
+        0,
+        power_distributor_ctx.domain[TEST_DOMAIN_CPU_LITTLE]
+            .node.children_count);
+}
+
 void tearDown(void)
 {
 }
@@ -194,6 +253,7 @@ int power_distributor_test_main(void)
     RUN_TEST(utest_mod_distributor_process_bind_request);
     RUN_TEST(utest_mod_distributor_process_bind_request_invalid_api);
     RUN_TEST(utest_mod_distributor_process_bind_request_invalid_module);
+    RUN_TEST(utest_mod_distributor_post_init_success);
 
     return UNITY_END();
 }

@@ -59,6 +59,53 @@ static inline struct mod_power_distributor_domain_ctx *get_domain_ctx(
     return &power_distributor_ctx.domain[idx];
 }
 
+static inline bool domain_has_parent(
+    struct mod_power_distributor_domain_ctx *domain_ctx)
+{
+    return domain_ctx->config->parent_idx < power_distributor_ctx.domain_count;
+}
+
+static inline void calculate_children_count(void)
+{
+    for (size_t i = 0; i < power_distributor_ctx.domain_count; i++) {
+        struct mod_power_distributor_domain_ctx *domain_ctx = get_domain_ctx(i);
+        if (domain_has_parent(domain_ctx)) {
+            ++power_distributor_ctx.domain[domain_ctx->config->parent_idx]
+                  .node.children_count;
+        }
+    }
+}
+
+static inline void allocate_children_table(void)
+{
+    for (size_t i = 0; i < power_distributor_ctx.domain_count; i++) {
+        struct mod_power_distributor_domain_ctx *domain_ctx = get_domain_ctx(i);
+        if (domain_ctx->node.children_count > 0) {
+            domain_ctx->node.children_idx_table = fwk_mm_calloc(
+                domain_ctx->node.children_count,
+                sizeof(domain_ctx->node.children_idx_table[0]));
+        }
+    }
+}
+
+static inline void set_domain_relations(void)
+{
+    for (size_t i = 0; i < power_distributor_ctx.domain_count; i++) {
+        struct mod_power_distributor_domain_ctx *domain_ctx = get_domain_ctx(i);
+        domain_ctx->node.children_count = 0;
+    }
+
+    for (size_t i = 0; i < power_distributor_ctx.domain_count; i++) {
+        struct mod_power_distributor_domain_ctx *domain_ctx = get_domain_ctx(i);
+        if (domain_has_parent(domain_ctx)) {
+            struct mod_power_distributor_domain_ctx *parent_ctx =
+                get_domain_ctx(domain_ctx->config->parent_idx);
+            parent_ctx->node
+                .children_idx_table[parent_ctx->node.children_count++] = i;
+        }
+    }
+}
+
 static int subtree_power_distribute(fwk_id_t subtree_root_id)
 {
     return FWK_SUCCESS;
@@ -106,6 +153,15 @@ static int power_distributor_element_init(
     domain_ctx->config = (struct mod_power_distibutor_domain_config *)data;
     domain_ctx->node.children_idx_table = NULL;
     domain_ctx->node.children_count = 0;
+
+    return FWK_SUCCESS;
+}
+
+static int power_distributor_post_init(fwk_id_t module_id)
+{
+    calculate_children_count();
+    allocate_children_table();
+    set_domain_relations();
 
     return FWK_SUCCESS;
 }
@@ -162,6 +218,7 @@ const struct fwk_module module_power_distributor = {
     .api_count = MOD_POWER_DISTRIBUTOR_API_IDX_COUNT,
     .init = power_distributor_init,
     .element_init = power_distributor_element_init,
+    .post_init = power_distributor_post_init,
     .bind = power_distributor_bind,
     .start = power_distributor_start,
     .process_bind_request = power_distributor_process_bind_request,
