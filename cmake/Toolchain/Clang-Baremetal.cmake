@@ -1,6 +1,6 @@
 #
 # Arm SCP/MCP Software
-# Copyright (c) 2021-2024, Arm Limited and Contributors. All rights reserved.
+# Copyright (c) 2021-2025, Arm Limited and Contributors. All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -8,28 +8,32 @@
 include("${CMAKE_CURRENT_LIST_DIR}/Clang-Base.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/Generic-Baremetal.cmake")
 
-if(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
-    execute_process(
-        COMMAND "which" "${SCP_LLVM_SYSROOT_CC}"
-        OUTPUT_VARIABLE LLVM_SYSROOT_CC_PATH
-        OUTPUT_STRIP_TRAILING_WHITESPACE)
-    execute_process(
-        COMMAND "dirname" "${LLVM_SYSROOT_CC_PATH}"
-        OUTPUT_VARIABLE LLVM_SYSROOT_PATH
-        OUTPUT_STRIP_TRAILING_WHITESPACE)
-    string(APPEND LLVM_SYSROOT_PATH "/../aarch64-none-elf")
-    cmake_path(NORMAL_PATH LLVM_SYSROOT_PATH OUTPUT_VARIABLE LLVM_SYSROOT_PATH)
-    set(gcc-multi-dir "")
-else()
-    execute_process(
+execute_process(
         COMMAND "${SCP_LLVM_SYSROOT_CC}" "-print-sysroot"
         OUTPUT_VARIABLE LLVM_SYSROOT_PATH
         OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+if(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
+    execute_process(
+        COMMAND "${SCP_LLVM_SYSROOT_CC}" "-print-libgcc-file-name"
+        OUTPUT_VARIABLE GCC_LIBGCC_FILENAME
+        OUTPUT_STRIP_TRAILING_WHITESPACE)
+    execute_process(
+        COMMAND "dirname" "${GCC_LIBGCC_FILENAME}"
+        OUTPUT_VARIABLE GCC_LIBGCC_PATH
+        OUTPUT_STRIP_TRAILING_WHITESPACE)
+    cmake_path(NORMAL_PATH GCC_LIBGCC_PATH OUTPUT_VARIABLE GCC_LIBGCC_PATH)
+else()
     execute_process(
         COMMAND "${SCP_LLVM_SYSROOT_CC}" "-print-multi-directory"
                 "-mcpu=${CMAKE_SYSTEM_PROCESSOR}" "-mthumb"
         OUTPUT_VARIABLE gcc-multi-dir
         OUTPUT_STRIP_TRAILING_WHITESPACE)
+    execute_process(
+        COMMAND "${CMAKE_C_COMPILER}" "-print-resource-dir"
+        OUTPUT_VARIABLE CLANG_RESOURCE_DIRECTORY
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
 endif()
 
 foreach(language IN ITEMS ASM C CXX)
@@ -80,10 +84,14 @@ endforeach()
 string(APPEND CMAKE_EXE_LINKER_FLAGS_INIT "-Wl,--gc-sections ")
 string(APPEND CMAKE_EXE_LINKER_FLAGS_INIT "-I\"${LLVM_SYSROOT_PATH}/include\" ")
 
-string(APPEND CMAKE_EXE_LINKER_FLAGS_INIT
-       "-L${LLVM_SYSROOT_PATH}/lib/${gcc-multi-dir} ")
-if(NOT CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
+if(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
+    string(APPEND CMAKE_EXE_LINKER_FLAGS_INIT "-L${GCC_LIBGCC_PATH} ")
+else()
+    string(APPEND CMAKE_EXE_LINKER_FLAGS_INIT
+           "-L${LLVM_SYSROOT_PATH}/lib/${gcc-multi-dir} ")
     string(APPEND CMAKE_EXE_LINKER_FLAGS_INIT "-fuse-ld=lld ")
+    string(APPEND CMAKE_EXE_LINKER_FLAGS_INIT
+           "-L${CLANG_RESOURCE_DIRECTORY}/lib/baremetal ")
     string(APPEND CMAKE_EXE_LINKER_FLAGS_INIT
            "-nostdlib -lclang_rt.builtins-${CLANG_BUILTINS_ARCH} ")
     foreach(crtobj IN ITEMS crti crtbegin crt0 crtend crtn)

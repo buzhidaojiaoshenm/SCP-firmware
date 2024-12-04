@@ -31,7 +31,7 @@ Additionally, the firmware may be built using one of three compilers:
 
 - [GNU Arm Embedded Toolchain] (*10.3-2021.10* or later)
 - [Arm Compiler 6] (*6.13* or later)
-- [LLVM Toolchain] (*13.0.1*)
+- [LLVM Toolchain] (*19.1.5*)
 
 [GNU Arm Embedded Toolchain]:
 https://developer.arm.com/open-source/gnu-toolchain/gnu-rm

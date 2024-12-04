@@ -1,6 +1,6 @@
 #
 # Arm SCP/MCP Software
-# Copyright (c) 2021-2024, Arm Limited and Contributors. All rights reserved.
+# Copyright (c) 2021-2025, Arm Limited and Contributors. All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -10,7 +10,7 @@ FROM ubuntu:20.04@sha256:9fa30fcef427e5e88c76bc41ad37b7cc573e1d79cecb23035e413c4
 ARG ARM_NONE_EABI_VERSION="10.3-2021.10"
 ARG AARCH64_NONE_ELF_VERSION="13.3.rel1"
 ARG CMAKE_VERSION="3.25.2"
-ARG LLVM_VERSION="13"
+ARG LLVM_VERSION="19.1.5"
 ARG CPPCHECK_VERSION="2.8"
 ARG DOXYGEN_VERSION="1.8.13"
 
