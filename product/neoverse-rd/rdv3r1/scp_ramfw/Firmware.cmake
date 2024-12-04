@@ -1,6 +1,6 @@
 #
 # Arm SCP/MCP Software
-# Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+# Copyright (c) 2025, Arm Limited and Contributors. All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -45,6 +45,7 @@ list(APPEND SCP_MODULES "pl011")
 list(APPEND SCP_MODULES "system-pik")
 list(APPEND SCP_MODULES "sid")
 list(APPEND SCP_MODULES "atu")
+list(APPEND SCP_MODULES "atu-mmio")
 list(APPEND SCP_MODULES "ppu-v1")
 list(APPEND SCP_MODULES "system-power")
 list(APPEND SCP_MODULES "power-domain")

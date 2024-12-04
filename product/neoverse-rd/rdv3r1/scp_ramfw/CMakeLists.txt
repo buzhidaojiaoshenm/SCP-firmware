@@ -1,6 +1,6 @@
 #
 # Arm SCP/MCP Software
-# Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+# Copyright (c) 2025, Arm Limited and Contributors. All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -23,6 +23,7 @@ target_sources(
     PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/config_system_power.c"
             "${CMAKE_CURRENT_SOURCE_DIR}/config_armv7m_mpu.c"
             "${CMAKE_CURRENT_SOURCE_DIR}/config_atu.c"
+            "${CMAKE_CURRENT_SOURCE_DIR}/config_atu_mmio.c"
             "${CMAKE_CURRENT_SOURCE_DIR}/config_power_domain.c"
             "${CMAKE_CURRENT_SOURCE_DIR}/config_ppu_v1.c"
             "${CMAKE_CURRENT_SOURCE_DIR}/config_mhu3.c"

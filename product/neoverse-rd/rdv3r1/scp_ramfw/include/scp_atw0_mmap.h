@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -27,6 +27,10 @@
  *   |                                        |
  *   |                                        |
  *   +----------------------------------------+
+ *   |                                        |
+ *   | MMIO region mapped by ATU (1MB)        |
+ *   |                                        |
+ *   +----------------------------------------+ SCP_ATW0_ATU_MMIO_BASE
  *   |                                        |
  *   | Peripheral SRAM (1MB)                  |
  *   |                                        |
@@ -99,5 +103,10 @@
 #define SCP_ATW0_AP_PERIPHERAL_SRAM_BASE \
     (SCP_ATW0_CU_LCP_PERIPH_REGION_BASE + SCP_ATW0_CU_LCP_PERIPH_REGION_SIZE)
 #define SCP_ATW0_AP_PERIPHERAL_SRAM_SIZE (1 * FWK_MIB)
+
+/* Logical address to access MMIO region mapped by ATU */
+#define SCP_ATW0_ATU_MMIO_BASE \
+    (SCP_ATW0_AP_PERIPHERAL_SRAM_BASE + SCP_ATW0_AP_PERIPHERAL_SRAM_SIZE)
+#define SCP_ATW0_ATU_MMIO_SIZE (1 * FWK_MIB)
 
 #endif /* SCP_ATW0_MMAP_H */
