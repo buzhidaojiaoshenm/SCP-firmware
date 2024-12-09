@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2017-2021, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2017-2024, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -128,7 +128,7 @@ static int mod_mock_voltage_domain_trigger(
     fwk_id_t element_id,
     struct mod_mock_voltage_domain_operation op)
 {
-    static const unsigned int ASYNC_DELAY = 1U /* ms */;
+    static const uint32_t ASYNC_DELAY = 1000U /* us */;
 
     int status;
 
