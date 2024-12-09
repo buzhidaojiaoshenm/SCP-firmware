@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2019-2021, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2019-2024, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -22,6 +22,6 @@ struct fwk_module_config config_scmi_system_power = {
                 FWK_MODULE_IDX_TIMER,
                 JUNO_ALARM_ELEMENT_IDX,
                 JUNO_SYSTEM_POWER_ALARM_IDX),
-            .graceful_timeout = 1000, /* ms */
+            .graceful_timeout = 1000000, /* us */
         },
 };

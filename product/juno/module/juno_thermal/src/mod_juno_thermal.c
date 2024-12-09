@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2020-2023, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2020-2024, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -178,7 +178,7 @@ static int juno_thermal_start(fwk_id_t id)
 
     status = ctx->alarm_api->start(
         ctx->config->alarm_id,
-        ctx->config->period_ms,
+        ctx->config->period_us,
         MOD_TIMER_ALARM_TYPE_PERIODIC,
         juno_thermal_alarm_callback,
         (uintptr_t)fwk_id_get_element_idx(id));
@@ -306,7 +306,7 @@ static int juno_thermal_process_notification(
 
             status = ctx->alarm_api->start(
                 ctx->config->alarm_id,
-                ctx->config->period_ms,
+                ctx->config->period_us,
                 MOD_TIMER_ALARM_TYPE_PERIODIC,
                 juno_thermal_alarm_callback,
                 (uintptr_t)fwk_id_get_element_idx(event->target_id));

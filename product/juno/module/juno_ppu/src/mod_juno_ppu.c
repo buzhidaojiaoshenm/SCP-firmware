@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2019-2021, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2019-2024, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -31,7 +31,7 @@
 
 #define PPU_SET_STATE_AND_WAIT_TIMEOUT_US (100U * 1000U)
 
-#define PPU_ALARM_TIMEOUT_SUSPEND_MS 5U
+#define PPU_ALARM_TIMEOUT_SUSPEND_US 5000U
 
 #define CPU_WAKEUP_COMPOSITE_STATE \
     MOD_PD_COMPOSITE_STATE( \
@@ -721,7 +721,7 @@ static int core_prepare_core_for_system_suspend(fwk_id_t ppu_id)
     /* Start the timer alarm to poll for the power policy change */
     return juno_ppu_ctx.alarm_api->start(
         config->timer_alarm_id,
-        PPU_ALARM_TIMEOUT_SUSPEND_MS,
+        PPU_ALARM_TIMEOUT_SUSPEND_US,
         MOD_TIMER_ALARM_TYPE_PERIODIC,
         juno_ppu_alarm_callback,
         (uintptr_t)ppu_ctx);

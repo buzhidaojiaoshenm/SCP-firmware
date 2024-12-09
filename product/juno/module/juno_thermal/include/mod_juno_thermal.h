@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2020-2021, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2020-2024, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -28,9 +28,9 @@ struct mod_juno_thermal_element_config {
     uint64_t thermal_threshold_mdc;
 
     /*!
-     * \brief The alarm interval in milliseconds.
+     * \brief The alarm interval in microseconds.
      */
-    unsigned int period_ms;
+    uint32_t period_us;
 
     /*!
      * \brief Identifier of the sensor element to read the temperature from.

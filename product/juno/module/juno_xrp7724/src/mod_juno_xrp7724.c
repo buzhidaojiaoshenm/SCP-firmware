@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2017-2023, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2017-2024, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -61,11 +61,11 @@
 
 #define PSU_MAX_VOUT_MV          1100
 
-/* Ramping/Settling time when changing voltage in ms */
-#define PSU_RAMP_DELAY_SET_MS    1
+/* Ramping/Settling time when changing voltage in us */
+#define PSU_RAMP_DELAY_SET_US 1000
 
-/* Ramping/Settling time when enabling a channel in ms */
-#define PSU_RAMP_DELAY_ENABLE_MS 2
+/* Ramping/Settling time when enabling a channel in us */
+#define PSU_RAMP_DELAY_ENABLE_US 2000
 
 #define PSU_TARGET_MARGIN_MV     20
 
@@ -890,9 +890,12 @@ static int juno_xrp7724_psu_process_request(fwk_id_t id,
          * back the output voltage.
          */
         if (ctx->juno_xrp7724_dev_psu.is_psu_channel_enabled) {
-            status = ctx->alarm_api->start(ctx->alarm_hal_id,
-                PSU_RAMP_DELAY_SET_MS, MOD_TIMER_ALARM_TYPE_ONCE,
-                alarm_callback, (uintptr_t)ctx);
+            status = ctx->alarm_api->start(
+                ctx->alarm_hal_id,
+                PSU_RAMP_DELAY_SET_US,
+                MOD_TIMER_ALARM_TYPE_ONCE,
+                alarm_callback,
+                (uintptr_t)ctx);
             if (status != FWK_SUCCESS) {
                 break;
             }
@@ -975,8 +978,11 @@ static int juno_xrp7724_psu_process_request(fwk_id_t id,
              */
             if (ctx->juno_xrp7724_dev_psu.is_psu_channel_enabled) {
                 status = ctx->alarm_api->start(
-                    ctx->alarm_hal_id, PSU_RAMP_DELAY_ENABLE_MS,
-                    MOD_TIMER_ALARM_TYPE_ONCE, alarm_callback, (uintptr_t)ctx);
+                    ctx->alarm_hal_id,
+                    PSU_RAMP_DELAY_ENABLE_US,
+                    MOD_TIMER_ALARM_TYPE_ONCE,
+                    alarm_callback,
+                    (uintptr_t)ctx);
                 if (status != FWK_SUCCESS) {
                     break;
                 }

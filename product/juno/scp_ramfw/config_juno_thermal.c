@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2020-2021, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2020-2024, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -19,22 +19,21 @@
 #include <stdint.h>
 
 static struct fwk_element juno_thermal_element_table[] = {
-    [MOD_JUNO_THERMAL_ELEMENT_IDX_CRITICAL] = {
-        .name = "Soc",
-        .data = &(struct mod_juno_thermal_element_config) {
-            .thermal_threshold_mdc = UINT64_C(70 * 1000),
-            .period_ms = (2 * 1000),
-            .sensor_id =
-                FWK_ID_ELEMENT_INIT(
-                    FWK_MODULE_IDX_SENSOR,
-                    MOD_JUNO_PVT_SENSOR_TEMP_SOC),
-            .alarm_id =
-                FWK_ID_SUB_ELEMENT_INIT(
-                    FWK_MODULE_IDX_TIMER,
-                    0,
-                    JUNO_THERMAL_ALARM_IDX),
-        }
-    },
+    [MOD_JUNO_THERMAL_ELEMENT_IDX_CRITICAL] = { .name = "Soc",
+                                                .data =
+                                                    &(struct
+                                                      mod_juno_thermal_element_config){
+                                                        .thermal_threshold_mdc =
+                                                            UINT64_C(70 * 1000),
+                                                        .period_us = 2000000,
+                                                        .sensor_id = FWK_ID_ELEMENT_INIT(
+                                                            FWK_MODULE_IDX_SENSOR,
+                                                            MOD_JUNO_PVT_SENSOR_TEMP_SOC),
+                                                        .alarm_id = FWK_ID_SUB_ELEMENT_INIT(
+                                                            FWK_MODULE_IDX_TIMER,
+                                                            0,
+                                                            JUNO_THERMAL_ALARM_IDX),
+                                                    } },
     [MOD_JUNO_THERMAL_ELEMENT_IDX_COUNT] = { 0 },
 };
 

@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2020-2021, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2020-2024, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -43,7 +43,7 @@ static const struct mod_dvfs_domain_config cpu_group_little_r0 = {
         FWK_MODULE_IDX_TIMER,
         0,
         JUNO_DVFS_ALARM_VLITTLE_IDX),
-    .retry_ms = 1,
+    .retry_us = 1000,
     .latency = 1450,
     .sustained_idx = 2,
     .opps =
@@ -90,7 +90,7 @@ static const struct mod_dvfs_domain_config cpu_group_little_r1 = {
         FWK_MODULE_IDX_TIMER,
         0,
         JUNO_DVFS_ALARM_VLITTLE_IDX),
-    .retry_ms = 1,
+    .retry_us = 1000,
     .latency = 1450,
     .sustained_idx = 0,
     .opps =
@@ -114,7 +114,7 @@ static const struct mod_dvfs_domain_config cpu_group_little_r2 = {
         FWK_MODULE_IDX_TIMER,
         0,
         JUNO_DVFS_ALARM_VLITTLE_IDX),
-    .retry_ms = 1,
+    .retry_us = 1000,
     .latency = 1450,
     .sustained_idx = 1,
     .opps =
@@ -148,7 +148,7 @@ static const struct mod_dvfs_domain_config cpu_group_big_r0 = {
         FWK_MODULE_IDX_TIMER,
         0,
         JUNO_DVFS_ALARM_BIG_IDX),
-    .retry_ms = 1,
+    .retry_us = 1000,
     .latency = 1450,
     .sustained_idx = 2,
     .opps =
@@ -194,7 +194,7 @@ static const struct mod_dvfs_domain_config cpu_group_big_r1 = {
         FWK_MODULE_IDX_TIMER,
         0,
         JUNO_DVFS_ALARM_BIG_IDX),
-    .retry_ms = 1,
+    .retry_us = 1000,
     .latency = 1450,
     .sustained_idx = 1,
     .opps =
@@ -228,7 +228,7 @@ static const struct mod_dvfs_domain_config cpu_group_big_r2 = {
         FWK_MODULE_IDX_TIMER,
         0,
         JUNO_DVFS_ALARM_BIG_IDX),
-    .retry_ms = 1,
+    .retry_us = 1000,
     .latency = 1450,
     .sustained_idx = 1,
     .opps =
@@ -262,7 +262,7 @@ static const struct mod_dvfs_domain_config gpu_r0 = {
         FWK_MODULE_IDX_TIMER,
         0,
         JUNO_DVFS_ALARM_GPU_IDX),
-    .retry_ms = 1,
+    .retry_us = 1000,
     .latency = 1450,
     .sustained_idx = 4,
     .opps =
@@ -308,7 +308,7 @@ static const struct mod_dvfs_domain_config gpu_r1 = {
         FWK_MODULE_IDX_TIMER,
         0,
         JUNO_DVFS_ALARM_GPU_IDX),
-    .retry_ms = 1,
+    .retry_us = 1000,
     .latency = 1450,
     .sustained_idx = 4,
     .opps =
@@ -354,7 +354,7 @@ static const struct mod_dvfs_domain_config gpu_r2 = {
         FWK_MODULE_IDX_TIMER,
         0,
         JUNO_DVFS_ALARM_GPU_IDX),
-    .retry_ms = 1,
+    .retry_us = 1000,
     .latency = 1450,
     .sustained_idx = 1,
     .opps =
