@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2017-2021, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2017-2024, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -29,7 +29,7 @@ static const struct mod_dvfs_domain_config cpu_group_little = {
         FWK_MODULE_IDX_TIMER,
         0,
         CONFIG_TIMER_DVFS_CPU_GROUP_LITTLE),
-    .retry_ms = 1,
+    .retry_us = 1000,
     .latency = 1200,
     .sustained_idx = 2,
     .opps = (struct mod_dvfs_opp[]){ {
@@ -67,7 +67,7 @@ static const struct mod_dvfs_domain_config cpu_group_big = {
         FWK_MODULE_IDX_TIMER,
         0,
         CONFIG_TIMER_DVFS_CPU_GROUP_BIG),
-    .retry_ms = 1,
+    .retry_us = 1000,
     .latency = 1200,
     .sustained_idx = 2,
     .opps = (struct mod_dvfs_opp[]){ {
@@ -103,7 +103,7 @@ static const struct mod_dvfs_domain_config gpu = {
     .clock_id = FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_CLOCK, 2),
     .alarm_id =
         FWK_ID_SUB_ELEMENT_INIT(FWK_MODULE_IDX_TIMER, 0, CONFIG_TIMER_DVFS_GPU),
-    .retry_ms = 1,
+    .retry_us = 1000,
     .latency = 1200,
     .sustained_idx = 4,
     .opps = (struct mod_dvfs_opp[]){ {
