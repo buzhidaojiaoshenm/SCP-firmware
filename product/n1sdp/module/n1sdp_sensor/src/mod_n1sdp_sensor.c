@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2021-2023, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2021-2024, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -308,7 +308,7 @@ static int n1sdp_sensor_start(fwk_id_t id)
 
         status = sensor_ctx.timer_alarm_api->start(
             sensor_ctx.module_config->alarm_id,
-            1000,
+            1000000,
             MOD_TIMER_ALARM_TYPE_PERIODIC,
             &n1sdp_sensor_timer_callback,
             0);
