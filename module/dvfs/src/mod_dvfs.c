@@ -234,10 +234,10 @@ static int dvfs_handle_pending_request(struct mod_dvfs_domain_ctx *ctx)
         return FWK_SUCCESS;
     }
 
-    if (ctx->config->retry_ms > 0) {
+    if (ctx->config->retry_us > 0) {
         status = ctx->apis.alarm_api->start(
             ctx->config->alarm_id,
-            ctx->config->retry_ms,
+            ctx->config->retry_us,
             MOD_TIMER_ALARM_TYPE_ONCE,
             alarm_callback,
             (uintptr_t)ctx);
@@ -1070,7 +1070,7 @@ static int dvfs_bind_element(fwk_id_t domain_id, unsigned int round)
     }
 
     /* Bind to the alarm HAL if required */
-    if (ctx->config->retry_ms > 0) {
+    if (ctx->config->retry_us > 0) {
 #ifdef BUILD_HAS_MOD_TIMER
         status = fwk_module_bind(
             ctx->config->alarm_id,

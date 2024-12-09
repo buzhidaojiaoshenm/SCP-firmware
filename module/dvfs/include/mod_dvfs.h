@@ -95,8 +95,8 @@ struct mod_dvfs_domain_config {
      */
     fwk_id_t alarm_id;
 
-    /*! Delay in milliseconds before retrying a request */
-    uint16_t retry_ms;
+    /*! Delay in microseconds before retrying a request */
+    uint32_t retry_us;
 
     /*! Worst-case transition latency in microseconds */
     uint16_t latency;
