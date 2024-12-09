@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2023, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2023-2024, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -21,7 +21,7 @@ enum scp_sys_pow_nums {
 
 struct mod_scmi_system_power_config fake_config = {
     .alarm_id = FWK_ID_SUB_ELEMENT_INIT(FWK_MODULE_IDX_TIMER, 0, 0),
-    .graceful_timeout = 1000,
+    .graceful_timeout = 1000000,
     .system_suspend_state = (unsigned int)MOD_PD_STATE_COUNT,
     .system_view = MOD_SCMI_SYSTEM_VIEW_OSPM,
 };

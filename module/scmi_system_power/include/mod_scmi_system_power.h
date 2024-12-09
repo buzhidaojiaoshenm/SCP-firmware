@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2015-2021, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2015-2024, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -70,7 +70,7 @@ struct mod_scmi_system_power_config {
     fwk_id_t alarm_id;
 
     /*!
-     * Timeout period to wait for graceful response (milliseconds)
+     * Timeout period to wait for graceful response (microseconds)
      */
     uint32_t graceful_timeout;
 };
