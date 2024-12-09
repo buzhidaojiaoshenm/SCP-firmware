@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2023, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -76,10 +76,10 @@ void utest_fast_channel_callback()
     TEST_ASSERT_EQUAL(fake_fch0_callback_status, FWK_SUCCESS);
 }
 
-/* A test callback stub to verify passed millisecond parameter */
+/* A test callback stub to verify passed microsecond parameter */
 int alarm_start_callback(
     fwk_id_t alarm_id,
-    unsigned int milliseconds,
+    uint32_t microseconds,
     enum mod_timer_alarm_type type,
     void (*callback)(uintptr_t param),
     uintptr_t param,
@@ -88,13 +88,13 @@ int alarm_start_callback(
     uint32_t interval_assert_value;
 
     if (fch_polled_ctx.fch_config->fch_poll_rate < FCH_MIN_POLL_RATE_US) {
-        interval_assert_value = (uint32_t)FCH_MIN_POLL_RATE_US / 1000;
+        interval_assert_value = (uint32_t)FCH_MIN_POLL_RATE_US;
     } else {
         interval_assert_value =
-            (uint32_t)fch_polled_ctx.fch_config->fch_poll_rate / 1000;
+            (uint32_t)fch_polled_ctx.fch_config->fch_poll_rate;
     }
 
-    TEST_ASSERT_EQUAL(interval_assert_value, milliseconds);
+    TEST_ASSERT_EQUAL(interval_assert_value, microseconds);
 
     return FWK_SUCCESS;
 }

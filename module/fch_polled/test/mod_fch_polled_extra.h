@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2023, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2023-2024, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -18,7 +18,7 @@
 
 int fch_polled_extra_alarm_start(
     fwk_id_t alarm_id,
-    unsigned int milliseconds,
+    uint32_t microseconds,
     enum mod_timer_alarm_type type,
     void (*callback)(uintptr_t param),
     uintptr_t param);

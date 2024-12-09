@@ -58,19 +58,17 @@ static void fast_channel_alarm_callback(uintptr_t ch_ctx)
 
 static int start_alarm(struct mod_fch_polled_channel_ctx *channel_ctx)
 {
-    uint32_t fch_interval_msecs;
+    uint32_t fch_interval_usecs;
 
     /* Set the fast channel polling rate */
-    fch_interval_msecs =
-        FWK_MAX(
-            (uint32_t)FCH_MIN_POLL_RATE_US,
-            (uint32_t)fch_polled_ctx.fch_config->fch_poll_rate) /
-        1000;
+    fch_interval_usecs = FWK_MAX(
+        (uint32_t)FCH_MIN_POLL_RATE_US,
+        (uint32_t)fch_polled_ctx.fch_config->fch_poll_rate);
 
     /* Start the alarm */
     return fch_polled_ctx.fch_alarm_api->start(
         fch_polled_ctx.fch_config->fch_alarm_id,
-        fch_interval_msecs,
+        fch_interval_usecs,
         MOD_TIMER_ALARM_TYPE_PERIODIC,
         fast_channel_alarm_callback,
         (uintptr_t)channel_ctx);

@@ -7,10 +7,10 @@
 
 static const char* CMockString_alarm_id = "alarm_id";
 static const char* CMockString_callback = "callback";
-static const char* CMockString_milliseconds = "milliseconds";
-static const char* CMockString_param = "param";
 static const char* CMockString_fch_polled_extra_alarm_start = "fch_polled_extra_alarm_start";
 static const char* CMockString_fch_polled_extra_alarm_stop = "fch_polled_extra_alarm_stop";
+static const char* CMockString_microseconds = "microseconds";
+static const char* CMockString_param = "param";
 static const char* CMockString_type = "type";
 
 typedef struct _CMOCK_fch_polled_extra_alarm_start_CALL_INSTANCE
@@ -19,12 +19,12 @@ typedef struct _CMOCK_fch_polled_extra_alarm_start_CALL_INSTANCE
   char ExpectAnyArgsBool;
   int ReturnVal;
   fwk_id_t Expected_alarm_id;
-  unsigned int Expected_milliseconds;
+  uint32_t Expected_microseconds;
   enum mod_timer_alarm_type Expected_type;
   cmock_mod_fch_polled_extra_func_ptr1 Expected_callback;
   uintptr_t Expected_param;
   char IgnoreArg_alarm_id;
-  char IgnoreArg_milliseconds;
+  char IgnoreArg_microseconds;
   char IgnoreArg_type;
   char IgnoreArg_callback;
   char IgnoreArg_param;
@@ -102,7 +102,7 @@ void Mockmod_fch_polled_extra_Destroy(void)
   memset(&Mock, 0, sizeof(Mock));
 }
 
-int fch_polled_extra_alarm_start(fwk_id_t alarm_id, unsigned int milliseconds, enum mod_timer_alarm_type type, cmock_mod_fch_polled_extra_func_ptr1 callback, uintptr_t param)
+int fch_polled_extra_alarm_start(fwk_id_t alarm_id, uint32_t microseconds, enum mod_timer_alarm_type type, cmock_mod_fch_polled_extra_func_ptr1 callback, uintptr_t param)
 {
   UNITY_LINE_TYPE cmock_line = TEST_LINE_NUM;
   CMOCK_fch_polled_extra_alarm_start_CALL_INSTANCE* cmock_call_instance;
@@ -120,7 +120,7 @@ int fch_polled_extra_alarm_start(fwk_id_t alarm_id, unsigned int milliseconds, e
   if (!Mock.fch_polled_extra_alarm_start_CallbackBool &&
       Mock.fch_polled_extra_alarm_start_CallbackFunctionPointer != NULL)
   {
-    int cmock_cb_ret = Mock.fch_polled_extra_alarm_start_CallbackFunctionPointer(alarm_id, milliseconds, type, callback, param, Mock.fch_polled_extra_alarm_start_CallbackCalls++);
+    int cmock_cb_ret = Mock.fch_polled_extra_alarm_start_CallbackFunctionPointer(alarm_id, microseconds, type, callback, param, Mock.fch_polled_extra_alarm_start_CallbackCalls++);
     UNITY_CLR_DETAILS();
     return cmock_cb_ret;
   }
@@ -133,10 +133,10 @@ int fch_polled_extra_alarm_start(fwk_id_t alarm_id, unsigned int milliseconds, e
     UNITY_SET_DETAILS(CMockString_fch_polled_extra_alarm_start,CMockString_alarm_id);
     UNITY_TEST_ASSERT_EQUAL_MEMORY((void*)(&cmock_call_instance->Expected_alarm_id), (void*)(&alarm_id), sizeof(fwk_id_t), cmock_line, CMockStringMismatch);
   }
-  if (!cmock_call_instance->IgnoreArg_milliseconds)
+  if (!cmock_call_instance->IgnoreArg_microseconds)
   {
-    UNITY_SET_DETAILS(CMockString_fch_polled_extra_alarm_start,CMockString_milliseconds);
-    UNITY_TEST_ASSERT_EQUAL_HEX32(cmock_call_instance->Expected_milliseconds, milliseconds, cmock_line, CMockStringMismatch);
+    UNITY_SET_DETAILS(CMockString_fch_polled_extra_alarm_start,CMockString_microseconds);
+    UNITY_TEST_ASSERT_EQUAL_HEX32(cmock_call_instance->Expected_microseconds, microseconds, cmock_line, CMockStringMismatch);
   }
   if (!cmock_call_instance->IgnoreArg_type)
   {
@@ -156,20 +156,20 @@ int fch_polled_extra_alarm_start(fwk_id_t alarm_id, unsigned int milliseconds, e
   }
   if (Mock.fch_polled_extra_alarm_start_CallbackFunctionPointer != NULL)
   {
-    cmock_call_instance->ReturnVal = Mock.fch_polled_extra_alarm_start_CallbackFunctionPointer(alarm_id, milliseconds, type, callback, param, Mock.fch_polled_extra_alarm_start_CallbackCalls++);
+    cmock_call_instance->ReturnVal = Mock.fch_polled_extra_alarm_start_CallbackFunctionPointer(alarm_id, microseconds, type, callback, param, Mock.fch_polled_extra_alarm_start_CallbackCalls++);
   }
   UNITY_CLR_DETAILS();
   return cmock_call_instance->ReturnVal;
 }
 
-void CMockExpectParameters_fch_polled_extra_alarm_start(CMOCK_fch_polled_extra_alarm_start_CALL_INSTANCE* cmock_call_instance, fwk_id_t alarm_id, unsigned int milliseconds, enum mod_timer_alarm_type type, cmock_mod_fch_polled_extra_func_ptr1 callback, uintptr_t param);
-void CMockExpectParameters_fch_polled_extra_alarm_start(CMOCK_fch_polled_extra_alarm_start_CALL_INSTANCE* cmock_call_instance, fwk_id_t alarm_id, unsigned int milliseconds, enum mod_timer_alarm_type type, cmock_mod_fch_polled_extra_func_ptr1 callback, uintptr_t param)
+void CMockExpectParameters_fch_polled_extra_alarm_start(CMOCK_fch_polled_extra_alarm_start_CALL_INSTANCE* cmock_call_instance, fwk_id_t alarm_id, uint32_t microseconds, enum mod_timer_alarm_type type, cmock_mod_fch_polled_extra_func_ptr1 callback, uintptr_t param);
+void CMockExpectParameters_fch_polled_extra_alarm_start(CMOCK_fch_polled_extra_alarm_start_CALL_INSTANCE* cmock_call_instance, fwk_id_t alarm_id, uint32_t microseconds, enum mod_timer_alarm_type type, cmock_mod_fch_polled_extra_func_ptr1 callback, uintptr_t param)
 {
   memcpy((void*)(&cmock_call_instance->Expected_alarm_id), (void*)(&alarm_id),
          sizeof(fwk_id_t[sizeof(alarm_id) == sizeof(fwk_id_t) ? 1 : -1])); /* add fwk_id_t to :treat_as_array if this causes an error */
   cmock_call_instance->IgnoreArg_alarm_id = 0;
-  cmock_call_instance->Expected_milliseconds = milliseconds;
-  cmock_call_instance->IgnoreArg_milliseconds = 0;
+  cmock_call_instance->Expected_microseconds = microseconds;
+  cmock_call_instance->IgnoreArg_microseconds = 0;
   memcpy((void*)(&cmock_call_instance->Expected_type), (void*)(&type),
          sizeof(enum mod_timer_alarm_type[sizeof(type) == sizeof(enum mod_timer_alarm_type) ? 1 : -1])); /* add enum mod_timer_alarm_type to :treat_as_array if this causes an error */
   cmock_call_instance->IgnoreArg_type = 0;
@@ -216,7 +216,7 @@ void fch_polled_extra_alarm_start_CMockExpectAnyArgsAndReturn(UNITY_LINE_TYPE cm
   cmock_call_instance->ExpectAnyArgsBool = (char)1;
 }
 
-void fch_polled_extra_alarm_start_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, fwk_id_t alarm_id, unsigned int milliseconds, enum mod_timer_alarm_type type, cmock_mod_fch_polled_extra_func_ptr1 callback, uintptr_t param, int cmock_to_return)
+void fch_polled_extra_alarm_start_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, fwk_id_t alarm_id, uint32_t microseconds, enum mod_timer_alarm_type type, cmock_mod_fch_polled_extra_func_ptr1 callback, uintptr_t param, int cmock_to_return)
 {
   CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_fch_polled_extra_alarm_start_CALL_INSTANCE));
   CMOCK_fch_polled_extra_alarm_start_CALL_INSTANCE* cmock_call_instance = (CMOCK_fch_polled_extra_alarm_start_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
@@ -226,7 +226,7 @@ void fch_polled_extra_alarm_start_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_lin
   Mock.fch_polled_extra_alarm_start_IgnoreBool = (char)0;
   cmock_call_instance->LineNumber = cmock_line;
   cmock_call_instance->ExpectAnyArgsBool = (char)0;
-  CMockExpectParameters_fch_polled_extra_alarm_start(cmock_call_instance, alarm_id, milliseconds, type, callback, param);
+  CMockExpectParameters_fch_polled_extra_alarm_start(cmock_call_instance, alarm_id, microseconds, type, callback, param);
   cmock_call_instance->ReturnVal = cmock_to_return;
 }
 
@@ -251,11 +251,11 @@ void fch_polled_extra_alarm_start_CMockIgnoreArg_alarm_id(UNITY_LINE_TYPE cmock_
   cmock_call_instance->IgnoreArg_alarm_id = 1;
 }
 
-void fch_polled_extra_alarm_start_CMockIgnoreArg_milliseconds(UNITY_LINE_TYPE cmock_line)
+void fch_polled_extra_alarm_start_CMockIgnoreArg_microseconds(UNITY_LINE_TYPE cmock_line)
 {
   CMOCK_fch_polled_extra_alarm_start_CALL_INSTANCE* cmock_call_instance = (CMOCK_fch_polled_extra_alarm_start_CALL_INSTANCE*)CMock_Guts_GetAddressFor(CMock_Guts_MemEndOfChain(Mock.fch_polled_extra_alarm_start_CallInstance));
   UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringIgnPreExp);
-  cmock_call_instance->IgnoreArg_milliseconds = 1;
+  cmock_call_instance->IgnoreArg_microseconds = 1;
 }
 
 void fch_polled_extra_alarm_start_CMockIgnoreArg_type(UNITY_LINE_TYPE cmock_line)
@@ -396,3 +396,4 @@ void fch_polled_extra_alarm_stop_CMockIgnoreArg_alarm_id(UNITY_LINE_TYPE cmock_l
   UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringIgnPreExp);
   cmock_call_instance->IgnoreArg_alarm_id = 1;
 }
+
