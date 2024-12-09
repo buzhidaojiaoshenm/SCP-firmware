@@ -26,7 +26,7 @@ const struct fwk_module_config config_scmi_system_power = {
             FWK_MODULE_IDX_TIMER,
             SCP_ALARM_ELEMENT_IDX,
             SCP_CFGD_SCMI_NOTIFICATION_ALARM_IDX),
-        .graceful_timeout = 1000, /* ms */
+        .graceful_timeout = 1000000, /* us */
 #endif
     }),
 };
