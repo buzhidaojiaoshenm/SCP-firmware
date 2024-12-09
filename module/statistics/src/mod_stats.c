@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2020-2023, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2020-2024, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -23,7 +23,7 @@
 /* 'POWR' = 0x504F5752 in SCP little-endian */
 #define STATS_SIGN_POWR 0x504F5752
 
-#define STATS_UPDATE_PERIOD_MS  100
+#define STATS_UPDATE_PERIOD_US 100000
 
 struct mod_stats_ctx {
     /* Platform specific memory configuration data */
@@ -537,9 +537,12 @@ static int stats_start(fwk_id_t id)
     int status;
 
     if (!fwk_id_is_equal(stats_ctx.config->alarm_id, FWK_ID_NONE)) {
-        status = stats_ctx.alarm_api->start(stats_ctx.config->alarm_id,
-            STATS_UPDATE_PERIOD_MS, MOD_TIMER_ALARM_TYPE_PERIODIC,
-            periodic_update_callback, (uintptr_t)0);
+        status = stats_ctx.alarm_api->start(
+            stats_ctx.config->alarm_id,
+            STATS_UPDATE_PERIOD_US,
+            MOD_TIMER_ALARM_TYPE_PERIODIC,
+            periodic_update_callback,
+            (uintptr_t)0);
 
         if (status != FWK_SUCCESS) {
             return status;
