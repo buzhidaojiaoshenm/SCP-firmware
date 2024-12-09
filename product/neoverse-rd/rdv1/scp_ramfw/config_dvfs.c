@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2021, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2021-2024, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -30,7 +30,7 @@
             FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_PSU, DVFS_ELEMENT_IDX_CPU##n), \
         .clock_id = \
             FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_CLOCK, CLOCK_IDX_CPU_GROUP##n), \
-        .retry_ms = 0, .latency = 1200, .sustained_idx = 2, .opps = opps \
+        .retry_us = 0, .latency = 1200, .sustained_idx = 2, .opps = opps \
     }
 
 /* The frequencies should match with the frequencies configured for css clock */
