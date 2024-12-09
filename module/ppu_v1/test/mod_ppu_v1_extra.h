@@ -13,7 +13,7 @@
 /* For the alarm API*/
 int start_alarm_api(
     fwk_id_t alarm_id,
-    unsigned int milliseconds,
+    uint32_t microseconds,
     enum mod_timer_alarm_type type,
     void (*callback)(uintptr_t param),
     uintptr_t param);
