@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2018-2021, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2018-2024, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -47,7 +47,7 @@ static const struct mod_dvfs_domain_config cpu_group0 = {
     .psu_id = FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_PSU, 0),
     .clock_id = FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_CLOCK, CLOCK_IDX_CPU_GROUP0),
     .alarm_id = FWK_ID_SUB_ELEMENT_INIT(FWK_MODULE_IDX_TIMER, 0, 0),
-    .retry_ms = 1,
+    .retry_us = 1000,
     .latency = 1200,
     .sustained_idx = 2,
     .opps = opps,
@@ -57,7 +57,7 @@ static const struct mod_dvfs_domain_config cpu_group1 = {
     .psu_id = FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_PSU, 1),
     .clock_id = FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_CLOCK, CLOCK_IDX_CPU_GROUP1),
     .alarm_id = FWK_ID_SUB_ELEMENT_INIT(FWK_MODULE_IDX_TIMER, 0, 1),
-    .retry_ms = 1,
+    .retry_us = 1000,
     .latency = 1200,
     .sustained_idx = 2,
     .opps = opps,
