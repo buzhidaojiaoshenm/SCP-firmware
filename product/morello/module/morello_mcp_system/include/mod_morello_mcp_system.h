@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2020-2023, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2020-2024, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -23,7 +23,7 @@
  * \{
  */
 
-#define MORELLO_SCP_AGENT_SCMI_RESPONSE_TIMEOUT_MILLISEC 1000
+#define MORELLO_SCP_AGENT_SCMI_RESPONSE_TIMEOUT_MICROSEC 1000000
 
 /*!
  * \brief Events used by MCP system module.

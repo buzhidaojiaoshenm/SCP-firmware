@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2020-2023, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2020-2024, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -287,7 +287,7 @@ static int morello_mcp_system_process_event(
                 morello_mcp_system_ctx.scmi_agent_api->get_protocol_version(
                     FWK_ID_ELEMENT(FWK_MODULE_IDX_SCMI_AGENT, 0));
             set_alarm(
-                MORELLO_SCP_AGENT_SCMI_RESPONSE_TIMEOUT_MILLISEC,
+                MORELLO_SCP_AGENT_SCMI_RESPONSE_TIMEOUT_MICROSEC,
                 MOD_MCP_SYSTEM_EVENT_PROTOCOL_VERSION_GET);
         } else {
             status = get_protocol_version_response_handler(event);
@@ -301,7 +301,7 @@ static int morello_mcp_system_process_event(
             status = morello_mcp_system_ctx.scmi_agent_api->get_clock_status(
                 FWK_ID_ELEMENT(FWK_MODULE_IDX_SCMI_AGENT, 0));
             set_alarm(
-                MORELLO_SCP_AGENT_SCMI_RESPONSE_TIMEOUT_MILLISEC,
+                MORELLO_SCP_AGENT_SCMI_RESPONSE_TIMEOUT_MICROSEC,
                 MOD_MCP_SYSTEM_EVENT_CLOCK_STATUS_GET);
         } else {
             status = get_clock_status_response_handler(event);
@@ -315,7 +315,7 @@ static int morello_mcp_system_process_event(
             status = morello_mcp_system_ctx.scmi_agent_api->get_chipid_info(
                 FWK_ID_ELEMENT(FWK_MODULE_IDX_SCMI_AGENT, 0));
             set_alarm(
-                MORELLO_SCP_AGENT_SCMI_RESPONSE_TIMEOUT_MILLISEC,
+                MORELLO_SCP_AGENT_SCMI_RESPONSE_TIMEOUT_MICROSEC,
                 MOD_MCP_SYSTEM_EVENT_CHIPID_INFO_GET);
         } else {
             status = get_chipid_info_response_handler(event);
