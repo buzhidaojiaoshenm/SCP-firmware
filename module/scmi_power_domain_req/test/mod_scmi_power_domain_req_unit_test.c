@@ -46,7 +46,7 @@ static const struct fwk_element
                 FWK_MODULE_IDX_TIMER,
                 0,
                 0),
-            .response_timeout = 30,
+            .response_timeout = 30000,
             .pd_element_id = FWK_ID_ELEMENT_INIT(
                 FWK_MODULE_IDX_POWER_DOMAIN,
                 0),
@@ -65,7 +65,7 @@ static const struct fwk_element
                 FWK_MODULE_IDX_TIMER,
                 0,
                 0),
-            .response_timeout = 30,
+            .response_timeout = 30000,
             .pd_element_id = FWK_ID_ELEMENT_INIT(
                 FWK_MODULE_IDX_POWER_DOMAIN,
                 0),

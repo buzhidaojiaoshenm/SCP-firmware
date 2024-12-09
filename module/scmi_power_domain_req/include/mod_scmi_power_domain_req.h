@@ -37,7 +37,7 @@ struct scmi_power_domain_req_dev_config {
     /*!
      * \brief Timeout used for the alarm
      */
-    unsigned int response_timeout;
+    uint32_t response_timeout;
 
     /*!
      * \brief Domain ID in Power Domain config

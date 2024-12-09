@@ -89,16 +89,16 @@ void start_alarm_api_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_
 void start_alarm_api_CMockStopIgnore(void);
 #define start_alarm_api_ExpectAnyArgsAndReturn(cmock_retval) start_alarm_api_CMockExpectAnyArgsAndReturn(__LINE__, cmock_retval)
 void start_alarm_api_CMockExpectAnyArgsAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return);
-#define start_alarm_api_ExpectAndReturn(alarm_id, milliseconds, type, callback, param, cmock_retval) start_alarm_api_CMockExpectAndReturn(__LINE__, alarm_id, milliseconds, type, callback, param, cmock_retval)
-void start_alarm_api_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, fwk_id_t alarm_id, unsigned int milliseconds, enum mod_timer_alarm_type type, cmock_mod_scmi_power_domain_req_extra_func_ptr1 callback, uintptr_t param, int cmock_to_return);
-typedef int (* CMOCK_start_alarm_api_CALLBACK)(fwk_id_t alarm_id, unsigned int milliseconds, enum mod_timer_alarm_type type, cmock_mod_scmi_power_domain_req_extra_func_ptr1 callback, uintptr_t param, int cmock_num_calls);
+#define start_alarm_api_ExpectAndReturn(alarm_id, microseconds, type, callback, param, cmock_retval) start_alarm_api_CMockExpectAndReturn(__LINE__, alarm_id, microseconds, type, callback, param, cmock_retval)
+void start_alarm_api_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, fwk_id_t alarm_id, uint32_t microseconds, enum mod_timer_alarm_type type, cmock_mod_scmi_power_domain_req_extra_func_ptr1 callback, uintptr_t param, int cmock_to_return);
+typedef int (* CMOCK_start_alarm_api_CALLBACK)(fwk_id_t alarm_id, uint32_t microseconds, enum mod_timer_alarm_type type, cmock_mod_scmi_power_domain_req_extra_func_ptr1 callback, uintptr_t param, int cmock_num_calls);
 void start_alarm_api_AddCallback(CMOCK_start_alarm_api_CALLBACK Callback);
 void start_alarm_api_Stub(CMOCK_start_alarm_api_CALLBACK Callback);
 #define start_alarm_api_StubWithCallback start_alarm_api_Stub
 #define start_alarm_api_IgnoreArg_alarm_id() start_alarm_api_CMockIgnoreArg_alarm_id(__LINE__)
 void start_alarm_api_CMockIgnoreArg_alarm_id(UNITY_LINE_TYPE cmock_line);
-#define start_alarm_api_IgnoreArg_milliseconds() start_alarm_api_CMockIgnoreArg_milliseconds(__LINE__)
-void start_alarm_api_CMockIgnoreArg_milliseconds(UNITY_LINE_TYPE cmock_line);
+#define start_alarm_api_IgnoreArg_microseconds() start_alarm_api_CMockIgnoreArg_microseconds(__LINE__)
+void start_alarm_api_CMockIgnoreArg_microseconds(UNITY_LINE_TYPE cmock_line);
 #define start_alarm_api_IgnoreArg_type() start_alarm_api_CMockIgnoreArg_type(__LINE__)
 void start_alarm_api_CMockIgnoreArg_type(UNITY_LINE_TYPE cmock_line);
 #define start_alarm_api_IgnoreArg_callback() start_alarm_api_CMockIgnoreArg_callback(__LINE__)
