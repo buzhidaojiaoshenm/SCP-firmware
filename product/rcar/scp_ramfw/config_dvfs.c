@@ -1,6 +1,6 @@
 /*
  * Renesas SCP/MCP Software
- * Copyright (c) 2020-2021, Renesas Electronics Corporation. All rights
+ * Copyright (c) 2020-2024, Renesas Electronics Corporation. All rights
  * reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
@@ -40,7 +40,7 @@ static const struct mod_dvfs_domain_config cpu_group_little_r0 = {
         FWK_MODULE_IDX_TIMER,
         0,
         RCAR_DVFS_ALARM_LITTLE_IDX),
-    .retry_ms = 1,
+    .retry_us = 1000,
     .latency = 1200,
     .sustained_idx = 2,
     .opps = (struct mod_dvfs_opp[]){ {
@@ -71,7 +71,7 @@ static const struct mod_dvfs_domain_config cpu_group_big_r0 = {
         FWK_MODULE_IDX_TIMER,
         0,
         RCAR_DVFS_ALARM_BIG_IDX),
-    .retry_ms = 1,
+    .retry_us = 1000,
     .latency = 1200,
     .sustained_idx = 2,
     .opps = (struct mod_dvfs_opp[]){ {
