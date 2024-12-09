@@ -465,11 +465,12 @@ static int alarm_stop(fwk_id_t alarm_id)
     return FWK_SUCCESS;
 }
 
-static int alarm_start(fwk_id_t alarm_id,
-                       unsigned int milliseconds,
-                       enum mod_timer_alarm_type type,
-                       void (*callback)(uintptr_t param),
-                       uintptr_t param)
+static int alarm_start(
+    fwk_id_t alarm_id,
+    uint32_t microseconds,
+    enum mod_timer_alarm_type type,
+    void (*callback)(uintptr_t param),
+    uintptr_t param)
 {
     int status;
     struct timer_dev_ctx *ctx;
@@ -499,15 +500,12 @@ static int alarm_start(fwk_id_t alarm_id,
 
     alarm->started = true;
 
-    /* Cap to ensure value will not overflow when stored as microseconds */
-    milliseconds = FWK_MIN(milliseconds, UINT32_MAX / 1000);
-
     /* Populate alarm item */
     alarm->callback = callback;
     alarm->param = param;
     alarm->periodic =
         (type == MOD_TIMER_ALARM_TYPE_PERIODIC ? true : false);
-    alarm->microseconds = milliseconds * 1000;
+    alarm->microseconds = microseconds;
     status = _timestamp_from_now(ctx,
                                  alarm->microseconds,
                                  &alarm->timestamp);

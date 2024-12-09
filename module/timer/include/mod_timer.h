@@ -287,7 +287,7 @@ struct mod_timer_alarm_api {
      *      routine.
      *
      * \param alarm_id Sub-element identifier of the alarm.
-     * \param milliseconds The time delay, given in milliseconds, until the
+     * \param microseconds The time delay, given in microseconds, until the
      *     alarm should trigger.
      * \param type ::MOD_TIMER_ALARM_TYPE_ONCE or
      *     ::MOD_TIMER_ALARM_TYPE_PERIODIC.
@@ -303,11 +303,12 @@ struct mod_timer_alarm_api {
      * \retval ::FWK_SUCCESS The alarm was started.
      * \return One of the other specific error codes described by the framework.
      */
-    int (*start)(fwk_id_t alarm_id,
-                 unsigned int milliseconds,
-                 enum mod_timer_alarm_type type,
-                 void (*callback)(uintptr_t param),
-                 uintptr_t param);
+    int (*start)(
+        fwk_id_t alarm_id,
+        uint32_t microseconds,
+        enum mod_timer_alarm_type type,
+        void (*callback)(uintptr_t param),
+        uintptr_t param);
 
     /*!
      * \brief Stop a previously started alarm.
