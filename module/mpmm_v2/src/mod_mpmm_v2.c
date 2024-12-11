@@ -27,6 +27,8 @@
 #include <fwk_status.h>
 #include <fwk_string.h>
 
+#include <inttypes.h>
+
 static struct mod_mpmm_v2_ctx {
     /* Number of MPMM_V2 domains */
     uint32_t mpmm_v2_domain_count;
@@ -164,7 +166,7 @@ static void mpmm_v2_domain_set_gears(struct mod_mpmm_v2_domain_ctx *ctx)
         core_ctx = &ctx->core_ctx[core_idx];
         if (core_ctx->online && core_ctx->needs_gear_update) {
             FWK_LOG_INFO(
-                "domain %d: core %d: setting gear to %d\n",
+                "domain %d: core %d: setting gear to %" PRIu32 "\n",
                 ctx->domain_id.element.element_idx,
                 core_ctx->core_id.sub_element.sub_element_idx,
                 core_ctx->selected_gear & MPMM_MPMMCR_GEAR_MASK);
