@@ -6,10 +6,10 @@
  */
 
 #include "scp_mmap.h"
-#include "tc2_amu.h"
-#include "tc2_core.h"
-#include "tc2_dvfs.h"
-#include "tc2_timer.h"
+#include "tc3_core.h"
+#include "tc3_dvfs.h"
+#include "tc3_timer.h"
+#include "tc_amu.h"
 
 #include <mod_amu_mmap.h>
 #include <mod_mpmm_v2.h>
@@ -19,9 +19,9 @@
 #include <fwk_module_idx.h>
 
 enum mpmm_v2_domain_idx {
-    MPMM_V2_A520_DOM_IDX,
-    MPMM_V2_A720_DOM_IDX,
-    MPMM_V2_X4_DOM_IDX,
+    MPMM_V2_LITTLE_DOM_IDX,
+    MPMM_V2_MID_DOM_IDX,
+    MPMM_V2_BIG_DOM_IDX,
     MPMM_V2_DOM_COUNT,
 };
 
@@ -36,7 +36,7 @@ enum cpu_idx {
     CORE7_IDX
 };
 
-static const struct mod_mpmm_v2_core_config cortex_a520_core_config[] = {
+static const struct mod_mpmm_v2_core_config little_core_config[] = {
     [CORE0_IDX] = {
         .pd_id = FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_POWER_DOMAIN, CORE0_IDX),
         .mpmm_reg_base = SCP_MPMM_CORE_BASE(CORE0_IDX),
@@ -67,7 +67,7 @@ static const struct mod_mpmm_v2_core_config cortex_a520_core_config[] = {
     },
 };
 
-static const struct mod_mpmm_v2_core_config cortex_a720_core_config[] = {
+static const struct mod_mpmm_v2_core_config mid_core_config[] = {
     [CORE0_IDX] = {
         .pd_id = FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_POWER_DOMAIN, CORE4_IDX),
         .mpmm_reg_base = SCP_MPMM_CORE_BASE(CORE4_IDX),
@@ -91,7 +91,7 @@ static const struct mod_mpmm_v2_core_config cortex_a720_core_config[] = {
     },
 };
 
-static const struct mod_mpmm_v2_core_config cortex_x4_core_config[1] = {
+static const struct mod_mpmm_v2_core_config big_core_config[1] = {
     [CORE0_IDX] = {
         .pd_id = FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_POWER_DOMAIN, CORE7_IDX),
         .mpmm_reg_base = SCP_MPMM_CORE_BASE(CORE7_IDX),
@@ -101,90 +101,90 @@ static const struct mod_mpmm_v2_core_config cortex_x4_core_config[1] = {
     },
 };
 
-static const struct mod_mpmm_v2_domain_config cortex_a520_domain_conf[2] = {
+static const struct mod_mpmm_v2_domain_config little_domain_conf[2] = {
     [0] = {
 #ifdef BUILD_HAS_MOD_PERF_CONTROLLER
         .perf_id = FWK_ID_ELEMENT_INIT(
-            FWK_MODULE_IDX_PERF_CONTROLLER, DVFS_ELEMENT_IDX_CORTEX_A520),
+            FWK_MODULE_IDX_PERF_CONTROLLER, DVFS_ELEMENT_IDX_GROUP_LITTLE),
 #else
         .perf_id = FWK_ID_ELEMENT_INIT(
-            FWK_MODULE_IDX_DVFS, DVFS_ELEMENT_IDX_CORTEX_A520),
+            FWK_MODULE_IDX_DVFS, DVFS_ELEMENT_IDX_GROUP_LITTLE),
 #endif
         .max_power = 447,
         .min_power = 112,
-        .gear_weights = (float[3]) {
+        .gear_weights = (uint32_t[3]) {
             [0] = 100,
             [1] = 93,
             [2] = 86,
         },
         .base_throtl_count = 10,
         .num_of_gears = 3,
-        .core_config = cortex_a520_core_config,
+        .core_config = little_core_config,
     },
     [1] = {0},
 };
 
-static const struct mod_mpmm_v2_domain_config cortex_a720_domain_conf[2] = {
+static const struct mod_mpmm_v2_domain_config mid_domain_conf[2] = {
     [0] = {
 #ifdef BUILD_HAS_MOD_PERF_CONTROLLER
         .perf_id = FWK_ID_ELEMENT_INIT(
-            FWK_MODULE_IDX_PERF_CONTROLLER, DVFS_ELEMENT_IDX_CORTEX_A720),
+            FWK_MODULE_IDX_PERF_CONTROLLER, DVFS_ELEMENT_IDX_GROUP_MID),
 #else
         .perf_id = FWK_ID_ELEMENT_INIT(
-            FWK_MODULE_IDX_DVFS, DVFS_ELEMENT_IDX_CORTEX_A720),
+            FWK_MODULE_IDX_DVFS, DVFS_ELEMENT_IDX_GROUP_MID),
 #endif
         .max_power = 1183,
         .min_power = 527,
-        .gear_weights = (float[3]) {
+        .gear_weights = (uint32_t[3]) {
             [0] = 100,
             [1] = 90,
             [2] = 84,
         },
         .base_throtl_count = 10,
         .num_of_gears = 3,
-        .core_config = cortex_a720_core_config,
+        .core_config = mid_core_config,
     },
     [1] = {0},
 };
 
-static const struct mod_mpmm_v2_domain_config cortex_x4_domain_conf[2] = {
+static const struct mod_mpmm_v2_domain_config big_domain_conf[2] = {
     [0] = {
 #ifdef BUILD_HAS_MOD_PERF_CONTROLLER
         .perf_id = FWK_ID_ELEMENT_INIT(
-            FWK_MODULE_IDX_PERF_CONTROLLER, DVFS_ELEMENT_IDX_CORTEX_X4),
+            FWK_MODULE_IDX_PERF_CONTROLLER, DVFS_ELEMENT_IDX_GROUP_BIG),
 #else
         .perf_id = FWK_ID_ELEMENT_INIT(
-            FWK_MODULE_IDX_DVFS, DVFS_ELEMENT_IDX_CORTEX_X4),
+            FWK_MODULE_IDX_DVFS, DVFS_ELEMENT_IDX_GROUP_BIG),
 #endif
         .max_power = 2898,
         .min_power = 1989,
-        .gear_weights = (float[3]) {
+        .gear_weights = (uint32_t[3]) {
             [0] = 100,
             [1] = 100,
             [2] = 70,
         },
         .base_throtl_count = 10,
         .num_of_gears = 3,
-        .core_config = cortex_x4_core_config,
+        .core_config = big_core_config,
     },
     [1] = {0},
 };
 
 static const struct fwk_element mpmm_v2_element_table[4] = {
-    [MPMM_V2_A520_DOM_IDX] = {
-        .name = "MPMM_CORTEX_A520_ELEM",
+    [MPMM_V2_LITTLE_DOM_IDX] = {
+        .name = "MPMM_LITTLE_ELEM",
         .sub_element_count = 4,
-        .data = cortex_a520_domain_conf,
+        .data = little_domain_conf,
     },
-    [MPMM_V2_A720_DOM_IDX] = {
-        .name = "MPMM_HUNTER_ELEM",
+    [MPMM_V2_MID_DOM_IDX] = {
+        .name = "MPMM_MID_ELEM",
         .sub_element_count = 3,
-        .data = cortex_a720_domain_conf,
+        .data = mid_domain_conf,
     },
-    [MPMM_V2_X4_DOM_IDX] = {
-        .name = "MPMM_CORTEX_X4_ELEM",
+    [MPMM_V2_BIG_DOM_IDX] = {
+        .name = "MPMM_BIG_ELEM",
         .sub_element_count = 1,
-        .data = cortex_x4_domain_conf,
+        .data = big_domain_conf,
     },
     [MPMM_V2_DOM_COUNT] = { 0 },
 };
