@@ -44,6 +44,14 @@ report-pipeline-failure:
  stage: .post
  extends: .report-pipeline-failure
 
+notify-success:
+  stage: .post
+  extends: .notify-success
+
+notify-failure:
+ stage: .post
+ extends: .notify-failure
+
 check-lint:
   extends:
     - .check-lint

@@ -49,3 +49,21 @@
   when: on_success
   rules:
     - if: $FETCH_PUBLIC_MR == "true"
+
+.notify-success:
+  extends: .report-status
+  script:
+    - pip install requests
+    - python3 tools/pipeline_notification.py --status "success"
+  when: on_success
+  rules:
+    - if: '$PIPELINE_TYPE == "daily-pipeline" || $FETCH_PUBLIC_MR == "true"'
+
+.notify-failure:
+  extends: .report-status
+  script:
+    - pip install requests
+    - python3 tools/pipeline_notification.py --status "failure"
+  when: on_failure
+  rules:
+    - if: '$PIPELINE_TYPE == "daily-pipeline" || $FETCH_PUBLIC_MR == "true"'

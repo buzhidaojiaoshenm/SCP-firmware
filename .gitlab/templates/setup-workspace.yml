@@ -32,6 +32,11 @@
 
       echo "CI_MERGE_REQUEST_DIFF_BASE_SHA=$CI_MERGE_REQUEST_DIFF_BASE_SHA" \
         >> .env/workspace.env
+
+      MR_TITLE=$(echo "$MR_INFO" | jq -r .title)
+      echo "EXTERNAL_MR_TITLE=$MR_TITLE" \
+        >> .env/workspace.env
+
   artifacts:
     reports:
       dotenv: .env/workspace.env
