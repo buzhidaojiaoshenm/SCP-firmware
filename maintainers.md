@@ -55,9 +55,9 @@ maintainers. The platforms listed here represent the exceptions to this rule.
 - [Thomas Abraham](https://gitlab.arm.com/thomas.abraham)
 - [Vijayenthiran Subramaniam](https://gitlab.arm.com/Vijayenthiran.Subramaniam)
 
-#### Total Compute (tc2)
+#### Total Compute (tc2, tc3, tc4)
 
-- [Tintu Thomas](https://gitlab.arm.com/Tintu.Thomas)
+- [Jackson Cooper-Driver](https://gitlab.arm.com/Jackson.Cooper-Driver)
 - [Quoc Khanh Le](https://gitlab.arm.com/quockhanh-le-arm)
 
 ### Socionext
