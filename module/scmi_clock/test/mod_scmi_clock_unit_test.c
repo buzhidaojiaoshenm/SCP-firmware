@@ -22,6 +22,7 @@
 #include <mod_clock.h>
 
 #include <mod_scmi.h>
+#include <scmi_clock.h>
 
 #include <fwk_element.h>
 #include <fwk_macros.h>
@@ -187,6 +188,13 @@ int fwk_put_event_callback(struct fwk_event *event, int numCalls)
                       params->request_data.set_rate_data.round_mode);
 
     return FWK_SUCCESS;
+}
+
+unsigned int get_element_idx_callback(
+    fwk_id_t clock_id,
+    int NumCalls)
+{
+    return clock_id.element.element_idx;
 }
 
 void test_function_set_rate(void)
@@ -773,12 +781,19 @@ int clock_attributes_get_state_callback(
     size_t size,
     int NumCalls)
 {
+    uint32_t expected_attributes;
     struct scmi_clock_attributes_p2a *return_values;
     return_values = (struct scmi_clock_attributes_p2a *)payload;
 
+    bool extended_name = true, notify_rate = false, notify_requested_rate = false;
+
+    expected_attributes = SET_SCMI_CLOCK_ATTRIBUTES(MOD_CLOCK_STATE_RUNNING,
+                                                    extended_name,
+                                                    notify_rate,
+                                                    notify_requested_rate);
+
     TEST_ASSERT_EQUAL((int32_t)SCMI_SUCCESS, return_values->status);
-    TEST_ASSERT_EQUAL(
-        (int32_t)MOD_CLOCK_STATE_RUNNING, return_values->attributes);
+    TEST_ASSERT_EQUAL(expected_attributes, return_values->attributes);
 
     return FWK_SUCCESS;
 }
@@ -824,7 +839,7 @@ void test_mod_scmi_clock_attributes_handler_get_state(void)
     __fwk_put_event_ExpectAnyArgsAndReturn(FWK_SUCCESS);
 #endif
 
-    fwk_id_get_element_idx_ExpectAnyArgsAndReturn(CLOCK_DEV_IDX_FAKE0);
+    fwk_id_get_element_idx_Stub(get_element_idx_callback);
 
     status = scmi_clock_message_handler(
         (fwk_id_t)MOD_SCMI_PROTOCOL_ID_CLOCK,
@@ -1066,9 +1081,12 @@ void test_process_request_event_get_state(void)
     int status;
     uint32_t agent_id = FAKE_SCMI_AGENT_IDX_OSPM0;
     struct fwk_event event;
+    struct scmi_clock_event_request_params *params;
     enum mod_clock_state expected_state = MOD_CLOCK_STATE_RUNNING;
 
-    fwk_id_get_element_idx_ExpectAnyArgsAndReturn(SCMI_CLOCK_OSPM0_IDX1);
+    params = (struct scmi_clock_event_request_params *)event.params;
+    params->clock_dev_id = (fwk_id_t) FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_CLOCK, CLOCK_DEV_IDX_FAKE1);
+
     fwk_id_get_event_idx_ExpectAnyArgsAndReturn(
         SCMI_CLOCK_EVENT_IDX_CLOCK_ATTRIBUTES);
     mod_scmi_from_protocol_api_get_agent_id_ExpectAnyArgsAndReturn(
@@ -1080,10 +1098,11 @@ void test_process_request_event_get_state(void)
 
     fwk_module_get_element_name_ExpectAnyArgsAndReturn(mock_clock_name);
 
-    fwk_id_get_element_idx_ExpectAnyArgsAndReturn(SCMI_CLOCK_OSPM0_IDX1);
     mod_scmi_from_protocol_api_get_agent_id_ExpectAnyArgsAndReturn(
         FWK_SUCCESS);
     mod_scmi_from_protocol_api_get_agent_id_ReturnThruPtr_agent_id(&agent_id);
+
+    fwk_id_get_element_idx_Stub(get_element_idx_callback);
 
     mod_scmi_from_protocol_api_respond_Stub(get_state_callback_success);
 
@@ -1548,20 +1567,6 @@ int scmi_notification_notify_rate_changed_callback(
     TEST_ASSERT_EQUAL(0x0000000B, message->rate[1]);
 
     return FWK_SUCCESS;
-}
-
-unsigned int get_element_idx(
-    fwk_id_t clock_id
-)
-{
-    return clock_id.element.element_idx;
-}
-
-unsigned int get_element_idx_callback(
-    fwk_id_t clock_id,
-    int NumCalls)
-{
-    return get_element_idx(clock_id);
 }
 
 void test_mod_scmi_clock_process_notification_rate_changed(void)

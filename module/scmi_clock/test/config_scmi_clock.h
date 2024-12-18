@@ -92,6 +92,7 @@ static const struct mod_scmi_clock_device agent_device_table_ospm1
         .element_id =
             FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_CLOCK, CLOCK_DEV_IDX_FAKE3),
         .starts_enabled = true,
+        .supports_extended_name = true,
     },
 };
 

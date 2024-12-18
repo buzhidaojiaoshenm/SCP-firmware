@@ -527,11 +527,33 @@ static inline bool clock_ops_is_available(unsigned int clock_dev_idx)
 
 static inline bool clock_has_extended_name(
     unsigned int agent_id,
-    unsigned int clock_dev_idx)
+    unsigned int scmi_clock_idx)
 {
     return scmi_clock_ctx.agent_table[agent_id]
-        .device_table[clock_dev_idx]
+        .device_table[scmi_clock_idx]
         .supports_extended_name;
+}
+
+static int find_agent_scmi_clock_idx(
+    unsigned int agent_id,
+    fwk_id_t clock_id,
+    unsigned int *clock_scmi_idx)
+{
+    unsigned int clock_dev_idx;
+    const struct mod_scmi_clock_agent *agent;
+
+    clock_dev_idx = fwk_id_get_element_idx(clock_id);
+    agent = &scmi_clock_ctx.agent_table[agent_id];
+
+    /* Find the scmi clock index for the agent. */
+    for (unsigned int idx = 0; idx < (unsigned int)agent->device_count; idx++) {
+        if (fwk_id_get_element_idx(agent->device_table[idx].element_id) ==
+            clock_dev_idx) {
+            *clock_scmi_idx = idx;
+            return FWK_SUCCESS;
+        }
+    }
+    return FWK_E_DATA;
 }
 
 /*
@@ -545,7 +567,7 @@ static void clock_attributes_respond(
 {
     int respond_status;
     bool has_extended_name = false;
-    unsigned int agent_id, clock_dev_idx;
+    unsigned int agent_id, scmi_clock_idx;
     size_t response_size;
     const struct mod_scmi_clock_agent *agent;
     struct scmi_clock_attributes_p2a return_values = { 0 };
@@ -553,20 +575,26 @@ static void clock_attributes_respond(
     bool supports_rate_change_requested_notification = false;
 
     if (status == FWK_SUCCESS) {
-        clock_dev_idx = fwk_id_get_element_idx(clock_dev_id);
         status = scmi_clock_ctx.scmi_api->get_agent_id(service_id, &agent_id);
         if (status != FWK_SUCCESS) {
             FWK_LOG_DEBUG("[SCMI-CLK] %s @%d", __func__, __LINE__);
         } else {
             agent = &scmi_clock_ctx.agent_table[agent_id];
-            has_extended_name =
-                agent->device_table[clock_dev_idx].supports_extended_name;
+
+            status = find_agent_scmi_clock_idx(
+                agent_id, clock_dev_id, &scmi_clock_idx);
+            if (status != FWK_SUCCESS) {
+                FWK_LOG_DEBUG("[SCMI-CLK] %s @%d", __func__, __LINE__);
+            } else {
+                has_extended_name =
+                    agent->device_table[scmi_clock_idx].supports_extended_name;
 #ifdef BUILD_HAS_SCMI_NOTIFICATIONS
-            supports_rate_change_requested_notification =
-                agent->device_table[clock_dev_idx].notify_requested_rate;
-            supports_rate_changed_notification =
-                agent->device_table[clock_dev_idx].notify_changed_rate;
+                supports_rate_change_requested_notification =
+                    agent->device_table[scmi_clock_idx].notify_requested_rate;
+                supports_rate_changed_notification =
+                    agent->device_table[scmi_clock_idx].notify_changed_rate;
 #endif
+            }
         }
 
         return_values.attributes = SET_SCMI_CLOCK_ATTRIBUTES(
@@ -2018,28 +2046,6 @@ static int scmi_clock_process_event(const struct fwk_event *event,
 }
 
 #ifdef BUILD_HAS_SCMI_NOTIFICATIONS
-
-static int find_agent_scmi_clock_idx(
-    unsigned int agent_id,
-    fwk_id_t clock_id,
-    unsigned int *clock_scmi_idx)
-{
-    unsigned int clock_dev_idx;
-    const struct mod_scmi_clock_agent *agent;
-
-    clock_dev_idx = fwk_id_get_element_idx(clock_id);
-    agent = &scmi_clock_ctx.agent_table[agent_id];
-
-    /* Find the scmi clock index for the agent. */
-    for (unsigned int idx = 0; idx < (unsigned int)agent->device_count; idx++) {
-        if (fwk_id_get_element_idx(agent->device_table[idx].element_id) ==
-            clock_dev_idx) {
-            *clock_scmi_idx = idx;
-            return FWK_SUCCESS;
-        }
-    }
-    return FWK_E_DATA;
-}
 
 static void scmi_clock_rate_change_notify(
     enum scmi_clock_command_id command_id,
