@@ -121,11 +121,25 @@ static inline bool is_element_id_valid(fwk_id_t id)
 
 static int subtree_power_distribute(fwk_id_t subtree_root_id)
 {
-    return FWK_SUCCESS;
+    return FWK_E_SUPPORT;
 }
 
 static int system_power_distribute(void)
 {
+    for (size_t i = 0; i < power_distributor_ctx.domain_count; ++i) {
+        struct mod_power_distributor_domain_ctx *domain_ctx =
+            &power_distributor_ctx.domain[i];
+        if (domain_ctx->controller_api != NULL) {
+            FWK_LOG_DEBUG(
+                "Grant power for %s",
+                fwk_module_get_element_name(
+                    FWK_ID_ELEMENT(FWK_MODULE_IDX_POWER_DISTRIBUTOR, i)));
+            domain_ctx->controller_api->set_power_limit(
+                domain_ctx->config->controller_id,
+                domain_ctx->node.data.power_limit);
+        }
+    }
+
     return FWK_SUCCESS;
 }
 
