@@ -34,29 +34,34 @@ struct mod_power_distibutor_domain_config test_power_distibutor_domain_config[TE
     [TEST_DOMAIN_SOC] = {
         .parent_idx = TEST_DOMAIN_NONE,
         .controller_api_id = FWK_ID_API_INIT(
-            FWK_MODULE_IDX_POWER_DISTRIBUTOR,
+            FWK_MODULE_IDX_CONTROLLER,
             TEST_CONTROLLER_API_SOC),
     },
     [TEST_DOMAIN_CPU] = {
         .parent_idx = TEST_DOMAIN_SOC,
-        .controller_api_id = FWK_ID_NONE,
     },
     [TEST_DOMAIN_CPU_BIG] = {
         .parent_idx = TEST_DOMAIN_CPU,
+        .controller_id = FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_CONTROLLER,
+                            TEST_DOMAIN_CPU_BIG),
         .controller_api_id = FWK_ID_API_INIT(
-            FWK_MODULE_IDX_POWER_DISTRIBUTOR,
+            FWK_MODULE_IDX_CONTROLLER,
             TEST_CONTROLLER_API_CPU_BIG),
     },
     [TEST_DOMAIN_CPU_LITTLE] = {
         .parent_idx = TEST_DOMAIN_CPU,
+        .controller_id = FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_CONTROLLER,
+                            TEST_DOMAIN_CPU_LITTLE),
         .controller_api_id = FWK_ID_API_INIT(
-            FWK_MODULE_IDX_POWER_DISTRIBUTOR,
+            FWK_MODULE_IDX_CONTROLLER,
             TEST_CONTROLLER_API_CPU_LITTLE),
     },
     [TEST_DOMAIN_GPU] = {
         .parent_idx = TEST_DOMAIN_SOC,
+        .controller_id = FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_CONTROLLER,
+                            TEST_DOMAIN_GPU),
         .controller_api_id = FWK_ID_API_INIT(
-            FWK_MODULE_IDX_POWER_DISTRIBUTOR,
+            FWK_MODULE_IDX_CONTROLLER,
             TEST_CONTROLLER_API_GPU),
     },
 };

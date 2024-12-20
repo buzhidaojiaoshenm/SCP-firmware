@@ -14,14 +14,22 @@
 
 #include <Mockfwk_mm.h>
 #include <Mockfwk_module.h>
+#include <Mockmod_power_distributor_extra.h>
 
 #include <mod_power_distributor.h>
+#include <mod_power_distributor_extra.h>
+
+#include <interface_power_management.h>
 
 #include UNIT_TEST_SRC
 
 struct mod_power_distributor_domain_ctx test_ctx_table[TEST_DOMAIN_COUNT];
 
-struct interface_power_management_api test_power_management_api = { 0 };
+struct interface_power_management_api test_power_management_api = {
+    .get_power_limit = &mock_get_power_limit,
+    .set_power_limit = &mock_set_power_limit,
+    .set_power_demand = &mock_set_power_demand,
+};
 
 void setUp(void)
 {
@@ -30,11 +38,16 @@ void setUp(void)
 
     power_distributor_ctx.domain_count = TEST_DOMAIN_COUNT;
     for (unsigned int i = 0U; i < TEST_DOMAIN_COUNT; i++) {
-        power_distributor_ctx.domain[i].controller_api =
-            &test_power_management_api;
+        if (fwk_optional_id_is_defined(
+                test_power_distibutor_domain_config[i].controller_id)) {
+            power_distributor_ctx.domain[i].controller_api =
+                &test_power_management_api;
+        }
         power_distributor_ctx.domain[i].config =
             &test_power_distibutor_domain_config[i];
     }
+    Mockfwk_mm_Init();
+    Mockmod_power_distributor_extra_Init();
 }
 
 void utest_power_distributor_init_success(void)
@@ -97,7 +110,8 @@ void utest_mod_distributor_bind_round_0(void)
         struct mod_power_distributor_domain_ctx *domain_ctx =
             &(power_distributor_ctx.domain[index]);
 
-        if (!fwk_id_is_equal(
+        if (fwk_optional_id_is_defined(domain_ctx->config->controller_api_id) &&
+            !fwk_id_is_equal(
                 domain_ctx->config->controller_api_id, FWK_ID_NONE)) {
             fwk_module_bind_ExpectAndReturn(
                 fwk_id_build_module_id(domain_ctx->config->controller_api_id),
@@ -280,8 +294,36 @@ void utest_mod_distributor_set_power_limit_demand_api_invalid_params(void)
     TEST_ASSERT_EQUAL(FWK_E_PARAM, status);
 }
 
+void utest_mod_distributor_system_power_distribute(void)
+{
+    int status = FWK_E_INIT;
+    for (size_t i = 0; i < power_distributor_ctx.domain_count; ++i) {
+        struct mod_power_distributor_domain_ctx *domain_ctx =
+            &power_distributor_ctx.domain[i];
+        domain_ctx->node.data.power_limit = 0xDEADBEEF + i;
+    }
+
+    for (size_t i = 0; i < power_distributor_ctx.domain_count; ++i) {
+        struct mod_power_distributor_domain_ctx *domain_ctx =
+            &power_distributor_ctx.domain[i];
+
+        if (domain_ctx->controller_api != NULL) {
+            fwk_id_t elem_id =
+                FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_CONTROLLER, i);
+            fwk_module_get_element_name_ExpectAnyArgsAndReturn("");
+            mock_set_power_limit_ExpectAndReturn(
+                elem_id, domain_ctx->node.data.power_limit, FWK_SUCCESS);
+        }
+    }
+
+    status = system_power_distribute();
+    TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
+}
+
 void tearDown(void)
 {
+    Mockmod_power_distributor_extra_Verify();
+    Mockfwk_mm_Verify();
 }
 
 int power_distributor_test_main(void)
@@ -298,6 +340,7 @@ int power_distributor_test_main(void)
     RUN_TEST(utest_mod_distributor_post_init_success);
     RUN_TEST(utest_mod_distributor_set_power_limit_demand_api_success);
     RUN_TEST(utest_mod_distributor_set_power_limit_demand_api_invalid_params);
+    RUN_TEST(utest_mod_distributor_system_power_distribute);
 
     return UNITY_END();
 }
