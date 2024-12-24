@@ -83,16 +83,15 @@ static const struct mod_scmi_from_protocol_api scmi_api = {
 
 static const struct mod_pinctrl_api pinctrl_api = {
     .get_attributes = get_attributes,
-    .get_protocol_attributes = get_protocol_attributes,
+    .get_info = get_info,
     .get_list_associations = get_list_associations,
     .get_total_number_of_associations = get_total_number_of_associations,
     .get_configuration_value_from_type = get_configuration_value_from_type,
     .get_total_number_of_configurations = get_total_number_of_configurations,
     .get_configuration = get_configuration,
-    .get_current_associated_functionality =
-        get_current_associated_functionality,
+    .get_current_associated_function = get_current_associated_function,
     .set_configuration = set_configuration,
-    .set_functionality = set_functionality,
+    .set_function = set_function,
 };
 
 void setUp(void)
@@ -211,7 +210,7 @@ int protocol_attributes_respond_callback(
     const int number_of_pins = EXPECTED_NUMBER_OF_PINS;
     const int number_of_groups =
         SHIFT_LEFT_BY_POS(EXPECTED_NUMBER_OF_GROUPS, NUM_OF_PIN_GROUPS_POS);
-    const int number_of_functionalities = EXPECTED_NUMBER_OF_FUNC;
+    const int number_of_functions = EXPECTED_NUMBER_OF_FUNC;
 
     struct scmi_pin_control_protocol_attributes_p2a *return_values =
         (struct scmi_pin_control_protocol_attributes_p2a *)payload;
@@ -224,7 +223,7 @@ int protocol_attributes_respond_callback(
         number_of_groups,
         GET_HIGH_BYTES_OF_32_BIT_NUMBER(return_values->attributes_low));
     TEST_ASSERT_EQUAL(
-        number_of_functionalities,
+        number_of_functions,
         GET_LOW_BYTES_OF_32_BIT_NUMBER(return_values->attributes_high));
     TEST_ASSERT_EQUAL(SCMI_SUCCESS, return_values->status);
 
@@ -234,18 +233,17 @@ int protocol_attributes_respond_callback(
 void utest_protocol_attributes(void)
 {
     int status = SCMI_GENERIC_ERROR;
-    struct mod_pinctrl_protocol_attributes expected_protocol_attributes = {
+    struct mod_pinctrl_info expected_protocol_attributes = {
         .number_of_pins = EXPECTED_NUMBER_OF_PINS,
         .number_of_groups = EXPECTED_NUMBER_OF_GROUPS,
-        .number_of_functionalities = EXPECTED_NUMBER_OF_FUNC,
+        .number_of_functions = EXPECTED_NUMBER_OF_FUNC,
     };
 
     mod_scmi_from_protocol_api_scmi_frame_validation_ExpectAnyArgsAndReturn(
         SCMI_SUCCESS);
 
-    get_protocol_attributes_ExpectAnyArgsAndReturn(FWK_SUCCESS);
-    get_protocol_attributes_ReturnThruPtr_protocol_attributes(
-        &expected_protocol_attributes);
+    get_info_ExpectAnyArgsAndReturn(FWK_SUCCESS);
+    get_info_ReturnThruPtr_info(&expected_protocol_attributes);
 
     respond_StubWithCallback(protocol_attributes_respond_callback);
 
@@ -285,8 +283,8 @@ void utest_attributes_group(void)
 
     struct mod_pinctrl_attributes pinctrl_attributes = {
         .number_of_elements = 2,
-        .is_gpio_functionality = false,
-        .is_pin_only_functionality = false,
+        .is_gpio_function = false,
+        .is_pin_only_function = false,
         .name = name,
     };
 
@@ -352,8 +350,8 @@ void utest_attributes_function(void)
 
     struct mod_pinctrl_attributes pinctrl_attributes = {
         .number_of_elements = 2,
-        .is_gpio_functionality = true,
-        .is_pin_only_functionality = true,
+        .is_gpio_function = true,
+        .is_pin_only_function = true,
         .name = name,
     };
 
@@ -419,8 +417,8 @@ void utest_attributes_pin(void)
 
     struct mod_pinctrl_attributes pinctrl_attributes = {
         .number_of_elements = 1,
-        .is_gpio_functionality = false,
-        .is_pin_only_functionality = false,
+        .is_gpio_function = false,
+        .is_pin_only_function = false,
         .name = name,
     };
 
@@ -468,8 +466,8 @@ void utest_attributes_id_out_of_range(void)
 
     struct mod_pinctrl_attributes pinctrl_attributes = {
         .number_of_elements = 1,
-        .is_gpio_functionality = false,
-        .is_pin_only_functionality = false,
+        .is_gpio_function = false,
+        .is_pin_only_function = false,
         .name = name,
     };
 
@@ -913,33 +911,33 @@ void utest_setting_get_all_confgurations(void)
     TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
 }
 
-int setting_get_functionality_respond_callback(
+int setting_get_function_respond_callback(
     fwk_id_t service_id,
     const void *payload,
     size_t size,
     int cmock_num_calls)
 {
-    const uint32_t functionality_id = 4;
+    const uint32_t function_id = 4;
     const uint32_t expected_respond_size =
         sizeof(struct scmi_pin_control_settings_get_p2a);
     struct scmi_pin_control_settings_get_p2a *respond =
         (struct scmi_pin_control_settings_get_p2a *)payload;
 
     TEST_ASSERT_EQUAL(SCMI_SUCCESS, respond->status);
-    TEST_ASSERT_EQUAL(functionality_id, respond->function_selected);
+    TEST_ASSERT_EQUAL(function_id, respond->function_selected);
     TEST_ASSERT_EQUAL(expected_respond_size, size);
 
     return FWK_SUCCESS;
 }
 
-void utest_setting_get_functionality_selected(void)
+void utest_setting_get_function_selected(void)
 {
     int status = SCMI_GENERIC_ERROR;
     uint32_t config_flag = SHIFT_LEFT_BY_POS(
         SCMI_PIN_CONTROL_FUNCTION_SELECTED, SETTING_GET_CONFIG_FLAG_POS);
     uint32_t selector_flag = MOD_PINCTRL_SELECTOR_PIN;
     /* Any chosen random value */
-    uint16_t functionality_id = 4;
+    uint32_t function_id = 4;
     struct scmi_pin_control_settings_get_a2p payload = {
         /* Any random value can be chosen */
         .identifier = 2,
@@ -949,13 +947,12 @@ void utest_setting_get_functionality_selected(void)
     mod_scmi_from_protocol_api_scmi_frame_validation_ExpectAnyArgsAndReturn(
         SCMI_SUCCESS);
 
-    get_current_associated_functionality_ExpectAndReturn(
-        payload.identifier, selector_flag, &functionality_id, FWK_SUCCESS);
-    get_current_associated_functionality_IgnoreArg_functionality_id();
-    get_current_associated_functionality_ReturnThruPtr_functionality_id(
-        &functionality_id);
+    get_current_associated_function_ExpectAndReturn(
+        payload.identifier, selector_flag, &function_id, FWK_SUCCESS);
+    get_current_associated_function_IgnoreArg_function_id();
+    get_current_associated_function_ReturnThruPtr_function_id(&function_id);
 
-    respond_StubWithCallback(setting_get_functionality_respond_callback);
+    respond_StubWithCallback(setting_get_function_respond_callback);
 
     status = scmi_pin_control_message_handler(
         protocol_id,
@@ -967,32 +964,32 @@ void utest_setting_get_functionality_selected(void)
     TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
 }
 
-int setting_get_no_functionality_selected_respond_callback(
+int setting_get_no_function_selected_respond_callback(
     fwk_id_t service_id,
     const void *payload,
     size_t size,
     int cmock_num_calls)
 {
-    const uint32_t functionality_id = NO_FUNCTION_IS_SELECTED;
+    const uint32_t function_id = NO_FUNCTION_IS_SELECTED;
     const uint32_t expected_respond_size =
         sizeof(struct scmi_pin_control_settings_get_p2a);
     struct scmi_pin_control_settings_get_p2a *respond =
         (struct scmi_pin_control_settings_get_p2a *)payload;
 
     TEST_ASSERT_EQUAL(SCMI_SUCCESS, respond->status);
-    TEST_ASSERT_EQUAL(functionality_id, respond->function_selected);
+    TEST_ASSERT_EQUAL(function_id, respond->function_selected);
     TEST_ASSERT_EQUAL(expected_respond_size, size);
 
     return FWK_SUCCESS;
 }
 
-void utest_setting_get_no_functionality_is_selected(void)
+void utest_setting_get_no_function_is_selected(void)
 {
     int status = SCMI_GENERIC_ERROR;
     uint32_t config_flag = SHIFT_LEFT_BY_POS(
         SCMI_PIN_CONTROL_FUNCTION_SELECTED, SETTING_GET_CONFIG_FLAG_POS);
     uint32_t selector_flag = MOD_PINCTRL_SELECTOR_PIN;
-    uint16_t functionality_id = 4;
+    uint32_t function_id = 0xFFFFFFFF;
     struct scmi_pin_control_settings_get_a2p payload = {
         /* Any random value can be chosen */
         .identifier = 2,
@@ -1002,12 +999,12 @@ void utest_setting_get_no_functionality_is_selected(void)
     mod_scmi_from_protocol_api_scmi_frame_validation_ExpectAnyArgsAndReturn(
         SCMI_SUCCESS);
 
-    get_current_associated_functionality_ExpectAndReturn(
-        payload.identifier, selector_flag, &functionality_id, FWK_E_ACCESS);
-    get_current_associated_functionality_IgnoreArg_functionality_id();
+    get_current_associated_function_ExpectAndReturn(
+        payload.identifier, selector_flag, &function_id, FWK_SUCCESS);
+    get_current_associated_function_IgnoreArg_function_id();
+    get_current_associated_function_ReturnThruPtr_function_id(&function_id);
 
-    respond_StubWithCallback(
-        setting_get_no_functionality_selected_respond_callback);
+    respond_StubWithCallback(setting_get_no_function_selected_respond_callback);
 
     status = scmi_pin_control_message_handler(
         protocol_id,
@@ -1091,10 +1088,10 @@ void utest_setting_configuration(void)
     TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
 }
 
-void utest_setting_functionality(void)
+void utest_setting_function(void)
 {
     int status = SCMI_GENERIC_ERROR;
-    const uint32_t functionality_id = SHIFT_LEFT_BY_POS(1, SETTING_FUNC_POS);
+    const uint32_t function_id = SHIFT_LEFT_BY_POS(1, SETTING_FUNC_POS);
     const uint32_t number_of_config_to_set =
         SHIFT_LEFT_BY_POS(0, SETTING_NUMBER_OF_CONFIG_POS);
     const uint32_t selector_flag = SHIFT_LEFT_BY_POS(1, SETTING_FLAG_POS);
@@ -1103,8 +1100,7 @@ void utest_setting_functionality(void)
         /* Any random value can be chosen */
         .identifier = 2,
         .function_id = NO_FUNCTION_IS_SELECTED,
-        .attributes =
-            functionality_id | number_of_config_to_set | selector_flag,
+        .attributes = function_id | number_of_config_to_set | selector_flag,
     };
 
     struct scmi_pin_control_settings_configure_p2a return_values = {
@@ -1114,7 +1110,7 @@ void utest_setting_functionality(void)
     mod_scmi_from_protocol_api_scmi_frame_validation_ExpectAnyArgsAndReturn(
         SCMI_SUCCESS);
 
-    set_functionality_ExpectAndReturn(
+    set_function_ExpectAndReturn(
         payload.identifier,
         selector_flag,
         (uint16_t)payload.function_id,
@@ -1137,10 +1133,10 @@ void utest_setting_functionality(void)
     TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
 }
 
-void utest_setting_configuration_and_functionality(void)
+void utest_setting_configuration_and_function(void)
 {
     int status = SCMI_GENERIC_ERROR;
-    const uint32_t functionality_id = SHIFT_LEFT_BY_POS(1, SETTING_FUNC_POS);
+    const uint32_t function_id = SHIFT_LEFT_BY_POS(1, SETTING_FUNC_POS);
     const uint32_t number_of_config_to_set =
         SHIFT_LEFT_BY_POS(2, SETTING_NUMBER_OF_CONFIG_POS);
     const uint32_t selector_flag = SHIFT_LEFT_BY_POS(1, SETTING_FLAG_POS);
@@ -1149,8 +1145,7 @@ void utest_setting_configuration_and_functionality(void)
         /* Any random value can be chosen */
         .identifier = 2,
         .function_id = NO_FUNCTION_IS_SELECTED,
-        .attributes =
-            functionality_id | number_of_config_to_set | selector_flag,
+        .attributes = function_id | number_of_config_to_set | selector_flag,
     };
 
     struct mod_pinctrl_drv_pin_configuration configs[] = {
@@ -1178,7 +1173,7 @@ void utest_setting_configuration_and_functionality(void)
     mod_scmi_from_protocol_api_scmi_frame_validation_ExpectAnyArgsAndReturn(
         SCMI_SUCCESS);
 
-    set_functionality_ExpectAndReturn(
+    set_function_ExpectAndReturn(
         payload.identifier,
         selector_flag,
         (uint16_t)payload.function_id,
@@ -1231,12 +1226,12 @@ int scmi_pin_control_protocol_test_main(void)
 
     RUN_TEST(utest_setting_get_specific_configuration_value);
     RUN_TEST(utest_setting_get_all_confgurations);
-    RUN_TEST(utest_setting_get_functionality_selected);
-    RUN_TEST(utest_setting_get_no_functionality_is_selected);
+    RUN_TEST(utest_setting_get_function_selected);
+    RUN_TEST(utest_setting_get_no_function_is_selected);
 
     RUN_TEST(utest_setting_configuration);
-    RUN_TEST(utest_setting_functionality);
-    RUN_TEST(utest_setting_configuration_and_functionality);
+    RUN_TEST(utest_setting_function);
+    RUN_TEST(utest_setting_configuration_and_function);
 
     return UNITY_END();
 }

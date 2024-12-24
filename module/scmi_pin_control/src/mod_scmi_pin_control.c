@@ -193,18 +193,17 @@ static int scmi_pin_control_protocol_attributes_handler(
         .attributes_low = 0,
         .attributes_high = 0,
     };
-    struct mod_pinctrl_protocol_attributes protocol_attributes;
+    struct mod_pinctrl_info protocol_attributes;
 
-    int status = scmi_pin_control_ctx.pinctrl_api->get_protocol_attributes(
-        &protocol_attributes);
+    int status =
+        scmi_pin_control_ctx.pinctrl_api->get_info(&protocol_attributes);
 
     if (status == FWK_SUCCESS) {
         return_values.status = (int32_t)SCMI_SUCCESS;
         return_values.attributes_low = protocol_attributes.number_of_pins;
         return_values.attributes_low |= (uint32_t)SHIFT_LEFT_BY_POS(
             protocol_attributes.number_of_groups, NUM_OF_PIN_GROUPS_POS);
-        return_values.attributes_high =
-            protocol_attributes.number_of_functionalities;
+        return_values.attributes_high = protocol_attributes.number_of_functions;
     } else {
         return_values.status = (int32_t)SCMI_GENERIC_ERROR;
     }
@@ -275,11 +274,11 @@ static int scmi_pin_control_attributes_handler(
         return_values.attributes = pinctrl_attributes.number_of_elements;
 
         return_values.attributes |= (uint32_t)SHIFT_LEFT_BY_POS(
-            pinctrl_attributes.is_pin_only_functionality,
+            pinctrl_attributes.is_pin_only_function,
             SCMI_PIN_CONTROL_PIN_ONLY_FUNC_DESCRIPTOR_POS);
 
         return_values.attributes |= (uint32_t)SHIFT_LEFT_BY_POS(
-            pinctrl_attributes.is_gpio_functionality,
+            pinctrl_attributes.is_gpio_function,
             SCMI_PIN_CONTROL_GPIO_FUNC_ONLY_POS);
 
         name_length += strnlen(
@@ -491,7 +490,7 @@ static int scmi_pin_control_settings_get_handler(
 {
     uint32_t payload_size;
     int16_t status;
-    uint16_t function_selected;
+    uint32_t function_selected;
     struct mod_pinctrl_drv_pin_configuration config_pair;
     const struct scmi_pin_control_settings_get_a2p *parameters;
     struct scmi_pin_control_setting_get_attributes attributes;
@@ -544,13 +543,10 @@ static int scmi_pin_control_settings_get_handler(
 
     case SCMI_PIN_CONTROL_FUNCTION_SELECTED:
         status =
-            scmi_pin_control_ctx.pinctrl_api
-                ->get_current_associated_functionality(
-                    mapped_identifier, attributes.selector, &function_selected);
+            scmi_pin_control_ctx.pinctrl_api->get_current_associated_function(
+                mapped_identifier, attributes.selector, &function_selected);
 
-        if (status == FWK_E_ACCESS) {
-            return_values.function_selected = NO_FUNCTION_IS_SELECTED;
-        } else if (status == FWK_SUCCESS) {
+        if (status == FWK_SUCCESS) {
             return_values.function_selected = function_selected;
         } else {
             goto exit;
@@ -618,7 +614,7 @@ static int scmi_pin_control_settings_configure_handler(
         SCMI_PIN_CONTROL_SET_CONF_SELECTOR_POS_MSB);
 
     if (function_id_valid == SCMI_PIN_CONTROL_FUNCTION_ID_VALID) {
-        status = scmi_pin_control_ctx.pinctrl_api->set_functionality(
+        status = scmi_pin_control_ctx.pinctrl_api->set_function(
             mapped_identifier, selector, function_id);
         if (status != FWK_SUCCESS) {
             goto exit;

@@ -13,21 +13,21 @@ static const char* CMockString_configration_index = "configration_index";
 static const char* CMockString_first_index = "first_index";
 static const char* CMockString_flag = "flag";
 static const char* CMockString_flags = "flags";
-static const char* CMockString_functionality_id = "functionality_id";
+static const char* CMockString_function_id = "function_id";
 static const char* CMockString_get_attributes = "get_attributes";
 static const char* CMockString_get_configuration = "get_configuration";
 static const char* CMockString_get_configuration_value_from_type = "get_configuration_value_from_type";
-static const char* CMockString_get_current_associated_functionality = "get_current_associated_functionality";
+static const char* CMockString_get_current_associated_function = "get_current_associated_function";
+static const char* CMockString_get_info = "get_info";
 static const char* CMockString_get_list_associations = "get_list_associations";
-static const char* CMockString_get_protocol_attributes = "get_protocol_attributes";
 static const char* CMockString_get_total_number_of_associations = "get_total_number_of_associations";
 static const char* CMockString_get_total_number_of_configurations = "get_total_number_of_configurations";
 static const char* CMockString_index = "index";
+static const char* CMockString_info = "info";
 static const char* CMockString_number_of_configurations = "number_of_configurations";
 static const char* CMockString_object_id = "object_id";
-static const char* CMockString_protocol_attributes = "protocol_attributes";
 static const char* CMockString_set_configuration = "set_configuration";
-static const char* CMockString_set_functionality = "set_functionality";
+static const char* CMockString_set_function = "set_function";
 static const char* CMockString_total_count = "total_count";
 
 typedef struct _CMOCK_get_attributes_CALL_INSTANCE
@@ -48,19 +48,19 @@ typedef struct _CMOCK_get_attributes_CALL_INSTANCE
 
 } CMOCK_get_attributes_CALL_INSTANCE;
 
-typedef struct _CMOCK_get_protocol_attributes_CALL_INSTANCE
+typedef struct _CMOCK_get_info_CALL_INSTANCE
 {
   UNITY_LINE_TYPE LineNumber;
   char ExpectAnyArgsBool;
   int ReturnVal;
-  struct mod_pinctrl_protocol_attributes* Expected_protocol_attributes;
-  int Expected_protocol_attributes_Depth;
-  char ReturnThruPtr_protocol_attributes_Used;
-  struct mod_pinctrl_protocol_attributes* ReturnThruPtr_protocol_attributes_Val;
-  size_t ReturnThruPtr_protocol_attributes_Size;
-  char IgnoreArg_protocol_attributes;
+  struct mod_pinctrl_info* Expected_info;
+  int Expected_info_Depth;
+  char ReturnThruPtr_info_Used;
+  struct mod_pinctrl_info* ReturnThruPtr_info_Val;
+  size_t ReturnThruPtr_info_Size;
+  char IgnoreArg_info;
 
-} CMOCK_get_protocol_attributes_CALL_INSTANCE;
+} CMOCK_get_info_CALL_INSTANCE;
 
 typedef struct _CMOCK_get_list_associations_CALL_INSTANCE
 {
@@ -158,23 +158,23 @@ typedef struct _CMOCK_get_total_number_of_configurations_CALL_INSTANCE
 
 } CMOCK_get_total_number_of_configurations_CALL_INSTANCE;
 
-typedef struct _CMOCK_get_current_associated_functionality_CALL_INSTANCE
+typedef struct _CMOCK_get_current_associated_function_CALL_INSTANCE
 {
   UNITY_LINE_TYPE LineNumber;
   char ExpectAnyArgsBool;
   int ReturnVal;
   uint16_t Expected_index;
   enum mod_pinctrl_selector Expected_flag;
-  uint16_t* Expected_functionality_id;
-  int Expected_functionality_id_Depth;
-  char ReturnThruPtr_functionality_id_Used;
-  uint16_t* ReturnThruPtr_functionality_id_Val;
-  size_t ReturnThruPtr_functionality_id_Size;
+  uint32_t* Expected_function_id;
+  int Expected_function_id_Depth;
+  char ReturnThruPtr_function_id_Used;
+  uint32_t* ReturnThruPtr_function_id_Val;
+  size_t ReturnThruPtr_function_id_Size;
   char IgnoreArg_index;
   char IgnoreArg_flag;
-  char IgnoreArg_functionality_id;
+  char IgnoreArg_function_id;
 
-} CMOCK_get_current_associated_functionality_CALL_INSTANCE;
+} CMOCK_get_current_associated_function_CALL_INSTANCE;
 
 typedef struct _CMOCK_set_configuration_CALL_INSTANCE
 {
@@ -191,19 +191,19 @@ typedef struct _CMOCK_set_configuration_CALL_INSTANCE
 
 } CMOCK_set_configuration_CALL_INSTANCE;
 
-typedef struct _CMOCK_set_functionality_CALL_INSTANCE
+typedef struct _CMOCK_set_function_CALL_INSTANCE
 {
   UNITY_LINE_TYPE LineNumber;
   char ExpectAnyArgsBool;
   int ReturnVal;
   uint16_t Expected_index;
   enum mod_pinctrl_selector Expected_flag;
-  uint16_t Expected_functionality_id;
+  uint32_t Expected_function_id;
   char IgnoreArg_index;
   char IgnoreArg_flag;
-  char IgnoreArg_functionality_id;
+  char IgnoreArg_function_id;
 
-} CMOCK_set_functionality_CALL_INSTANCE;
+} CMOCK_set_function_CALL_INSTANCE;
 
 static struct Mockmod_pinctrl_extraInstance
 {
@@ -213,12 +213,12 @@ static struct Mockmod_pinctrl_extraInstance
   CMOCK_get_attributes_CALLBACK get_attributes_CallbackFunctionPointer;
   int get_attributes_CallbackCalls;
   CMOCK_MEM_INDEX_TYPE get_attributes_CallInstance;
-  char get_protocol_attributes_IgnoreBool;
-  int get_protocol_attributes_FinalReturn;
-  char get_protocol_attributes_CallbackBool;
-  CMOCK_get_protocol_attributes_CALLBACK get_protocol_attributes_CallbackFunctionPointer;
-  int get_protocol_attributes_CallbackCalls;
-  CMOCK_MEM_INDEX_TYPE get_protocol_attributes_CallInstance;
+  char get_info_IgnoreBool;
+  int get_info_FinalReturn;
+  char get_info_CallbackBool;
+  CMOCK_get_info_CALLBACK get_info_CallbackFunctionPointer;
+  int get_info_CallbackCalls;
+  CMOCK_MEM_INDEX_TYPE get_info_CallInstance;
   char get_list_associations_IgnoreBool;
   int get_list_associations_FinalReturn;
   char get_list_associations_CallbackBool;
@@ -249,24 +249,24 @@ static struct Mockmod_pinctrl_extraInstance
   CMOCK_get_total_number_of_configurations_CALLBACK get_total_number_of_configurations_CallbackFunctionPointer;
   int get_total_number_of_configurations_CallbackCalls;
   CMOCK_MEM_INDEX_TYPE get_total_number_of_configurations_CallInstance;
-  char get_current_associated_functionality_IgnoreBool;
-  int get_current_associated_functionality_FinalReturn;
-  char get_current_associated_functionality_CallbackBool;
-  CMOCK_get_current_associated_functionality_CALLBACK get_current_associated_functionality_CallbackFunctionPointer;
-  int get_current_associated_functionality_CallbackCalls;
-  CMOCK_MEM_INDEX_TYPE get_current_associated_functionality_CallInstance;
+  char get_current_associated_function_IgnoreBool;
+  int get_current_associated_function_FinalReturn;
+  char get_current_associated_function_CallbackBool;
+  CMOCK_get_current_associated_function_CALLBACK get_current_associated_function_CallbackFunctionPointer;
+  int get_current_associated_function_CallbackCalls;
+  CMOCK_MEM_INDEX_TYPE get_current_associated_function_CallInstance;
   char set_configuration_IgnoreBool;
   int set_configuration_FinalReturn;
   char set_configuration_CallbackBool;
   CMOCK_set_configuration_CALLBACK set_configuration_CallbackFunctionPointer;
   int set_configuration_CallbackCalls;
   CMOCK_MEM_INDEX_TYPE set_configuration_CallInstance;
-  char set_functionality_IgnoreBool;
-  int set_functionality_FinalReturn;
-  char set_functionality_CallbackBool;
-  CMOCK_set_functionality_CALLBACK set_functionality_CallbackFunctionPointer;
-  int set_functionality_CallbackCalls;
-  CMOCK_MEM_INDEX_TYPE set_functionality_CallInstance;
+  char set_function_IgnoreBool;
+  int set_function_FinalReturn;
+  char set_function_CallbackBool;
+  CMOCK_set_function_CALLBACK set_function_CallbackFunctionPointer;
+  int set_function_CallbackCalls;
+  CMOCK_MEM_INDEX_TYPE set_function_CallInstance;
 } Mock;
 
 extern jmp_buf AbortFrame;
@@ -288,15 +288,15 @@ void Mockmod_pinctrl_extra_Verify(void)
     call_instance = CMOCK_GUTS_NONE;
     (void)call_instance;
   }
-  call_instance = Mock.get_protocol_attributes_CallInstance;
-  if (Mock.get_protocol_attributes_IgnoreBool)
+  call_instance = Mock.get_info_CallInstance;
+  if (Mock.get_info_IgnoreBool)
     call_instance = CMOCK_GUTS_NONE;
   if (CMOCK_GUTS_NONE != call_instance)
   {
-    UNITY_SET_DETAIL(CMockString_get_protocol_attributes);
+    UNITY_SET_DETAIL(CMockString_get_info);
     UNITY_TEST_FAIL(cmock_line, CMockStringCalledLess);
   }
-  if (Mock.get_protocol_attributes_CallbackFunctionPointer != NULL)
+  if (Mock.get_info_CallbackFunctionPointer != NULL)
   {
     call_instance = CMOCK_GUTS_NONE;
     (void)call_instance;
@@ -366,15 +366,15 @@ void Mockmod_pinctrl_extra_Verify(void)
     call_instance = CMOCK_GUTS_NONE;
     (void)call_instance;
   }
-  call_instance = Mock.get_current_associated_functionality_CallInstance;
-  if (Mock.get_current_associated_functionality_IgnoreBool)
+  call_instance = Mock.get_current_associated_function_CallInstance;
+  if (Mock.get_current_associated_function_IgnoreBool)
     call_instance = CMOCK_GUTS_NONE;
   if (CMOCK_GUTS_NONE != call_instance)
   {
-    UNITY_SET_DETAIL(CMockString_get_current_associated_functionality);
+    UNITY_SET_DETAIL(CMockString_get_current_associated_function);
     UNITY_TEST_FAIL(cmock_line, CMockStringCalledLess);
   }
-  if (Mock.get_current_associated_functionality_CallbackFunctionPointer != NULL)
+  if (Mock.get_current_associated_function_CallbackFunctionPointer != NULL)
   {
     call_instance = CMOCK_GUTS_NONE;
     (void)call_instance;
@@ -392,15 +392,15 @@ void Mockmod_pinctrl_extra_Verify(void)
     call_instance = CMOCK_GUTS_NONE;
     (void)call_instance;
   }
-  call_instance = Mock.set_functionality_CallInstance;
-  if (Mock.set_functionality_IgnoreBool)
+  call_instance = Mock.set_function_CallInstance;
+  if (Mock.set_function_IgnoreBool)
     call_instance = CMOCK_GUTS_NONE;
   if (CMOCK_GUTS_NONE != call_instance)
   {
-    UNITY_SET_DETAIL(CMockString_set_functionality);
+    UNITY_SET_DETAIL(CMockString_set_function);
     UNITY_TEST_FAIL(cmock_line, CMockStringCalledLess);
   }
-  if (Mock.set_functionality_CallbackFunctionPointer != NULL)
+  if (Mock.set_function_CallbackFunctionPointer != NULL)
   {
     call_instance = CMOCK_GUTS_NONE;
     (void)call_instance;
@@ -598,25 +598,25 @@ void get_attributes_CMockIgnoreArg_attributes(UNITY_LINE_TYPE cmock_line)
   cmock_call_instance->IgnoreArg_attributes = 1;
 }
 
-int get_protocol_attributes(struct mod_pinctrl_protocol_attributes* protocol_attributes)
+int get_info(struct mod_pinctrl_info* info)
 {
   UNITY_LINE_TYPE cmock_line = TEST_LINE_NUM;
-  CMOCK_get_protocol_attributes_CALL_INSTANCE* cmock_call_instance;
-  UNITY_SET_DETAIL(CMockString_get_protocol_attributes);
-  cmock_call_instance = (CMOCK_get_protocol_attributes_CALL_INSTANCE*)CMock_Guts_GetAddressFor(Mock.get_protocol_attributes_CallInstance);
-  Mock.get_protocol_attributes_CallInstance = CMock_Guts_MemNext(Mock.get_protocol_attributes_CallInstance);
-  if (Mock.get_protocol_attributes_IgnoreBool)
+  CMOCK_get_info_CALL_INSTANCE* cmock_call_instance;
+  UNITY_SET_DETAIL(CMockString_get_info);
+  cmock_call_instance = (CMOCK_get_info_CALL_INSTANCE*)CMock_Guts_GetAddressFor(Mock.get_info_CallInstance);
+  Mock.get_info_CallInstance = CMock_Guts_MemNext(Mock.get_info_CallInstance);
+  if (Mock.get_info_IgnoreBool)
   {
     UNITY_CLR_DETAILS();
     if (cmock_call_instance == NULL)
-      return Mock.get_protocol_attributes_FinalReturn;
-    Mock.get_protocol_attributes_FinalReturn = cmock_call_instance->ReturnVal;
+      return Mock.get_info_FinalReturn;
+    Mock.get_info_FinalReturn = cmock_call_instance->ReturnVal;
     return cmock_call_instance->ReturnVal;
   }
-  if (!Mock.get_protocol_attributes_CallbackBool &&
-      Mock.get_protocol_attributes_CallbackFunctionPointer != NULL)
+  if (!Mock.get_info_CallbackBool &&
+      Mock.get_info_CallbackFunctionPointer != NULL)
   {
-    int cmock_cb_ret = Mock.get_protocol_attributes_CallbackFunctionPointer(protocol_attributes, Mock.get_protocol_attributes_CallbackCalls++);
+    int cmock_cb_ret = Mock.get_info_CallbackFunctionPointer(info, Mock.get_info_CallbackCalls++);
     UNITY_CLR_DETAILS();
     return cmock_cb_ret;
   }
@@ -624,129 +624,129 @@ int get_protocol_attributes(struct mod_pinctrl_protocol_attributes* protocol_att
   cmock_line = cmock_call_instance->LineNumber;
   if (!cmock_call_instance->ExpectAnyArgsBool)
   {
-  if (!cmock_call_instance->IgnoreArg_protocol_attributes)
+  if (!cmock_call_instance->IgnoreArg_info)
   {
-    UNITY_SET_DETAILS(CMockString_get_protocol_attributes,CMockString_protocol_attributes);
-    if (cmock_call_instance->Expected_protocol_attributes == NULL)
-      { UNITY_TEST_ASSERT_NULL(protocol_attributes, cmock_line, CMockStringExpNULL); }
+    UNITY_SET_DETAILS(CMockString_get_info,CMockString_info);
+    if (cmock_call_instance->Expected_info == NULL)
+      { UNITY_TEST_ASSERT_NULL(info, cmock_line, CMockStringExpNULL); }
     else
-      { UNITY_TEST_ASSERT_EQUAL_MEMORY_ARRAY((void*)(cmock_call_instance->Expected_protocol_attributes), (void*)(protocol_attributes), sizeof(struct mod_pinctrl_protocol_attributes), cmock_call_instance->Expected_protocol_attributes_Depth, cmock_line, CMockStringMismatch); }
+      { UNITY_TEST_ASSERT_EQUAL_MEMORY_ARRAY((void*)(cmock_call_instance->Expected_info), (void*)(info), sizeof(struct mod_pinctrl_info), cmock_call_instance->Expected_info_Depth, cmock_line, CMockStringMismatch); }
   }
   }
-  if (Mock.get_protocol_attributes_CallbackFunctionPointer != NULL)
+  if (Mock.get_info_CallbackFunctionPointer != NULL)
   {
-    cmock_call_instance->ReturnVal = Mock.get_protocol_attributes_CallbackFunctionPointer(protocol_attributes, Mock.get_protocol_attributes_CallbackCalls++);
+    cmock_call_instance->ReturnVal = Mock.get_info_CallbackFunctionPointer(info, Mock.get_info_CallbackCalls++);
   }
-  if (cmock_call_instance->ReturnThruPtr_protocol_attributes_Used)
+  if (cmock_call_instance->ReturnThruPtr_info_Used)
   {
-    UNITY_TEST_ASSERT_NOT_NULL(protocol_attributes, cmock_line, CMockStringPtrIsNULL);
-    memcpy((void*)protocol_attributes, (void*)cmock_call_instance->ReturnThruPtr_protocol_attributes_Val,
-      cmock_call_instance->ReturnThruPtr_protocol_attributes_Size);
+    UNITY_TEST_ASSERT_NOT_NULL(info, cmock_line, CMockStringPtrIsNULL);
+    memcpy((void*)info, (void*)cmock_call_instance->ReturnThruPtr_info_Val,
+      cmock_call_instance->ReturnThruPtr_info_Size);
   }
   UNITY_CLR_DETAILS();
   return cmock_call_instance->ReturnVal;
 }
 
-void CMockExpectParameters_get_protocol_attributes(CMOCK_get_protocol_attributes_CALL_INSTANCE* cmock_call_instance, struct mod_pinctrl_protocol_attributes* protocol_attributes, int protocol_attributes_Depth);
-void CMockExpectParameters_get_protocol_attributes(CMOCK_get_protocol_attributes_CALL_INSTANCE* cmock_call_instance, struct mod_pinctrl_protocol_attributes* protocol_attributes, int protocol_attributes_Depth)
+void CMockExpectParameters_get_info(CMOCK_get_info_CALL_INSTANCE* cmock_call_instance, struct mod_pinctrl_info* info, int info_Depth);
+void CMockExpectParameters_get_info(CMOCK_get_info_CALL_INSTANCE* cmock_call_instance, struct mod_pinctrl_info* info, int info_Depth)
 {
-  cmock_call_instance->Expected_protocol_attributes = protocol_attributes;
-  cmock_call_instance->Expected_protocol_attributes_Depth = protocol_attributes_Depth;
-  cmock_call_instance->IgnoreArg_protocol_attributes = 0;
-  cmock_call_instance->ReturnThruPtr_protocol_attributes_Used = 0;
+  cmock_call_instance->Expected_info = info;
+  cmock_call_instance->Expected_info_Depth = info_Depth;
+  cmock_call_instance->IgnoreArg_info = 0;
+  cmock_call_instance->ReturnThruPtr_info_Used = 0;
 }
 
-void get_protocol_attributes_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return)
+void get_info_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return)
 {
-  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_get_protocol_attributes_CALL_INSTANCE));
-  CMOCK_get_protocol_attributes_CALL_INSTANCE* cmock_call_instance = (CMOCK_get_protocol_attributes_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
+  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_get_info_CALL_INSTANCE));
+  CMOCK_get_info_CALL_INSTANCE* cmock_call_instance = (CMOCK_get_info_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
   UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringOutOfMemory);
   memset(cmock_call_instance, 0, sizeof(*cmock_call_instance));
-  Mock.get_protocol_attributes_CallInstance = CMock_Guts_MemChain(Mock.get_protocol_attributes_CallInstance, cmock_guts_index);
-  Mock.get_protocol_attributes_IgnoreBool = (char)0;
+  Mock.get_info_CallInstance = CMock_Guts_MemChain(Mock.get_info_CallInstance, cmock_guts_index);
+  Mock.get_info_IgnoreBool = (char)0;
   cmock_call_instance->LineNumber = cmock_line;
   cmock_call_instance->ExpectAnyArgsBool = (char)0;
   cmock_call_instance->ReturnVal = cmock_to_return;
-  Mock.get_protocol_attributes_IgnoreBool = (char)1;
+  Mock.get_info_IgnoreBool = (char)1;
 }
 
-void get_protocol_attributes_CMockStopIgnore(void)
+void get_info_CMockStopIgnore(void)
 {
-  if(Mock.get_protocol_attributes_IgnoreBool)
-    Mock.get_protocol_attributes_CallInstance = CMock_Guts_MemNext(Mock.get_protocol_attributes_CallInstance);
-  Mock.get_protocol_attributes_IgnoreBool = (char)0;
+  if(Mock.get_info_IgnoreBool)
+    Mock.get_info_CallInstance = CMock_Guts_MemNext(Mock.get_info_CallInstance);
+  Mock.get_info_IgnoreBool = (char)0;
 }
 
-void get_protocol_attributes_CMockExpectAnyArgsAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return)
+void get_info_CMockExpectAnyArgsAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return)
 {
-  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_get_protocol_attributes_CALL_INSTANCE));
-  CMOCK_get_protocol_attributes_CALL_INSTANCE* cmock_call_instance = (CMOCK_get_protocol_attributes_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
+  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_get_info_CALL_INSTANCE));
+  CMOCK_get_info_CALL_INSTANCE* cmock_call_instance = (CMOCK_get_info_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
   UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringOutOfMemory);
   memset(cmock_call_instance, 0, sizeof(*cmock_call_instance));
-  Mock.get_protocol_attributes_CallInstance = CMock_Guts_MemChain(Mock.get_protocol_attributes_CallInstance, cmock_guts_index);
-  Mock.get_protocol_attributes_IgnoreBool = (char)0;
+  Mock.get_info_CallInstance = CMock_Guts_MemChain(Mock.get_info_CallInstance, cmock_guts_index);
+  Mock.get_info_IgnoreBool = (char)0;
   cmock_call_instance->LineNumber = cmock_line;
   cmock_call_instance->ExpectAnyArgsBool = (char)0;
   cmock_call_instance->ReturnVal = cmock_to_return;
   cmock_call_instance->ExpectAnyArgsBool = (char)1;
 }
 
-void get_protocol_attributes_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, struct mod_pinctrl_protocol_attributes* protocol_attributes, int cmock_to_return)
+void get_info_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, struct mod_pinctrl_info* info, int cmock_to_return)
 {
-  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_get_protocol_attributes_CALL_INSTANCE));
-  CMOCK_get_protocol_attributes_CALL_INSTANCE* cmock_call_instance = (CMOCK_get_protocol_attributes_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
+  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_get_info_CALL_INSTANCE));
+  CMOCK_get_info_CALL_INSTANCE* cmock_call_instance = (CMOCK_get_info_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
   UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringOutOfMemory);
   memset(cmock_call_instance, 0, sizeof(*cmock_call_instance));
-  Mock.get_protocol_attributes_CallInstance = CMock_Guts_MemChain(Mock.get_protocol_attributes_CallInstance, cmock_guts_index);
-  Mock.get_protocol_attributes_IgnoreBool = (char)0;
+  Mock.get_info_CallInstance = CMock_Guts_MemChain(Mock.get_info_CallInstance, cmock_guts_index);
+  Mock.get_info_IgnoreBool = (char)0;
   cmock_call_instance->LineNumber = cmock_line;
   cmock_call_instance->ExpectAnyArgsBool = (char)0;
-  CMockExpectParameters_get_protocol_attributes(cmock_call_instance, protocol_attributes, 1);
+  CMockExpectParameters_get_info(cmock_call_instance, info, 1);
   cmock_call_instance->ReturnVal = cmock_to_return;
 }
 
-void get_protocol_attributes_AddCallback(CMOCK_get_protocol_attributes_CALLBACK Callback)
+void get_info_AddCallback(CMOCK_get_info_CALLBACK Callback)
 {
-  Mock.get_protocol_attributes_IgnoreBool = (char)0;
-  Mock.get_protocol_attributes_CallbackBool = (char)1;
-  Mock.get_protocol_attributes_CallbackFunctionPointer = Callback;
+  Mock.get_info_IgnoreBool = (char)0;
+  Mock.get_info_CallbackBool = (char)1;
+  Mock.get_info_CallbackFunctionPointer = Callback;
 }
 
-void get_protocol_attributes_Stub(CMOCK_get_protocol_attributes_CALLBACK Callback)
+void get_info_Stub(CMOCK_get_info_CALLBACK Callback)
 {
-  Mock.get_protocol_attributes_IgnoreBool = (char)0;
-  Mock.get_protocol_attributes_CallbackBool = (char)0;
-  Mock.get_protocol_attributes_CallbackFunctionPointer = Callback;
+  Mock.get_info_IgnoreBool = (char)0;
+  Mock.get_info_CallbackBool = (char)0;
+  Mock.get_info_CallbackFunctionPointer = Callback;
 }
 
-void get_protocol_attributes_CMockExpectWithArrayAndReturn(UNITY_LINE_TYPE cmock_line, struct mod_pinctrl_protocol_attributes* protocol_attributes, int protocol_attributes_Depth, int cmock_to_return)
+void get_info_CMockExpectWithArrayAndReturn(UNITY_LINE_TYPE cmock_line, struct mod_pinctrl_info* info, int info_Depth, int cmock_to_return)
 {
-  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_get_protocol_attributes_CALL_INSTANCE));
-  CMOCK_get_protocol_attributes_CALL_INSTANCE* cmock_call_instance = (CMOCK_get_protocol_attributes_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
+  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_get_info_CALL_INSTANCE));
+  CMOCK_get_info_CALL_INSTANCE* cmock_call_instance = (CMOCK_get_info_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
   UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringOutOfMemory);
   memset(cmock_call_instance, 0, sizeof(*cmock_call_instance));
-  Mock.get_protocol_attributes_CallInstance = CMock_Guts_MemChain(Mock.get_protocol_attributes_CallInstance, cmock_guts_index);
-  Mock.get_protocol_attributes_IgnoreBool = (char)0;
+  Mock.get_info_CallInstance = CMock_Guts_MemChain(Mock.get_info_CallInstance, cmock_guts_index);
+  Mock.get_info_IgnoreBool = (char)0;
   cmock_call_instance->LineNumber = cmock_line;
   cmock_call_instance->ExpectAnyArgsBool = (char)0;
-  CMockExpectParameters_get_protocol_attributes(cmock_call_instance, protocol_attributes, protocol_attributes_Depth);
+  CMockExpectParameters_get_info(cmock_call_instance, info, info_Depth);
   cmock_call_instance->ReturnVal = cmock_to_return;
 }
 
-void get_protocol_attributes_CMockReturnMemThruPtr_protocol_attributes(UNITY_LINE_TYPE cmock_line, struct mod_pinctrl_protocol_attributes* protocol_attributes, size_t cmock_size)
+void get_info_CMockReturnMemThruPtr_info(UNITY_LINE_TYPE cmock_line, struct mod_pinctrl_info* info, size_t cmock_size)
 {
-  CMOCK_get_protocol_attributes_CALL_INSTANCE* cmock_call_instance = (CMOCK_get_protocol_attributes_CALL_INSTANCE*)CMock_Guts_GetAddressFor(CMock_Guts_MemEndOfChain(Mock.get_protocol_attributes_CallInstance));
+  CMOCK_get_info_CALL_INSTANCE* cmock_call_instance = (CMOCK_get_info_CALL_INSTANCE*)CMock_Guts_GetAddressFor(CMock_Guts_MemEndOfChain(Mock.get_info_CallInstance));
   UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringPtrPreExp);
-  cmock_call_instance->ReturnThruPtr_protocol_attributes_Used = 1;
-  cmock_call_instance->ReturnThruPtr_protocol_attributes_Val = protocol_attributes;
-  cmock_call_instance->ReturnThruPtr_protocol_attributes_Size = cmock_size;
+  cmock_call_instance->ReturnThruPtr_info_Used = 1;
+  cmock_call_instance->ReturnThruPtr_info_Val = info;
+  cmock_call_instance->ReturnThruPtr_info_Size = cmock_size;
 }
 
-void get_protocol_attributes_CMockIgnoreArg_protocol_attributes(UNITY_LINE_TYPE cmock_line)
+void get_info_CMockIgnoreArg_info(UNITY_LINE_TYPE cmock_line)
 {
-  CMOCK_get_protocol_attributes_CALL_INSTANCE* cmock_call_instance = (CMOCK_get_protocol_attributes_CALL_INSTANCE*)CMock_Guts_GetAddressFor(CMock_Guts_MemEndOfChain(Mock.get_protocol_attributes_CallInstance));
+  CMOCK_get_info_CALL_INSTANCE* cmock_call_instance = (CMOCK_get_info_CALL_INSTANCE*)CMock_Guts_GetAddressFor(CMock_Guts_MemEndOfChain(Mock.get_info_CallInstance));
   UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringIgnPreExp);
-  cmock_call_instance->IgnoreArg_protocol_attributes = 1;
+  cmock_call_instance->IgnoreArg_info = 1;
 }
 
 int get_list_associations(uint16_t index, enum mod_pinctrl_selector flags, uint16_t first_index, uint16_t* object_id)
@@ -1692,25 +1692,25 @@ void get_total_number_of_configurations_CMockIgnoreArg_number_of_configurations(
   cmock_call_instance->IgnoreArg_number_of_configurations = 1;
 }
 
-int get_current_associated_functionality(uint16_t index, enum mod_pinctrl_selector flag, uint16_t* functionality_id)
+int get_current_associated_function(uint16_t index, enum mod_pinctrl_selector flag, uint32_t* function_id)
 {
   UNITY_LINE_TYPE cmock_line = TEST_LINE_NUM;
-  CMOCK_get_current_associated_functionality_CALL_INSTANCE* cmock_call_instance;
-  UNITY_SET_DETAIL(CMockString_get_current_associated_functionality);
-  cmock_call_instance = (CMOCK_get_current_associated_functionality_CALL_INSTANCE*)CMock_Guts_GetAddressFor(Mock.get_current_associated_functionality_CallInstance);
-  Mock.get_current_associated_functionality_CallInstance = CMock_Guts_MemNext(Mock.get_current_associated_functionality_CallInstance);
-  if (Mock.get_current_associated_functionality_IgnoreBool)
+  CMOCK_get_current_associated_function_CALL_INSTANCE* cmock_call_instance;
+  UNITY_SET_DETAIL(CMockString_get_current_associated_function);
+  cmock_call_instance = (CMOCK_get_current_associated_function_CALL_INSTANCE*)CMock_Guts_GetAddressFor(Mock.get_current_associated_function_CallInstance);
+  Mock.get_current_associated_function_CallInstance = CMock_Guts_MemNext(Mock.get_current_associated_function_CallInstance);
+  if (Mock.get_current_associated_function_IgnoreBool)
   {
     UNITY_CLR_DETAILS();
     if (cmock_call_instance == NULL)
-      return Mock.get_current_associated_functionality_FinalReturn;
-    Mock.get_current_associated_functionality_FinalReturn = cmock_call_instance->ReturnVal;
+      return Mock.get_current_associated_function_FinalReturn;
+    Mock.get_current_associated_function_FinalReturn = cmock_call_instance->ReturnVal;
     return cmock_call_instance->ReturnVal;
   }
-  if (!Mock.get_current_associated_functionality_CallbackBool &&
-      Mock.get_current_associated_functionality_CallbackFunctionPointer != NULL)
+  if (!Mock.get_current_associated_function_CallbackBool &&
+      Mock.get_current_associated_function_CallbackFunctionPointer != NULL)
   {
-    int cmock_cb_ret = Mock.get_current_associated_functionality_CallbackFunctionPointer(index, flag, functionality_id, Mock.get_current_associated_functionality_CallbackCalls++);
+    int cmock_cb_ret = Mock.get_current_associated_function_CallbackFunctionPointer(index, flag, function_id, Mock.get_current_associated_function_CallbackCalls++);
     UNITY_CLR_DETAILS();
     return cmock_cb_ret;
   }
@@ -1720,156 +1720,156 @@ int get_current_associated_functionality(uint16_t index, enum mod_pinctrl_select
   {
   if (!cmock_call_instance->IgnoreArg_index)
   {
-    UNITY_SET_DETAILS(CMockString_get_current_associated_functionality,CMockString_index);
+    UNITY_SET_DETAILS(CMockString_get_current_associated_function,CMockString_index);
     UNITY_TEST_ASSERT_EQUAL_HEX16(cmock_call_instance->Expected_index, index, cmock_line, CMockStringMismatch);
   }
   if (!cmock_call_instance->IgnoreArg_flag)
   {
-    UNITY_SET_DETAILS(CMockString_get_current_associated_functionality,CMockString_flag);
+    UNITY_SET_DETAILS(CMockString_get_current_associated_function,CMockString_flag);
     UNITY_TEST_ASSERT_EQUAL_MEMORY((void*)(&cmock_call_instance->Expected_flag), (void*)(&flag), sizeof(enum mod_pinctrl_selector), cmock_line, CMockStringMismatch);
   }
-  if (!cmock_call_instance->IgnoreArg_functionality_id)
+  if (!cmock_call_instance->IgnoreArg_function_id)
   {
-    UNITY_SET_DETAILS(CMockString_get_current_associated_functionality,CMockString_functionality_id);
-    if (cmock_call_instance->Expected_functionality_id == NULL)
-      { UNITY_TEST_ASSERT_NULL(functionality_id, cmock_line, CMockStringExpNULL); }
+    UNITY_SET_DETAILS(CMockString_get_current_associated_function,CMockString_function_id);
+    if (cmock_call_instance->Expected_function_id == NULL)
+      { UNITY_TEST_ASSERT_NULL(function_id, cmock_line, CMockStringExpNULL); }
     else
-      { UNITY_TEST_ASSERT_EQUAL_HEX16_ARRAY(cmock_call_instance->Expected_functionality_id, functionality_id, cmock_call_instance->Expected_functionality_id_Depth, cmock_line, CMockStringMismatch); }
+      { UNITY_TEST_ASSERT_EQUAL_HEX32_ARRAY(cmock_call_instance->Expected_function_id, function_id, cmock_call_instance->Expected_function_id_Depth, cmock_line, CMockStringMismatch); }
   }
   }
-  if (Mock.get_current_associated_functionality_CallbackFunctionPointer != NULL)
+  if (Mock.get_current_associated_function_CallbackFunctionPointer != NULL)
   {
-    cmock_call_instance->ReturnVal = Mock.get_current_associated_functionality_CallbackFunctionPointer(index, flag, functionality_id, Mock.get_current_associated_functionality_CallbackCalls++);
+    cmock_call_instance->ReturnVal = Mock.get_current_associated_function_CallbackFunctionPointer(index, flag, function_id, Mock.get_current_associated_function_CallbackCalls++);
   }
-  if (cmock_call_instance->ReturnThruPtr_functionality_id_Used)
+  if (cmock_call_instance->ReturnThruPtr_function_id_Used)
   {
-    UNITY_TEST_ASSERT_NOT_NULL(functionality_id, cmock_line, CMockStringPtrIsNULL);
-    memcpy((void*)functionality_id, (void*)cmock_call_instance->ReturnThruPtr_functionality_id_Val,
-      cmock_call_instance->ReturnThruPtr_functionality_id_Size);
+    UNITY_TEST_ASSERT_NOT_NULL(function_id, cmock_line, CMockStringPtrIsNULL);
+    memcpy((void*)function_id, (void*)cmock_call_instance->ReturnThruPtr_function_id_Val,
+      cmock_call_instance->ReturnThruPtr_function_id_Size);
   }
   UNITY_CLR_DETAILS();
   return cmock_call_instance->ReturnVal;
 }
 
-void CMockExpectParameters_get_current_associated_functionality(CMOCK_get_current_associated_functionality_CALL_INSTANCE* cmock_call_instance, uint16_t index, enum mod_pinctrl_selector flag, uint16_t* functionality_id, int functionality_id_Depth);
-void CMockExpectParameters_get_current_associated_functionality(CMOCK_get_current_associated_functionality_CALL_INSTANCE* cmock_call_instance, uint16_t index, enum mod_pinctrl_selector flag, uint16_t* functionality_id, int functionality_id_Depth)
+void CMockExpectParameters_get_current_associated_function(CMOCK_get_current_associated_function_CALL_INSTANCE* cmock_call_instance, uint16_t index, enum mod_pinctrl_selector flag, uint32_t* function_id, int function_id_Depth);
+void CMockExpectParameters_get_current_associated_function(CMOCK_get_current_associated_function_CALL_INSTANCE* cmock_call_instance, uint16_t index, enum mod_pinctrl_selector flag, uint32_t* function_id, int function_id_Depth)
 {
   cmock_call_instance->Expected_index = index;
   cmock_call_instance->IgnoreArg_index = 0;
   memcpy((void*)(&cmock_call_instance->Expected_flag), (void*)(&flag),
          sizeof(enum mod_pinctrl_selector[sizeof(flag) == sizeof(enum mod_pinctrl_selector) ? 1 : -1])); /* add enum mod_pinctrl_selector to :treat_as_array if this causes an error */
   cmock_call_instance->IgnoreArg_flag = 0;
-  cmock_call_instance->Expected_functionality_id = functionality_id;
-  cmock_call_instance->Expected_functionality_id_Depth = functionality_id_Depth;
-  cmock_call_instance->IgnoreArg_functionality_id = 0;
-  cmock_call_instance->ReturnThruPtr_functionality_id_Used = 0;
+  cmock_call_instance->Expected_function_id = function_id;
+  cmock_call_instance->Expected_function_id_Depth = function_id_Depth;
+  cmock_call_instance->IgnoreArg_function_id = 0;
+  cmock_call_instance->ReturnThruPtr_function_id_Used = 0;
 }
 
-void get_current_associated_functionality_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return)
+void get_current_associated_function_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return)
 {
-  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_get_current_associated_functionality_CALL_INSTANCE));
-  CMOCK_get_current_associated_functionality_CALL_INSTANCE* cmock_call_instance = (CMOCK_get_current_associated_functionality_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
+  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_get_current_associated_function_CALL_INSTANCE));
+  CMOCK_get_current_associated_function_CALL_INSTANCE* cmock_call_instance = (CMOCK_get_current_associated_function_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
   UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringOutOfMemory);
   memset(cmock_call_instance, 0, sizeof(*cmock_call_instance));
-  Mock.get_current_associated_functionality_CallInstance = CMock_Guts_MemChain(Mock.get_current_associated_functionality_CallInstance, cmock_guts_index);
-  Mock.get_current_associated_functionality_IgnoreBool = (char)0;
+  Mock.get_current_associated_function_CallInstance = CMock_Guts_MemChain(Mock.get_current_associated_function_CallInstance, cmock_guts_index);
+  Mock.get_current_associated_function_IgnoreBool = (char)0;
   cmock_call_instance->LineNumber = cmock_line;
   cmock_call_instance->ExpectAnyArgsBool = (char)0;
   cmock_call_instance->ReturnVal = cmock_to_return;
-  Mock.get_current_associated_functionality_IgnoreBool = (char)1;
+  Mock.get_current_associated_function_IgnoreBool = (char)1;
 }
 
-void get_current_associated_functionality_CMockStopIgnore(void)
+void get_current_associated_function_CMockStopIgnore(void)
 {
-  if(Mock.get_current_associated_functionality_IgnoreBool)
-    Mock.get_current_associated_functionality_CallInstance = CMock_Guts_MemNext(Mock.get_current_associated_functionality_CallInstance);
-  Mock.get_current_associated_functionality_IgnoreBool = (char)0;
+  if(Mock.get_current_associated_function_IgnoreBool)
+    Mock.get_current_associated_function_CallInstance = CMock_Guts_MemNext(Mock.get_current_associated_function_CallInstance);
+  Mock.get_current_associated_function_IgnoreBool = (char)0;
 }
 
-void get_current_associated_functionality_CMockExpectAnyArgsAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return)
+void get_current_associated_function_CMockExpectAnyArgsAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return)
 {
-  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_get_current_associated_functionality_CALL_INSTANCE));
-  CMOCK_get_current_associated_functionality_CALL_INSTANCE* cmock_call_instance = (CMOCK_get_current_associated_functionality_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
+  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_get_current_associated_function_CALL_INSTANCE));
+  CMOCK_get_current_associated_function_CALL_INSTANCE* cmock_call_instance = (CMOCK_get_current_associated_function_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
   UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringOutOfMemory);
   memset(cmock_call_instance, 0, sizeof(*cmock_call_instance));
-  Mock.get_current_associated_functionality_CallInstance = CMock_Guts_MemChain(Mock.get_current_associated_functionality_CallInstance, cmock_guts_index);
-  Mock.get_current_associated_functionality_IgnoreBool = (char)0;
+  Mock.get_current_associated_function_CallInstance = CMock_Guts_MemChain(Mock.get_current_associated_function_CallInstance, cmock_guts_index);
+  Mock.get_current_associated_function_IgnoreBool = (char)0;
   cmock_call_instance->LineNumber = cmock_line;
   cmock_call_instance->ExpectAnyArgsBool = (char)0;
   cmock_call_instance->ReturnVal = cmock_to_return;
   cmock_call_instance->ExpectAnyArgsBool = (char)1;
 }
 
-void get_current_associated_functionality_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, uint16_t index, enum mod_pinctrl_selector flag, uint16_t* functionality_id, int cmock_to_return)
+void get_current_associated_function_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, uint16_t index, enum mod_pinctrl_selector flag, uint32_t* function_id, int cmock_to_return)
 {
-  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_get_current_associated_functionality_CALL_INSTANCE));
-  CMOCK_get_current_associated_functionality_CALL_INSTANCE* cmock_call_instance = (CMOCK_get_current_associated_functionality_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
+  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_get_current_associated_function_CALL_INSTANCE));
+  CMOCK_get_current_associated_function_CALL_INSTANCE* cmock_call_instance = (CMOCK_get_current_associated_function_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
   UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringOutOfMemory);
   memset(cmock_call_instance, 0, sizeof(*cmock_call_instance));
-  Mock.get_current_associated_functionality_CallInstance = CMock_Guts_MemChain(Mock.get_current_associated_functionality_CallInstance, cmock_guts_index);
-  Mock.get_current_associated_functionality_IgnoreBool = (char)0;
+  Mock.get_current_associated_function_CallInstance = CMock_Guts_MemChain(Mock.get_current_associated_function_CallInstance, cmock_guts_index);
+  Mock.get_current_associated_function_IgnoreBool = (char)0;
   cmock_call_instance->LineNumber = cmock_line;
   cmock_call_instance->ExpectAnyArgsBool = (char)0;
-  CMockExpectParameters_get_current_associated_functionality(cmock_call_instance, index, flag, functionality_id, 1);
+  CMockExpectParameters_get_current_associated_function(cmock_call_instance, index, flag, function_id, 1);
   cmock_call_instance->ReturnVal = cmock_to_return;
 }
 
-void get_current_associated_functionality_AddCallback(CMOCK_get_current_associated_functionality_CALLBACK Callback)
+void get_current_associated_function_AddCallback(CMOCK_get_current_associated_function_CALLBACK Callback)
 {
-  Mock.get_current_associated_functionality_IgnoreBool = (char)0;
-  Mock.get_current_associated_functionality_CallbackBool = (char)1;
-  Mock.get_current_associated_functionality_CallbackFunctionPointer = Callback;
+  Mock.get_current_associated_function_IgnoreBool = (char)0;
+  Mock.get_current_associated_function_CallbackBool = (char)1;
+  Mock.get_current_associated_function_CallbackFunctionPointer = Callback;
 }
 
-void get_current_associated_functionality_Stub(CMOCK_get_current_associated_functionality_CALLBACK Callback)
+void get_current_associated_function_Stub(CMOCK_get_current_associated_function_CALLBACK Callback)
 {
-  Mock.get_current_associated_functionality_IgnoreBool = (char)0;
-  Mock.get_current_associated_functionality_CallbackBool = (char)0;
-  Mock.get_current_associated_functionality_CallbackFunctionPointer = Callback;
+  Mock.get_current_associated_function_IgnoreBool = (char)0;
+  Mock.get_current_associated_function_CallbackBool = (char)0;
+  Mock.get_current_associated_function_CallbackFunctionPointer = Callback;
 }
 
-void get_current_associated_functionality_CMockExpectWithArrayAndReturn(UNITY_LINE_TYPE cmock_line, uint16_t index, enum mod_pinctrl_selector flag, uint16_t* functionality_id, int functionality_id_Depth, int cmock_to_return)
+void get_current_associated_function_CMockExpectWithArrayAndReturn(UNITY_LINE_TYPE cmock_line, uint16_t index, enum mod_pinctrl_selector flag, uint32_t* function_id, int function_id_Depth, int cmock_to_return)
 {
-  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_get_current_associated_functionality_CALL_INSTANCE));
-  CMOCK_get_current_associated_functionality_CALL_INSTANCE* cmock_call_instance = (CMOCK_get_current_associated_functionality_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
+  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_get_current_associated_function_CALL_INSTANCE));
+  CMOCK_get_current_associated_function_CALL_INSTANCE* cmock_call_instance = (CMOCK_get_current_associated_function_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
   UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringOutOfMemory);
   memset(cmock_call_instance, 0, sizeof(*cmock_call_instance));
-  Mock.get_current_associated_functionality_CallInstance = CMock_Guts_MemChain(Mock.get_current_associated_functionality_CallInstance, cmock_guts_index);
-  Mock.get_current_associated_functionality_IgnoreBool = (char)0;
+  Mock.get_current_associated_function_CallInstance = CMock_Guts_MemChain(Mock.get_current_associated_function_CallInstance, cmock_guts_index);
+  Mock.get_current_associated_function_IgnoreBool = (char)0;
   cmock_call_instance->LineNumber = cmock_line;
   cmock_call_instance->ExpectAnyArgsBool = (char)0;
-  CMockExpectParameters_get_current_associated_functionality(cmock_call_instance, index, flag, functionality_id, functionality_id_Depth);
+  CMockExpectParameters_get_current_associated_function(cmock_call_instance, index, flag, function_id, function_id_Depth);
   cmock_call_instance->ReturnVal = cmock_to_return;
 }
 
-void get_current_associated_functionality_CMockReturnMemThruPtr_functionality_id(UNITY_LINE_TYPE cmock_line, uint16_t* functionality_id, size_t cmock_size)
+void get_current_associated_function_CMockReturnMemThruPtr_function_id(UNITY_LINE_TYPE cmock_line, uint32_t* function_id, size_t cmock_size)
 {
-  CMOCK_get_current_associated_functionality_CALL_INSTANCE* cmock_call_instance = (CMOCK_get_current_associated_functionality_CALL_INSTANCE*)CMock_Guts_GetAddressFor(CMock_Guts_MemEndOfChain(Mock.get_current_associated_functionality_CallInstance));
+  CMOCK_get_current_associated_function_CALL_INSTANCE* cmock_call_instance = (CMOCK_get_current_associated_function_CALL_INSTANCE*)CMock_Guts_GetAddressFor(CMock_Guts_MemEndOfChain(Mock.get_current_associated_function_CallInstance));
   UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringPtrPreExp);
-  cmock_call_instance->ReturnThruPtr_functionality_id_Used = 1;
-  cmock_call_instance->ReturnThruPtr_functionality_id_Val = functionality_id;
-  cmock_call_instance->ReturnThruPtr_functionality_id_Size = cmock_size;
+  cmock_call_instance->ReturnThruPtr_function_id_Used = 1;
+  cmock_call_instance->ReturnThruPtr_function_id_Val = function_id;
+  cmock_call_instance->ReturnThruPtr_function_id_Size = cmock_size;
 }
 
-void get_current_associated_functionality_CMockIgnoreArg_index(UNITY_LINE_TYPE cmock_line)
+void get_current_associated_function_CMockIgnoreArg_index(UNITY_LINE_TYPE cmock_line)
 {
-  CMOCK_get_current_associated_functionality_CALL_INSTANCE* cmock_call_instance = (CMOCK_get_current_associated_functionality_CALL_INSTANCE*)CMock_Guts_GetAddressFor(CMock_Guts_MemEndOfChain(Mock.get_current_associated_functionality_CallInstance));
+  CMOCK_get_current_associated_function_CALL_INSTANCE* cmock_call_instance = (CMOCK_get_current_associated_function_CALL_INSTANCE*)CMock_Guts_GetAddressFor(CMock_Guts_MemEndOfChain(Mock.get_current_associated_function_CallInstance));
   UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringIgnPreExp);
   cmock_call_instance->IgnoreArg_index = 1;
 }
 
-void get_current_associated_functionality_CMockIgnoreArg_flag(UNITY_LINE_TYPE cmock_line)
+void get_current_associated_function_CMockIgnoreArg_flag(UNITY_LINE_TYPE cmock_line)
 {
-  CMOCK_get_current_associated_functionality_CALL_INSTANCE* cmock_call_instance = (CMOCK_get_current_associated_functionality_CALL_INSTANCE*)CMock_Guts_GetAddressFor(CMock_Guts_MemEndOfChain(Mock.get_current_associated_functionality_CallInstance));
+  CMOCK_get_current_associated_function_CALL_INSTANCE* cmock_call_instance = (CMOCK_get_current_associated_function_CALL_INSTANCE*)CMock_Guts_GetAddressFor(CMock_Guts_MemEndOfChain(Mock.get_current_associated_function_CallInstance));
   UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringIgnPreExp);
   cmock_call_instance->IgnoreArg_flag = 1;
 }
 
-void get_current_associated_functionality_CMockIgnoreArg_functionality_id(UNITY_LINE_TYPE cmock_line)
+void get_current_associated_function_CMockIgnoreArg_function_id(UNITY_LINE_TYPE cmock_line)
 {
-  CMOCK_get_current_associated_functionality_CALL_INSTANCE* cmock_call_instance = (CMOCK_get_current_associated_functionality_CALL_INSTANCE*)CMock_Guts_GetAddressFor(CMock_Guts_MemEndOfChain(Mock.get_current_associated_functionality_CallInstance));
+  CMOCK_get_current_associated_function_CALL_INSTANCE* cmock_call_instance = (CMOCK_get_current_associated_function_CALL_INSTANCE*)CMock_Guts_GetAddressFor(CMock_Guts_MemEndOfChain(Mock.get_current_associated_function_CallInstance));
   UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringIgnPreExp);
-  cmock_call_instance->IgnoreArg_functionality_id = 1;
+  cmock_call_instance->IgnoreArg_function_id = 1;
 }
 
 int set_configuration(uint16_t index, enum mod_pinctrl_selector flag, const struct mod_pinctrl_drv_pin_configuration* config)
@@ -2036,25 +2036,25 @@ void set_configuration_CMockIgnoreArg_config(UNITY_LINE_TYPE cmock_line)
   cmock_call_instance->IgnoreArg_config = 1;
 }
 
-int set_functionality(uint16_t index, enum mod_pinctrl_selector flag, uint16_t functionality_id)
+int set_function(uint16_t index, enum mod_pinctrl_selector flag, uint32_t function_id)
 {
   UNITY_LINE_TYPE cmock_line = TEST_LINE_NUM;
-  CMOCK_set_functionality_CALL_INSTANCE* cmock_call_instance;
-  UNITY_SET_DETAIL(CMockString_set_functionality);
-  cmock_call_instance = (CMOCK_set_functionality_CALL_INSTANCE*)CMock_Guts_GetAddressFor(Mock.set_functionality_CallInstance);
-  Mock.set_functionality_CallInstance = CMock_Guts_MemNext(Mock.set_functionality_CallInstance);
-  if (Mock.set_functionality_IgnoreBool)
+  CMOCK_set_function_CALL_INSTANCE* cmock_call_instance;
+  UNITY_SET_DETAIL(CMockString_set_function);
+  cmock_call_instance = (CMOCK_set_function_CALL_INSTANCE*)CMock_Guts_GetAddressFor(Mock.set_function_CallInstance);
+  Mock.set_function_CallInstance = CMock_Guts_MemNext(Mock.set_function_CallInstance);
+  if (Mock.set_function_IgnoreBool)
   {
     UNITY_CLR_DETAILS();
     if (cmock_call_instance == NULL)
-      return Mock.set_functionality_FinalReturn;
-    Mock.set_functionality_FinalReturn = cmock_call_instance->ReturnVal;
+      return Mock.set_function_FinalReturn;
+    Mock.set_function_FinalReturn = cmock_call_instance->ReturnVal;
     return cmock_call_instance->ReturnVal;
   }
-  if (!Mock.set_functionality_CallbackBool &&
-      Mock.set_functionality_CallbackFunctionPointer != NULL)
+  if (!Mock.set_function_CallbackBool &&
+      Mock.set_function_CallbackFunctionPointer != NULL)
   {
-    int cmock_cb_ret = Mock.set_functionality_CallbackFunctionPointer(index, flag, functionality_id, Mock.set_functionality_CallbackCalls++);
+    int cmock_cb_ret = Mock.set_function_CallbackFunctionPointer(index, flag, function_id, Mock.set_function_CallbackCalls++);
     UNITY_CLR_DETAILS();
     return cmock_cb_ret;
   }
@@ -2064,121 +2064,121 @@ int set_functionality(uint16_t index, enum mod_pinctrl_selector flag, uint16_t f
   {
   if (!cmock_call_instance->IgnoreArg_index)
   {
-    UNITY_SET_DETAILS(CMockString_set_functionality,CMockString_index);
+    UNITY_SET_DETAILS(CMockString_set_function,CMockString_index);
     UNITY_TEST_ASSERT_EQUAL_HEX16(cmock_call_instance->Expected_index, index, cmock_line, CMockStringMismatch);
   }
   if (!cmock_call_instance->IgnoreArg_flag)
   {
-    UNITY_SET_DETAILS(CMockString_set_functionality,CMockString_flag);
+    UNITY_SET_DETAILS(CMockString_set_function,CMockString_flag);
     UNITY_TEST_ASSERT_EQUAL_MEMORY((void*)(&cmock_call_instance->Expected_flag), (void*)(&flag), sizeof(enum mod_pinctrl_selector), cmock_line, CMockStringMismatch);
   }
-  if (!cmock_call_instance->IgnoreArg_functionality_id)
+  if (!cmock_call_instance->IgnoreArg_function_id)
   {
-    UNITY_SET_DETAILS(CMockString_set_functionality,CMockString_functionality_id);
-    UNITY_TEST_ASSERT_EQUAL_HEX16(cmock_call_instance->Expected_functionality_id, functionality_id, cmock_line, CMockStringMismatch);
+    UNITY_SET_DETAILS(CMockString_set_function,CMockString_function_id);
+    UNITY_TEST_ASSERT_EQUAL_HEX32(cmock_call_instance->Expected_function_id, function_id, cmock_line, CMockStringMismatch);
   }
   }
-  if (Mock.set_functionality_CallbackFunctionPointer != NULL)
+  if (Mock.set_function_CallbackFunctionPointer != NULL)
   {
-    cmock_call_instance->ReturnVal = Mock.set_functionality_CallbackFunctionPointer(index, flag, functionality_id, Mock.set_functionality_CallbackCalls++);
+    cmock_call_instance->ReturnVal = Mock.set_function_CallbackFunctionPointer(index, flag, function_id, Mock.set_function_CallbackCalls++);
   }
   UNITY_CLR_DETAILS();
   return cmock_call_instance->ReturnVal;
 }
 
-void CMockExpectParameters_set_functionality(CMOCK_set_functionality_CALL_INSTANCE* cmock_call_instance, uint16_t index, enum mod_pinctrl_selector flag, uint16_t functionality_id);
-void CMockExpectParameters_set_functionality(CMOCK_set_functionality_CALL_INSTANCE* cmock_call_instance, uint16_t index, enum mod_pinctrl_selector flag, uint16_t functionality_id)
+void CMockExpectParameters_set_function(CMOCK_set_function_CALL_INSTANCE* cmock_call_instance, uint16_t index, enum mod_pinctrl_selector flag, uint32_t function_id);
+void CMockExpectParameters_set_function(CMOCK_set_function_CALL_INSTANCE* cmock_call_instance, uint16_t index, enum mod_pinctrl_selector flag, uint32_t function_id)
 {
   cmock_call_instance->Expected_index = index;
   cmock_call_instance->IgnoreArg_index = 0;
   memcpy((void*)(&cmock_call_instance->Expected_flag), (void*)(&flag),
          sizeof(enum mod_pinctrl_selector[sizeof(flag) == sizeof(enum mod_pinctrl_selector) ? 1 : -1])); /* add enum mod_pinctrl_selector to :treat_as_array if this causes an error */
   cmock_call_instance->IgnoreArg_flag = 0;
-  cmock_call_instance->Expected_functionality_id = functionality_id;
-  cmock_call_instance->IgnoreArg_functionality_id = 0;
+  cmock_call_instance->Expected_function_id = function_id;
+  cmock_call_instance->IgnoreArg_function_id = 0;
 }
 
-void set_functionality_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return)
+void set_function_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return)
 {
-  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_set_functionality_CALL_INSTANCE));
-  CMOCK_set_functionality_CALL_INSTANCE* cmock_call_instance = (CMOCK_set_functionality_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
+  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_set_function_CALL_INSTANCE));
+  CMOCK_set_function_CALL_INSTANCE* cmock_call_instance = (CMOCK_set_function_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
   UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringOutOfMemory);
   memset(cmock_call_instance, 0, sizeof(*cmock_call_instance));
-  Mock.set_functionality_CallInstance = CMock_Guts_MemChain(Mock.set_functionality_CallInstance, cmock_guts_index);
-  Mock.set_functionality_IgnoreBool = (char)0;
+  Mock.set_function_CallInstance = CMock_Guts_MemChain(Mock.set_function_CallInstance, cmock_guts_index);
+  Mock.set_function_IgnoreBool = (char)0;
   cmock_call_instance->LineNumber = cmock_line;
   cmock_call_instance->ExpectAnyArgsBool = (char)0;
   cmock_call_instance->ReturnVal = cmock_to_return;
-  Mock.set_functionality_IgnoreBool = (char)1;
+  Mock.set_function_IgnoreBool = (char)1;
 }
 
-void set_functionality_CMockStopIgnore(void)
+void set_function_CMockStopIgnore(void)
 {
-  if(Mock.set_functionality_IgnoreBool)
-    Mock.set_functionality_CallInstance = CMock_Guts_MemNext(Mock.set_functionality_CallInstance);
-  Mock.set_functionality_IgnoreBool = (char)0;
+  if(Mock.set_function_IgnoreBool)
+    Mock.set_function_CallInstance = CMock_Guts_MemNext(Mock.set_function_CallInstance);
+  Mock.set_function_IgnoreBool = (char)0;
 }
 
-void set_functionality_CMockExpectAnyArgsAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return)
+void set_function_CMockExpectAnyArgsAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return)
 {
-  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_set_functionality_CALL_INSTANCE));
-  CMOCK_set_functionality_CALL_INSTANCE* cmock_call_instance = (CMOCK_set_functionality_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
+  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_set_function_CALL_INSTANCE));
+  CMOCK_set_function_CALL_INSTANCE* cmock_call_instance = (CMOCK_set_function_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
   UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringOutOfMemory);
   memset(cmock_call_instance, 0, sizeof(*cmock_call_instance));
-  Mock.set_functionality_CallInstance = CMock_Guts_MemChain(Mock.set_functionality_CallInstance, cmock_guts_index);
-  Mock.set_functionality_IgnoreBool = (char)0;
+  Mock.set_function_CallInstance = CMock_Guts_MemChain(Mock.set_function_CallInstance, cmock_guts_index);
+  Mock.set_function_IgnoreBool = (char)0;
   cmock_call_instance->LineNumber = cmock_line;
   cmock_call_instance->ExpectAnyArgsBool = (char)0;
   cmock_call_instance->ReturnVal = cmock_to_return;
   cmock_call_instance->ExpectAnyArgsBool = (char)1;
 }
 
-void set_functionality_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, uint16_t index, enum mod_pinctrl_selector flag, uint16_t functionality_id, int cmock_to_return)
+void set_function_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, uint16_t index, enum mod_pinctrl_selector flag, uint32_t function_id, int cmock_to_return)
 {
-  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_set_functionality_CALL_INSTANCE));
-  CMOCK_set_functionality_CALL_INSTANCE* cmock_call_instance = (CMOCK_set_functionality_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
+  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_set_function_CALL_INSTANCE));
+  CMOCK_set_function_CALL_INSTANCE* cmock_call_instance = (CMOCK_set_function_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
   UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringOutOfMemory);
   memset(cmock_call_instance, 0, sizeof(*cmock_call_instance));
-  Mock.set_functionality_CallInstance = CMock_Guts_MemChain(Mock.set_functionality_CallInstance, cmock_guts_index);
-  Mock.set_functionality_IgnoreBool = (char)0;
+  Mock.set_function_CallInstance = CMock_Guts_MemChain(Mock.set_function_CallInstance, cmock_guts_index);
+  Mock.set_function_IgnoreBool = (char)0;
   cmock_call_instance->LineNumber = cmock_line;
   cmock_call_instance->ExpectAnyArgsBool = (char)0;
-  CMockExpectParameters_set_functionality(cmock_call_instance, index, flag, functionality_id);
+  CMockExpectParameters_set_function(cmock_call_instance, index, flag, function_id);
   cmock_call_instance->ReturnVal = cmock_to_return;
 }
 
-void set_functionality_AddCallback(CMOCK_set_functionality_CALLBACK Callback)
+void set_function_AddCallback(CMOCK_set_function_CALLBACK Callback)
 {
-  Mock.set_functionality_IgnoreBool = (char)0;
-  Mock.set_functionality_CallbackBool = (char)1;
-  Mock.set_functionality_CallbackFunctionPointer = Callback;
+  Mock.set_function_IgnoreBool = (char)0;
+  Mock.set_function_CallbackBool = (char)1;
+  Mock.set_function_CallbackFunctionPointer = Callback;
 }
 
-void set_functionality_Stub(CMOCK_set_functionality_CALLBACK Callback)
+void set_function_Stub(CMOCK_set_function_CALLBACK Callback)
 {
-  Mock.set_functionality_IgnoreBool = (char)0;
-  Mock.set_functionality_CallbackBool = (char)0;
-  Mock.set_functionality_CallbackFunctionPointer = Callback;
+  Mock.set_function_IgnoreBool = (char)0;
+  Mock.set_function_CallbackBool = (char)0;
+  Mock.set_function_CallbackFunctionPointer = Callback;
 }
 
-void set_functionality_CMockIgnoreArg_index(UNITY_LINE_TYPE cmock_line)
+void set_function_CMockIgnoreArg_index(UNITY_LINE_TYPE cmock_line)
 {
-  CMOCK_set_functionality_CALL_INSTANCE* cmock_call_instance = (CMOCK_set_functionality_CALL_INSTANCE*)CMock_Guts_GetAddressFor(CMock_Guts_MemEndOfChain(Mock.set_functionality_CallInstance));
+  CMOCK_set_function_CALL_INSTANCE* cmock_call_instance = (CMOCK_set_function_CALL_INSTANCE*)CMock_Guts_GetAddressFor(CMock_Guts_MemEndOfChain(Mock.set_function_CallInstance));
   UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringIgnPreExp);
   cmock_call_instance->IgnoreArg_index = 1;
 }
 
-void set_functionality_CMockIgnoreArg_flag(UNITY_LINE_TYPE cmock_line)
+void set_function_CMockIgnoreArg_flag(UNITY_LINE_TYPE cmock_line)
 {
-  CMOCK_set_functionality_CALL_INSTANCE* cmock_call_instance = (CMOCK_set_functionality_CALL_INSTANCE*)CMock_Guts_GetAddressFor(CMock_Guts_MemEndOfChain(Mock.set_functionality_CallInstance));
+  CMOCK_set_function_CALL_INSTANCE* cmock_call_instance = (CMOCK_set_function_CALL_INSTANCE*)CMock_Guts_GetAddressFor(CMock_Guts_MemEndOfChain(Mock.set_function_CallInstance));
   UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringIgnPreExp);
   cmock_call_instance->IgnoreArg_flag = 1;
 }
 
-void set_functionality_CMockIgnoreArg_functionality_id(UNITY_LINE_TYPE cmock_line)
+void set_function_CMockIgnoreArg_function_id(UNITY_LINE_TYPE cmock_line)
 {
-  CMOCK_set_functionality_CALL_INSTANCE* cmock_call_instance = (CMOCK_set_functionality_CALL_INSTANCE*)CMock_Guts_GetAddressFor(CMock_Guts_MemEndOfChain(Mock.set_functionality_CallInstance));
+  CMOCK_set_function_CALL_INSTANCE* cmock_call_instance = (CMOCK_set_function_CALL_INSTANCE*)CMock_Guts_GetAddressFor(CMock_Guts_MemEndOfChain(Mock.set_function_CallInstance));
   UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringIgnPreExp);
-  cmock_call_instance->IgnoreArg_functionality_id = 1;
+  cmock_call_instance->IgnoreArg_function_id = 1;
 }
 
