@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2023, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2023-2024, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -37,11 +37,11 @@
 #define XR77128_PSU_VOUT_STEP_FINE_UV   XR77128_PSU_VOUT_PRESCALE_UV
 #define XR77128_PSU_MVOUT_SCALE_READ    15
 
-/* Ramping/Settling time when changing voltage in ms */
-#define XR77128_PSU_RAMP_DELAY_SET_MS 1
+/* Ramping/Settling time when changing voltage in us */
+#define XR77128_PSU_RAMP_DELAY_SET_US 1000
 
-/* Ramping/Settling time when enabling a channel in ms */
-#define XR77128_PSU_RAMP_DELAY_ENABLE_MS 2
+/* Ramping/Settling time when enabling a channel in us */
+#define XR77128_PSU_RAMP_DELAY_ENABLE_US 2000
 
 enum xr77128_event_idx {
     XR77128_EVENT_IDX_REQUEST,
@@ -598,7 +598,7 @@ static int request_set_voltage(
      */
     status = ctx->alarm_api->start(
         channel_ctx->config->alarm_hal_id,
-        XR77128_PSU_RAMP_DELAY_SET_MS,
+        XR77128_PSU_RAMP_DELAY_SET_US,
         MOD_TIMER_ALARM_TYPE_ONCE,
         alarm_callback,
         (uintptr_t)channel_ctx);
@@ -639,7 +639,7 @@ static int request_set_enabled(
     if (channel_ctx->is_channel_enabled) {
         status = ctx->alarm_api->start(
             channel_ctx->config->alarm_hal_id,
-            XR77128_PSU_RAMP_DELAY_ENABLE_MS,
+            XR77128_PSU_RAMP_DELAY_ENABLE_US,
             MOD_TIMER_ALARM_TYPE_ONCE,
             alarm_callback,
             (uintptr_t)channel_ctx);
