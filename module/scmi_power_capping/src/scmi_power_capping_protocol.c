@@ -252,7 +252,7 @@ static inline void scmi_power_capping_populate_domain_attributes(
 
 #ifdef BUILD_HAS_SCMI_POWER_CAPPING_FAST_CHANNELS_COMMANDS
     return_values->attributes |= SCMI_POWER_CAPPING_DOMAIN_FCH_SUPPORT(
-        pcapping_fast_channel_get_domain_supp(domain_idx));
+        pcapping_fast_channel_get_domain_support(service_id, domain_idx));
 #endif
 #ifdef BUILD_HAS_SCMI_NOTIFICATIONS
     return_values->attributes |=
@@ -332,7 +332,7 @@ static int scmi_power_capping_protocol_msg_attributes_handler(
 
 #ifdef BUILD_HAS_SCMI_POWER_CAPPING_FAST_CHANNELS_COMMANDS
     return_values.attributes =
-        pcapping_fast_channel_get_msg_supp(parameters->message_id) ?
+        pcapping_fast_channel_get_msg_support(parameters->message_id) ?
         SCMI_POWER_CAPPING_FCH_AVAIL :
         SCMI_POWER_CAPPING_FCH_NOT_AVAIL;
 #else

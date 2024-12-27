@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2023, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2023-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -45,17 +45,15 @@ int pcapping_fast_channel_bind(void);
 
 int pcapping_fast_channel_process_event(const struct fwk_event *event);
 
-void pcapping_fast_channel_ctx_init(struct mod_scmi_power_capping_context *ctx);
-
-void pcapping_fast_channel_set_domain_config(
-    uint32_t domain_idx,
-    const struct mod_scmi_power_capping_domain_config *config);
+int pcapping_fast_channel_ctx_init(
+    const struct scmi_pcapping_fch_config *fch_config_table,
+    size_t fch_count);
 
 void pcapping_fast_channel_start(void);
 
-bool pcapping_fast_channel_get_domain_supp(uint32_t domain_idx);
+bool pcapping_fast_channel_get_domain_support(uint32_t domain_idx);
 
-bool pcapping_fast_channel_get_msg_supp(uint32_t domain_idx);
+bool pcapping_fast_channel_get_msg_support(uint32_t domain_idx);
 
 void pcapping_fast_channel_set_power_apis(
     const struct mod_scmi_power_capping_power_apis *power_management_apis);

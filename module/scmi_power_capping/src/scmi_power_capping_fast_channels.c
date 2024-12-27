@@ -11,6 +11,7 @@
 #include "internal/scmi_power_capping.h"
 #include "internal/scmi_power_capping_core.h"
 #include "internal/scmi_power_capping_fast_channels.h"
+#include "mod_scmi_std.h"
 
 #ifdef BUILD_HAS_SCMI_POWER_CAPPING_STD_COMMANDS
 #    include <mod_scmi.h>
@@ -27,6 +28,17 @@
 #    include <fwk_module.h>
 #endif
 
+/*!
+ * \brief Fast channels address index.
+ */
+enum mod_scmi_power_capping_fast_channels_cmd_handler_index {
+    MOD_SCMI_PCAPPING_FAST_CHANNEL_HANDLER_IDX_CAP_GET,
+    MOD_SCMI_PCAPPING_FAST_CHANNEL_HANDLER_IDX_CAP_SET,
+    MOD_SCMI_PCAPPING_FAST_CHANNEL_HANDLER_IDX_PAI_GET,
+    MOD_SCMI_PCAPPING_FAST_CHANNEL_HANDLER_IDX_PAI_SET,
+    MOD_SCMI_PCAPPING_FAST_CHANNEL_HANDLER_IDX_COUNT
+};
+
 struct pcapping_fast_channel_ctx {
     const struct scmi_pcapping_fch_config *fch_config;
     /* The fast channel address */
@@ -38,9 +50,6 @@ struct pcapping_fast_channel_ctx {
 };
 
 struct {
-    /* Table of power capping domain contexts */
-    struct mod_scmi_power_capping_domain_context
-        *power_capping_domain_ctx_table;
     struct pcapping_fast_channel_ctx *fch_ctx_table;
     uint32_t fch_count;
     bool callback_registered;
@@ -71,106 +80,99 @@ static void pcapping_fast_channel_callback(uintptr_t param)
 }
 
 static void pcapping_fast_channel_get_cap(
-    uint32_t domain_idx,
-    uint32_t *fch_addr)
+    struct pcapping_fast_channel_ctx *fch_ctx)
 {
     int status;
 
-    status = pcapping_core_get_cap(domain_idx, fch_addr);
+    status = pcapping_core_get_cap(
+        fch_ctx->fch_config->scmi_power_capping_domain_idx,
+        (uint32_t *)fch_ctx->fch_address.local_view_address);
     if (status != FWK_SUCCESS) {
         FWK_LOG_ERR("[SCMI-Power-Capping-Fast-Channel] Error getting cap.");
     }
 }
 
 static void pcapping_fast_channel_set_cap(
-    uint32_t domain_idx,
-    uint32_t *fch_addr)
+    struct pcapping_fast_channel_ctx *fch_ctx)
 {
     int status;
 
-    status = pcapping_core_set_cap(FWK_ID_NONE, domain_idx, true, *fch_addr);
+    status = pcapping_core_set_cap(
+        fch_ctx->fch_config->service_id,
+        fch_ctx->fch_config->scmi_power_capping_domain_idx,
+        true,
+        *(uint32_t *)fch_ctx->fch_address.local_view_address);
     if ((status != FWK_SUCCESS) && (status != FWK_PENDING)) {
         FWK_LOG_ERR("[SCMI-Power-Capping-Fast-Channel] Error setting cap.");
     }
 }
 
 static void pcapping_fast_channel_get_pai(
-    uint32_t domain_idx,
-    uint32_t *fch_addr)
+    struct pcapping_fast_channel_ctx *fch_ctx)
 {
     int status;
 
-    status = pcapping_core_get_pai(domain_idx, fch_addr);
+    status = pcapping_core_get_pai(
+        fch_ctx->fch_config->scmi_power_capping_domain_idx,
+        (uint32_t *)fch_ctx->fch_address.local_view_address);
     if (status != FWK_SUCCESS) {
         FWK_LOG_ERR("[SCMI-Power-Capping-Fast-Channel] Error getting PAI.");
     }
 }
 
 static void pcapping_fast_channel_set_pai(
-    uint32_t domain_idx,
-    uint32_t *fch_addr)
+    struct pcapping_fast_channel_ctx *fch_ctx)
 {
     int status;
 
-    status = pcapping_core_set_pai(FWK_ID_NONE, domain_idx, *fch_addr);
+    status = pcapping_core_set_pai(
+        fch_ctx->fch_config->service_id,
+        fch_ctx->fch_config->scmi_power_capping_domain_idx,
+        *(uint32_t *)fch_ctx->fch_address.local_view_address);
     if (status != FWK_SUCCESS) {
         FWK_LOG_ERR("[SCMI-Power-Capping-Fast-Channel] Error setting PAI.");
     }
 }
 
-static void (
-    *pcapping_fast_channel_handler[MOD_SCMI_PCAPPING_FAST_CHANNEL_COUNT])(
-    uint32_t domain_idx,
-    uint32_t *fch_addr) = {
-    [MOD_SCMI_PCAPPING_FAST_CHANNEL_CAP_GET] = pcapping_fast_channel_get_cap,
-    [MOD_SCMI_PCAPPING_FAST_CHANNEL_CAP_SET] = pcapping_fast_channel_set_cap,
-    [MOD_SCMI_PCAPPING_FAST_CHANNEL_PAI_GET] = pcapping_fast_channel_get_pai,
-    [MOD_SCMI_PCAPPING_FAST_CHANNEL_PAI_SET] = pcapping_fast_channel_set_pai,
+static void (*pcapping_fast_channel_handler
+                 [MOD_SCMI_PCAPPING_FAST_CHANNEL_HANDLER_IDX_COUNT])(
+    struct pcapping_fast_channel_ctx *fch_ctx) = {
+    [MOD_SCMI_PCAPPING_FAST_CHANNEL_HANDLER_IDX_CAP_GET] =
+        pcapping_fast_channel_get_cap,
+    [MOD_SCMI_PCAPPING_FAST_CHANNEL_HANDLER_IDX_CAP_SET] =
+        pcapping_fast_channel_set_cap,
+    [MOD_SCMI_PCAPPING_FAST_CHANNEL_HANDLER_IDX_PAI_GET] =
+        pcapping_fast_channel_get_pai,
+    [MOD_SCMI_PCAPPING_FAST_CHANNEL_HANDLER_IDX_PAI_SET] =
+        pcapping_fast_channel_set_pai,
 };
 
 #ifdef BUILD_HAS_SCMI_POWER_CAPPING_STD_COMMANDS
+static bool is_fch_match(
+    struct pcapping_fast_channel_ctx *fch_ctx,
+    uint32_t domain_idx,
+    uint32_t message_id)
+{
+    return fch_ctx->fch_config->scmi_power_capping_domain_idx == domain_idx &&
+        fch_ctx->fch_config->message_id == message_id;
+}
+
 static struct pcapping_fast_channel_ctx *get_channel_ctx(
     uint32_t domain_idx,
     uint32_t message_id)
 {
-    int status = FWK_SUCCESS;
+    for (size_t channel_index = 0u;
+         channel_index < pcapping_fast_channel_global_ctx.fch_count;
+         channel_index++) {
+        struct pcapping_fast_channel_ctx *fch_ctx =
+            &pcapping_fast_channel_global_ctx.fch_ctx_table[channel_index];
 
-    uint32_t channel_index;
-
-    enum scmi_power_capping_command_id message_enu;
-
-    message_enu = (enum scmi_power_capping_command_id)message_id;
-
-    switch (message_enu) {
-    case MOD_SCMI_POWER_CAPPING_CAP_GET:
-        channel_index = (uint32_t)MOD_SCMI_PCAPPING_FAST_CHANNEL_CAP_GET;
-        break;
-    case MOD_SCMI_POWER_CAPPING_CAP_SET:
-        channel_index = (uint32_t)MOD_SCMI_PCAPPING_FAST_CHANNEL_CAP_SET;
-        break;
-    case MOD_SCMI_POWER_CAPPING_PAI_GET:
-        channel_index = (uint32_t)MOD_SCMI_PCAPPING_FAST_CHANNEL_PAI_GET;
-        break;
-    case MOD_SCMI_POWER_CAPPING_PAI_SET:
-        channel_index = (uint32_t)MOD_SCMI_PCAPPING_FAST_CHANNEL_PAI_SET;
-        break;
-    default:
-        status = FWK_E_RANGE;
-        break;
+        if (is_fch_match(fch_ctx, domain_idx, message_id)) {
+            return fch_ctx;
+        }
     }
 
-    if (status != FWK_SUCCESS) {
-        return NULL;
-    }
-
-    channel_index +=
-        (domain_idx * (uint32_t)MOD_SCMI_PCAPPING_FAST_CHANNEL_COUNT);
-
-    if (channel_index >= pcapping_fast_channel_global_ctx.fch_count) {
-        return NULL;
-    }
-
-    return &(pcapping_fast_channel_global_ctx.fch_ctx_table[channel_index]);
+    return NULL;
 }
 
 int pcapping_fast_channel_get_info(
@@ -186,10 +188,6 @@ int pcapping_fast_channel_get_info(
         return FWK_E_RANGE;
     }
 
-    if (!fch_ctx->fch_config->fch_support) {
-        return FWK_E_SUPPORT;
-    }
-
     info->fch_address = fch_ctx->fch_address.target_view_address;
     info->fch_channel_size = fch_ctx->fch_address.length;
     info->fch_attributes = fch_ctx->fch_attributes;
@@ -198,50 +196,35 @@ int pcapping_fast_channel_get_info(
     return FWK_SUCCESS;
 }
 
-bool pcapping_fast_channel_get_msg_supp(uint32_t message_id)
+bool pcapping_fast_channel_get_msg_support(uint32_t message_id)
 {
-    uint32_t domain_idx = 0;
-    uint32_t domain_count;
-    struct pcapping_fast_channel_ctx *fch_ctx;
-
     bool fast_channel_support = false;
+    uint32_t channel_index = 0u;
 
-    domain_count = pcapping_fast_channel_global_ctx.fch_count /
-        (uint32_t)MOD_SCMI_PCAPPING_FAST_CHANNEL_COUNT;
+    while ((channel_index < pcapping_fast_channel_global_ctx.fch_count) &&
+           (!fast_channel_support)) {
+        struct pcapping_fast_channel_ctx *fch_ctx =
+            &pcapping_fast_channel_global_ctx.fch_ctx_table[channel_index];
 
-    fch_ctx = get_channel_ctx(domain_idx++, message_id);
-
-    if (fch_ctx == NULL) {
-        return false;
-    }
-
-    fast_channel_support = fch_ctx->fch_config->fch_support;
-
-    while ((domain_idx < domain_count) && (!fast_channel_support)) {
-        fch_ctx = get_channel_ctx(domain_idx, message_id);
-        fast_channel_support = fch_ctx->fch_config->fch_support;
-        domain_idx++;
+        fast_channel_support = fch_ctx->fch_config->message_id == message_id;
+        channel_index++;
     }
 
     return fast_channel_support;
 }
 
-bool pcapping_fast_channel_get_domain_supp(uint32_t domain_idx)
+bool pcapping_fast_channel_get_domain_support(uint32_t domain_idx)
 {
     bool fast_channel_support = false;
+    uint32_t channel_index = 0u;
 
-    uint32_t channel_index;
-    uint32_t channel_index_max;
+    while ((channel_index < pcapping_fast_channel_global_ctx.fch_count) &&
+           (!fast_channel_support)) {
+        struct pcapping_fast_channel_ctx *fch_ctx =
+            &pcapping_fast_channel_global_ctx.fch_ctx_table[channel_index];
 
-    channel_index =
-        (domain_idx * (uint32_t)MOD_SCMI_PCAPPING_FAST_CHANNEL_COUNT);
-
-    channel_index_max = channel_index + MOD_SCMI_PCAPPING_FAST_CHANNEL_COUNT;
-
-    while ((channel_index < channel_index_max) && (!fast_channel_support)) {
         fast_channel_support =
-            pcapping_fast_channel_global_ctx.fch_ctx_table[channel_index]
-                .fch_config->fch_support;
+            fch_ctx->fch_config->scmi_power_capping_domain_idx == domain_idx;
         channel_index++;
     }
 
@@ -251,18 +234,22 @@ bool pcapping_fast_channel_get_domain_supp(uint32_t domain_idx)
 
 static void pcapping_fast_channel_process_command(uint32_t fch_idx)
 {
-    uint32_t domain_idx;
-    enum mod_scmi_power_capping_fast_channels_cmd_handler_index
-        cmd_handler_index;
     struct pcapping_fast_channel_ctx *fch_ctx;
+    uint32_t handler_index;
 
-    domain_idx = fch_idx / (uint32_t)MOD_SCMI_PCAPPING_FAST_CHANNEL_COUNT;
-    cmd_handler_index =
-        fch_idx - (domain_idx * (uint32_t)MOD_SCMI_PCAPPING_FAST_CHANNEL_COUNT);
-    fch_ctx = &(pcapping_fast_channel_global_ctx.fch_ctx_table[fch_idx]);
-    if (fch_ctx->fch_config->fch_support == true) {
-        pcapping_fast_channel_handler[cmd_handler_index](
-            domain_idx, (uint32_t *)fch_ctx->fch_address.local_view_address);
+    if (fch_idx < pcapping_fast_channel_global_ctx.fch_count) {
+        fch_ctx = &(pcapping_fast_channel_global_ctx.fch_ctx_table[fch_idx]);
+
+        handler_index =
+            fch_ctx->fch_config->message_id - MOD_SCMI_POWER_CAPPING_CAP_GET;
+
+        pcapping_fast_channel_handler[handler_index](fch_ctx);
+
+    } else {
+        FWK_LOG_ERR(
+            "[SCMI-Power-Capping-Fast-Channel] Error processing out of index "
+            "fast channel ID "
+            "event.");
     }
 }
 
@@ -310,34 +297,28 @@ int pcapping_fast_channel_process_event(const struct fwk_event *event)
     return FWK_SUCCESS;
 }
 
-void pcapping_fast_channel_ctx_init(struct mod_scmi_power_capping_context *ctx)
+int pcapping_fast_channel_ctx_init(
+    const struct scmi_pcapping_fch_config *fch_config_table,
+    size_t fch_count)
 {
-    pcapping_fast_channel_global_ctx.fch_count =
-        ctx->domain_count * MOD_SCMI_PCAPPING_FAST_CHANNEL_COUNT;
-
-    pcapping_fast_channel_global_ctx.power_capping_domain_ctx_table =
-        ctx->power_capping_domain_ctx_table;
+    pcapping_fast_channel_global_ctx.fch_count = fch_count;
 
     pcapping_fast_channel_global_ctx.fch_ctx_table = fwk_mm_calloc(
         pcapping_fast_channel_global_ctx.fch_count,
         sizeof(struct pcapping_fast_channel_ctx));
-}
 
-void pcapping_fast_channel_set_domain_config(
-    uint32_t domain_idx,
-    const struct mod_scmi_power_capping_domain_config *config)
-{
-    uint32_t fch_index;
-    uint32_t cmd_handler_index;
+    for (uint32_t fch_idx = 0u; fch_idx < fch_count; fch_idx++) {
+        const struct scmi_pcapping_fch_config *fch_config =
+            &fch_config_table[fch_idx];
 
-    fch_index = domain_idx * MOD_SCMI_PCAPPING_FAST_CHANNEL_COUNT;
-    for (cmd_handler_index = 0;
-         cmd_handler_index < MOD_SCMI_PCAPPING_FAST_CHANNEL_COUNT;
-         cmd_handler_index++) {
-        pcapping_fast_channel_global_ctx
-            .fch_ctx_table[fch_index + cmd_handler_index]
-            .fch_config = &(config->fch_config[cmd_handler_index]);
+        if ((fch_config->message_id > MOD_SCMI_POWER_CAPPING_PAI_SET) ||
+            (fch_config->message_id < MOD_SCMI_POWER_CAPPING_CAP_GET)) {
+            return FWK_E_RANGE;
+        }
+        pcapping_fast_channel_global_ctx.fch_ctx_table[fch_idx].fch_config =
+            fch_config;
     }
+    return FWK_SUCCESS;
 }
 
 int pcapping_fast_channel_bind(void)
@@ -349,14 +330,12 @@ int pcapping_fast_channel_bind(void)
     for (fch_idx = 0; fch_idx < pcapping_fast_channel_global_ctx.fch_count;
          fch_idx++) {
         fch_ctx = &(pcapping_fast_channel_global_ctx.fch_ctx_table[fch_idx]);
-        if (fch_ctx->fch_config->fch_support) {
-            status = fwk_module_bind(
-                fch_ctx->fch_config->transport_id,
-                fch_ctx->fch_config->transport_api_id,
-                &(fch_ctx->transport_fch_api));
-            if (status != FWK_SUCCESS) {
-                return FWK_E_PANIC;
-            }
+        status = fwk_module_bind(
+            fch_ctx->fch_config->transport_id,
+            fch_ctx->fch_config->transport_api_id,
+            &(fch_ctx->transport_fch_api));
+        if (status != FWK_SUCCESS) {
+            return FWK_E_PANIC;
         }
     }
 
@@ -373,20 +352,18 @@ void pcapping_fast_channel_start(void)
          fch_idx++) {
         fch_ctx = &(pcapping_fast_channel_global_ctx.fch_ctx_table[fch_idx]);
         fch_config = fch_ctx->fch_config;
-        if (fch_config->fch_support) {
-            fch_ctx->transport_fch_api->transport_get_fch_address(
-                fch_config->transport_id, &(fch_ctx->fch_address));
+        fch_ctx->transport_fch_api->transport_get_fch_address(
+            fch_config->transport_id, &(fch_ctx->fch_address));
 
-            fch_ctx->fch_attributes = 0x0u;
+        fch_ctx->fch_attributes = 0x0u;
 
-            fch_ctx->transport_fch_api->transport_get_fch_rate_limit(
-                fch_config->transport_id, &(fch_ctx->fch_rate_limit));
+        fch_ctx->transport_fch_api->transport_get_fch_rate_limit(
+            fch_config->transport_id, &(fch_ctx->fch_rate_limit));
 
-            fch_ctx->transport_fch_api->transport_get_fch_interrupt_type(
-                fch_config->transport_id,
-                &(pcapping_fast_channel_global_ctx.interrupt_type));
+        fch_ctx->transport_fch_api->transport_get_fch_interrupt_type(
+            fch_config->transport_id,
+            &(pcapping_fast_channel_global_ctx.interrupt_type));
 
-            pcapping_fast_channel_setup_interrupt(fch_idx, fch_config, fch_ctx);
-        }
+        pcapping_fast_channel_setup_interrupt(fch_idx, fch_config, fch_ctx);
     }
 }

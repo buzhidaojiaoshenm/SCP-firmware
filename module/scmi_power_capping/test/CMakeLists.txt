@@ -208,7 +208,7 @@ list(APPEND MOCK_REPLACEMENTS fwk_core)
 list(APPEND MOCK_REPLACEMENTS fwk_mm)
 
 if(NOT TEST_ON_TARGET)
-    set(UNIT_TEST_TARGET ${TEST_MODULE}_fast_channels_unit_test)
+    set(UNIT_TEST_TARGET mod_${TEST_MODULE}_fast_channels_unit_test)
 endif()
 
 include(${SCP_ROOT}/unit_test/module_common.cmake)
@@ -242,7 +242,7 @@ list(APPEND MOCK_REPLACEMENTS fwk_core)
 list(APPEND MOCK_REPLACEMENTS fwk_mm)
 
 if(NOT TEST_ON_TARGET)
-    set(UNIT_TEST_TARGET ${TEST_MODULE}_fast_channels_only_unit_test)
+    set(UNIT_TEST_TARGET mod_${TEST_MODULE}_fast_channels_only_unit_test)
 endif()
 
 include(${SCP_ROOT}/unit_test/module_common.cmake)

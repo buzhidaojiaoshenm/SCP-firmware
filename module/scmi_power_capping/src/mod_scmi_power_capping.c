@@ -54,10 +54,11 @@ static int scmi_power_capping_init(
     struct scmi_power_capping_config *config =
         (struct scmi_power_capping_config)data;
 
-    pcapping_fast_channel_ctx_init(config->fch_config_table, config->fch_count);
-#endif
-
+    return pcapping_fast_channel_ctx_init(
+        config->fch_config_table, config->fch_count);
+#else
     return FWK_SUCCESS;
+#endif
 }
 
 static int scmi_power_capping_element_init(
@@ -67,9 +68,6 @@ static int scmi_power_capping_element_init(
 {
     const struct mod_scmi_power_capping_domain_config *config;
     unsigned int domain_idx;
-#ifdef BUILD_HAS_SCMI_POWER_CAPPING_STD_COMMANDS
-    int status;
-#endif
 
     if (data == NULL) {
         return FWK_E_PARAM;
@@ -78,15 +76,7 @@ static int scmi_power_capping_element_init(
     config = (const struct mod_scmi_power_capping_domain_config *)data;
     domain_idx = fwk_id_get_element_idx(element_id);
 
-    status = pcapping_core_domain_init(domain_idx, config);
-    if (status != FWK_SUCCESS) {
-        return status;
-    }
-
-#ifdef BUILD_HAS_SCMI_POWER_CAPPING_FAST_CHANNELS_COMMANDS
-    pcapping_fast_channel_set_domain_config(domain_idx, config);
-#endif
-    return FWK_SUCCESS;
+    return pcapping_core_domain_init(domain_idx, config);
 }
 
 static int scmi_power_capping_bind(fwk_id_t id, unsigned int round)

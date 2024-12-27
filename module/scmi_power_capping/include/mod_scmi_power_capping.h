@@ -15,6 +15,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 /*!
  * \addtogroup GroupModules Modules
@@ -25,17 +26,6 @@
  * \defgroup GroupSCMI_POWER_CAPPING SCMI power capping protocol
  * \{
  */
-
-/*!
- * \brief Fast channels address index.
- */
-enum mod_scmi_power_capping_fast_channels_cmd_handler_index {
-    MOD_SCMI_PCAPPING_FAST_CHANNEL_CAP_GET,
-    MOD_SCMI_PCAPPING_FAST_CHANNEL_CAP_SET,
-    MOD_SCMI_PCAPPING_FAST_CHANNEL_PAI_GET,
-    MOD_SCMI_PCAPPING_FAST_CHANNEL_PAI_SET,
-    MOD_SCMI_PCAPPING_FAST_CHANNEL_COUNT
-};
 
 /*!
  * \brief SCMI Power capping domain unit.
@@ -54,15 +44,42 @@ struct scmi_pcapping_fch_config {
      * \brief Corresponding transport element ID.
      */
     fwk_id_t transport_id;
+
     /*!
      * \brief Corresponding transport API ID.
      */
     fwk_id_t transport_api_id;
+
     /*!
-     * \brief Fast channel support for the required domain.
+     * \brief Service ID that access the fast channel.
      */
-    bool fch_support;
+    fwk_id_t service_id;
+
+    /*!
+     * \brief SCMI power capping domain index that is acted on by the fast
+     *     channel.
+     */
+    unsigned int scmi_power_capping_domain_idx;
+
+    /*!
+     * \brief Associated message ID.
+     */
+    uint32_t message_id;
 };
+
+#ifdef BUILD_HAS_SCMI_POWER_CAPPING_FAST_CHANNELS_COMMANDS
+struct scmi_power_capping_config {
+    /*!
+     * \brief Fast channels configuration.
+     *
+     * \details Assign the table of configurations for the fast channels using
+     *      this domain.
+     */
+    const struct scmi_pcapping_fch_config *fch_config_table;
+
+    size_t fch_count;
+};
+#endif
 
 /*!
  * \brief SCMI Power capping domain configuration.
@@ -136,17 +153,8 @@ struct mod_scmi_power_capping_domain_config {
     bool power_measurements_change_notification_support;
 #    endif
 #endif
-#ifdef BUILD_HAS_SCMI_POWER_CAPPING_FAST_CHANNELS_COMMANDS
     /*!
-     * \brief Fast channels configuration.
-     *
-     * \details Assign the table of configurations for the fast channels using
-     *      this domain.
-     */
-    const struct scmi_pcapping_fch_config *fch_config;
-#endif
-    /*!
-     * \brief ID of the corresponding power capping domain.
+     * \brief Power Capping HAL domain ID.
      */
     fwk_id_t power_capping_domain_id;
 };
