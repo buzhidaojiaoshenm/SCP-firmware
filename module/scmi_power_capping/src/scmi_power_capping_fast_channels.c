@@ -9,6 +9,7 @@
  */
 
 #include "internal/scmi_power_capping.h"
+#include "internal/scmi_power_capping_core.h"
 #include "internal/scmi_power_capping_fast_channels.h"
 
 #ifdef BUILD_HAS_SCMI_POWER_CAPPING_STD_COMMANDS
@@ -40,19 +41,11 @@ struct {
     /* Table of power capping domain contexts */
     struct mod_scmi_power_capping_domain_context
         *power_capping_domain_ctx_table;
-    const struct mod_scmi_power_capping_power_apis *power_management_apis;
     struct pcapping_fast_channel_ctx *fch_ctx_table;
     uint32_t fch_count;
     bool callback_registered;
     enum mod_transport_fch_interrupt_type interrupt_type;
 } pcapping_fast_channel_global_ctx = { .callback_registered = false };
-
-static fwk_id_t pcapping_fast_channel_get_power_capping_id(uint32_t domain_idx)
-{
-    return pcapping_fast_channel_global_ctx
-        .power_capping_domain_ctx_table[domain_idx]
-        .config->power_capping_domain_id;
-}
 
 static void pcapping_fast_channel_callback(uintptr_t param)
 {
@@ -83,10 +76,7 @@ static void pcapping_fast_channel_get_cap(
 {
     int status;
 
-    status = pcapping_fast_channel_global_ctx.power_management_apis
-                 ->power_capping_api->get_applied_cap(
-                     pcapping_fast_channel_get_power_capping_id(domain_idx),
-                     fch_addr);
+    status = pcapping_core_get_cap(domain_idx, fch_addr);
     if (status != FWK_SUCCESS) {
         FWK_LOG_ERR("[SCMI-Power-Capping-Fast-Channel] Error getting cap.");
     }
@@ -98,10 +88,7 @@ static void pcapping_fast_channel_set_cap(
 {
     int status;
 
-    status = pcapping_fast_channel_global_ctx.power_management_apis
-                 ->power_capping_api->request_cap(
-                     pcapping_fast_channel_get_power_capping_id(domain_idx),
-                     *fch_addr);
+    status = pcapping_core_set_cap(FWK_ID_NONE, domain_idx, true, *fch_addr);
     if ((status != FWK_SUCCESS) && (status != FWK_PENDING)) {
         FWK_LOG_ERR("[SCMI-Power-Capping-Fast-Channel] Error setting cap.");
     }
@@ -113,10 +100,7 @@ static void pcapping_fast_channel_get_pai(
 {
     int status;
 
-    status = pcapping_fast_channel_global_ctx.power_management_apis
-                 ->power_capping_api->get_averaging_interval(
-                     pcapping_fast_channel_get_power_capping_id(domain_idx),
-                     fch_addr);
+    status = pcapping_core_get_pai(domain_idx, fch_addr);
     if (status != FWK_SUCCESS) {
         FWK_LOG_ERR("[SCMI-Power-Capping-Fast-Channel] Error getting PAI.");
     }
@@ -128,10 +112,7 @@ static void pcapping_fast_channel_set_pai(
 {
     int status;
 
-    status = pcapping_fast_channel_global_ctx.power_management_apis
-                 ->power_capping_api->set_averaging_interval(
-                     pcapping_fast_channel_get_power_capping_id(domain_idx),
-                     *fch_addr);
+    status = pcapping_core_set_pai(FWK_ID_NONE, domain_idx, *fch_addr);
     if (status != FWK_SUCCESS) {
         FWK_LOG_ERR("[SCMI-Power-Capping-Fast-Channel] Error setting PAI.");
     }
@@ -380,13 +361,6 @@ int pcapping_fast_channel_bind(void)
     }
 
     return FWK_SUCCESS;
-}
-
-void pcapping_fast_channel_set_power_apis(
-    const struct mod_scmi_power_capping_power_apis *power_management_apis)
-{
-    pcapping_fast_channel_global_ctx.power_management_apis =
-        power_management_apis;
 }
 
 void pcapping_fast_channel_start(void)

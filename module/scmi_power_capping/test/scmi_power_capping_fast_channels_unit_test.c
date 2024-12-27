@@ -12,6 +12,7 @@
 #include <Mockfwk_module.h>
 #include <Mockmod_power_capping_extra.h>
 #include <Mockmod_transport_extra.h>
+#include <Mockscmi_power_capping_core.h>
 #include <internal/Mockfwk_core_internal.h>
 
 #include <mod_scmi_power_capping_unit_test.h>
@@ -81,20 +82,6 @@ static const struct mod_transport_fast_channels_api transport_fch_api = {
     .transport_fch_register_callback = transport_fch_register_callback,
 };
 
-static const struct mod_power_capping_api power_capping_api = {
-    .get_applied_cap = get_applied_cap,
-    .request_cap = request_cap,
-    .get_average_power = get_average_power,
-    .get_averaging_interval = get_averaging_interval,
-    .get_averaging_interval_range = get_averaging_interval_range,
-    .get_averaging_interval_step = get_averaging_interval_step,
-    .set_averaging_interval = set_averaging_interval,
-};
-
-static const struct mod_scmi_power_capping_power_apis power_management_apis = {
-    .power_capping_api = &power_capping_api,
-};
-
 static uint32_t local_fast_channel_memory_emulation;
 static uint32_t target_fast_channel_memory_emulation;
 
@@ -111,9 +98,6 @@ void setUp(void)
     pcapping_fast_channel_global_ctx.fch_count =
         FAKE_POWER_CAPPING_IDX_COUNT * MOD_SCMI_PCAPPING_FAST_CHANNEL_COUNT;
     pcapping_fast_channel_global_ctx.fch_ctx_table = fch_ctx_table;
-
-    pcapping_fast_channel_global_ctx.power_management_apis =
-        &power_management_apis;
 
     pcapping_fast_channel_global_ctx.power_capping_domain_ctx_table =
         power_capping_ctx_table;
@@ -163,13 +147,10 @@ void utest_pcapping_fast_channel_process_command_cap_get(void)
         (FAKE_POWER_CAPPING_IDX_1 * MOD_SCMI_PCAPPING_FAST_CHANNEL_COUNT) +
         MOD_SCMI_PCAPPING_FAST_CHANNEL_CAP_GET;
 
-    get_applied_cap_ExpectWithArrayAndReturn(
-        scmi_power_capping_default_config.power_capping_domain_id,
-        &cap,
-        sizeof(cap),
-        FWK_SUCCESS);
-    get_applied_cap_IgnoreArg_cap();
-    get_applied_cap_ReturnMemThruPtr_cap(&cap, sizeof(cap));
+    pcapping_core_get_cap_ExpectWithArrayAndReturn(
+        FAKE_POWER_CAPPING_IDX_1, &cap, sizeof(cap), FWK_SUCCESS);
+    pcapping_core_get_cap_IgnoreArg_cap();
+    pcapping_core_get_cap_ReturnMemThruPtr_cap(&cap, sizeof(cap));
 
     pcapping_fast_channel_process_command(fch_idx);
     TEST_ASSERT_EQUAL(local_fast_channel_memory_emulation, cap);
@@ -185,8 +166,10 @@ void utest_pcapping_fast_channel_process_command_cap_set(void)
 
     local_fast_channel_memory_emulation = __LINE__;
 
-    request_cap_ExpectAndReturn(
-        scmi_power_capping_default_config.power_capping_domain_id,
+    pcapping_core_set_cap_ExpectAndReturn(
+        FWK_ID_NONE,
+        FAKE_POWER_CAPPING_IDX_1,
+        true,
         local_fast_channel_memory_emulation,
         FWK_SUCCESS);
     pcapping_fast_channel_process_command(fch_idx);
@@ -201,12 +184,10 @@ void utest_pcapping_fast_channel_process_command_pai_get(void)
         (FAKE_POWER_CAPPING_IDX_1 * MOD_SCMI_PCAPPING_FAST_CHANNEL_COUNT) +
         MOD_SCMI_PCAPPING_FAST_CHANNEL_PAI_GET;
 
-    get_averaging_interval_ExpectAndReturn(
-        scmi_power_capping_default_config.power_capping_domain_id,
-        NULL,
-        FWK_SUCCESS);
-    get_averaging_interval_IgnoreArg_pai();
-    get_averaging_interval_ReturnThruPtr_pai(&pai);
+    pcapping_core_get_pai_ExpectWithArrayAndReturn(
+        FAKE_POWER_CAPPING_IDX_1, &pai, sizeof(pai), FWK_SUCCESS);
+    pcapping_core_get_pai_IgnoreArg_pai();
+    pcapping_core_get_pai_ReturnMemThruPtr_pai(&pai, sizeof(pai));
 
     pcapping_fast_channel_process_command(fch_idx);
     TEST_ASSERT_EQUAL(local_fast_channel_memory_emulation, pai);
@@ -222,8 +203,9 @@ void utest_pcapping_fast_channel_process_command_pai_set(void)
 
     local_fast_channel_memory_emulation = __LINE__;
 
-    set_averaging_interval_ExpectAndReturn(
-        scmi_power_capping_default_config.power_capping_domain_id,
+    pcapping_core_set_pai_ExpectAndReturn(
+        FWK_ID_NONE,
+        FAKE_POWER_CAPPING_IDX_1,
         local_fast_channel_memory_emulation,
         FWK_SUCCESS);
 
@@ -240,12 +222,9 @@ void utest_pcapping_fast_channel_process_event_hw_interrupt(void)
     pcapping_fast_channel_global_ctx.interrupt_type =
         MOD_TRANSPORT_FCH_INTERRUPT_TYPE_HW;
 
-    get_applied_cap_ExpectWithArrayAndReturn(
-        scmi_power_capping_default_config.power_capping_domain_id,
-        NULL,
-        0,
-        FWK_SUCCESS);
-    get_applied_cap_IgnoreArg_cap();
+    pcapping_core_get_cap_ExpectWithArrayAndReturn(
+        FAKE_POWER_CAPPING_IDX_1, NULL, 0, FWK_SUCCESS);
+    pcapping_core_get_cap_IgnoreArg_cap();
 
     status = pcapping_fast_channel_process_event(&event);
 
@@ -269,29 +248,27 @@ void utest_pcapping_fast_channel_process_event_timer_interrupt(void)
             fch_idx - (domain_idx * MOD_SCMI_PCAPPING_FAST_CHANNEL_COUNT);
         switch (cmd_handler_index) {
         case MOD_SCMI_PCAPPING_FAST_CHANNEL_CAP_GET:
-            get_applied_cap_ExpectWithArrayAndReturn(
-                scmi_power_capping_default_config.power_capping_domain_id,
-                NULL,
-                0,
-                FWK_SUCCESS);
-            get_applied_cap_IgnoreArg_cap();
+            pcapping_core_get_cap_ExpectWithArrayAndReturn(
+                domain_idx, NULL, 0, FWK_SUCCESS);
+            pcapping_core_get_cap_IgnoreArg_cap();
             break;
         case MOD_SCMI_PCAPPING_FAST_CHANNEL_CAP_SET:
-            request_cap_ExpectAndReturn(
-                scmi_power_capping_default_config.power_capping_domain_id,
+            pcapping_core_set_cap_ExpectAndReturn(
+                FWK_ID_NONE,
+                domain_idx,
+                true,
                 local_fast_channel_memory_emulation,
                 FWK_SUCCESS);
             break;
         case MOD_SCMI_PCAPPING_FAST_CHANNEL_PAI_GET:
-            get_averaging_interval_ExpectAndReturn(
-                scmi_power_capping_default_config.power_capping_domain_id,
-                NULL,
-                FWK_SUCCESS);
-            get_averaging_interval_IgnoreArg_pai();
+            pcapping_core_get_pai_ExpectWithArrayAndReturn(
+                domain_idx, NULL, 0, FWK_SUCCESS);
+            pcapping_core_get_pai_IgnoreArg_pai();
             break;
         case MOD_SCMI_PCAPPING_FAST_CHANNEL_PAI_SET:
-            set_averaging_interval_ExpectAndReturn(
-                scmi_power_capping_default_config.power_capping_domain_id,
+            pcapping_core_set_pai_ExpectAndReturn(
+                FWK_ID_NONE,
+                domain_idx,
                 local_fast_channel_memory_emulation,
                 FWK_SUCCESS);
             break;
@@ -373,16 +350,6 @@ void utest_pcapping_fast_channel_bind(void)
     TEST_ASSERT_EQUAL(status, FWK_SUCCESS);
 }
 
-void utest_pcapping_fast_channel_set_handler(void)
-{
-    const struct mod_scmi_power_capping_power_apis power_management_api = { 0 };
-
-    pcapping_fast_channel_set_power_apis(&power_management_api);
-    TEST_ASSERT_EQUAL(
-        pcapping_fast_channel_global_ctx.power_management_apis,
-        &power_management_api);
-}
-
 void utest_pcapping_fast_channel_start(void)
 {
     uint32_t fch_idx;
@@ -424,7 +391,6 @@ int scmi_test_main(void)
     RUN_TEST(utest_pcapping_fast_channel_ctx_init);
     RUN_TEST(utest_pcapping_fast_channel_set_domain_config);
     RUN_TEST(utest_pcapping_fast_channel_bind);
-    RUN_TEST(utest_pcapping_fast_channel_set_handler);
     RUN_TEST(utest_pcapping_fast_channel_start);
     return UNITY_END();
 }
