@@ -6,13 +6,11 @@
 #
 
 stages:
-  - linting
+  - code-quality
   - static-analysis
   - unit-testing
   - build
-  - beetle-security-test
-  - scmi-test
-  - platform-test
+  - integration-test
   - coverage-report
 
 include:
@@ -37,12 +35,12 @@ notify-failure:
 
 check-lint:
   extends: .check-lint
-  stage: linting
+  stage: code-quality
   allow_failure: true
 
 banned-api:
   extends: .banned-api
-  stage: static-analysis
+  stage: code-quality
   allow_failure: true
 
 check-ut:
@@ -62,23 +60,23 @@ build-optee:
 
 beetle-security-test:
   extends: .beetle-security-test
-  stage: beetle-security-test
+  stage: integration-test
 
 scmi-test:
   extends: .scmi-test
-  stage: scmi-test
+  stage: integration-test
 
 fvp-boot-test:
   extends: .fvp-boot-test
-  stage: platform-test
+  stage: integration-test
 
 board-test-build:
   extends: .board-test-build
-  stage: platform-test
+  stage: integration-test
 
 board-test-run:
   extends: .board-test-run
-  stage: platform-test
+  stage: integration-test
   needs:
     - board-test-build
 
