@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2015-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2015-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -956,6 +956,11 @@ static int scmi_bind(fwk_id_t id, unsigned int round)
         scmi_ctx.scmi_protocol_id_to_idx[scmi_protocol_id] =
             (uint8_t)(protocol_idx + PROTOCOL_TABLE_RESERVED_ENTRIES_COUNT);
         protocol->message_handler = protocol_api->message_handler;
+#ifdef BUILD_HAS_SCMI_NOTIFICATIONS
+        if (protocol_api->notification_handler != NULL) {
+            protocol->notification_handler = protocol_api->notification_handler;
+        }
+#endif
     }
 
     for (protocol_idx = 0; protocol_idx < scmi_ctx.protocol_requester_count;
