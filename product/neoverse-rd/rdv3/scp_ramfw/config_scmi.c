@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2024-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -37,6 +37,22 @@ static const struct fwk_element service_table[MOD_SCMI_ELEMENT_COUNT] = {
                 FWK_MODULE_IDX_TRANSPORT,
                 MOD_TRANSPORT_NOTIFICATION_IDX_INITIALIZED),
             .scmi_agent_id = SCP_SCMI_AGENT_IDX_PSCI,
+            .scmi_p2a_id = FWK_ID_NONE_INIT,
+        }),
+    },
+    [SCP_CFGD_MOD_SCMI_EIDX_MCP_SCMI_SEND] = {
+        .name = "SCP_MCP_SCMI_SEND",
+        .data = &((struct mod_scmi_service_config) {
+            .transport_id = FWK_ID_ELEMENT_INIT(
+                FWK_MODULE_IDX_TRANSPORT,
+                SCP_CFGD_MOD_TRANSPORT_EIDX_MCP_SCMI_MSG_SEND_CH),
+            .transport_api_id = FWK_ID_API_INIT(
+                FWK_MODULE_IDX_TRANSPORT,
+                MOD_TRANSPORT_API_IDX_SCMI_TO_TRANSPORT),
+            .transport_notification_init_id = FWK_ID_NOTIFICATION_INIT(
+                FWK_MODULE_IDX_TRANSPORT,
+                MOD_TRANSPORT_NOTIFICATION_IDX_INITIALIZED),
+            .scmi_agent_id = SCP_SCMI_AGENT_IDX_MCP,
             .scmi_p2a_id = FWK_ID_NONE_INIT,
         }),
     },
