@@ -28,6 +28,7 @@ struct pcapping_domain_ctx {
     uint32_t cookie;
     unsigned int notifications_sent_count;
     struct interface_power_management_api *power_management_api;
+    struct mod_power_measurement_driver_api *power_measurement_driver_api;
 };
 
 static struct {
@@ -84,6 +85,117 @@ static int mod_pcapping_get_applied_cap(fwk_id_t domain_id, uint32_t *cap)
     }
 
     *cap = domain_ctx->applied_cap;
+    return FWK_SUCCESS;
+}
+
+static int mod_pcapping_get_average_power(fwk_id_t domain_id, uint32_t *power)
+{
+    int status;
+    struct pcapping_domain_ctx *domain_ctx;
+
+    status = pcapping_get_ctx(domain_id, &domain_ctx);
+
+    if (status != FWK_SUCCESS) {
+        return status;
+    }
+
+    status = domain_ctx->power_measurement_driver_api->get_average_power(
+        domain_id, power);
+
+    if (status != FWK_SUCCESS) {
+        return status;
+    }
+    return FWK_SUCCESS;
+}
+
+static int mod_pcapping_set_averaging_interval(fwk_id_t domain_id, uint32_t pai)
+{
+    int status;
+    struct pcapping_domain_ctx *domain_ctx;
+
+    status = pcapping_get_ctx(domain_id, &domain_ctx);
+    if (status != FWK_SUCCESS) {
+        return status;
+    }
+
+    status = domain_ctx->power_measurement_driver_api->set_averaging_interval(
+        domain_id, pai);
+
+    if (status != FWK_SUCCESS) {
+        return status;
+    }
+
+    return FWK_SUCCESS;
+}
+
+static int mod_pcapping_get_averaging_interval(
+    fwk_id_t domain_id,
+    uint32_t *pai)
+{
+    int status;
+    struct pcapping_domain_ctx *domain_ctx;
+
+    status = pcapping_get_ctx(domain_id, &domain_ctx);
+
+    if (status != FWK_SUCCESS) {
+        return status;
+    }
+
+    status = domain_ctx->power_measurement_driver_api->get_averaging_interval(
+        domain_id, pai);
+
+    if (status != FWK_SUCCESS) {
+        return status;
+    }
+
+    return FWK_SUCCESS;
+}
+
+static int mod_pcapping_get_averaging_interval_step(
+    fwk_id_t domain_id,
+    uint32_t *pai_step)
+{
+    int status;
+    struct pcapping_domain_ctx *domain_ctx;
+
+    status = pcapping_get_ctx(domain_id, &domain_ctx);
+
+    if (status != FWK_SUCCESS) {
+        return status;
+    }
+
+    status =
+        domain_ctx->power_measurement_driver_api->get_averaging_interval_step(
+            domain_id, pai_step);
+
+    if (status != FWK_SUCCESS) {
+        return status;
+    }
+
+    return FWK_SUCCESS;
+}
+
+static int mod_pcapping_get_averaging_interval_range(
+    fwk_id_t domain_id,
+    uint32_t *min_pai,
+    uint32_t *max_pai)
+{
+    int status;
+    struct pcapping_domain_ctx *domain_ctx;
+
+    status = pcapping_get_ctx(domain_id, &domain_ctx);
+
+    if (status != FWK_SUCCESS) {
+        return status;
+    }
+
+    status =
+        domain_ctx->power_measurement_driver_api->get_averaging_interval_range(
+            domain_id, min_pai, max_pai);
+
+    if (status != FWK_SUCCESS) {
+        return status;
+    }
     return FWK_SUCCESS;
 }
 
@@ -195,6 +307,14 @@ int mod_pcapping_bind(fwk_id_t id, unsigned int round)
         domain_ctx->config->power_limiter_id,
         domain_ctx->config->power_limiter_api_id,
         &domain_ctx->power_management_api);
+
+    if (status != FWK_SUCCESS)
+        return status;
+
+    status = fwk_module_bind(
+        domain_ctx->config->power_measurement_id,
+        domain_ctx->config->power_measurement_api_id,
+        &domain_ctx->power_measurement_driver_api);
 
     return status;
 }

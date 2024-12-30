@@ -32,6 +32,14 @@ struct interface_power_management_api test_power_management_api = {
     .get_power_limit = get_power_limit,
 };
 
+struct mod_power_measurement_driver_api test_power_measurement_driver_api = {
+    .get_average_power = get_average_power,
+    .set_averaging_interval = set_averaging_interval,
+    .get_averaging_interval = get_averaging_interval,
+    .get_averaging_interval_step = get_averaging_interval_step,
+    .get_averaging_interval_range = get_averaging_interval_range,
+};
+
 void setUp(void)
 {
     memset((void *)test_ctx_table, 0U, sizeof(test_ctx_table));
@@ -43,6 +51,8 @@ void setUp(void)
     for (unsigned int i = 0U; i < TEST_DOMAIN_COUNT; i++) {
         pcapping_domain_ctx_table[i].power_management_api =
             &test_power_management_api;
+        pcapping_domain_ctx_table[i].power_measurement_driver_api =
+            &test_power_measurement_driver_api;
         pcapping_domain_ctx_table[i].config =
             (struct mod_power_capping_domain_config *)test_domain_config[i]
                 .data;
@@ -197,6 +207,104 @@ void utest_mod_pcapping_get_power_limit_e_param(void)
     TEST_ASSERT_EQUAL(status, FWK_E_PARAM);
 }
 
+void utest_mod_pcapping_get_average_power(void)
+{
+    int status;
+    fwk_id_t domain_id;
+    uint32_t power;
+    uint32_t expected_power = 40U;
+
+    for (unsigned int index = 0U; index < TEST_DOMAIN_COUNT; index++) {
+        domain_id = FWK_ID_ELEMENT(FWK_MODULE_IDX_POWER_CAPPING, index);
+
+        get_average_power_ExpectAndReturn(domain_id, NULL, FWK_SUCCESS);
+        get_average_power_IgnoreArg_power();
+        get_average_power_ReturnThruPtr_power(&expected_power);
+
+        status = mod_pcapping_get_average_power(domain_id, &power);
+        TEST_ASSERT_EQUAL(status, FWK_SUCCESS);
+        TEST_ASSERT_EQUAL(expected_power, power);
+    }
+}
+
+void utest_mod_pcapping_set_averaging_interval(void)
+{
+    int status;
+    fwk_id_t domain_id = FWK_ID_ELEMENT_INIT(
+        FWK_MODULE_IDX_POWER_CAPPING, TEST_DOMAIN_COUNT - 1);
+
+    set_averaging_interval_ExpectAndReturn(domain_id, 5U, FWK_SUCCESS);
+    status = mod_pcapping_set_averaging_interval(domain_id, 5U);
+    TEST_ASSERT_EQUAL(status, FWK_SUCCESS);
+}
+
+void utest_mod_pcapping_get_averaging_interval(void)
+{
+    int status;
+    fwk_id_t domain_id;
+    uint32_t pai;
+    uint32_t expected_pai = 40U;
+
+    for (unsigned int index = 0U; index < TEST_DOMAIN_COUNT; index++) {
+        domain_id = FWK_ID_ELEMENT(FWK_MODULE_IDX_POWER_CAPPING, index);
+
+        get_averaging_interval_ExpectAndReturn(domain_id, NULL, FWK_SUCCESS);
+        get_averaging_interval_IgnoreArg_pai();
+        get_averaging_interval_ReturnThruPtr_pai(&expected_pai);
+
+        status = mod_pcapping_get_averaging_interval(domain_id, &pai);
+        TEST_ASSERT_EQUAL(status, FWK_SUCCESS);
+        TEST_ASSERT_EQUAL(expected_pai, pai);
+    }
+}
+
+void utest_mod_pcapping_get_averaging_interval_step(void)
+{
+    int status;
+    fwk_id_t domain_id;
+    uint32_t pai_step;
+    uint32_t expected_pai_step = 40U;
+
+    for (unsigned int index = 0U; index < TEST_DOMAIN_COUNT; index++) {
+        domain_id = FWK_ID_ELEMENT(FWK_MODULE_IDX_POWER_CAPPING, index);
+
+        get_averaging_interval_step_ExpectAndReturn(
+            domain_id, NULL, FWK_SUCCESS);
+        get_averaging_interval_step_IgnoreArg_pai_step();
+        get_averaging_interval_step_ReturnThruPtr_pai_step(&expected_pai_step);
+
+        status = mod_pcapping_get_averaging_interval_step(domain_id, &pai_step);
+        TEST_ASSERT_EQUAL(status, FWK_SUCCESS);
+        TEST_ASSERT_EQUAL(expected_pai_step, pai_step);
+    }
+}
+
+void utest_mod_pcapping_get_averaging_interval_range(void)
+{
+    int status;
+    fwk_id_t domain_id;
+    uint32_t min_pai, max_pai;
+    uint32_t expected_min_pai = 40U;
+    uint32_t expected_max_pai = 50U;
+
+    for (unsigned int index = 0U; index < TEST_DOMAIN_COUNT; index++) {
+        domain_id = FWK_ID_ELEMENT(FWK_MODULE_IDX_POWER_CAPPING, index);
+
+        get_averaging_interval_range_ExpectAndReturn(
+            domain_id, NULL, NULL, FWK_SUCCESS);
+        get_averaging_interval_range_IgnoreArg_min_pai();
+        get_averaging_interval_range_IgnoreArg_max_pai();
+        get_averaging_interval_range_ReturnThruPtr_min_pai(&expected_min_pai);
+        get_averaging_interval_range_ReturnThruPtr_max_pai(&expected_max_pai);
+
+        status = mod_pcapping_get_averaging_interval_range(
+            domain_id, &min_pai, &max_pai);
+        TEST_ASSERT_EQUAL(status, FWK_SUCCESS);
+        TEST_ASSERT_EQUAL(expected_min_pai, min_pai);
+        TEST_ASSERT_EQUAL(expected_max_pai, max_pai);
+    }
+}
+
 void utest_pcapping_init_success(void)
 {
     int status;
@@ -296,6 +404,12 @@ void utest_mod_pcapping_bind_round_0(void)
             domain_ctx->config->power_limiter_id,
             domain_ctx->config->power_limiter_api_id,
             &domain_ctx->power_management_api,
+            FWK_SUCCESS);
+
+        fwk_module_bind_ExpectAndReturn(
+            domain_ctx->config->power_measurement_id,
+            domain_ctx->config->power_measurement_api_id,
+            &domain_ctx->power_measurement_driver_api,
             FWK_SUCCESS);
 
         status = mod_pcapping_bind(domain_id, round);
@@ -418,6 +532,11 @@ int power_capping_test_main(void)
     RUN_TEST(utest_mod_pcapping_get_applied_cap_e_param);
     RUN_TEST(utest_mod_pcapping_get_power_limit_success);
     RUN_TEST(utest_mod_pcapping_get_power_limit_e_param);
+    RUN_TEST(utest_mod_pcapping_get_average_power);
+    RUN_TEST(utest_mod_pcapping_set_averaging_interval);
+    RUN_TEST(utest_mod_pcapping_get_averaging_interval);
+    RUN_TEST(utest_mod_pcapping_get_averaging_interval_step);
+    RUN_TEST(utest_mod_pcapping_get_averaging_interval_range);
     RUN_TEST(utest_pcapping_init_success);
     RUN_TEST(utest_pcapping_domain_init_success);
     RUN_TEST(utest_mod_pcapping_process_notification_success);

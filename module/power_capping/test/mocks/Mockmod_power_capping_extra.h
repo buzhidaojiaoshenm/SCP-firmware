@@ -21,9 +21,6 @@ void Mockmod_power_capping_extra_Init(void);
 void Mockmod_power_capping_extra_Destroy(void);
 void Mockmod_power_capping_extra_Verify(void);
 
-
-
-
 #define get_power_limit_IgnoreAndReturn(cmock_retval) get_power_limit_CMockIgnoreAndReturn(__LINE__, cmock_retval)
 void get_power_limit_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return);
 #define get_power_limit_StopIgnore() get_power_limit_CMockStopIgnore()
@@ -46,6 +43,116 @@ void get_power_limit_CMockReturnMemThruPtr_power_limit(UNITY_LINE_TYPE cmock_lin
 void get_power_limit_CMockIgnoreArg_id(UNITY_LINE_TYPE cmock_line);
 #define get_power_limit_IgnoreArg_power_limit() get_power_limit_CMockIgnoreArg_power_limit(__LINE__)
 void get_power_limit_CMockIgnoreArg_power_limit(UNITY_LINE_TYPE cmock_line);
+#define get_average_power_IgnoreAndReturn(cmock_retval) get_average_power_CMockIgnoreAndReturn(__LINE__, cmock_retval)
+void get_average_power_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return);
+#define get_average_power_StopIgnore() get_average_power_CMockStopIgnore()
+void get_average_power_CMockStopIgnore(void);
+#define get_average_power_ExpectAnyArgsAndReturn(cmock_retval) get_average_power_CMockExpectAnyArgsAndReturn(__LINE__, cmock_retval)
+void get_average_power_CMockExpectAnyArgsAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return);
+#define get_average_power_ExpectAndReturn(id, power, cmock_retval) get_average_power_CMockExpectAndReturn(__LINE__, id, power, cmock_retval)
+void get_average_power_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, fwk_id_t id, uint32_t* power, int cmock_to_return);
+typedef int (* CMOCK_get_average_power_CALLBACK)(fwk_id_t id, uint32_t* power, int cmock_num_calls);
+void get_average_power_AddCallback(CMOCK_get_average_power_CALLBACK Callback);
+void get_average_power_Stub(CMOCK_get_average_power_CALLBACK Callback);
+#define get_average_power_StubWithCallback get_average_power_Stub
+#define get_average_power_ExpectWithArrayAndReturn(id, power, power_Depth, cmock_retval) get_average_power_CMockExpectWithArrayAndReturn(__LINE__, id, power, power_Depth, cmock_retval)
+void get_average_power_CMockExpectWithArrayAndReturn(UNITY_LINE_TYPE cmock_line, fwk_id_t id, uint32_t* power, int power_Depth, int cmock_to_return);
+#define get_average_power_ReturnThruPtr_power(power) get_average_power_CMockReturnMemThruPtr_power(__LINE__, power, sizeof(uint32_t))
+#define get_average_power_ReturnArrayThruPtr_power(power, cmock_len) get_average_power_CMockReturnMemThruPtr_power(__LINE__, power, cmock_len * sizeof(*power))
+#define get_average_power_ReturnMemThruPtr_power(power, cmock_size) get_average_power_CMockReturnMemThruPtr_power(__LINE__, power, cmock_size)
+void get_average_power_CMockReturnMemThruPtr_power(UNITY_LINE_TYPE cmock_line, uint32_t* power, size_t cmock_size);
+#define get_average_power_IgnoreArg_id() get_average_power_CMockIgnoreArg_id(__LINE__)
+void get_average_power_CMockIgnoreArg_id(UNITY_LINE_TYPE cmock_line);
+#define get_average_power_IgnoreArg_power() get_average_power_CMockIgnoreArg_power(__LINE__)
+void get_average_power_CMockIgnoreArg_power(UNITY_LINE_TYPE cmock_line);
+#define set_averaging_interval_IgnoreAndReturn(cmock_retval) set_averaging_interval_CMockIgnoreAndReturn(__LINE__, cmock_retval)
+void set_averaging_interval_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return);
+#define set_averaging_interval_StopIgnore() set_averaging_interval_CMockStopIgnore()
+void set_averaging_interval_CMockStopIgnore(void);
+#define set_averaging_interval_ExpectAnyArgsAndReturn(cmock_retval) set_averaging_interval_CMockExpectAnyArgsAndReturn(__LINE__, cmock_retval)
+void set_averaging_interval_CMockExpectAnyArgsAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return);
+#define set_averaging_interval_ExpectAndReturn(id, pai, cmock_retval) set_averaging_interval_CMockExpectAndReturn(__LINE__, id, pai, cmock_retval)
+void set_averaging_interval_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, fwk_id_t id, uint32_t pai, int cmock_to_return);
+typedef int (* CMOCK_set_averaging_interval_CALLBACK)(fwk_id_t id, uint32_t pai, int cmock_num_calls);
+void set_averaging_interval_AddCallback(CMOCK_set_averaging_interval_CALLBACK Callback);
+void set_averaging_interval_Stub(CMOCK_set_averaging_interval_CALLBACK Callback);
+#define set_averaging_interval_StubWithCallback set_averaging_interval_Stub
+#define set_averaging_interval_IgnoreArg_id() set_averaging_interval_CMockIgnoreArg_id(__LINE__)
+void set_averaging_interval_CMockIgnoreArg_id(UNITY_LINE_TYPE cmock_line);
+#define set_averaging_interval_IgnoreArg_pai() set_averaging_interval_CMockIgnoreArg_pai(__LINE__)
+void set_averaging_interval_CMockIgnoreArg_pai(UNITY_LINE_TYPE cmock_line);
+#define get_averaging_interval_IgnoreAndReturn(cmock_retval) get_averaging_interval_CMockIgnoreAndReturn(__LINE__, cmock_retval)
+void get_averaging_interval_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return);
+#define get_averaging_interval_StopIgnore() get_averaging_interval_CMockStopIgnore()
+void get_averaging_interval_CMockStopIgnore(void);
+#define get_averaging_interval_ExpectAnyArgsAndReturn(cmock_retval) get_averaging_interval_CMockExpectAnyArgsAndReturn(__LINE__, cmock_retval)
+void get_averaging_interval_CMockExpectAnyArgsAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return);
+#define get_averaging_interval_ExpectAndReturn(id, pai, cmock_retval) get_averaging_interval_CMockExpectAndReturn(__LINE__, id, pai, cmock_retval)
+void get_averaging_interval_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, fwk_id_t id, uint32_t* pai, int cmock_to_return);
+typedef int (* CMOCK_get_averaging_interval_CALLBACK)(fwk_id_t id, uint32_t* pai, int cmock_num_calls);
+void get_averaging_interval_AddCallback(CMOCK_get_averaging_interval_CALLBACK Callback);
+void get_averaging_interval_Stub(CMOCK_get_averaging_interval_CALLBACK Callback);
+#define get_averaging_interval_StubWithCallback get_averaging_interval_Stub
+#define get_averaging_interval_ExpectWithArrayAndReturn(id, pai, pai_Depth, cmock_retval) get_averaging_interval_CMockExpectWithArrayAndReturn(__LINE__, id, pai, pai_Depth, cmock_retval)
+void get_averaging_interval_CMockExpectWithArrayAndReturn(UNITY_LINE_TYPE cmock_line, fwk_id_t id, uint32_t* pai, int pai_Depth, int cmock_to_return);
+#define get_averaging_interval_ReturnThruPtr_pai(pai) get_averaging_interval_CMockReturnMemThruPtr_pai(__LINE__, pai, sizeof(uint32_t))
+#define get_averaging_interval_ReturnArrayThruPtr_pai(pai, cmock_len) get_averaging_interval_CMockReturnMemThruPtr_pai(__LINE__, pai, cmock_len * sizeof(*pai))
+#define get_averaging_interval_ReturnMemThruPtr_pai(pai, cmock_size) get_averaging_interval_CMockReturnMemThruPtr_pai(__LINE__, pai, cmock_size)
+void get_averaging_interval_CMockReturnMemThruPtr_pai(UNITY_LINE_TYPE cmock_line, uint32_t* pai, size_t cmock_size);
+#define get_averaging_interval_IgnoreArg_id() get_averaging_interval_CMockIgnoreArg_id(__LINE__)
+void get_averaging_interval_CMockIgnoreArg_id(UNITY_LINE_TYPE cmock_line);
+#define get_averaging_interval_IgnoreArg_pai() get_averaging_interval_CMockIgnoreArg_pai(__LINE__)
+void get_averaging_interval_CMockIgnoreArg_pai(UNITY_LINE_TYPE cmock_line);
+#define get_averaging_interval_step_IgnoreAndReturn(cmock_retval) get_averaging_interval_step_CMockIgnoreAndReturn(__LINE__, cmock_retval)
+void get_averaging_interval_step_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return);
+#define get_averaging_interval_step_StopIgnore() get_averaging_interval_step_CMockStopIgnore()
+void get_averaging_interval_step_CMockStopIgnore(void);
+#define get_averaging_interval_step_ExpectAnyArgsAndReturn(cmock_retval) get_averaging_interval_step_CMockExpectAnyArgsAndReturn(__LINE__, cmock_retval)
+void get_averaging_interval_step_CMockExpectAnyArgsAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return);
+#define get_averaging_interval_step_ExpectAndReturn(id, pai_step, cmock_retval) get_averaging_interval_step_CMockExpectAndReturn(__LINE__, id, pai_step, cmock_retval)
+void get_averaging_interval_step_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, fwk_id_t id, uint32_t* pai_step, int cmock_to_return);
+typedef int (* CMOCK_get_averaging_interval_step_CALLBACK)(fwk_id_t id, uint32_t* pai_step, int cmock_num_calls);
+void get_averaging_interval_step_AddCallback(CMOCK_get_averaging_interval_step_CALLBACK Callback);
+void get_averaging_interval_step_Stub(CMOCK_get_averaging_interval_step_CALLBACK Callback);
+#define get_averaging_interval_step_StubWithCallback get_averaging_interval_step_Stub
+#define get_averaging_interval_step_ExpectWithArrayAndReturn(id, pai_step, pai_step_Depth, cmock_retval) get_averaging_interval_step_CMockExpectWithArrayAndReturn(__LINE__, id, pai_step, pai_step_Depth, cmock_retval)
+void get_averaging_interval_step_CMockExpectWithArrayAndReturn(UNITY_LINE_TYPE cmock_line, fwk_id_t id, uint32_t* pai_step, int pai_step_Depth, int cmock_to_return);
+#define get_averaging_interval_step_ReturnThruPtr_pai_step(pai_step) get_averaging_interval_step_CMockReturnMemThruPtr_pai_step(__LINE__, pai_step, sizeof(uint32_t))
+#define get_averaging_interval_step_ReturnArrayThruPtr_pai_step(pai_step, cmock_len) get_averaging_interval_step_CMockReturnMemThruPtr_pai_step(__LINE__, pai_step, cmock_len * sizeof(*pai_step))
+#define get_averaging_interval_step_ReturnMemThruPtr_pai_step(pai_step, cmock_size) get_averaging_interval_step_CMockReturnMemThruPtr_pai_step(__LINE__, pai_step, cmock_size)
+void get_averaging_interval_step_CMockReturnMemThruPtr_pai_step(UNITY_LINE_TYPE cmock_line, uint32_t* pai_step, size_t cmock_size);
+#define get_averaging_interval_step_IgnoreArg_id() get_averaging_interval_step_CMockIgnoreArg_id(__LINE__)
+void get_averaging_interval_step_CMockIgnoreArg_id(UNITY_LINE_TYPE cmock_line);
+#define get_averaging_interval_step_IgnoreArg_pai_step() get_averaging_interval_step_CMockIgnoreArg_pai_step(__LINE__)
+void get_averaging_interval_step_CMockIgnoreArg_pai_step(UNITY_LINE_TYPE cmock_line);
+#define get_averaging_interval_range_IgnoreAndReturn(cmock_retval) get_averaging_interval_range_CMockIgnoreAndReturn(__LINE__, cmock_retval)
+void get_averaging_interval_range_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return);
+#define get_averaging_interval_range_StopIgnore() get_averaging_interval_range_CMockStopIgnore()
+void get_averaging_interval_range_CMockStopIgnore(void);
+#define get_averaging_interval_range_ExpectAnyArgsAndReturn(cmock_retval) get_averaging_interval_range_CMockExpectAnyArgsAndReturn(__LINE__, cmock_retval)
+void get_averaging_interval_range_CMockExpectAnyArgsAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return);
+#define get_averaging_interval_range_ExpectAndReturn(id, min_pai, max_pai, cmock_retval) get_averaging_interval_range_CMockExpectAndReturn(__LINE__, id, min_pai, max_pai, cmock_retval)
+void get_averaging_interval_range_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, fwk_id_t id, uint32_t* min_pai, uint32_t* max_pai, int cmock_to_return);
+typedef int (* CMOCK_get_averaging_interval_range_CALLBACK)(fwk_id_t id, uint32_t* min_pai, uint32_t* max_pai, int cmock_num_calls);
+void get_averaging_interval_range_AddCallback(CMOCK_get_averaging_interval_range_CALLBACK Callback);
+void get_averaging_interval_range_Stub(CMOCK_get_averaging_interval_range_CALLBACK Callback);
+#define get_averaging_interval_range_StubWithCallback get_averaging_interval_range_Stub
+#define get_averaging_interval_range_ExpectWithArrayAndReturn(id, min_pai, min_pai_Depth, max_pai, max_pai_Depth, cmock_retval) get_averaging_interval_range_CMockExpectWithArrayAndReturn(__LINE__, id, min_pai, min_pai_Depth, max_pai, max_pai_Depth, cmock_retval)
+void get_averaging_interval_range_CMockExpectWithArrayAndReturn(UNITY_LINE_TYPE cmock_line, fwk_id_t id, uint32_t* min_pai, int min_pai_Depth, uint32_t* max_pai, int max_pai_Depth, int cmock_to_return);
+#define get_averaging_interval_range_ReturnThruPtr_min_pai(min_pai) get_averaging_interval_range_CMockReturnMemThruPtr_min_pai(__LINE__, min_pai, sizeof(uint32_t))
+#define get_averaging_interval_range_ReturnArrayThruPtr_min_pai(min_pai, cmock_len) get_averaging_interval_range_CMockReturnMemThruPtr_min_pai(__LINE__, min_pai, cmock_len * sizeof(*min_pai))
+#define get_averaging_interval_range_ReturnMemThruPtr_min_pai(min_pai, cmock_size) get_averaging_interval_range_CMockReturnMemThruPtr_min_pai(__LINE__, min_pai, cmock_size)
+void get_averaging_interval_range_CMockReturnMemThruPtr_min_pai(UNITY_LINE_TYPE cmock_line, uint32_t* min_pai, size_t cmock_size);
+#define get_averaging_interval_range_ReturnThruPtr_max_pai(max_pai) get_averaging_interval_range_CMockReturnMemThruPtr_max_pai(__LINE__, max_pai, sizeof(uint32_t))
+#define get_averaging_interval_range_ReturnArrayThruPtr_max_pai(max_pai, cmock_len) get_averaging_interval_range_CMockReturnMemThruPtr_max_pai(__LINE__, max_pai, cmock_len * sizeof(*max_pai))
+#define get_averaging_interval_range_ReturnMemThruPtr_max_pai(max_pai, cmock_size) get_averaging_interval_range_CMockReturnMemThruPtr_max_pai(__LINE__, max_pai, cmock_size)
+void get_averaging_interval_range_CMockReturnMemThruPtr_max_pai(UNITY_LINE_TYPE cmock_line, uint32_t* max_pai, size_t cmock_size);
+#define get_averaging_interval_range_IgnoreArg_id() get_averaging_interval_range_CMockIgnoreArg_id(__LINE__)
+void get_averaging_interval_range_CMockIgnoreArg_id(UNITY_LINE_TYPE cmock_line);
+#define get_averaging_interval_range_IgnoreArg_min_pai() get_averaging_interval_range_CMockIgnoreArg_min_pai(__LINE__)
+void get_averaging_interval_range_CMockIgnoreArg_min_pai(UNITY_LINE_TYPE cmock_line);
+#define get_averaging_interval_range_IgnoreArg_max_pai() get_averaging_interval_range_CMockIgnoreArg_max_pai(__LINE__)
+void get_averaging_interval_range_CMockIgnoreArg_max_pai(UNITY_LINE_TYPE cmock_line);
 
 #if defined(__GNUC__) && !defined(__ICC) && !defined(__TMS470__)
 #if __GNUC__ > 4 || (__GNUC__ == 4 && (__GNUC_MINOR__ > 6 || (__GNUC_MINOR__ == 6 && __GNUC_PATCHLEVEL__ > 0)))

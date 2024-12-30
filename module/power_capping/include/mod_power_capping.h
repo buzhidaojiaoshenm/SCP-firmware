@@ -26,6 +26,71 @@
  */
 
 /*!
+ * \brief Power Measurement driver interface.
+ */
+struct mod_power_measurement_driver_api {
+    /*!
+     * \brief Get average power across an averaging interval.
+     *
+     * \param id power measurements domain ID.
+     * \param[out] power average power measured in microwatt.
+     *
+     * \retval ::FWK_SUCCESS The requested cap was applied successfully.
+     * \return One of the standard framework error codes.
+     */
+    int (*get_average_power)(fwk_id_t id, uint32_t *power);
+
+    /*!
+     * \brief Set the power averaging interval.
+     *
+     * \param id power measurements domain ID.
+     * \param pai averaging interval measured in microseconds.
+     *
+     * \retval ::FWK_SUCCESS The requested cap was applied successfully.
+     * \return One of the standard framework error codes.
+     */
+    int (*set_averaging_interval)(fwk_id_t id, uint32_t pai);
+
+    /*!
+     * \brief Get the power averaging interval.
+     *
+     * \param id power measurements domain ID.
+     * \param[out] pai averaging interval measured in microseconds.
+     *
+     * \retval ::FWK_SUCCESS The requested cap was applied successfully.
+     * \return One of the standard framework error codes.
+     */
+    int (*get_averaging_interval)(fwk_id_t id, uint32_t *pai);
+
+    /*!
+     * \brief Get averaging interval step.
+     *
+     * \param id power measurements domain ID.
+     * \param[out] pai_step The step size between two consecutive averaging
+     * intervals in microseconds.
+     *
+     * \retval ::FWK_SUCCESS The requested cap was applied successfully.
+     * \return One of the standard framework error codes.
+     */
+    int (*get_averaging_interval_step)(fwk_id_t id, uint32_t *pai_step);
+
+    /*!
+     * \brief Get averaging interval range.
+     *
+     * \param id power measurements domain ID.
+     * \param[out] min_pai min averaging interval measured in microseconds.
+     * \param[out] max_pai max averaging interval measured in microseconds.
+     *
+     * \retval ::FWK_SUCCESS The requested cap was applied successfully.
+     * \return One of the standard framework error codes.
+     */
+    int (*get_averaging_interval_range)(
+        fwk_id_t id,
+        uint32_t *min_pai,
+        uint32_t *max_pai);
+};
+
+/*!
  * \brief Power Capping interface.
  */
 struct mod_power_capping_api {
@@ -55,6 +120,66 @@ struct mod_power_capping_api {
      * \return One of the standard framework error codes.
      */
     int (*get_applied_cap)(fwk_id_t domain_id, uint32_t *cap);
+
+    /*!
+     * \brief Get average power across an averaging interval.
+     *
+     * \param id power measurements domain ID.
+     * \param[out] power average power measured in microwatt.
+     *
+     * \retval ::FWK_SUCCESS The requested cap was applied successfully.
+     * \return One of the standard framework error codes.
+     */
+    int (*get_average_power)(fwk_id_t id, uint32_t *power);
+
+    /*!
+     * \brief Set the power averaging interval.
+     *
+     * \param id power measurements domain ID.
+     * \param pai averaging interval measured in microseconds.
+     *
+     * \retval ::FWK_SUCCESS The requested cap was applied successfully.
+     * \return One of the standard framework error codes.
+     */
+    int (*set_averaging_interval)(fwk_id_t id, uint32_t pai);
+
+    /*!
+     * \brief Get the power averaging interval.
+     *
+     * \param id power measurements domain ID.
+     * \param[out] pai averaging interval measured in microseconds.
+     *
+     * \retval ::FWK_SUCCESS The requested cap was applied successfully.
+     * \return One of the standard framework error codes.
+     */
+    int (*get_averaging_interval)(fwk_id_t id, uint32_t *pai);
+
+    /*!
+     * \brief Get averaging interval step.
+     *
+     * \param id power measurements domain ID.
+     * \param[out] pai_step The step size between two consecutive averaging
+     * intervals in microseconds.
+     *
+     * \retval ::FWK_SUCCESS The requested cap was applied successfully.
+     * \return One of the standard framework error codes.
+     */
+    int (*get_averaging_interval_step)(fwk_id_t id, uint32_t *pai_step);
+
+    /*!
+     * \brief Get averaging interval range.
+     *
+     * \param id power measurements domain ID.
+     * \param[out] min_pai min averaging interval measured in microseconds.
+     * \param[out] max_pai max averaging interval measured in microseconds.
+     *
+     * \retval ::FWK_SUCCESS The requested cap was applied successfully.
+     * \return One of the standard framework error codes.
+     */
+    int (*get_averaging_interval_range)(
+        fwk_id_t id,
+        uint32_t *min_pai,
+        uint32_t *max_pai);
 };
 
 /*!
@@ -69,6 +194,14 @@ struct mod_power_capping_domain_config {
      * \brief API ID of the api that would return the power limit.
      */
     fwk_id_t power_limiter_api_id;
+    /*!
+     * \brief ID of the power_measurement driver.
+     */
+    fwk_id_t power_measurement_id;
+    /*!
+     * \brief API ID of the api of the power_measurement driver.
+     */
+    fwk_id_t power_measurement_api_id;
     /*!
      * \brief ID of the object that sets notification for the power
      *    limit change.
