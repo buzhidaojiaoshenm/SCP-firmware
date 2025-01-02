@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2024-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -12,6 +12,7 @@
 #ifndef SCP_FW_MMAP_H
 #define SCP_FW_MMAP_H
 
+#include "rsm_fw_mmap.h"
 #include "scp_css_mmap.h"
 
 #include <fwk_macros.h>
@@ -61,5 +62,15 @@
 /* SCMI Secure Payload Area */
 #define SCP_SCMI_PAYLOAD_S_A2P_BASE (SCP_SDS_SECURE_BASE + SCP_SDS_SECURE_SIZE)
 #define SCP_SCMI_PAYLOAD_SIZE       (128)
+
+/*
+ * RSM SRAM in the AP memory map with base address of 0x2F000000 is mapped in
+ * the SCP's address translation window 0 (0x60000000 - 0x9FFFFFFF) at the
+ * offset 'SCP_ATW0_SHARED_SRAM_RSM_BASE' via ATU configuration.
+ */
+
+/* SCP-MCP SCMI message payload base address (in RSM SRAM) */
+#define SCP_MCP_SCMI_MSG_PAYLOAD_BASE \
+    (SCP_SHARED_SRAM_RSM_BASE + SCP_MCP_SCMI_MSG_PAYLOAD_OFFSET)
 
 #endif /* SCP_FW_MMAP_H */

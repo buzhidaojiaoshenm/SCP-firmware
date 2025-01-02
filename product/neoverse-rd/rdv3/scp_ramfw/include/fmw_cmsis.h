@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2024-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -56,6 +56,8 @@ typedef enum IRQn {
     PPU_CLUSTERS3_IRQ = 62,
     /* MHUv3 secure IRQ between SCP and AP */
     MHU3_AP2SCP_IRQ_S = 83,
+    /* MHUv3 secure IRQ between SCP and MCP */
+    MHU3_MCP2SCP_IRQ_S = 85,
     /* MHUv3 secure IRQ between SCP and RSS */
     MHU3_RSS2SCP_IRQ_S = 86,
 

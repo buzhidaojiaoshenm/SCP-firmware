@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2024-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -16,6 +16,8 @@
 enum scp_cfgd_mod_transport_element_idx {
     SCP_CFGD_MOD_TRANSPORT_EIDX_PSCI,
     SCP_CFGD_MOD_TRANSPORT_EIDX_SYSTEM,
+    SCP_CFGD_MOD_TRANSPORT_EIDX_MCP_SCMI_MSG_SEND_CH,
+    SCP_CFGD_MOD_TRANSPORT_EIDX_MCP_SCMI_MSG_RECV_CH,
     SCP_CFGD_MOD_TRANSPORT_EIDX_COUNT,
 };
 

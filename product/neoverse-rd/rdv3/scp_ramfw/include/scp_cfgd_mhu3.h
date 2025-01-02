@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2024-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -15,6 +15,7 @@
 enum scp_cfgd_mod_mhu3_device_idx {
     SCP_CFGD_MOD_MHU3_EIDX_SCP_AP_S_CLUS0,
     SCP_CFGD_MOD_MHU3_EIDX_SCP_RSS_S,
+    SCP_CFGD_MOD_MHU3_EIDX_SCP_MCP_S,
     SCP_CFGD_MOD_MHU3_EIDX_COUNT
 };
 

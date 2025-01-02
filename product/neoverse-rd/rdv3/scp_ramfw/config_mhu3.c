@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2024-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -28,6 +28,9 @@
 /* SCP<-->RSS Secure MHUv3 Doorbell channel count */
 #define SCP2RSS_S_DBCH_COUNT 2
 
+/* SCP<-->MCP Secure MHUv3 Doorbell channel count */
+#define SCP2MCP_S_DBCH_COUNT 1
+
 /* AP<-->SCP Secure MHUv3 doorbell channel configuration */
 struct mod_mhu3_channel_config scp2ap_s_dbch_config[SCP2AP_S_DBCH_COUNT] = {
     /* PBX CH 0, FLAG 0, MBX CH 0, FLAG 0 */
@@ -41,6 +44,13 @@ struct mod_mhu3_channel_config scp2rss_s_dbch_config[SCP2RSS_S_DBCH_COUNT] = {
     /* PBX CH 1, FLAG 0, MBX CH 1, FLAG 0 */
     MOD_MHU3_INIT_DBCH(1, 0, 1, 0),
 };
+
+/* MCP<-->SCP Secure MHUv3 doorbell channel configuration */
+static struct mod_mhu3_channel_config
+    scp2mcp_s_dbch_config[SCP2MCP_S_DBCH_COUNT] = {
+        /* PBX CH 0, FLAG 0, MBX CH 0, FLAG 0 */
+        MOD_MHU3_INIT_DBCH(0, 0, 0, 0),
+    };
 
 /* Module element table */
 static const struct fwk_element mhu_element_table[MOD_MHU3_ELEMENT_COUNT]  = {
@@ -62,6 +72,16 @@ static const struct fwk_element mhu_element_table[MOD_MHU3_ELEMENT_COUNT]  = {
             .in = SCP_RSS2SCP_MHUV3_RCV_S_BASE,
             .out = SCP_SCP2RSS_MHUV3_SEND_S_BASE,
             .channels = &scp2rss_s_dbch_config[0],
+        },
+    },
+    [SCP_CFGD_MOD_MHU3_EIDX_SCP_MCP_S] = {
+        .name = "SCP2MCP_S_MHU_DBCH",
+        .sub_element_count = 1,
+        .data = &(struct mod_mhu3_device_config) {
+            .irq = (unsigned int) MHU3_MCP2SCP_IRQ_S,
+            .in = SCP_MCP2SCP_MHUV3_RCV_S_BASE,
+            .out = SCP_SCP2MCP_MHUV3_SEND_S_BASE,
+            .channels = &scp2mcp_s_dbch_config[0],
         },
     },
     [SCP_CFGD_MOD_MHU3_EIDX_COUNT] = { 0 },
