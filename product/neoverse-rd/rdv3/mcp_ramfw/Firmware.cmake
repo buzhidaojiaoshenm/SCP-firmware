@@ -29,6 +29,7 @@ set(SCP_ARCHITECTURE "arm-m")
 set(SCP_ENABLE_OUTBAND_MSG_SUPPORT TRUE)
 
 list(PREPEND SCP_MODULE_PATHS
+    "${CMAKE_SOURCE_DIR}/product/neoverse-rd/module/scmi_sys_power"
     "${CMAKE_CURRENT_LIST_DIR}/../module/mcp_platform")
 
 # The order of the modules in the following list is the order in which the
@@ -42,4 +43,6 @@ list(APPEND SCP_MODULES "timer")
 list(APPEND SCP_MODULES "gtimer")
 list(APPEND SCP_MODULES "mhu3")
 list(APPEND SCP_MODULES "transport")
+list(APPEND SCP_MODULES "scmi")
+list(APPEND SCP_MODULES "scmi-sys-power")
 list(APPEND SCP_MODULES "mcp-platform")

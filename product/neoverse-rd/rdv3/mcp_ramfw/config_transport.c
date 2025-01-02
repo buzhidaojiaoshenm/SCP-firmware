@@ -14,6 +14,7 @@
 #include "platform_variant.h"
 
 #include <mod_mhu3.h>
+#include <mod_scmi.h>
 #include <mod_transport.h>
 
 #include <fwk_element.h>
@@ -41,6 +42,10 @@ static const struct fwk_element transport_element_table[] = {
                 .out_band_mailbox_address =
                     (uintptr_t) MCP_SCP_SCMI_MSG_PAYLOAD_BASE,
                 .out_band_mailbox_size = SCP_MCP_SCMI_MSG_PAYLOAD_SIZE,
+                .signal_api_id =
+                    FWK_ID_API_INIT(
+                        FWK_MODULE_IDX_SCMI,
+                        MOD_SCMI_API_IDX_TRANSPORT),
                 .driver_id =
                     FWK_ID_SUB_ELEMENT_INIT(
                         FWK_MODULE_IDX_MHU3,
