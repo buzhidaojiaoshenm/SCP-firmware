@@ -14,6 +14,10 @@ set(SCP_GENERATE_FLAT_BINARY_INIT TRUE)
 
 set(SCP_ARCHITECTURE "aarch64")
 
+set(SCP_ENABLE_NOTIFICATIONS_INIT TRUE)
+
+set(SCP_ENABLE_OUTBAND_MSG_SUPPORT TRUE)
+
 list(PREPEND SCP_MODULE_PATHS
      "${CMAKE_CURRENT_LIST_DIR}/../module/si0_platform")
 
@@ -24,5 +28,7 @@ list(APPEND SCP_MODULES
     "sid"
     "system-info"
     "pcid"
+    "mhu3"
+    "transport"
     "si0-platform"
 )

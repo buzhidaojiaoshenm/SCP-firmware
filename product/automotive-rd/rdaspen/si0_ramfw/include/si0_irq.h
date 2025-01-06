@@ -1,0 +1,20 @@
+/*
+ * Arm SCP/MCP Software
+ * Copyright (c) 2024-2025, Arm Limited and Contributors. All rights reserved.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
+#ifndef SI0_IRQ_H
+#define SI0_IRQ_H
+
+#include <stdint.h>
+
+typedef enum IRQn {
+    /* Safety Island CL0 SPI */
+    CL0_MHU3_RSE2SI0_IRQ = 105,
+
+    IRQn_MAX = INT16_MAX,
+} IRQn_Type;
+
+#endif /* SI0_IRQ_H */

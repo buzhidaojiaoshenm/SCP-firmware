@@ -10,10 +10,14 @@
 
 enum fwk_module_idx {
     FWK_MODULE_IDX_SI0_PLATFORM,
+    FWK_MODULE_IDX_TRANSPORT,
     FWK_MODULE_IDX_COUNT,
 };
 
 static const fwk_id_t fwk_module_id_si0_platform =
     FWK_ID_MODULE_INIT(FWK_MODULE_IDX_SI0_PLATFORM);
+
+static const fwk_id_t fwk_module_id_transport =
+    FWK_ID_MODULE_INIT(FWK_MODULE_IDX_TRANSPORT);
 
 #endif /* TEST_FWK_MODULE_MODULE_IDX_H */

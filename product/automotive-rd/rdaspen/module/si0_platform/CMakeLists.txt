@@ -11,4 +11,9 @@ target_include_directories(${SCP_MODULE_TARGET}
 
 target_sources(
     ${SCP_MODULE_TARGET}
-    PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src/mod_si0_platform.c")
+    PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src/mod_si0_platform.c"
+            "${CMAKE_CURRENT_SOURCE_DIR}/src/platform_rse.c")
+
+target_link_libraries(
+    ${SCP_MODULE_TARGET}
+    PRIVATE module-transport)

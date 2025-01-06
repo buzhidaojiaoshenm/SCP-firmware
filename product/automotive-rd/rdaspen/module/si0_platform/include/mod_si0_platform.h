@@ -11,6 +11,8 @@
 #ifndef MOD_SI0_PLATFORM_H
 #define MOD_SI0_PLATFORM_H
 
+#include <fwk_id.h>
+
 /*!
  * \addtogroup GroupPLATFORMModule PLATFORM Product Modules
  * @{
@@ -25,6 +27,8 @@
  * \brief Indices of the interfaces exposed by the module.
  */
 enum mod_si0_platform_api_idx {
+    /*! Interface for Transport module */
+    MOD_SI0_PLATFORM_API_IDX_TRANSPORT_SIGNAL,
     /*! Number of exposed interfaces */
     MOD_SI0_PLATFORM_API_COUNT
 };
@@ -32,7 +36,10 @@ enum mod_si0_platform_api_idx {
 /*!
  * \brief SCP platform configuration data.
  */
-struct mod_si0_platform_config {};
+struct mod_si0_platform_config {
+    /*! Transport channel identifier */
+    fwk_id_t transport_id;
+};
 
 /*!
  * @}

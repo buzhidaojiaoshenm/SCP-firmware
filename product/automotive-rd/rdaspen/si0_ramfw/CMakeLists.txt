@@ -14,8 +14,10 @@ target_include_directories(rdaspen-si0-bl2 PUBLIC
 target_sources(rdaspen-si0-bl2 PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/config_armv8r_mpu.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/config_gicx00.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/config_mhu3.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/config_si0_platform.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/config_sid.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/config_system_info.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/config_pl011.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/config_transport.c"
     )

@@ -1,0 +1,44 @@
+/*
+ * Arm SCP/MCP Software
+ * Copyright (c) 2025, Arm Limited and Contributors. All rights reserved.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
+ * Description:
+ *     Configuration data for module 'mhu3'.
+ */
+
+#include "si0_cfgd_mhu3.h"
+#include "si0_irq.h"
+#include "si0_mmap.h"
+
+#include <mod_mhu3.h>
+
+#include <fwk_element.h>
+#include <fwk_id.h>
+#include <fwk_module.h>
+
+/* SI0<-->RSE Secure MHUv3 Doorbell channel configuration */
+struct mod_mhu3_channel_config si02rse_s_dbch_config[] = {
+    /* PBX CH 0, FLAG 0, MBX CH 0, FLAG 0 */
+    [0] = MOD_MHU3_INIT_DBCH(0, 0, 0, 0),
+};
+
+/* Module element table */
+static const struct fwk_element mhu_element_table[]  = {
+    [SI0_CFGD_MOD_MHU3_EIDX_SI0_RSE] = {
+        .name = "SI02RSE_S_MHU_DBCH",
+        .sub_element_count = FWK_ARRAY_SIZE(si02rse_s_dbch_config),
+        .data = &(struct mod_mhu3_device_config) {
+            .irq = (unsigned int) CL0_MHU3_RSE2SI0_IRQ,
+            .in = SI0_RSE2SI0_MHUV3_RCV_BASE,
+            .out = SI0_SI02RSE_MHUV3_SEND_BASE,
+            .channels = si02rse_s_dbch_config,
+        },
+    },
+    [SI0_CFGD_MOD_MHU3_EIDX_COUNT] = { 0 },
+};
+
+struct fwk_module_config config_mhu3 = {
+    .elements = FWK_MODULE_STATIC_ELEMENTS_PTR(mhu_element_table),
+};
