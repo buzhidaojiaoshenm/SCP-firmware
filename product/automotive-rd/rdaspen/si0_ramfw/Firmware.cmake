@@ -14,8 +14,12 @@ set(SCP_GENERATE_FLAT_BINARY_INIT TRUE)
 
 set(SCP_ARCHITECTURE "aarch64")
 
+list(PREPEND SCP_MODULE_PATHS
+     "${CMAKE_CURRENT_LIST_DIR}/../module/si0_platform")
+
 list(APPEND SCP_MODULES
     "armv8r-mpu"
     "pl011"
     "gicx00"
+    "si0-platform"
 )
