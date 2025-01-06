@@ -19,6 +19,7 @@
 #include <fwk_log.h>
 #include <fwk_math.h>
 
+#include <inttypes.h>
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -329,7 +330,10 @@ static int configure_non_hash_region_base_and_size(
     if ((base % size) != 0) {
         FWK_LOG_ERR(MOD_NAME "Invalid non-hashed region %u", region_idx);
         FWK_LOG_ERR(
-            MOD_NAME "Base: 0x%llx should align with Size: 0x%llx", base, size);
+            MOD_NAME "Base: 0x%" PRIx64 " should align with Size: 0x%" PRIx64
+                     "",
+            base,
+            size);
         return FWK_E_PARAM;
     }
 
@@ -416,7 +420,10 @@ static int configure_htg_region_base_and_size(
     if ((base % size) != 0) {
         FWK_LOG_ERR(MOD_NAME "Invalid hashed region %u", region_idx);
         FWK_LOG_ERR(
-            MOD_NAME "Base: 0x%llx should align with Size: 0x%llx", base, size);
+            MOD_NAME "Base: 0x%" PRIx64 " should align with Size: 0x%" PRIx64
+                     "",
+            base,
+            size);
         return FWK_E_PARAM;
     }
 
@@ -462,7 +469,10 @@ static int configure_htg_sec_region_base_and_size(
     if ((base % size) != 0) {
         FWK_LOG_ERR(MOD_NAME "Invalid secondary hashed region %u", region_idx);
         FWK_LOG_ERR(
-            MOD_NAME "Base: 0x%llx should align with Size: 0x%llx", base, size);
+            MOD_NAME "Base: 0x%" PRIx64 " should align with Size: 0x%" PRIx64
+                     "",
+            base,
+            size);
         return FWK_E_PARAM;
     }
 

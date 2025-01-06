@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2023-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2023-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -21,6 +21,7 @@
 
 #include <fwk_log.h>
 
+#include <inttypes.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -108,7 +109,7 @@ static void print_rnsam_config_info(
         base = (region->base + GET_CHIP_ADDR_OFFSET(shared_ctx));
 
         FWK_LOG_INFO(
-            MOD_NAME "  [0x%llx - 0x%llx] %s",
+            MOD_NAME "  [0x%" PRIx64 " - 0x%" PRIx64 "] %s",
             base,
             (base + region->size - 1),
             mmap_type_name[region->type]);
@@ -489,7 +490,8 @@ static bool is_non_hashed_region_mapped(
             (mmap->node_id &= RNSAM_NON_HASH_TGT_NODEID_ENTRY_MASK)) {
             FWK_LOG_ERR(MOD_NAME "Error! Invalid IO region memmap request");
             FWK_LOG_ERR(
-                MOD_NAME "0x%llx mapped to different node id", mmap->base);
+                MOD_NAME "0x%" PRIx64 " mapped to different node id",
+                mmap->base);
             FWK_LOG_ERR(
                 MOD_NAME "mapped node id %u | requested node id : %u\n",
                 mapped_node_id,
@@ -517,7 +519,7 @@ static void update_io_region(
 
     FWK_LOG_INFO(MOD_NAME "Updating IO region %u", region_idx);
     FWK_LOG_INFO(
-        MOD_NAME "  [0x%llx - 0x%llx] %s",
+        MOD_NAME "  [0x%" PRIx64 " - 0x%" PRIx64 "] %s",
         mmap->base,
         mmap->base + mmap->size - 1,
         mmap_type_name[mmap->type]);
@@ -557,7 +559,7 @@ static int map_io_region(uint64_t base, size_t size, uint32_t node_id)
 
         FWK_LOG_INFO(MOD_NAME "Mapping IO region in RNSAM");
         FWK_LOG_INFO(
-            MOD_NAME "  [0x%llx - 0x%llx] %s",
+            MOD_NAME "  [0x%" PRIx64 " - 0x%" PRIx64 "] %s",
             base,
             base + size - 1,
             mmap_type_name[mmap.type]);
@@ -818,7 +820,7 @@ static int program_rnsam_remote_regions(
         }
 
         FWK_LOG_INFO(
-            MOD_NAME "  [0x%llx - 0x%llx] %s",
+            MOD_NAME "  [0x%" PRIx64 " - 0x%" PRIx64 "] %s",
             region_mmap->base,
             (region_mmap->base + region_mmap->size - 1),
             mmap_type_name[region_mmap->type]);

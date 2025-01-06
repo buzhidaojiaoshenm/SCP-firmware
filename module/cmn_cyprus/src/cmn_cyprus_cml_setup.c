@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2023-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2023-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -24,6 +24,7 @@
 #include <fwk_math.h>
 #include <fwk_status.h>
 
+#include <inttypes.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -126,7 +127,7 @@ static int program_ra_sam(
         }
 
         FWK_LOG_INFO(
-            MOD_NAME "  [0x%llx - 0x%llx] Target HAID: %u",
+            MOD_NAME "  [0x%" PRIx64 " - 0x%" PRIx64 "] Target HAID: %u",
             base,
             (base + size - 1),
             region->target_haid[ccg_idx]);
