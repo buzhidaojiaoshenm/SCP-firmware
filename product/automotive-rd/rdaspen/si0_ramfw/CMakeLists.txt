@@ -13,6 +13,7 @@ target_include_directories(rdaspen-si0-bl2 PUBLIC
 
 target_sources(rdaspen-si0-bl2 PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/config_armv8r_mpu.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/config_cmn_cyprus.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/config_gicx00.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/config_mhu3.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/config_si0_platform.c"
@@ -25,4 +26,6 @@ target_sources(rdaspen-si0-bl2 PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/config_system_pll.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/config_clock.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/config_ros_clock.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/config_gtimer.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/config_timer.c"
     )

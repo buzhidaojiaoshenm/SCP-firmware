@@ -31,6 +31,8 @@ list(APPEND SCP_MODULES
     "system-pll"
     "ros-clock"
     "clock"
+    "gtimer"
+    "timer"
     "sid"
     "system-info"
     "pcid"
@@ -38,5 +40,6 @@ list(APPEND SCP_MODULES
     "transport"
     "ppu-v1"
     "power-domain"
+    "cmn-cyprus"
     "si0-platform"
 )

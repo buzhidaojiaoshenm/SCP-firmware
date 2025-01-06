@@ -18,6 +18,12 @@
 #include <fwk_id.h>
 #include <fwk_module.h>
 
+/*
+ * Timeout to wait for the receiver to clear the MHUv3 channel status
+ * register so the channel can become available again.
+ */
+#define RESP_WAIT_TIMEOUT_US (30 * 1000)
+
 /* SI0<-->RSE Secure MHUv3 Doorbell channel configuration */
 struct mod_mhu3_channel_config si02rse_s_dbch_config[] = {
     /* PBX CH 0, FLAG 0, MBX CH 0, FLAG 0 */
@@ -34,6 +40,8 @@ static const struct fwk_element mhu_element_table[]  = {
             .in = SI0_RSE2SI0_MHUV3_RCV_BASE,
             .out = SI0_SI02RSE_MHUV3_SEND_BASE,
             .channels = si02rse_s_dbch_config,
+            .timer_id = FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_TIMER, 0),
+            .resp_wait_timeout_us = RESP_WAIT_TIMEOUT_US,
         },
     },
     [SI0_CFGD_MOD_MHU3_EIDX_COUNT] = { 0 },

@@ -12,6 +12,7 @@
 
 typedef enum IRQn {
     /* Safety Island CL0 SPI */
+    CL0_SYSTEM_TIMER_IRQ = 34,
     CL0_MHU3_RSE2SI0_IRQ = 105,
 
     IRQn_MAX = INT16_MAX,
