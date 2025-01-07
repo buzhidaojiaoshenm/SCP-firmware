@@ -1,6 +1,6 @@
 #
 # Arm SCP/MCP Software
-# Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+# Copyright (c) 2024-2025, Arm Limited and Contributors. All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -26,6 +26,7 @@ list(APPEND MOCK_REPLACEMENTS fwk_mm)
 list(APPEND MOCK_REPLACEMENTS fwk_module)
 list(APPEND MOCK_REPLACEMENTS fwk_notification)
 
+list(APPEND OTHER_MODULE_INC ${MODULE_ROOT}/pid_controller/include)
 list(APPEND OTHER_MODULE_INC ${SCP_ROOT}/interface/power_management)
 
 include(${SCP_ROOT}/unit_test/module_common.cmake)

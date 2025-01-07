@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2024-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -124,8 +124,8 @@ struct mod_power_capping_api {
     /*!
      * \brief Get average power across an averaging interval.
      *
-     * \param id power measurements domain ID.
-     * \param[out] power average power measured in microwatt.
+     * \param id Power measurements domain ID.
+     * \param[out] power Average power measured in microwatt.
      *
      * \retval ::FWK_SUCCESS The requested cap was applied successfully.
      * \return One of the standard framework error codes.
@@ -135,8 +135,8 @@ struct mod_power_capping_api {
     /*!
      * \brief Set the power averaging interval.
      *
-     * \param id power measurements domain ID.
-     * \param pai averaging interval measured in microseconds.
+     * \param id Power measurements domain ID.
+     * \param pai Averaging interval measured in microseconds.
      *
      * \retval ::FWK_SUCCESS The requested cap was applied successfully.
      * \return One of the standard framework error codes.
@@ -146,8 +146,8 @@ struct mod_power_capping_api {
     /*!
      * \brief Get the power averaging interval.
      *
-     * \param id power measurements domain ID.
-     * \param[out] pai averaging interval measured in microseconds.
+     * \param id Power measurements domain ID.
+     * \param[out] pai Averaging interval measured in microseconds.
      *
      * \retval ::FWK_SUCCESS The requested cap was applied successfully.
      * \return One of the standard framework error codes.
@@ -157,7 +157,7 @@ struct mod_power_capping_api {
     /*!
      * \brief Get averaging interval step.
      *
-     * \param id power measurements domain ID.
+     * \param id Power measurements domain ID.
      * \param[out] pai_step The step size between two consecutive averaging
      * intervals in microseconds.
      *
@@ -169,9 +169,9 @@ struct mod_power_capping_api {
     /*!
      * \brief Get averaging interval range.
      *
-     * \param id power measurements domain ID.
-     * \param[out] min_pai min averaging interval measured in microseconds.
-     * \param[out] max_pai max averaging interval measured in microseconds.
+     * \param id Power measurements domain ID.
+     * \param[out] min_pai Min averaging interval measured in microseconds.
+     * \param[out] max_pai Max averaging interval measured in microseconds.
      *
      * \retval ::FWK_SUCCESS The requested cap was applied successfully.
      * \return One of the standard framework error codes.
@@ -211,6 +211,12 @@ struct mod_power_capping_domain_config {
      * \brief Notification ID of the power limit change notification.
      */
     fwk_id_t power_limit_set_notification_id;
+
+    /*! PID controller identifier. */
+    fwk_id_t pid_controller_id;
+
+    /*! PID controller API identifier. */
+    fwk_id_t pid_controller_api_id;
 };
 
 /*!

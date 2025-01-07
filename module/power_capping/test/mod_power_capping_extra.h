@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2024-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -22,3 +22,7 @@ int get_averaging_interval_range(
     fwk_id_t id,
     uint32_t *min_pai,
     uint32_t *max_pai);
+
+int update(fwk_id_t id, int64_t input, int64_t *output);
+
+int set_point(fwk_id_t id, int64_t input);

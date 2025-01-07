@@ -153,6 +153,46 @@ void get_averaging_interval_range_CMockIgnoreArg_id(UNITY_LINE_TYPE cmock_line);
 void get_averaging_interval_range_CMockIgnoreArg_min_pai(UNITY_LINE_TYPE cmock_line);
 #define get_averaging_interval_range_IgnoreArg_max_pai() get_averaging_interval_range_CMockIgnoreArg_max_pai(__LINE__)
 void get_averaging_interval_range_CMockIgnoreArg_max_pai(UNITY_LINE_TYPE cmock_line);
+#define update_IgnoreAndReturn(cmock_retval) update_CMockIgnoreAndReturn(__LINE__, cmock_retval)
+void update_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return);
+#define update_StopIgnore() update_CMockStopIgnore()
+void update_CMockStopIgnore(void);
+#define update_ExpectAnyArgsAndReturn(cmock_retval) update_CMockExpectAnyArgsAndReturn(__LINE__, cmock_retval)
+void update_CMockExpectAnyArgsAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return);
+#define update_ExpectAndReturn(id, input, output, cmock_retval) update_CMockExpectAndReturn(__LINE__, id, input, output, cmock_retval)
+void update_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, fwk_id_t id, int64_t input, int64_t* output, int cmock_to_return);
+typedef int (* CMOCK_update_CALLBACK)(fwk_id_t id, int64_t input, int64_t* output, int cmock_num_calls);
+void update_AddCallback(CMOCK_update_CALLBACK Callback);
+void update_Stub(CMOCK_update_CALLBACK Callback);
+#define update_StubWithCallback update_Stub
+#define update_ExpectWithArrayAndReturn(id, input, output, output_Depth, cmock_retval) update_CMockExpectWithArrayAndReturn(__LINE__, id, input, output, output_Depth, cmock_retval)
+void update_CMockExpectWithArrayAndReturn(UNITY_LINE_TYPE cmock_line, fwk_id_t id, int64_t input, int64_t* output, int output_Depth, int cmock_to_return);
+#define update_ReturnThruPtr_output(output) update_CMockReturnMemThruPtr_output(__LINE__, output, sizeof(int64_t))
+#define update_ReturnArrayThruPtr_output(output, cmock_len) update_CMockReturnMemThruPtr_output(__LINE__, output, cmock_len * sizeof(*output))
+#define update_ReturnMemThruPtr_output(output, cmock_size) update_CMockReturnMemThruPtr_output(__LINE__, output, cmock_size)
+void update_CMockReturnMemThruPtr_output(UNITY_LINE_TYPE cmock_line, int64_t* output, size_t cmock_size);
+#define update_IgnoreArg_id() update_CMockIgnoreArg_id(__LINE__)
+void update_CMockIgnoreArg_id(UNITY_LINE_TYPE cmock_line);
+#define update_IgnoreArg_input() update_CMockIgnoreArg_input(__LINE__)
+void update_CMockIgnoreArg_input(UNITY_LINE_TYPE cmock_line);
+#define update_IgnoreArg_output() update_CMockIgnoreArg_output(__LINE__)
+void update_CMockIgnoreArg_output(UNITY_LINE_TYPE cmock_line);
+#define set_point_IgnoreAndReturn(cmock_retval) set_point_CMockIgnoreAndReturn(__LINE__, cmock_retval)
+void set_point_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return);
+#define set_point_StopIgnore() set_point_CMockStopIgnore()
+void set_point_CMockStopIgnore(void);
+#define set_point_ExpectAnyArgsAndReturn(cmock_retval) set_point_CMockExpectAnyArgsAndReturn(__LINE__, cmock_retval)
+void set_point_CMockExpectAnyArgsAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return);
+#define set_point_ExpectAndReturn(id, input, cmock_retval) set_point_CMockExpectAndReturn(__LINE__, id, input, cmock_retval)
+void set_point_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, fwk_id_t id, int64_t input, int cmock_to_return);
+typedef int (* CMOCK_set_point_CALLBACK)(fwk_id_t id, int64_t input, int cmock_num_calls);
+void set_point_AddCallback(CMOCK_set_point_CALLBACK Callback);
+void set_point_Stub(CMOCK_set_point_CALLBACK Callback);
+#define set_point_StubWithCallback set_point_Stub
+#define set_point_IgnoreArg_id() set_point_CMockIgnoreArg_id(__LINE__)
+void set_point_CMockIgnoreArg_id(UNITY_LINE_TYPE cmock_line);
+#define set_point_IgnoreArg_input() set_point_CMockIgnoreArg_input(__LINE__)
+void set_point_CMockIgnoreArg_input(UNITY_LINE_TYPE cmock_line);
 
 #if defined(__GNUC__) && !defined(__ICC) && !defined(__TMS470__)
 #if __GNUC__ > 4 || (__GNUC__ == 4 && (__GNUC_MINOR__ > 6 || (__GNUC_MINOR__ == 6 && __GNUC_PATCHLEVEL__ > 0)))

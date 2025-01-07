@@ -1,12 +1,13 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2024-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * Description:
  *     Power capping module.
  */
+#include <mod_pid_controller.h>
 #include <mod_power_capping.h>
 
 #include <interface_power_management.h>
@@ -29,6 +30,7 @@ struct pcapping_domain_ctx {
     unsigned int notifications_sent_count;
     struct interface_power_management_api *power_management_api;
     struct mod_power_measurement_driver_api *power_measurement_driver_api;
+    struct mod_pid_controller_api *pid_ctrl_api;
 };
 
 static struct {
@@ -68,6 +70,8 @@ static int mod_pcapping_request_cap(fwk_id_t domain_id, uint32_t requested_cap)
     }
 
     domain_ctx->requested_cap = requested_cap;
+    domain_ctx->pid_ctrl_api->set_point(
+        domain_ctx->config->pid_controller_id, requested_cap);
 
     return (requested_cap >= domain_ctx->applied_cap) ? FWK_SUCCESS :
                                                         FWK_PENDING;
@@ -205,6 +209,8 @@ static int mod_pcapping_get_power_limit(
 {
     int status;
     struct pcapping_domain_ctx *domain_ctx;
+    uint32_t power;
+    int64_t pid_output;
 
     status = pcapping_get_ctx(domain_id, &domain_ctx);
 
@@ -212,7 +218,28 @@ static int mod_pcapping_get_power_limit(
         return status;
     }
 
-    *power_limit = domain_ctx->requested_cap;
+    status = domain_ctx->power_measurement_driver_api->get_average_power(
+        domain_id, &power);
+
+    if (status != FWK_SUCCESS) {
+        return status;
+    }
+
+    status = domain_ctx->pid_ctrl_api->update(
+        domain_ctx->config->pid_controller_id, power, &pid_output);
+
+    if (status != FWK_SUCCESS) {
+        return status;
+    }
+
+    if (pid_output < 0) {
+        *power_limit = 0;
+    } else if (pid_output > UINT32_MAX) {
+        *power_limit = UINT32_MAX;
+    } else {
+        *power_limit = pid_output;
+    }
+
     return FWK_SUCCESS;
 }
 
@@ -256,7 +283,6 @@ static int mod_pcapping_process_notification(
     struct fwk_event *resp_event)
 {
     int status;
-    uint32_t applied_cap;
     struct pcapping_domain_ctx *domain_ctx;
 
     status = pcapping_get_ctx(event->target_id, &domain_ctx);
@@ -267,18 +293,7 @@ static int mod_pcapping_process_notification(
 
     if (fwk_id_is_equal(
             event->id, domain_ctx->config->power_limit_set_notification_id)) {
-        status = domain_ctx->power_management_api->get_power_limit(
-            domain_ctx->config->power_limiter_id, &applied_cap);
-
-        if (status != FWK_SUCCESS) {
-            return status;
-        }
-
-        if (domain_ctx->applied_cap == applied_cap) {
-            return FWK_SUCCESS;
-        }
-
-        domain_ctx->applied_cap = applied_cap;
+        domain_ctx->applied_cap = domain_ctx->requested_cap;
 
         struct fwk_event outbound_event = {
             .id = mod_pcapping_notification_id_cap_change,
@@ -315,6 +330,12 @@ int mod_pcapping_bind(fwk_id_t id, unsigned int round)
         domain_ctx->config->power_measurement_id,
         domain_ctx->config->power_measurement_api_id,
         &domain_ctx->power_measurement_driver_api);
+
+    /* Bind to PID Controller */
+    status = fwk_module_bind(
+        domain_ctx->config->pid_controller_id,
+        domain_ctx->config->pid_controller_api_id,
+        &domain_ctx->pid_ctrl_api);
 
     return status;
 }

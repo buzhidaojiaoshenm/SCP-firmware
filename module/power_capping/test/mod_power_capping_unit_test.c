@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2024-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -20,6 +20,7 @@
 #include <Mockmod_power_capping_extra.h>
 #include <internal/Mockfwk_core_internal.h>
 
+#include <mod_pid_controller.h>
 #include <mod_power_capping.h>
 
 #include <fwk_module_idx.h>
@@ -40,6 +41,11 @@ struct mod_power_measurement_driver_api test_power_measurement_driver_api = {
     .get_averaging_interval_range = get_averaging_interval_range,
 };
 
+struct mod_pid_controller_api test_pid_ctrl_api = {
+    .set_point = set_point,
+    .update = update,
+};
+
 void setUp(void)
 {
     memset((void *)test_ctx_table, 0U, sizeof(test_ctx_table));
@@ -53,6 +59,7 @@ void setUp(void)
             &test_power_management_api;
         pcapping_domain_ctx_table[i].power_measurement_driver_api =
             &test_power_measurement_driver_api;
+        pcapping_domain_ctx_table[i].pid_ctrl_api = &test_pid_ctrl_api;
         pcapping_domain_ctx_table[i].config =
             (struct mod_power_capping_domain_config *)test_domain_config[i]
                 .data;
@@ -79,6 +86,8 @@ void utest_mod_pcapping_request_cap_greater_than_applied(void)
 
         domain_ctx->applied_cap = applied_cap;
 
+        set_point_ExpectAndReturn(
+            domain_ctx->config->pid_controller_id, requested_cap, FWK_SUCCESS);
         status = mod_pcapping_request_cap(domain_id, requested_cap);
 
         TEST_ASSERT_EQUAL(status, FWK_SUCCESS);
@@ -101,6 +110,8 @@ void utest_mod_pcapping_request_cap_equal_applied(void)
 
         domain_ctx->applied_cap = applied_cap;
 
+        set_point_ExpectAndReturn(
+            domain_ctx->config->pid_controller_id, requested_cap, FWK_SUCCESS);
         status = mod_pcapping_request_cap(domain_id, requested_cap);
 
         TEST_ASSERT_EQUAL(status, FWK_SUCCESS);
@@ -123,6 +134,8 @@ void utest_mod_pcapping_request_cap_smaller_than_applied(void)
 
         domain_ctx->applied_cap = applied_cap;
 
+        set_point_ExpectAndReturn(
+            domain_ctx->config->pid_controller_id, requested_cap, FWK_SUCCESS);
         status = mod_pcapping_request_cap(domain_id, requested_cap);
 
         TEST_ASSERT_EQUAL(status, FWK_PENDING);
@@ -180,17 +193,28 @@ void utest_mod_pcapping_get_power_limit_success(void)
     fwk_id_t domain_id;
     struct pcapping_domain_ctx *domain_ctx;
     uint32_t limit;
-    uint32_t requested_cap = 40U;
+    uint32_t expected_power = 25U;
+    int64_t pid_output = 35U;
 
     for (unsigned int index = 0U; index < TEST_DOMAIN_COUNT; index++) {
         domain_id = FWK_ID_ELEMENT(FWK_MODULE_IDX_POWER_CAPPING, index);
         domain_ctx = &pcapping_domain_ctx_table[index];
 
-        domain_ctx->requested_cap = requested_cap;
+        get_average_power_ExpectAndReturn(domain_id, NULL, FWK_SUCCESS);
+        get_average_power_IgnoreArg_power();
+        get_average_power_ReturnThruPtr_power(&expected_power);
+
+        update_ExpectAndReturn(
+            domain_ctx->config->pid_controller_id,
+            expected_power,
+            NULL,
+            FWK_SUCCESS);
+        update_IgnoreArg_output();
+        update_ReturnThruPtr_output(&pid_output);
 
         status = mod_pcapping_get_power_limit(domain_id, &limit);
         TEST_ASSERT_EQUAL(status, FWK_SUCCESS);
-        TEST_ASSERT_EQUAL(requested_cap, limit);
+        TEST_ASSERT_EQUAL(pid_output, limit);
     }
 }
 
@@ -346,16 +370,14 @@ void utest_mod_pcapping_process_notification_success(void)
         domain_id = FWK_ID_ELEMENT(FWK_MODULE_IDX_POWER_CAPPING, index);
         domain_ctx = &(pcapping_domain_ctx_table[index]);
 
+        uint32_t requested_cap = 44U + index;
+        domain_ctx->requested_cap = requested_cap;
+
         struct fwk_event notification = {
             .id = domain_ctx->config->power_limit_set_notification_id,
             .target_id = domain_id,
         };
 
-        uint32_t applied_cap = 44U + index;
-        get_power_limit_ExpectAndReturn(
-            domain_ctx->config->power_limiter_id, NULL, FWK_SUCCESS);
-        get_power_limit_IgnoreArg_power_limit();
-        get_power_limit_ReturnThruPtr_power_limit(&applied_cap);
         struct fwk_event outbound_notification = {
             .source_id = domain_id,
             .id = FWK_ID_NOTIFICATION_INIT(
@@ -371,7 +393,7 @@ void utest_mod_pcapping_process_notification_success(void)
 
         status = mod_pcapping_process_notification(&notification, NULL);
 
-        TEST_ASSERT_EQUAL(domain_ctx->applied_cap, applied_cap);
+        TEST_ASSERT_EQUAL(domain_ctx->requested_cap, domain_ctx->applied_cap);
         TEST_ASSERT_EQUAL(status, FWK_SUCCESS);
     }
 }
@@ -410,6 +432,12 @@ void utest_mod_pcapping_bind_round_0(void)
             domain_ctx->config->power_measurement_id,
             domain_ctx->config->power_measurement_api_id,
             &domain_ctx->power_measurement_driver_api,
+            FWK_SUCCESS);
+
+        fwk_module_bind_ExpectAndReturn(
+            domain_ctx->config->pid_controller_id,
+            domain_ctx->config->pid_controller_api_id,
+            &domain_ctx->pid_ctrl_api,
             FWK_SUCCESS);
 
         status = mod_pcapping_bind(domain_id, round);
