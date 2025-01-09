@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2024-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -20,20 +20,21 @@
 #include <fmw_cmsis.h>
 
 /* Module 'timer' element count */
-#define MOD_TIMER_ELEMENT_COUNT 2
+#define MOD_TIMER_ELEMENT_COUNT (SCP_TIMER_ELEMENT_COUNT + 1)
 
 /* Timer HAL config */
 static const struct fwk_element timer_dev_table[MOD_TIMER_ELEMENT_COUNT] = {
-    [0] = {
+    [SCP_TIMER_ALARM_EIDX] = {
         .name = "REFCLK",
         .data = &((struct mod_timer_dev_config) {
-            .id = FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_GTIMER, 0),
+            .id = FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_GTIMER,
+                SCP_TIMER_ALARM_EIDX),
             .timer_irq = REFCLK_GTIMER_IRQ,
         }),
         .sub_element_count =
             SCP_CFGD_MOD_TIMER_ALARM_IDX_COUNT, /* Number of alarms */
     },
-    [1] = { 0 },
+    [SCP_TIMER_ELEMENT_COUNT] = { 0 },
 };
 
 static const struct fwk_element *timer_get_dev_table(fwk_id_t module_id)
