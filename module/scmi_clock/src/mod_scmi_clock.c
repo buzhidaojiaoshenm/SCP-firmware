@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2015-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2015-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -1520,7 +1520,7 @@ static int scmi_clock_name_get_handler(
     const uint32_t *payload)
 {
     int status, respond_status;
-    unsigned int agent_id, clock_dev_idx;
+    unsigned int agent_id;
     const struct mod_scmi_clock_device *clock_device;
     size_t response_size;
     const struct scmi_clock_name_get_a2p *parameters;
@@ -1553,9 +1553,7 @@ static int scmi_clock_name_get_handler(
         return status;
     }
 
-    clock_dev_idx =
-        scmi_clock_get_clock_device_idx(agent_id, parameters->clock_id);
-    if (!clock_has_extended_name(agent_id, clock_dev_idx)) {
+    if (!clock_has_extended_name(agent_id, parameters->clock_id)) {
         return_values.status = (int32_t)SCMI_NOT_SUPPORTED;
         goto exit;
     }

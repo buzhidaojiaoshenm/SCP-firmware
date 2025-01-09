@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2022-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2022-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -1174,8 +1174,6 @@ void test_scmi_clock_name_get_handler_success(void)
     mod_scmi_from_protocol_api_get_agent_id_ReturnThruPtr_agent_id(&agent_id);
 
     fwk_id_get_element_idx_ExpectAnyArgsAndReturn(CLOCK_DEV_IDX_FAKE1);
-
-    fwk_id_get_element_idx_ExpectAnyArgsAndReturn(CLOCK_DEV_IDX_FAKE1);
     fwk_id_is_equal_ExpectAnyArgsAndReturn(true);
 
     __fwk_put_event_ExpectAnyArgsAndReturn(FWK_SUCCESS);
@@ -1226,8 +1224,6 @@ void test_scmi_clock_name_get_handler_extended_name_not_supported(void)
 
     mod_scmi_from_protocol_api_get_agent_id_ExpectAnyArgsAndReturn(FWK_SUCCESS);
     mod_scmi_from_protocol_api_get_agent_id_ReturnThruPtr_agent_id(&agent_id);
-
-    fwk_id_get_element_idx_ExpectAnyArgsAndReturn(CLOCK_DEV_IDX_FAKE0);
 
     mod_scmi_from_protocol_api_respond_Stub(
         clock_has_extended_name_callback);
