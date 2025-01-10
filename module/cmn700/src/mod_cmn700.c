@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2020-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2020-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -423,6 +423,14 @@ static int cmn700_discovery(void)
         MOD_NAME "Total CCG Request Agent nodes: %d", ccg_ra_reg_count);
     FWK_LOG_INFO(MOD_NAME "Total CCG Home Agent nodes: %d", ccg_ha_reg_count);
     FWK_LOG_INFO(MOD_NAME "Total CCG Link Agent nodes: %d", ccla_reg_count);
+
+#if FWK_LOG_LEVEL > FWK_LOG_LEVEL_INFO
+    (void)ccg_ha_reg_count;
+    (void)ccla_reg_count;
+    (void)cxg_ra_reg_count;
+    (void)cxg_ha_reg_count;
+    (void)cxla_reg_count;
+#endif
 
     return FWK_SUCCESS;
 }
