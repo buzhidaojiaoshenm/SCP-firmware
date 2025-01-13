@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2024-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -62,11 +62,11 @@ struct mod_pinctrl_group {
     /*! Pointer to NULL terminated string for name of function */
     char *name;
 
-    /*! Allowed group functions to choose from */
-    const uint16_t *allowed_functions;
+    /*! Attribute to mark this group as GPIO */
+    bool is_gpio;
 
-    /*! Number of allowed group functions to choose from */
-    const uint16_t num_allowed_functions;
+    /*! Group function */
+    const uint16_t function;
 
     /*! Pointer to the pins associated to the group */
     const uint16_t *pins;

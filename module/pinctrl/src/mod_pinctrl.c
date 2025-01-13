@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2024-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -135,11 +135,8 @@ static int get_function_attributes(
         struct mod_pinctrl_group *groups = pinctrl_ctx.config->groups_table;
         for (uint32_t index = 0; index < pinctrl_ctx.config->group_table_count;
              ++index) {
-            for (uint32_t i = 0; i < groups[index].num_allowed_functions; ++i) {
-                if (function_id == groups[index].allowed_functions[i]) {
-                    pinctrl_attributes->number_of_elements++;
-                    break;
-                }
+            if (function_id == groups[index].function) {
+                pinctrl_attributes->number_of_elements++;
             }
         }
     }
@@ -222,22 +219,13 @@ static int get_group_id_associated_with_function(
     }
 
     for (uint32_t group_index = 0; group_index < group_count; ++group_index) {
-        for (uint32_t func_index = 0;
-             func_index < pinctrl_ctx.config->groups_table[group_index]
-                              .num_allowed_functions;
-             ++func_index) {
-            if ((function_id ==
-                 pinctrl_ctx.config->groups_table[group_index]
-                     .allowed_functions[func_index]) &&
-                (search_index == index)) {
+        if (function_id ==
+            pinctrl_ctx.config->groups_table[group_index].function) {
+            if (search_index == index) {
                 *group_id = group_index;
                 return FWK_SUCCESS;
-            } else if (
-                function_id ==
-                pinctrl_ctx.config->groups_table[group_index]
-                    .allowed_functions[func_index]) {
+            } else {
                 ++search_index;
-                break;
             }
         }
     }
@@ -261,18 +249,16 @@ static int get_pin_id_associated_with_function(
         for (uint32_t func_index = 0; func_index <
              pinctrl_ctx.config->pins_table[pin_index].num_allowed_functions;
              ++func_index) {
-            if ((function_id ==
-                 pinctrl_ctx.config->pins_table[pin_index]
-                     .allowed_functions[func_index]) &&
-                (search_index == index)) {
-                *pin_id = pin_index;
-                return FWK_SUCCESS;
-            } else if (
-                function_id ==
+            if (function_id ==
                 pinctrl_ctx.config->pins_table[pin_index]
                     .allowed_functions[func_index]) {
-                ++search_index;
-                break;
+                if (search_index == index) {
+                    *pin_id = pin_index;
+                    return FWK_SUCCESS;
+                } else {
+                    ++search_index;
+                    break;
+                }
             }
         }
     }
@@ -318,15 +304,9 @@ static void get_number_of_groups_can_support_function(
     for (uint32_t group_index = 0;
          group_index < pinctrl_ctx.config->group_table_count;
          ++group_index) {
-        for (uint32_t func_index = 0;
-             func_index < pinctrl_ctx.config->groups_table[group_index]
-                              .num_allowed_functions;
-             ++func_index) {
-            if (pinctrl_ctx.config->groups_table[group_index]
-                    .allowed_functions[func_index] == function_id) {
-                ++(*number_of_groups);
-                break;
-            }
+        if (pinctrl_ctx.config->groups_table[group_index].function ==
+            function_id) {
+            ++(*number_of_groups);
         }
     }
 }
@@ -434,6 +414,11 @@ static int get_group_configuration_by_value(
         return FWK_E_RANGE;
     }
 
+    if ((pinctrl_ctx.config->groups_table[group_id].num_pins > 1) &&
+        (pinctrl_ctx.config->groups_table[group_id].is_gpio == false)) {
+        return FWK_E_PARAM;
+    }
+
     status = get_pin_id_associated_with_group(
         group_id, first_group_pin_index, &pin_id);
     if (status != FWK_SUCCESS) {
@@ -517,6 +502,11 @@ static int get_group_configuration_by_index(
 
     if (group_id >= pinctrl_ctx.config->group_table_count) {
         return FWK_E_RANGE;
+    }
+
+    if ((pinctrl_ctx.config->groups_table[group_id].num_pins > 1) &&
+        (pinctrl_ctx.config->groups_table[group_id].is_gpio == false)) {
+        return FWK_E_PARAM;
     }
 
     status = get_pin_id_associated_with_group(
@@ -810,6 +800,10 @@ static int set_group_function(uint16_t group_index, uint32_t function)
 
     if (group_index >= pinctrl_ctx.config->group_table_count) {
         return FWK_E_RANGE;
+    }
+
+    if (pinctrl_ctx.config->groups_table[group_index].function != function) {
+        return FWK_E_PARAM;
     }
 
     group_pins_count = pinctrl_ctx.config->groups_table[group_index].num_pins;
