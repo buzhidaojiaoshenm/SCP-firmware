@@ -1,12 +1,12 @@
 #
 # Arm SCP/MCP Software
-# Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+# Copyright (c) 2024-2025, Arm Limited and Contributors. All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
 
 .check-lint:
-  image: ${CI_REGISTRY_IMAGE}/ci-base:latest
+  image: ${CI_REGISTRY_IMAGE}/ci-base:${DOCKER_IMAGE_TAG}
   script:
     - python3 tools/${CHECK_SCRIPT}.py
   parallel:
@@ -18,12 +18,12 @@
         - check_tabs
 
 .check-copyright:
-  image: ${CI_REGISTRY_IMAGE}/ci-base:latest
+  image: ${CI_REGISTRY_IMAGE}/ci-base:${DOCKER_IMAGE_TAG}
   script:
     - python3 tools/check_copyright.py -c "${CI_MERGE_REQUEST_DIFF_BASE_SHA}"
 
 .check-style:
-  image: ${CI_REGISTRY_IMAGE}/ci-base:latest
+  image: ${CI_REGISTRY_IMAGE}/ci-base:${DOCKER_IMAGE_TAG}
   script:
     - python3 tools/check_style.py -c "${CI_MERGE_REQUEST_DIFF_BASE_SHA}"
   artifacts:
@@ -33,7 +33,7 @@
       - code-style.patch
 
 .check-for-merge-commits:
-  image: ${CI_REGISTRY_IMAGE}/ci-base:latest
+  image: ${CI_REGISTRY_IMAGE}/ci-base:${DOCKER_IMAGE_TAG}
   script:
     - |
       merge_count=$(git log --merges --oneline \

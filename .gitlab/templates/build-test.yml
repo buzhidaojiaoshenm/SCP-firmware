@@ -1,12 +1,12 @@
 #
 # Arm SCP/MCP Software
-# Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+# Copyright (c) 2024-2025, Arm Limited and Contributors. All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
 
 .build-products:
-  image: ${CI_REGISTRY_IMAGE}/ci-base:latest
+  image: ${CI_REGISTRY_IMAGE}/ci-base:${DOCKER_IMAGE_TAG}
   variables:
     GIT_SUBMODULE_STRATEGY: recursive
     GIT_DEPTH: 1
@@ -51,7 +51,7 @@
           [DEBUG, INFO, WARN, ERROR, CRIT, DISABLED]
 
 .build-optee:
-  image: ${CI_REGISTRY_IMAGE}/optee-build:latest
+  image: ${CI_REGISTRY_IMAGE}/optee-build:${DOCKER_IMAGE_TAG}
   variables:
     GIT_SUBMODULE_STRATEGY: recursive
     GIT_DEPTH: 1

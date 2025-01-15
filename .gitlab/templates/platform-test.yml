@@ -1,12 +1,12 @@
 #
 # Arm SCP/MCP Software
-# Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+# Copyright (c) 2024-2025, Arm Limited and Contributors. All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
 
 .platform-test:
-  image: ${CI_REGISTRY_IMAGE}/plat-test-amd64
+  image: ${CI_REGISTRY_IMAGE}/plat-test-amd64:${DOCKER_IMAGE_TAG}
   tags:
     - amd64
   variables:

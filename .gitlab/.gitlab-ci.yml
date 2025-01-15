@@ -24,6 +24,10 @@ variables:
   FETCH_PUBLIC_MR_NUMBER:
     description: "MR number to fetch"
 
+  DOCKER_IMAGE_TAG:
+    description: "Docker Tag to use for this pipeline"
+    value: "latest"
+
 default:
   tags:
     - arm64
