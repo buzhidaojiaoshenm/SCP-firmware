@@ -5,6 +5,7 @@
 #include "cmock.h"
 #include "Mockgicx00_reg.h"
 
+static const char* CMockString_read_mpidr_el1 = "read_mpidr_el1";
 static const char* CMockString_value = "value";
 static const char* CMockString_write_icc_pmr = "write_icc_pmr";
 static const char* CMockString_write_icc_sre = "write_icc_sre";
@@ -37,6 +38,14 @@ typedef struct _CMOCK_write_icc_pmr_CALL_INSTANCE
 
 } CMOCK_write_icc_pmr_CALL_INSTANCE;
 
+typedef struct _CMOCK_read_mpidr_el1_CALL_INSTANCE
+{
+  UNITY_LINE_TYPE LineNumber;
+  char ExpectAnyArgsBool;
+  uint64_t ReturnVal;
+
+} CMOCK_read_mpidr_el1_CALL_INSTANCE;
+
 static struct Mockgicx00_regInstance
 {
   char write_icc_sre_IgnoreBool;
@@ -54,6 +63,12 @@ static struct Mockgicx00_regInstance
   CMOCK_write_icc_pmr_CALLBACK write_icc_pmr_CallbackFunctionPointer;
   int write_icc_pmr_CallbackCalls;
   CMOCK_MEM_INDEX_TYPE write_icc_pmr_CallInstance;
+  char read_mpidr_el1_IgnoreBool;
+  uint64_t read_mpidr_el1_FinalReturn;
+  char read_mpidr_el1_CallbackBool;
+  CMOCK_read_mpidr_el1_CALLBACK read_mpidr_el1_CallbackFunctionPointer;
+  int read_mpidr_el1_CallbackCalls;
+  CMOCK_MEM_INDEX_TYPE read_mpidr_el1_CallInstance;
 } Mock;
 
 extern jmp_buf AbortFrame;
@@ -97,6 +112,19 @@ void Mockgicx00_reg_Verify(void)
     UNITY_TEST_FAIL(cmock_line, CMockStringCalledLess);
   }
   if (Mock.write_icc_pmr_CallbackFunctionPointer != NULL)
+  {
+    call_instance = CMOCK_GUTS_NONE;
+    (void)call_instance;
+  }
+  call_instance = Mock.read_mpidr_el1_CallInstance;
+  if (Mock.read_mpidr_el1_IgnoreBool)
+    call_instance = CMOCK_GUTS_NONE;
+  if (CMOCK_GUTS_NONE != call_instance)
+  {
+    UNITY_SET_DETAIL(CMockString_read_mpidr_el1);
+    UNITY_TEST_FAIL(cmock_line, CMockStringCalledLess);
+  }
+  if (Mock.read_mpidr_el1_CallbackFunctionPointer != NULL)
   {
     call_instance = CMOCK_GUTS_NONE;
     (void)call_instance;
@@ -415,5 +443,87 @@ void write_icc_pmr_CMockIgnoreArg_value(UNITY_LINE_TYPE cmock_line)
   CMOCK_write_icc_pmr_CALL_INSTANCE* cmock_call_instance = (CMOCK_write_icc_pmr_CALL_INSTANCE*)CMock_Guts_GetAddressFor(CMock_Guts_MemEndOfChain(Mock.write_icc_pmr_CallInstance));
   UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringIgnPreExp);
   cmock_call_instance->IgnoreArg_value = 1;
+}
+
+uint64_t read_mpidr_el1(void)
+{
+  UNITY_LINE_TYPE cmock_line = TEST_LINE_NUM;
+  CMOCK_read_mpidr_el1_CALL_INSTANCE* cmock_call_instance;
+  UNITY_SET_DETAIL(CMockString_read_mpidr_el1);
+  cmock_call_instance = (CMOCK_read_mpidr_el1_CALL_INSTANCE*)CMock_Guts_GetAddressFor(Mock.read_mpidr_el1_CallInstance);
+  Mock.read_mpidr_el1_CallInstance = CMock_Guts_MemNext(Mock.read_mpidr_el1_CallInstance);
+  if (Mock.read_mpidr_el1_IgnoreBool)
+  {
+    UNITY_CLR_DETAILS();
+    if (cmock_call_instance == NULL)
+      return Mock.read_mpidr_el1_FinalReturn;
+    memcpy((void*)(&Mock.read_mpidr_el1_FinalReturn), (void*)(&cmock_call_instance->ReturnVal),
+         sizeof(uint64_t[sizeof(cmock_call_instance->ReturnVal) == sizeof(uint64_t) ? 1 : -1])); /* add uint64_t to :treat_as_array if this causes an error */
+    return cmock_call_instance->ReturnVal;
+  }
+  if (!Mock.read_mpidr_el1_CallbackBool &&
+      Mock.read_mpidr_el1_CallbackFunctionPointer != NULL)
+  {
+    uint64_t cmock_cb_ret = Mock.read_mpidr_el1_CallbackFunctionPointer(Mock.read_mpidr_el1_CallbackCalls++);
+    UNITY_CLR_DETAILS();
+    return cmock_cb_ret;
+  }
+  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringCalledMore);
+  cmock_line = cmock_call_instance->LineNumber;
+  if (Mock.read_mpidr_el1_CallbackFunctionPointer != NULL)
+  {
+    cmock_call_instance->ReturnVal = Mock.read_mpidr_el1_CallbackFunctionPointer(Mock.read_mpidr_el1_CallbackCalls++);
+  }
+  UNITY_CLR_DETAILS();
+  return cmock_call_instance->ReturnVal;
+}
+
+void read_mpidr_el1_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, uint64_t cmock_to_return)
+{
+  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_read_mpidr_el1_CALL_INSTANCE));
+  CMOCK_read_mpidr_el1_CALL_INSTANCE* cmock_call_instance = (CMOCK_read_mpidr_el1_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
+  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringOutOfMemory);
+  memset(cmock_call_instance, 0, sizeof(*cmock_call_instance));
+  Mock.read_mpidr_el1_CallInstance = CMock_Guts_MemChain(Mock.read_mpidr_el1_CallInstance, cmock_guts_index);
+  Mock.read_mpidr_el1_IgnoreBool = (char)0;
+  cmock_call_instance->LineNumber = cmock_line;
+  cmock_call_instance->ExpectAnyArgsBool = (char)0;
+  cmock_call_instance->ReturnVal = cmock_to_return;
+  Mock.read_mpidr_el1_IgnoreBool = (char)1;
+}
+
+void read_mpidr_el1_CMockStopIgnore(void)
+{
+  if(Mock.read_mpidr_el1_IgnoreBool)
+    Mock.read_mpidr_el1_CallInstance = CMock_Guts_MemNext(Mock.read_mpidr_el1_CallInstance);
+  Mock.read_mpidr_el1_IgnoreBool = (char)0;
+}
+
+void read_mpidr_el1_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, uint64_t cmock_to_return)
+{
+  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_read_mpidr_el1_CALL_INSTANCE));
+  CMOCK_read_mpidr_el1_CALL_INSTANCE* cmock_call_instance = (CMOCK_read_mpidr_el1_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
+  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringOutOfMemory);
+  memset(cmock_call_instance, 0, sizeof(*cmock_call_instance));
+  Mock.read_mpidr_el1_CallInstance = CMock_Guts_MemChain(Mock.read_mpidr_el1_CallInstance, cmock_guts_index);
+  Mock.read_mpidr_el1_IgnoreBool = (char)0;
+  cmock_call_instance->LineNumber = cmock_line;
+  cmock_call_instance->ExpectAnyArgsBool = (char)0;
+  memcpy((void*)(&cmock_call_instance->ReturnVal), (void*)(&cmock_to_return),
+         sizeof(uint64_t[sizeof(cmock_to_return) == sizeof(uint64_t) ? 1 : -1])); /* add uint64_t to :treat_as_array if this causes an error */
+}
+
+void read_mpidr_el1_AddCallback(CMOCK_read_mpidr_el1_CALLBACK Callback)
+{
+  Mock.read_mpidr_el1_IgnoreBool = (char)0;
+  Mock.read_mpidr_el1_CallbackBool = (char)1;
+  Mock.read_mpidr_el1_CallbackFunctionPointer = Callback;
+}
+
+void read_mpidr_el1_Stub(CMOCK_read_mpidr_el1_CALLBACK Callback)
+{
+  Mock.read_mpidr_el1_IgnoreBool = (char)0;
+  Mock.read_mpidr_el1_CallbackBool = (char)0;
+  Mock.read_mpidr_el1_CallbackFunctionPointer = Callback;
 }
 

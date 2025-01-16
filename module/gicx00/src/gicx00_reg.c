@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2024-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -26,4 +26,9 @@ void write_igrpen0_el1(uint64_t value)
 void write_icc_pmr(uint64_t value)
 {
     WRITE_SYSREG(ICC_PMR_EL1, value);
+}
+
+uint64_t read_mpidr_el1(void)
+{
+    return READ_SYSREG(MPIDR_EL1);
 }

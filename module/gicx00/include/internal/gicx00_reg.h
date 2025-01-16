@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2024-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -58,11 +58,14 @@
 
 #define ICC_PMR_MAX 0xFFu
 
+#define MPDIR_AFFINITY_MASK 0xFF00FFFFFFull
+
 #define INTERRUPT_ID_PPI_LIMIT 32u
 #define INTERRUPT_ID_LIMIT     1020u
 
 void write_icc_sre(uint64_t value);
 void write_igrpen0_el1(uint64_t value);
 void write_icc_pmr(uint64_t value);
+uint64_t read_mpidr_el1(void);
 
 #endif /* INTERNAL_GICX00_REG_H */

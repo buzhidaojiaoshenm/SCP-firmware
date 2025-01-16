@@ -66,6 +66,16 @@ void write_icc_pmr_Stub(CMOCK_write_icc_pmr_CALLBACK Callback);
 #define write_icc_pmr_StubWithCallback write_icc_pmr_Stub
 #define write_icc_pmr_IgnoreArg_value() write_icc_pmr_CMockIgnoreArg_value(__LINE__)
 void write_icc_pmr_CMockIgnoreArg_value(UNITY_LINE_TYPE cmock_line);
+#define read_mpidr_el1_IgnoreAndReturn(cmock_retval) read_mpidr_el1_CMockIgnoreAndReturn(__LINE__, cmock_retval)
+void read_mpidr_el1_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, uint64_t cmock_to_return);
+#define read_mpidr_el1_StopIgnore() read_mpidr_el1_CMockStopIgnore()
+void read_mpidr_el1_CMockStopIgnore(void);
+#define read_mpidr_el1_ExpectAndReturn(cmock_retval) read_mpidr_el1_CMockExpectAndReturn(__LINE__, cmock_retval)
+void read_mpidr_el1_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, uint64_t cmock_to_return);
+typedef uint64_t (* CMOCK_read_mpidr_el1_CALLBACK)(int cmock_num_calls);
+void read_mpidr_el1_AddCallback(CMOCK_read_mpidr_el1_CALLBACK Callback);
+void read_mpidr_el1_Stub(CMOCK_read_mpidr_el1_CALLBACK Callback);
+#define read_mpidr_el1_StubWithCallback read_mpidr_el1_Stub
 
 #if defined(__GNUC__) && !defined(__ICC) && !defined(__TMS470__)
 #if __GNUC__ > 4 || (__GNUC__ == 4 && (__GNUC_MINOR__ > 6 || (__GNUC_MINOR__ == 6 && __GNUC_PATCHLEVEL__ > 0)))

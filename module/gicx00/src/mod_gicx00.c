@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2024-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -37,6 +37,7 @@ static void initialize_interrupts(const struct mod_gicx00_config *config)
 {
     uint32_t num_irqs;
     uint32_t index;
+    uint64_t mpidr;
 
     num_irqs = fwk_mmio_read_32(config->gicd_base + GICD_TYPER) &
         GICD_TYPER_IT_LINES_NUMBER;
@@ -68,8 +69,11 @@ static void initialize_interrupts(const struct mod_gicx00_config *config)
     for (index = INTERRUPT_ID_PPI_LIMIT / 4; index < num_irqs / 4; index++) {
         fwk_mmio_write_32(config->gicd_base + GICD_IPRIORITYR(index), 0);
     }
+
+    /* Route all interrupts to the current processing element */
+    mpidr = read_mpidr_el1() & MPDIR_AFFINITY_MASK;
     for (index = INTERRUPT_ID_PPI_LIMIT; index < num_irqs; index++) {
-        fwk_mmio_write_64(config->gicd_base + GICD_IROUTER(index), 0);
+        fwk_mmio_write_64(config->gicd_base + GICD_IROUTER(index), mpidr);
     }
 }
 
