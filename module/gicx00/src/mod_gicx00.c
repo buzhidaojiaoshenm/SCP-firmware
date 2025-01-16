@@ -101,6 +101,7 @@ static int gicx00_init(
     switch (reg) {
     case GICR_IIDR_GIC600:
     case GICR_IIDR_GIC600AE:
+    case GICR_IIDR_GIC700:
     case GICR_IIDR_GIC720AE:
         gic600_init(config);
         break;
