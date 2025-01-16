@@ -1,6 +1,6 @@
 #
 # Arm SCP/MCP Software
-# Copyright (c) 2022, Arm Limited and Contributors. All rights reserved.
+# Copyright (c) 2022-2025, Arm Limited and Contributors. All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -42,7 +42,7 @@ list(APPEND scp_sources "$(CMAKE_CURRENT_SOURCE_DIR)/deferred_response_architect
 list(APPEND scp_sources "$(CMAKE_CURRENT_SOURCE_DIR)/framework.md")
 list(APPEND scp_sources "$(CMAKE_CURRENT_SOURCE_DIR)/glossary.md")
 list(APPEND scp_sources "${CMAKE_CURRENT_SOURCE_DIR}/build_system.md")
-list(APPEND scp_sources "${CMAKE_CURRENT_SOURCE_DIR}/cmake_readme.md")
+list(APPEND scp_sources "${CMAKE_CURRENT_SOURCE_DIR}/build_configurations.md")
 
 # cmake-format: on
 
