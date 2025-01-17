@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2023-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2023-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -88,6 +88,11 @@ static const struct mod_scmi_from_protocol_api scmi_api = {
 static const struct mod_power_capping_api power_capping_api = {
     .get_applied_cap = get_applied_cap,
     .request_cap = request_cap,
+    .get_average_power = get_average_power,
+    .get_averaging_interval = get_averaging_interval,
+    .get_averaging_interval_range = get_averaging_interval_range,
+    .get_averaging_interval_step = get_averaging_interval_step,
+    .set_averaging_interval = set_averaging_interval,
 };
 
 static const struct mod_power_coordinator_api power_coordinator_api = {
@@ -417,6 +422,22 @@ void utest_message_handler_domain_attributes_valid(void)
         .parent_id = config->parent_idx,
     };
 
+    uint32_t expected_pai_step = config->pai_step;
+    uint32_t expected_min_pai = config->min_pai;
+    uint32_t expected_max_pai = config->max_pai;
+
+    get_averaging_interval_step_ExpectAndReturn(
+        config->power_capping_domain_id, NULL, FWK_SUCCESS);
+    get_averaging_interval_step_IgnoreArg_pai_step();
+    get_averaging_interval_step_ReturnThruPtr_pai_step(&expected_pai_step);
+
+    get_averaging_interval_range_ExpectAndReturn(
+        config->power_capping_domain_id, NULL, NULL, FWK_SUCCESS);
+    get_averaging_interval_range_IgnoreArg_min_pai();
+    get_averaging_interval_range_IgnoreArg_max_pai();
+    get_averaging_interval_range_ReturnThruPtr_min_pai(&expected_min_pai);
+    get_averaging_interval_range_ReturnThruPtr_max_pai(&expected_max_pai);
+
 #ifdef BUILD_HAS_SCMI_NOTIFICATIONS
     ret_payload.attributes |= config->cap_pai_change_notification_support
         << POWER_CAPPING_NOTIF_SUP_POS;
@@ -726,13 +747,12 @@ void utest_message_handler_power_capping_get_pai_valid(void)
         .pai = pai,
     };
 
-    get_coordinator_period_ExpectWithArrayAndReturn(
-        scmi_power_capping_default_config.power_coordinator_domain_id,
-        &pai,
-        sizeof(pai),
+    get_averaging_interval_ExpectAndReturn(
+        scmi_power_capping_default_config.power_capping_domain_id,
+        NULL,
         FWK_SUCCESS);
-    get_coordinator_period_IgnoreArg_period();
-    get_coordinator_period_ReturnMemThruPtr_period(&pai, sizeof(pai));
+    get_averaging_interval_IgnoreArg_pai();
+    get_averaging_interval_ReturnThruPtr_pai(&pai);
 
     mod_scmi_from_protocol_api_scmi_frame_validation_ExpectAnyArgsAndReturn(
         SCMI_SUCCESS);
@@ -742,8 +762,6 @@ void utest_message_handler_power_capping_get_pai_valid(void)
 
 void utest_message_handler_power_capping_get_pai_failure(void)
 {
-    uint32_t pai = __LINE__; /* Arbitrary value */
-
     struct scmi_power_capping_pai_get_a2p cmd_payload = {
         .domain_id = FAKE_POWER_CAPPING_IDX_1
     };
@@ -752,12 +770,11 @@ void utest_message_handler_power_capping_get_pai_failure(void)
         .status = SCMI_GENERIC_ERROR,
     };
 
-    get_coordinator_period_ExpectWithArrayAndReturn(
-        scmi_power_capping_default_config.power_coordinator_domain_id,
-        &pai,
-        sizeof(pai),
+    get_averaging_interval_ExpectAndReturn(
+        scmi_power_capping_default_config.power_capping_domain_id,
+        NULL,
         FWK_E_DEVICE);
-    get_coordinator_period_IgnoreArg_period();
+    get_averaging_interval_IgnoreArg_pai();
 
     mod_scmi_from_protocol_api_scmi_frame_validation_ExpectAnyArgsAndReturn(
         SCMI_SUCCESS);
@@ -784,8 +801,8 @@ void utest_message_handler_power_capping_set_pai_valid(void)
     fwk_id_is_equal_ExpectAndReturn(FWK_ID_NONE, FWK_ID_NONE, true);
 #endif
 
-    set_coordinator_period_ExpectAndReturn(
-        scmi_power_capping_default_config.power_coordinator_domain_id,
+    set_averaging_interval_ExpectAndReturn(
+        scmi_power_capping_default_config.power_capping_domain_id,
         pai,
         FWK_SUCCESS);
 
@@ -814,8 +831,8 @@ void utest_message_handler_power_capping_set_pai_failure(void)
     fwk_id_is_equal_ExpectAndReturn(FWK_ID_NONE, FWK_ID_NONE, true);
 #endif
 
-    set_coordinator_period_ExpectAndReturn(
-        scmi_power_capping_default_config.power_coordinator_domain_id,
+    set_averaging_interval_ExpectAndReturn(
+        scmi_power_capping_default_config.power_capping_domain_id,
         pai,
         FWK_E_DEVICE);
 
@@ -879,21 +896,19 @@ void utest_message_handler_power_capping_get_power_measurement_valid(void)
         .pai = pai,
     };
 
-    get_power_ExpectWithArrayAndReturn(
-        scmi_power_capping_default_config.power_meter_domain_id,
-        &power,
-        sizeof(power),
+    get_average_power_ExpectAndReturn(
+        scmi_power_capping_default_config.power_capping_domain_id,
+        NULL,
         FWK_SUCCESS);
-    get_power_IgnoreArg_power();
-    get_power_ReturnMemThruPtr_power(&power, sizeof(power));
+    get_average_power_IgnoreArg_power();
+    get_average_power_ReturnThruPtr_power(&power);
 
-    get_coordinator_period_ExpectWithArrayAndReturn(
-        scmi_power_capping_default_config.power_coordinator_domain_id,
-        &pai,
-        sizeof(pai),
+    get_averaging_interval_ExpectAndReturn(
+        scmi_power_capping_default_config.power_capping_domain_id,
+        NULL,
         FWK_SUCCESS);
-    get_coordinator_period_IgnoreArg_period();
-    get_coordinator_period_ReturnMemThruPtr_period(&pai, sizeof(pai));
+    get_averaging_interval_IgnoreArg_pai();
+    get_averaging_interval_ReturnThruPtr_pai(&pai);
 
     mod_scmi_from_protocol_api_scmi_frame_validation_ExpectAnyArgsAndReturn(
         SCMI_SUCCESS);
@@ -903,8 +918,6 @@ void utest_message_handler_power_capping_get_power_measurement_valid(void)
 
 void utest_message_handler_power_capping_get_power_measurement_failure(void)
 {
-    uint32_t power = __LINE__; /* Arbitrary value */
-
     struct scmi_power_capping_measurements_get_a2p cmd_payload = {
         .domain_id = FAKE_POWER_CAPPING_IDX_1,
     };
@@ -913,12 +926,11 @@ void utest_message_handler_power_capping_get_power_measurement_failure(void)
         .status = SCMI_GENERIC_ERROR,
     };
 
-    get_power_ExpectWithArrayAndReturn(
-        scmi_power_capping_default_config.power_meter_domain_id,
-        &power,
-        sizeof(power),
+    get_average_power_ExpectAndReturn(
+        scmi_power_capping_default_config.power_capping_domain_id,
+        NULL,
         FWK_E_DEVICE);
-    get_power_IgnoreArg_power();
+    get_average_power_IgnoreArg_power();
 
     mod_scmi_from_protocol_api_scmi_frame_validation_ExpectAnyArgsAndReturn(
         SCMI_SUCCESS);

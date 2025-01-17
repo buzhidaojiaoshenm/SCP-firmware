@@ -246,6 +246,11 @@ static int mod_pcapping_get_power_limit(
 struct mod_power_capping_api pcapping_api = {
     .request_cap = mod_pcapping_request_cap,
     .get_applied_cap = mod_pcapping_get_applied_cap,
+    .get_average_power = mod_pcapping_get_average_power,
+    .get_averaging_interval = mod_pcapping_get_averaging_interval,
+    .get_averaging_interval_range = mod_pcapping_get_averaging_interval_range,
+    .get_averaging_interval_step = mod_pcapping_get_averaging_interval_step,
+    .set_averaging_interval = mod_pcapping_set_averaging_interval,
 };
 
 struct interface_power_management_api power_management_api = {

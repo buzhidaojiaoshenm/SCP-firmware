@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2023-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2023-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -248,6 +248,7 @@ static inline void scmi_power_capping_populate_domain_attributes(
 {
     const struct mod_scmi_power_capping_domain_context *domain_ctx;
     const struct mod_scmi_power_capping_domain_config *config;
+    fwk_id_t domain_id;
 
     domain_ctx = get_domain_ctx(domain_idx);
     config = domain_ctx->config;
@@ -256,9 +257,15 @@ static inline void scmi_power_capping_populate_domain_attributes(
         domain_ctx->cap_config_support,
         domain_ctx->pai_config_support,
         config->power_cap_unit);
-    return_values->min_pai = config->min_pai;
-    return_values->max_pai = config->max_pai;
-    return_values->pai_step = config->pai_step;
+
+    domain_id = domain_ctx->config->power_capping_domain_id;
+
+    pcapping_protocol_ctx.power_management_apis->power_capping_api
+        ->get_averaging_interval_step(domain_id, &return_values->pai_step);
+
+    pcapping_protocol_ctx.power_management_apis->power_capping_api
+        ->get_averaging_interval_range(
+            domain_id, &return_values->min_pai, &return_values->max_pai);
 
 #ifdef BUILD_HAS_SCMI_POWER_CAPPING_FAST_CHANNELS_COMMANDS
     return_values->attributes |= SCMI_POWER_CAPPING_DOMAIN_FCH_SUPPORT(
@@ -654,13 +661,15 @@ static int scmi_power_capping_pai_get_handler(
     struct mod_scmi_power_capping_domain_context *ctx;
     uint32_t pai;
     int status;
+    fwk_id_t domain_id;
 
     parameters = (const struct scmi_power_capping_pai_get_a2p *)payload;
     ctx = get_domain_ctx(parameters->domain_id);
 
-    status = pcapping_protocol_ctx.power_management_apis->power_coordinator_api
-                 ->get_coordinator_period(
-                     ctx->config->power_coordinator_domain_id, &pai);
+    domain_id = ctx->config->power_capping_domain_id;
+
+    status = pcapping_protocol_ctx.power_management_apis->power_capping_api
+                 ->get_averaging_interval(domain_id, &pai);
 
     if (status != FWK_SUCCESS) {
         return scmi_power_capping_respond_error(service_id, SCMI_GENERIC_ERROR);
@@ -681,6 +690,7 @@ static int scmi_power_capping_pai_set_handler(
     struct scmi_power_capping_pai_set_p2a return_values;
     struct mod_scmi_power_capping_domain_context *ctx;
     int status;
+    fwk_id_t domain_id;
 
     parameters = (const struct scmi_power_capping_pai_set_a2p *)payload;
     ctx = get_domain_ctx(parameters->domain_id);
@@ -707,9 +717,10 @@ static int scmi_power_capping_pai_set_handler(
     }
 #endif
 
-    status = pcapping_protocol_ctx.power_management_apis->power_coordinator_api
-                 ->set_coordinator_period(
-                     ctx->config->power_coordinator_domain_id, parameters->pai);
+    domain_id = ctx->config->power_capping_domain_id;
+
+    status = pcapping_protocol_ctx.power_management_apis->power_capping_api
+                 ->set_averaging_interval(domain_id, parameters->pai);
 
     if (status != FWK_SUCCESS) {
         return scmi_power_capping_respond_error(service_id, SCMI_GENERIC_ERROR);
@@ -736,22 +747,23 @@ static int scmi_power_capping_measurements_get_handler(
     int status;
     uint32_t power;
     uint32_t period;
+    fwk_id_t domain_id;
 
     parameters =
         (const struct scmi_power_capping_measurements_get_a2p *)payload;
     ctx = get_domain_ctx(parameters->domain_id);
 
-    status =
-        pcapping_protocol_ctx.power_management_apis->power_meter_api->get_power(
-            ctx->config->power_meter_domain_id, &power);
+    domain_id = ctx->config->power_capping_domain_id;
+
+    status = pcapping_protocol_ctx.power_management_apis->power_capping_api
+                 ->get_average_power(domain_id, &power);
 
     if (status != FWK_SUCCESS) {
         return scmi_power_capping_respond_error(service_id, SCMI_GENERIC_ERROR);
     }
 
-    status = pcapping_protocol_ctx.power_management_apis->power_coordinator_api
-                 ->get_coordinator_period(
-                     ctx->config->power_coordinator_domain_id, &period);
+    status = pcapping_protocol_ctx.power_management_apis->power_capping_api
+                 ->get_averaging_interval(domain_id, &period);
 
     if (status != FWK_SUCCESS) {
         return scmi_power_capping_respond_error(service_id, SCMI_GENERIC_ERROR);

@@ -1700,4 +1700,3 @@ void set_point_CMockIgnoreArg_input(UNITY_LINE_TYPE cmock_line)
   UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringIgnPreExp);
   cmock_call_instance->IgnoreArg_input = 1;
 }
-
