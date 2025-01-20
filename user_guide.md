@@ -21,16 +21,16 @@ required:
 
 - [GNU Make] (*4.2* or later)
 - [CMake] (*3.18.4* or later)
-- [Python 3] (*3.7.9* or later)
+- [Python 3] (*3.10.16* or later)
 
 [GNU Make]: https://www.gnu.org/software/make/
-[Python 3]: https://www.python.org/downloads/release/python-379/
+[Python 3]: https://www.python.org/downloads/release/python-31016/
 [CMake]: https://cmake.org/
 
 Additionally, the firmware may be built using one of three compilers:
 
 - [GNU Arm Embedded Toolchain] (*10.3-2021.10* or later)
-- [Arm Compiler 6] (*6.13* or later)
+- [Arm Compiler 6] (*6.20* or later)
 - [LLVM Toolchain] (*19.1.5*)
 
 [GNU Arm Embedded Toolchain]:
