@@ -81,4 +81,22 @@ enum ros_clock_idx {
     CFGD_MOD_ROS_CLOCK_EIDX_COUNT
 };
 
+/*
+ * Module 'clock' element indexes
+ */
+enum cfgd_mod_clock_element_idx {
+    CFGD_MOD_CLOCK_EIDX_CLUSTER,
+    CFGD_MOD_CLOCK_EIDX_CORE,
+    CFGD_MOD_CLOCK_EIDX_SYS,
+    CFGD_MOD_CLOCK_EIDX_GIC,
+    CFGD_MOD_CLOCK_EIDX_IO,
+    CFGD_MOD_CLOCK_EIDX_PERIPH,
+    CFGD_MOD_CLOCK_EIDX_RSE,
+    CFGD_MOD_CLOCK_EIDX_SI,
+    CFGD_MOD_CLOCK_EIDX_SMD,
+    CFGD_MOD_CLOCK_EIDX_DBG,
+    CFGD_MOD_CLOCK_EIDX_TRACE,
+    CFGD_MOD_CLOCK_EIDX_COUNT
+};
+
 #endif /* SI0_CLOCK_H */
