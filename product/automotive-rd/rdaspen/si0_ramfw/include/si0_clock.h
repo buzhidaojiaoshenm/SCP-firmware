@@ -1,0 +1,51 @@
+/*
+ * Arm SCP/MCP Software
+ * Copyright (c) 2025, Arm Limited and Contributors. All rights reserved.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
+ * Description:
+ *     Safety Island Cluster 0 clock definitions.
+ */
+
+#ifndef SI0_CLOCK_H
+#define SI0_CLOCK_H
+
+#include <fwk_macros.h>
+
+/*
+ * PLL clock rates.
+ */
+#define CLOCK_RATE_CLUSTERPLLCLK (1500UL * FWK_MHZ)
+#define CLOCK_RATE_COREPLL0CLK   (2500UL * FWK_MHZ)
+#define CLOCK_RATE_COREPLL1CLK   (2500UL * FWK_MHZ)
+#define CLOCK_RATE_SYSPLLCLK     (2000UL * FWK_MHZ)
+#define CLOCK_RATE_GICPLLCLK     (2000UL * FWK_MHZ)
+#define CLOCK_RATE_IOPLLCLK      (2500UL * FWK_MHZ)
+#define CLOCK_RATE_PERIPHPLLCLK  (2400UL * FWK_MHZ)
+#define CLOCK_RATE_RSEPLLCLK     (2000UL * FWK_MHZ)
+#define CLOCK_RATE_SIPLLCLK      (2000UL * FWK_MHZ)
+#define CLOCK_RATE_SMDPLLCLK     (2000UL * FWK_MHZ)
+#define CLOCK_RATE_DBGPLLCLK     (2400UL * FWK_MHZ)
+#define CLOCK_RATE_TRACEPLLCLK   (50UL * FWK_MHZ)
+
+/*
+ * PLL clock indices.
+ */
+enum clock_pll_idx {
+    CFGD_MOD_SYSTEM_PLL_EIDX_CORE,
+    CFGD_MOD_SYSTEM_PLL_EIDX_CORE0,
+    CFGD_MOD_SYSTEM_PLL_EIDX_CORE1,
+    CFGD_MOD_SYSTEM_PLL_EIDX_SYS,
+    CFGD_MOD_SYSTEM_PLL_EIDX_PERIPH,
+    CFGD_MOD_SYSTEM_PLL_EIDX_GIC,
+    CFGD_MOD_SYSTEM_PLL_EIDX_IOBLOCK,
+    CFGD_MOD_SYSTEM_PLL_EIDX_RSE,
+    CFGD_MOD_SYSTEM_PLL_EIDX_SI,
+    CFGD_MOD_SYSTEM_PLL_EIDX_SMD,
+    CFGD_MOD_SYSTEM_PLL_EIDX_DBG,
+    CFGD_MOD_SYSTEM_PLL_EIDX_TRACE,
+    CFGD_MOD_SYSTEM_PLL_EIDX_COUNT
+};
+
+#endif /* SI0_CLOCK_H */

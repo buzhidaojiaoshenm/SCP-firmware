@@ -27,6 +27,8 @@ list(APPEND SCP_MODULES
     "armv8r-mpu"
     "pl011"
     "gicx00"
+    "system-pll"
+    "clock"
     "sid"
     "system-info"
     "pcid"

@@ -22,4 +22,6 @@ target_sources(rdaspen-si0-bl2 PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/config_power_domain.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/config_ppu_v1.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/config_transport.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/config_system_pll.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/config_clock.c"
     )
