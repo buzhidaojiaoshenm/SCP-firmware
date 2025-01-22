@@ -117,6 +117,7 @@ list(APPEND SCP_UNITY_SRC ${SCP_ROOT}/unit_test/unity_mocks/scp_unity.c)
 list(APPEND UNIT_PRODUCT optee/common/module/mbx)
 list(APPEND UNIT_PRODUCT automotive-rd/rd1ae/module/safety_island_platform)
 list(APPEND UNIT_PRODUCT automotive-rd/rdaspen/module/si0_platform)
+list(APPEND UNIT_PRODUCT automotive-rd/rdaspen/module/ros_clock)
 
 list(LENGTH UNIT_PRODUCT UNIT_PRODUCT_MAX)
 
