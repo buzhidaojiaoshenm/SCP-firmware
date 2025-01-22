@@ -30,4 +30,6 @@
 
 #define SI0_PLL_LOCK_MASK (0x1UL)
 
+#define SI0_ROS_CLOCK_BASE (SI0_ATW2_SMD_EXPANSION_BASE + (64 * FWK_KIB))
+
 #endif /* SI0_EXP_MMAP_H */

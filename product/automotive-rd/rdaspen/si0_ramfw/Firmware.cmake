@@ -21,13 +21,15 @@ set(SCP_ENABLE_OUTBAND_MSG_SUPPORT TRUE)
 set(SCP_ENABLE_AE_EXTENSION TRUE)
 
 list(PREPEND SCP_MODULE_PATHS
-     "${CMAKE_CURRENT_LIST_DIR}/../module/si0_platform")
+     "${CMAKE_CURRENT_LIST_DIR}/../module/si0_platform"
+     "${CMAKE_CURRENT_LIST_DIR}/../module/ros_clock")
 
 list(APPEND SCP_MODULES
     "armv8r-mpu"
     "pl011"
     "gicx00"
     "system-pll"
+    "ros-clock"
     "clock"
     "sid"
     "system-info"

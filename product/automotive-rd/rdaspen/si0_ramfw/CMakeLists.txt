@@ -24,4 +24,5 @@ target_sources(rdaspen-si0-bl2 PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/config_transport.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/config_system_pll.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/config_clock.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/config_ros_clock.c"
     )
