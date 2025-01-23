@@ -17,4 +17,4 @@ target_sources(
 
 target_link_libraries(
     ${SCP_MODULE_TARGET}
-    PRIVATE module-transport module-power-domain)
+    PRIVATE module-transport module-timer module-power-domain)

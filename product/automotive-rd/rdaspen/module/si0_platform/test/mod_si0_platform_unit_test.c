@@ -38,8 +38,7 @@ void test_si0_platform_mod_init_success(void)
 {
     int status;
 
-    fwk_id_type_is_valid_ExpectAndReturn(
-        platform_config_data.transport_id, true);
+    fwk_id_type_is_valid_IgnoreAndReturn(true);
 
     status = si0_platform_mod_init(
         fwk_module_id_si0_platform, 0, &platform_config_data);
@@ -56,8 +55,7 @@ void test_si0_platform_mod_init_fail(void)
 {
     int status;
 
-    fwk_id_type_is_valid_ExpectAndReturn(
-        platform_config_data.transport_id, false);
+    fwk_id_type_is_valid_IgnoreAndReturn(false);
 
     status = si0_platform_mod_init(
         fwk_module_id_si0_platform, 0, &platform_config_data);

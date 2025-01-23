@@ -35,9 +35,23 @@ static struct mod_transport_firmware_api mock_transport_api = {
     .release_transport_channel_lock = release_transport_channel_lock,
 };
 
+int wait(
+    fwk_id_t dev_id,
+    uint32_t microseconds,
+    bool (*cond)(void *),
+    void *data)
+{
+    return FWK_SUCCESS;
+}
+
+static struct mod_timer_api mock_timer_api = {
+    .wait = wait,
+};
+
 void setUp(void)
 {
     ctx.transport_api = &mock_transport_api;
+    ctx.timer_api = &mock_timer_api;
     interrupt_status = FWK_SUCCESS;
 }
 

@@ -38,6 +38,7 @@ set(UNIT_TEST_TARGET mod_si0_platform_platform_rse_unit_test)
 set(MODULE_SRC ${PRODUCT_ROOT}/${TEST_MODULE}/src)
 set(MODULE_INC ${PRODUCT_ROOT}/${TEST_MODULE}/include)
 list(APPEND OTHER_MODULE_INC ${MODULE_ROOT}/transport/include)
+list(APPEND OTHER_MODULE_INC ${MODULE_ROOT}/timer/include)
 
 set(MODULE_UT_SRC ${CMAKE_CURRENT_LIST_DIR})
 set(MODULE_UT_INC ${CMAKE_CURRENT_LIST_DIR})
@@ -49,6 +50,9 @@ include(${SCP_ROOT}/unit_test/module_common.cmake)
 
 target_compile_definitions(${UNIT_TEST_TARGET} PUBLIC
                            "BUILD_HAS_MOD_TRANSPORT")
+
+target_compile_definitions(${UNIT_TEST_TARGET} PUBLIC
+                            "BUILD_HAS_MOD_TIMER")
 
 # Test platform_power_mgmt.c
 

@@ -11,6 +11,7 @@
 enum fwk_module_idx {
     FWK_MODULE_IDX_SI0_PLATFORM,
     FWK_MODULE_IDX_TRANSPORT,
+    FWK_MODULE_IDX_TIMER,
     FWK_MODULE_IDX_POWER_DOMAIN,
     FWK_MODULE_IDX_COUNT,
 };
@@ -20,6 +21,9 @@ static const fwk_id_t fwk_module_id_si0_platform =
 
 static const fwk_id_t fwk_module_id_transport =
     FWK_ID_MODULE_INIT(FWK_MODULE_IDX_TRANSPORT);
+
+static const fwk_id_t fwk_module_id_timer =
+    FWK_ID_MODULE_INIT(FWK_MODULE_IDX_TIMER);
 
 static const fwk_id_t fwk_module_id_power_domain =
     FWK_ID_MODULE_INIT(FWK_MODULE_IDX_POWER_DOMAIN);

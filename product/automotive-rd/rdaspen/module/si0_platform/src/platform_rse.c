@@ -11,6 +11,7 @@
 #include <internal/si0_platform.h>
 
 #include <mod_si0_platform.h>
+#include <mod_timer.h>
 #include <mod_transport.h>
 
 #include <fwk_arch.h>
@@ -29,6 +30,9 @@ struct platform_rse_ctx {
 
     /* Transport API to send/respond to a message */
     const struct mod_transport_firmware_api *transport_api;
+
+    /* Timer API */
+    const struct mod_timer_api *timer_api;
 
     /* Flag to indicate that the RSE doorbell has been received */
     volatile bool rse_doorbell_received;
@@ -92,6 +96,7 @@ int notify_rse_and_wait_for_response(void)
     int status;
 
     fwk_assert(ctx.transport_api != NULL);
+    fwk_assert(ctx.timer_api != NULL);
 
     /*
      * Trigger doorbell to RSE to indicate that the SYSTOP domain is ON.
@@ -108,11 +113,16 @@ int notify_rse_and_wait_for_response(void)
      * that the RSE has initialized and completed the peripheral interconnect
      * setup.
      */
-    while (!is_rse_doorbell_received(NULL)) {
-        fwk_arch_suspend();
+    status = ctx.timer_api->wait(
+        ctx.config->timer_id,
+        ctx.config->rse_sync_wait_us,
+        is_rse_doorbell_received,
+        NULL);
+    if (status != FWK_SUCCESS) {
+        FWK_LOG_ERR(MOD_NAME "Error! No response from RSE");
     }
 
-    return FWK_SUCCESS;
+    return status;
 }
 
 /*
@@ -120,9 +130,17 @@ int notify_rse_and_wait_for_response(void)
  */
 int platform_rse_bind(const struct mod_si0_platform_config *config)
 {
+    int status;
+    fwk_id_t timer_api_id;
     fwk_id_t transport_api_id;
 
     ctx.config = config;
+
+    timer_api_id = FWK_ID_API(FWK_MODULE_IDX_TIMER, MOD_TIMER_API_IDX_TIMER);
+    status = fwk_module_bind(config->timer_id, timer_api_id, &ctx.timer_api);
+    if (status != FWK_SUCCESS) {
+        return status;
+    }
 
     transport_api_id =
         FWK_ID_API(FWK_MODULE_IDX_TRANSPORT, MOD_TRANSPORT_API_IDX_FIRMWARE);

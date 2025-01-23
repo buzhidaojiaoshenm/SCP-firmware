@@ -13,6 +13,8 @@
 
 #include <fwk_id.h>
 
+#include <stdint.h>
+
 /*!
  * \addtogroup GroupPLATFORMModule PLATFORM Product Modules
  * @{
@@ -37,8 +39,17 @@ enum mod_si0_platform_api_idx {
  * \brief SCP platform configuration data.
  */
 struct mod_si0_platform_config {
+    /*! Timer identifier */
+    fwk_id_t timer_id;
+
     /*! Transport channel identifier */
     fwk_id_t transport_id;
+
+    /*!
+     * Maximum amount of time, in microseconds, to wait for the RSE handshake
+     * event.
+     */
+    uint32_t rse_sync_wait_us;
 };
 
 /*!

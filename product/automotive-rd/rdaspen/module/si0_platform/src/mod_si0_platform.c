@@ -39,7 +39,8 @@ static int si0_platform_mod_init(
 
     config = (struct mod_si0_platform_config *)data;
 
-    if (!fwk_id_type_is_valid(config->transport_id)) {
+    if (!fwk_id_type_is_valid(config->timer_id) ||
+        !fwk_id_type_is_valid(config->transport_id)) {
         return FWK_E_DATA;
     }
 
