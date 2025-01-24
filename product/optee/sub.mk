@@ -1,6 +1,7 @@
 #
 # Arm SCP/MCP Software
-# Copyright (c) 2024, Linaro Limited and Contributors. All rights reserved.
+# Copyright (c) 2024-2025, Linaro Limited and Contributors. All rights
+# reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -129,7 +130,9 @@ $(eval $(call scpfw-embed-optee-module,smt))
 
 # Some modules have extra and non generic C files
 srcs-$(CFG_SCPFW_MOD_CLOCK) += $(scpfw-path)/module/clock/src/clock_tree_management.c
+ifeq ($(CFG_SCPFW_NOTIFICATION),y)
 srcs-$(CFG_SCPFW_MOD_POWER_DOMAIN) += $(scpfw-path)/module/power_domain/src/power_domain_notifications.c
+endif
 srcs-$(CFG_SCPFW_MOD_POWER_DOMAIN) += $(scpfw-path)/module/power_domain/src/power_domain_state_checks.c
 srcs-$(CFG_SCPFW_MOD_POWER_DOMAIN) += $(scpfw-path)/module/power_domain/src/power_domain_utils.c
 srcs-$(CFG_SCPFW_MOD_SCMI) += $(scpfw-path)/module/scmi/src/mod_scmi_base.c
