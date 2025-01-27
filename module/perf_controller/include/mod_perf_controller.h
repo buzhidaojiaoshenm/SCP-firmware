@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2024-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -19,13 +19,13 @@
  */
 
 /*!
- * \brief Core performance API.
+ * \brief Limiter performance API.
  */
 struct mod_perf_controller_perf_api {
     /*!
      * \brief Set performance level for a controller.
      *
-     * \param cluster_id Cluster identifier.
+     * \param domain_id Domain identifier.
      * \param performance_level Desirable performance level.
      *
      * \retval ::FWK_E_ACCESS Wrong id.
@@ -33,7 +33,7 @@ struct mod_perf_controller_perf_api {
      * \return One of the standard framework error codes.
      */
     int (*set_performance_level)(
-        fwk_id_t cluster_id,
+        fwk_id_t domain_id,
         uintptr_t cookie,
         uint32_t performance_level);
 };
@@ -62,12 +62,12 @@ struct mod_perf_controller_drv_api {
 };
 
 /*!
- * \brief Cluster apply performance granted API.
+ * \brief Domain apply performance granted API.
  */
 struct mod_perf_controller_apply_performance_granted_api {
     /*!
      * \brief Provides the means to apply the output performance level after
-     *      setting the power limits for each cluster.
+     *      setting the power limits for each domain.
      *
      * \retval ::FWK_SUCCESS If the call is successful.
      * \return One of the standard framework error codes.
@@ -112,7 +112,7 @@ struct mod_perf_controller_power_model_api {
         uint32_t *power_limit);
 };
 
-struct mod_perf_controller_cluster_config {
+struct mod_perf_controller_domain_config {
     /*! Module or element identifier of the performance driver. */
     fwk_id_t performance_driver_id;
 
@@ -133,11 +133,11 @@ struct mod_perf_controller_cluster_config {
  * \brief Performance controller API IDs.
  */
 enum mod_perf_controller_api_idx {
-    /*! Index for the cluster performance adjustments API. */
-    MOD_PERF_CONTROLLER_CLUSTER_PERF_API = 0U,
+    /*! Index for the domain performance adjustments API. */
+    MOD_PERF_CONTROLLER_DOMAIN_PERF_API = 0U,
 
-    /*! Index for the core power adjustments API */
-    MOD_PERF_CONTROLLER_CORE_POWER_API,
+    /*! Index for the limiter power adjustments API */
+    MOD_PERF_CONTROLLER_LIMITER_POWER_API,
 
     /*! Index for the controller apply performance granted API. */
     MOD_PERF_CONTROLLER_APPLY_PERFORMANCE_GRANTED_API,
@@ -178,7 +178,7 @@ enum mod_perf_controller_notification_idx {
 };
 
 /*!
- * \brief Performance controller core notification.
+ * \brief Performance controller limiter notification.
  */
 struct mod_perf_controller_notification_params {
     /*! Performance_level. */

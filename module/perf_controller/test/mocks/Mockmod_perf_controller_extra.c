@@ -5,30 +5,30 @@
 #include "cmock.h"
 #include "Mockmod_perf_controller_extra.h"
 
-static const char* CMockString_cluster_apply_performance_granted_stub = "cluster_apply_performance_granted_stub";
-static const char* CMockString_cluster_ctx = "cluster_ctx";
+static const char* CMockString_domain_apply_performance_granted_stub = "domain_apply_performance_granted_stub";
+static const char* CMockString_domain_ctx = "domain_ctx";
 static const char* CMockString_cookie = "cookie";
 static const char* CMockString_domain_id = "domain_id";
 static const char* CMockString_driver_set_performance_level = "driver_set_performance_level";
-static const char* CMockString_get_cores_min_power_limit_stub = "get_cores_min_power_limit_stub";
+static const char* CMockString_get_limiters_min_power_limit_stub = "get_limiters_min_power_limit_stub";
 static const char* CMockString_model_id = "model_id";
 static const char* CMockString_performance_level = "performance_level";
 static const char* CMockString_power = "power";
 static const char* CMockString_power_to_performance = "power_to_performance";
 
-typedef struct _CMOCK_get_cores_min_power_limit_stub_CALL_INSTANCE
+typedef struct _CMOCK_get_limiters_min_power_limit_stub_CALL_INSTANCE
 {
   UNITY_LINE_TYPE LineNumber;
   char ExpectAnyArgsBool;
   uint32_t ReturnVal;
-  struct mod_perf_controller_cluster_ctx* Expected_cluster_ctx;
-  int Expected_cluster_ctx_Depth;
-  char ReturnThruPtr_cluster_ctx_Used;
-  struct mod_perf_controller_cluster_ctx* ReturnThruPtr_cluster_ctx_Val;
-  size_t ReturnThruPtr_cluster_ctx_Size;
-  char IgnoreArg_cluster_ctx;
+  struct mod_perf_controller_domain_ctx* Expected_domain_ctx;
+  int Expected_domain_ctx_Depth;
+  char ReturnThruPtr_domain_ctx_Used;
+  struct mod_perf_controller_domain_ctx* ReturnThruPtr_domain_ctx_Val;
+  size_t ReturnThruPtr_domain_ctx_Size;
+  char IgnoreArg_domain_ctx;
 
-} CMOCK_get_cores_min_power_limit_stub_CALL_INSTANCE;
+} CMOCK_get_limiters_min_power_limit_stub_CALL_INSTANCE;
 
 typedef struct _CMOCK_power_to_performance_CALL_INSTANCE
 {
@@ -62,28 +62,28 @@ typedef struct _CMOCK_driver_set_performance_level_CALL_INSTANCE
 
 } CMOCK_driver_set_performance_level_CALL_INSTANCE;
 
-typedef struct _CMOCK_cluster_apply_performance_granted_stub_CALL_INSTANCE
+typedef struct _CMOCK_domain_apply_performance_granted_stub_CALL_INSTANCE
 {
   UNITY_LINE_TYPE LineNumber;
   char ExpectAnyArgsBool;
   int ReturnVal;
-  struct mod_perf_controller_cluster_ctx* Expected_cluster_ctx;
-  int Expected_cluster_ctx_Depth;
-  char ReturnThruPtr_cluster_ctx_Used;
-  struct mod_perf_controller_cluster_ctx* ReturnThruPtr_cluster_ctx_Val;
-  size_t ReturnThruPtr_cluster_ctx_Size;
-  char IgnoreArg_cluster_ctx;
+  struct mod_perf_controller_domain_ctx* Expected_domain_ctx;
+  int Expected_domain_ctx_Depth;
+  char ReturnThruPtr_domain_ctx_Used;
+  struct mod_perf_controller_domain_ctx* ReturnThruPtr_domain_ctx_Val;
+  size_t ReturnThruPtr_domain_ctx_Size;
+  char IgnoreArg_domain_ctx;
 
-} CMOCK_cluster_apply_performance_granted_stub_CALL_INSTANCE;
+} CMOCK_domain_apply_performance_granted_stub_CALL_INSTANCE;
 
 static struct Mockmod_perf_controller_extraInstance
 {
-  char get_cores_min_power_limit_stub_IgnoreBool;
-  uint32_t get_cores_min_power_limit_stub_FinalReturn;
-  char get_cores_min_power_limit_stub_CallbackBool;
-  CMOCK_get_cores_min_power_limit_stub_CALLBACK get_cores_min_power_limit_stub_CallbackFunctionPointer;
-  int get_cores_min_power_limit_stub_CallbackCalls;
-  CMOCK_MEM_INDEX_TYPE get_cores_min_power_limit_stub_CallInstance;
+  char get_limiters_min_power_limit_stub_IgnoreBool;
+  uint32_t get_limiters_min_power_limit_stub_FinalReturn;
+  char get_limiters_min_power_limit_stub_CallbackBool;
+  CMOCK_get_limiters_min_power_limit_stub_CALLBACK get_limiters_min_power_limit_stub_CallbackFunctionPointer;
+  int get_limiters_min_power_limit_stub_CallbackCalls;
+  CMOCK_MEM_INDEX_TYPE get_limiters_min_power_limit_stub_CallInstance;
   char power_to_performance_IgnoreBool;
   int power_to_performance_FinalReturn;
   char power_to_performance_CallbackBool;
@@ -96,12 +96,12 @@ static struct Mockmod_perf_controller_extraInstance
   CMOCK_driver_set_performance_level_CALLBACK driver_set_performance_level_CallbackFunctionPointer;
   int driver_set_performance_level_CallbackCalls;
   CMOCK_MEM_INDEX_TYPE driver_set_performance_level_CallInstance;
-  char cluster_apply_performance_granted_stub_IgnoreBool;
-  int cluster_apply_performance_granted_stub_FinalReturn;
-  char cluster_apply_performance_granted_stub_CallbackBool;
-  CMOCK_cluster_apply_performance_granted_stub_CALLBACK cluster_apply_performance_granted_stub_CallbackFunctionPointer;
-  int cluster_apply_performance_granted_stub_CallbackCalls;
-  CMOCK_MEM_INDEX_TYPE cluster_apply_performance_granted_stub_CallInstance;
+  char domain_apply_performance_granted_stub_IgnoreBool;
+  int domain_apply_performance_granted_stub_FinalReturn;
+  char domain_apply_performance_granted_stub_CallbackBool;
+  CMOCK_domain_apply_performance_granted_stub_CALLBACK domain_apply_performance_granted_stub_CallbackFunctionPointer;
+  int domain_apply_performance_granted_stub_CallbackCalls;
+  CMOCK_MEM_INDEX_TYPE domain_apply_performance_granted_stub_CallInstance;
 } Mock;
 
 extern jmp_buf AbortFrame;
@@ -110,15 +110,15 @@ void Mockmod_perf_controller_extra_Verify(void)
 {
   UNITY_LINE_TYPE cmock_line = TEST_LINE_NUM;
   CMOCK_MEM_INDEX_TYPE call_instance;
-  call_instance = Mock.get_cores_min_power_limit_stub_CallInstance;
-  if (Mock.get_cores_min_power_limit_stub_IgnoreBool)
+  call_instance = Mock.get_limiters_min_power_limit_stub_CallInstance;
+  if (Mock.get_limiters_min_power_limit_stub_IgnoreBool)
     call_instance = CMOCK_GUTS_NONE;
   if (CMOCK_GUTS_NONE != call_instance)
   {
-    UNITY_SET_DETAIL(CMockString_get_cores_min_power_limit_stub);
+    UNITY_SET_DETAIL(CMockString_get_limiters_min_power_limit_stub);
     UNITY_TEST_FAIL(cmock_line, CMockStringCalledLess);
   }
-  if (Mock.get_cores_min_power_limit_stub_CallbackFunctionPointer != NULL)
+  if (Mock.get_limiters_min_power_limit_stub_CallbackFunctionPointer != NULL)
   {
     call_instance = CMOCK_GUTS_NONE;
     (void)call_instance;
@@ -149,15 +149,15 @@ void Mockmod_perf_controller_extra_Verify(void)
     call_instance = CMOCK_GUTS_NONE;
     (void)call_instance;
   }
-  call_instance = Mock.cluster_apply_performance_granted_stub_CallInstance;
-  if (Mock.cluster_apply_performance_granted_stub_IgnoreBool)
+  call_instance = Mock.domain_apply_performance_granted_stub_CallInstance;
+  if (Mock.domain_apply_performance_granted_stub_IgnoreBool)
     call_instance = CMOCK_GUTS_NONE;
   if (CMOCK_GUTS_NONE != call_instance)
   {
-    UNITY_SET_DETAIL(CMockString_cluster_apply_performance_granted_stub);
+    UNITY_SET_DETAIL(CMockString_domain_apply_performance_granted_stub);
     UNITY_TEST_FAIL(cmock_line, CMockStringCalledLess);
   }
-  if (Mock.cluster_apply_performance_granted_stub_CallbackFunctionPointer != NULL)
+  if (Mock.domain_apply_performance_granted_stub_CallbackFunctionPointer != NULL)
   {
     call_instance = CMOCK_GUTS_NONE;
     (void)call_instance;
@@ -175,25 +175,25 @@ void Mockmod_perf_controller_extra_Destroy(void)
   memset(&Mock, 0, sizeof(Mock));
 }
 
-uint32_t get_cores_min_power_limit_stub(struct mod_perf_controller_cluster_ctx* cluster_ctx)
+uint32_t get_limiters_min_power_limit_stub(struct mod_perf_controller_domain_ctx* domain_ctx)
 {
   UNITY_LINE_TYPE cmock_line = TEST_LINE_NUM;
-  CMOCK_get_cores_min_power_limit_stub_CALL_INSTANCE* cmock_call_instance;
-  UNITY_SET_DETAIL(CMockString_get_cores_min_power_limit_stub);
-  cmock_call_instance = (CMOCK_get_cores_min_power_limit_stub_CALL_INSTANCE*)CMock_Guts_GetAddressFor(Mock.get_cores_min_power_limit_stub_CallInstance);
-  Mock.get_cores_min_power_limit_stub_CallInstance = CMock_Guts_MemNext(Mock.get_cores_min_power_limit_stub_CallInstance);
-  if (Mock.get_cores_min_power_limit_stub_IgnoreBool)
+  CMOCK_get_limiters_min_power_limit_stub_CALL_INSTANCE* cmock_call_instance;
+  UNITY_SET_DETAIL(CMockString_get_limiters_min_power_limit_stub);
+  cmock_call_instance = (CMOCK_get_limiters_min_power_limit_stub_CALL_INSTANCE*)CMock_Guts_GetAddressFor(Mock.get_limiters_min_power_limit_stub_CallInstance);
+  Mock.get_limiters_min_power_limit_stub_CallInstance = CMock_Guts_MemNext(Mock.get_limiters_min_power_limit_stub_CallInstance);
+  if (Mock.get_limiters_min_power_limit_stub_IgnoreBool)
   {
     UNITY_CLR_DETAILS();
     if (cmock_call_instance == NULL)
-      return Mock.get_cores_min_power_limit_stub_FinalReturn;
-    Mock.get_cores_min_power_limit_stub_FinalReturn = cmock_call_instance->ReturnVal;
+      return Mock.get_limiters_min_power_limit_stub_FinalReturn;
+    Mock.get_limiters_min_power_limit_stub_FinalReturn = cmock_call_instance->ReturnVal;
     return cmock_call_instance->ReturnVal;
   }
-  if (!Mock.get_cores_min_power_limit_stub_CallbackBool &&
-      Mock.get_cores_min_power_limit_stub_CallbackFunctionPointer != NULL)
+  if (!Mock.get_limiters_min_power_limit_stub_CallbackBool &&
+      Mock.get_limiters_min_power_limit_stub_CallbackFunctionPointer != NULL)
   {
-    uint32_t cmock_cb_ret = Mock.get_cores_min_power_limit_stub_CallbackFunctionPointer(cluster_ctx, Mock.get_cores_min_power_limit_stub_CallbackCalls++);
+    uint32_t cmock_cb_ret = Mock.get_limiters_min_power_limit_stub_CallbackFunctionPointer(domain_ctx, Mock.get_limiters_min_power_limit_stub_CallbackCalls++);
     UNITY_CLR_DETAILS();
     return cmock_cb_ret;
   }
@@ -201,129 +201,129 @@ uint32_t get_cores_min_power_limit_stub(struct mod_perf_controller_cluster_ctx* 
   cmock_line = cmock_call_instance->LineNumber;
   if (!cmock_call_instance->ExpectAnyArgsBool)
   {
-  if (!cmock_call_instance->IgnoreArg_cluster_ctx)
+  if (!cmock_call_instance->IgnoreArg_domain_ctx)
   {
-    UNITY_SET_DETAILS(CMockString_get_cores_min_power_limit_stub,CMockString_cluster_ctx);
-    if (cmock_call_instance->Expected_cluster_ctx == NULL)
-      { UNITY_TEST_ASSERT_NULL(cluster_ctx, cmock_line, CMockStringExpNULL); }
+    UNITY_SET_DETAILS(CMockString_get_limiters_min_power_limit_stub,CMockString_domain_ctx);
+    if (cmock_call_instance->Expected_domain_ctx == NULL)
+      { UNITY_TEST_ASSERT_NULL(domain_ctx, cmock_line, CMockStringExpNULL); }
     else
-      { UNITY_TEST_ASSERT_EQUAL_MEMORY_ARRAY((void*)(cmock_call_instance->Expected_cluster_ctx), (void*)(cluster_ctx), sizeof(struct mod_perf_controller_cluster_ctx), cmock_call_instance->Expected_cluster_ctx_Depth, cmock_line, CMockStringMismatch); }
+      { UNITY_TEST_ASSERT_EQUAL_MEMORY_ARRAY((void*)(cmock_call_instance->Expected_domain_ctx), (void*)(domain_ctx), sizeof(struct mod_perf_controller_domain_ctx), cmock_call_instance->Expected_domain_ctx_Depth, cmock_line, CMockStringMismatch); }
   }
   }
-  if (Mock.get_cores_min_power_limit_stub_CallbackFunctionPointer != NULL)
+  if (Mock.get_limiters_min_power_limit_stub_CallbackFunctionPointer != NULL)
   {
-    cmock_call_instance->ReturnVal = Mock.get_cores_min_power_limit_stub_CallbackFunctionPointer(cluster_ctx, Mock.get_cores_min_power_limit_stub_CallbackCalls++);
+    cmock_call_instance->ReturnVal = Mock.get_limiters_min_power_limit_stub_CallbackFunctionPointer(domain_ctx, Mock.get_limiters_min_power_limit_stub_CallbackCalls++);
   }
-  if (cmock_call_instance->ReturnThruPtr_cluster_ctx_Used)
+  if (cmock_call_instance->ReturnThruPtr_domain_ctx_Used)
   {
-    UNITY_TEST_ASSERT_NOT_NULL(cluster_ctx, cmock_line, CMockStringPtrIsNULL);
-    memcpy((void*)cluster_ctx, (void*)cmock_call_instance->ReturnThruPtr_cluster_ctx_Val,
-      cmock_call_instance->ReturnThruPtr_cluster_ctx_Size);
+    UNITY_TEST_ASSERT_NOT_NULL(domain_ctx, cmock_line, CMockStringPtrIsNULL);
+    memcpy((void*)domain_ctx, (void*)cmock_call_instance->ReturnThruPtr_domain_ctx_Val,
+      cmock_call_instance->ReturnThruPtr_domain_ctx_Size);
   }
   UNITY_CLR_DETAILS();
   return cmock_call_instance->ReturnVal;
 }
 
-void CMockExpectParameters_get_cores_min_power_limit_stub(CMOCK_get_cores_min_power_limit_stub_CALL_INSTANCE* cmock_call_instance, struct mod_perf_controller_cluster_ctx* cluster_ctx, int cluster_ctx_Depth);
-void CMockExpectParameters_get_cores_min_power_limit_stub(CMOCK_get_cores_min_power_limit_stub_CALL_INSTANCE* cmock_call_instance, struct mod_perf_controller_cluster_ctx* cluster_ctx, int cluster_ctx_Depth)
+void CMockExpectParameters_get_limiters_min_power_limit_stub(CMOCK_get_limiters_min_power_limit_stub_CALL_INSTANCE* cmock_call_instance, struct mod_perf_controller_domain_ctx* domain_ctx, int domain_ctx_Depth);
+void CMockExpectParameters_get_limiters_min_power_limit_stub(CMOCK_get_limiters_min_power_limit_stub_CALL_INSTANCE* cmock_call_instance, struct mod_perf_controller_domain_ctx* domain_ctx, int domain_ctx_Depth)
 {
-  cmock_call_instance->Expected_cluster_ctx = cluster_ctx;
-  cmock_call_instance->Expected_cluster_ctx_Depth = cluster_ctx_Depth;
-  cmock_call_instance->IgnoreArg_cluster_ctx = 0;
-  cmock_call_instance->ReturnThruPtr_cluster_ctx_Used = 0;
+  cmock_call_instance->Expected_domain_ctx = domain_ctx;
+  cmock_call_instance->Expected_domain_ctx_Depth = domain_ctx_Depth;
+  cmock_call_instance->IgnoreArg_domain_ctx = 0;
+  cmock_call_instance->ReturnThruPtr_domain_ctx_Used = 0;
 }
 
-void get_cores_min_power_limit_stub_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, uint32_t cmock_to_return)
+void get_limiters_min_power_limit_stub_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, uint32_t cmock_to_return)
 {
-  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_get_cores_min_power_limit_stub_CALL_INSTANCE));
-  CMOCK_get_cores_min_power_limit_stub_CALL_INSTANCE* cmock_call_instance = (CMOCK_get_cores_min_power_limit_stub_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
+  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_get_limiters_min_power_limit_stub_CALL_INSTANCE));
+  CMOCK_get_limiters_min_power_limit_stub_CALL_INSTANCE* cmock_call_instance = (CMOCK_get_limiters_min_power_limit_stub_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
   UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringOutOfMemory);
   memset(cmock_call_instance, 0, sizeof(*cmock_call_instance));
-  Mock.get_cores_min_power_limit_stub_CallInstance = CMock_Guts_MemChain(Mock.get_cores_min_power_limit_stub_CallInstance, cmock_guts_index);
-  Mock.get_cores_min_power_limit_stub_IgnoreBool = (char)0;
+  Mock.get_limiters_min_power_limit_stub_CallInstance = CMock_Guts_MemChain(Mock.get_limiters_min_power_limit_stub_CallInstance, cmock_guts_index);
+  Mock.get_limiters_min_power_limit_stub_IgnoreBool = (char)0;
   cmock_call_instance->LineNumber = cmock_line;
   cmock_call_instance->ExpectAnyArgsBool = (char)0;
   cmock_call_instance->ReturnVal = cmock_to_return;
-  Mock.get_cores_min_power_limit_stub_IgnoreBool = (char)1;
+  Mock.get_limiters_min_power_limit_stub_IgnoreBool = (char)1;
 }
 
-void get_cores_min_power_limit_stub_CMockStopIgnore(void)
+void get_limiters_min_power_limit_stub_CMockStopIgnore(void)
 {
-  if(Mock.get_cores_min_power_limit_stub_IgnoreBool)
-    Mock.get_cores_min_power_limit_stub_CallInstance = CMock_Guts_MemNext(Mock.get_cores_min_power_limit_stub_CallInstance);
-  Mock.get_cores_min_power_limit_stub_IgnoreBool = (char)0;
+  if(Mock.get_limiters_min_power_limit_stub_IgnoreBool)
+    Mock.get_limiters_min_power_limit_stub_CallInstance = CMock_Guts_MemNext(Mock.get_limiters_min_power_limit_stub_CallInstance);
+  Mock.get_limiters_min_power_limit_stub_IgnoreBool = (char)0;
 }
 
-void get_cores_min_power_limit_stub_CMockExpectAnyArgsAndReturn(UNITY_LINE_TYPE cmock_line, uint32_t cmock_to_return)
+void get_limiters_min_power_limit_stub_CMockExpectAnyArgsAndReturn(UNITY_LINE_TYPE cmock_line, uint32_t cmock_to_return)
 {
-  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_get_cores_min_power_limit_stub_CALL_INSTANCE));
-  CMOCK_get_cores_min_power_limit_stub_CALL_INSTANCE* cmock_call_instance = (CMOCK_get_cores_min_power_limit_stub_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
+  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_get_limiters_min_power_limit_stub_CALL_INSTANCE));
+  CMOCK_get_limiters_min_power_limit_stub_CALL_INSTANCE* cmock_call_instance = (CMOCK_get_limiters_min_power_limit_stub_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
   UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringOutOfMemory);
   memset(cmock_call_instance, 0, sizeof(*cmock_call_instance));
-  Mock.get_cores_min_power_limit_stub_CallInstance = CMock_Guts_MemChain(Mock.get_cores_min_power_limit_stub_CallInstance, cmock_guts_index);
-  Mock.get_cores_min_power_limit_stub_IgnoreBool = (char)0;
+  Mock.get_limiters_min_power_limit_stub_CallInstance = CMock_Guts_MemChain(Mock.get_limiters_min_power_limit_stub_CallInstance, cmock_guts_index);
+  Mock.get_limiters_min_power_limit_stub_IgnoreBool = (char)0;
   cmock_call_instance->LineNumber = cmock_line;
   cmock_call_instance->ExpectAnyArgsBool = (char)0;
   cmock_call_instance->ReturnVal = cmock_to_return;
   cmock_call_instance->ExpectAnyArgsBool = (char)1;
 }
 
-void get_cores_min_power_limit_stub_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, struct mod_perf_controller_cluster_ctx* cluster_ctx, uint32_t cmock_to_return)
+void get_limiters_min_power_limit_stub_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, struct mod_perf_controller_domain_ctx* domain_ctx, uint32_t cmock_to_return)
 {
-  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_get_cores_min_power_limit_stub_CALL_INSTANCE));
-  CMOCK_get_cores_min_power_limit_stub_CALL_INSTANCE* cmock_call_instance = (CMOCK_get_cores_min_power_limit_stub_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
+  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_get_limiters_min_power_limit_stub_CALL_INSTANCE));
+  CMOCK_get_limiters_min_power_limit_stub_CALL_INSTANCE* cmock_call_instance = (CMOCK_get_limiters_min_power_limit_stub_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
   UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringOutOfMemory);
   memset(cmock_call_instance, 0, sizeof(*cmock_call_instance));
-  Mock.get_cores_min_power_limit_stub_CallInstance = CMock_Guts_MemChain(Mock.get_cores_min_power_limit_stub_CallInstance, cmock_guts_index);
-  Mock.get_cores_min_power_limit_stub_IgnoreBool = (char)0;
+  Mock.get_limiters_min_power_limit_stub_CallInstance = CMock_Guts_MemChain(Mock.get_limiters_min_power_limit_stub_CallInstance, cmock_guts_index);
+  Mock.get_limiters_min_power_limit_stub_IgnoreBool = (char)0;
   cmock_call_instance->LineNumber = cmock_line;
   cmock_call_instance->ExpectAnyArgsBool = (char)0;
-  CMockExpectParameters_get_cores_min_power_limit_stub(cmock_call_instance, cluster_ctx, 1);
+  CMockExpectParameters_get_limiters_min_power_limit_stub(cmock_call_instance, domain_ctx, 1);
   cmock_call_instance->ReturnVal = cmock_to_return;
 }
 
-void get_cores_min_power_limit_stub_AddCallback(CMOCK_get_cores_min_power_limit_stub_CALLBACK Callback)
+void get_limiters_min_power_limit_stub_AddCallback(CMOCK_get_limiters_min_power_limit_stub_CALLBACK Callback)
 {
-  Mock.get_cores_min_power_limit_stub_IgnoreBool = (char)0;
-  Mock.get_cores_min_power_limit_stub_CallbackBool = (char)1;
-  Mock.get_cores_min_power_limit_stub_CallbackFunctionPointer = Callback;
+  Mock.get_limiters_min_power_limit_stub_IgnoreBool = (char)0;
+  Mock.get_limiters_min_power_limit_stub_CallbackBool = (char)1;
+  Mock.get_limiters_min_power_limit_stub_CallbackFunctionPointer = Callback;
 }
 
-void get_cores_min_power_limit_stub_Stub(CMOCK_get_cores_min_power_limit_stub_CALLBACK Callback)
+void get_limiters_min_power_limit_stub_Stub(CMOCK_get_limiters_min_power_limit_stub_CALLBACK Callback)
 {
-  Mock.get_cores_min_power_limit_stub_IgnoreBool = (char)0;
-  Mock.get_cores_min_power_limit_stub_CallbackBool = (char)0;
-  Mock.get_cores_min_power_limit_stub_CallbackFunctionPointer = Callback;
+  Mock.get_limiters_min_power_limit_stub_IgnoreBool = (char)0;
+  Mock.get_limiters_min_power_limit_stub_CallbackBool = (char)0;
+  Mock.get_limiters_min_power_limit_stub_CallbackFunctionPointer = Callback;
 }
 
-void get_cores_min_power_limit_stub_CMockExpectWithArrayAndReturn(UNITY_LINE_TYPE cmock_line, struct mod_perf_controller_cluster_ctx* cluster_ctx, int cluster_ctx_Depth, uint32_t cmock_to_return)
+void get_limiters_min_power_limit_stub_CMockExpectWithArrayAndReturn(UNITY_LINE_TYPE cmock_line, struct mod_perf_controller_domain_ctx* domain_ctx, int domain_ctx_Depth, uint32_t cmock_to_return)
 {
-  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_get_cores_min_power_limit_stub_CALL_INSTANCE));
-  CMOCK_get_cores_min_power_limit_stub_CALL_INSTANCE* cmock_call_instance = (CMOCK_get_cores_min_power_limit_stub_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
+  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_get_limiters_min_power_limit_stub_CALL_INSTANCE));
+  CMOCK_get_limiters_min_power_limit_stub_CALL_INSTANCE* cmock_call_instance = (CMOCK_get_limiters_min_power_limit_stub_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
   UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringOutOfMemory);
   memset(cmock_call_instance, 0, sizeof(*cmock_call_instance));
-  Mock.get_cores_min_power_limit_stub_CallInstance = CMock_Guts_MemChain(Mock.get_cores_min_power_limit_stub_CallInstance, cmock_guts_index);
-  Mock.get_cores_min_power_limit_stub_IgnoreBool = (char)0;
+  Mock.get_limiters_min_power_limit_stub_CallInstance = CMock_Guts_MemChain(Mock.get_limiters_min_power_limit_stub_CallInstance, cmock_guts_index);
+  Mock.get_limiters_min_power_limit_stub_IgnoreBool = (char)0;
   cmock_call_instance->LineNumber = cmock_line;
   cmock_call_instance->ExpectAnyArgsBool = (char)0;
-  CMockExpectParameters_get_cores_min_power_limit_stub(cmock_call_instance, cluster_ctx, cluster_ctx_Depth);
+  CMockExpectParameters_get_limiters_min_power_limit_stub(cmock_call_instance, domain_ctx, domain_ctx_Depth);
   cmock_call_instance->ReturnVal = cmock_to_return;
 }
 
-void get_cores_min_power_limit_stub_CMockReturnMemThruPtr_cluster_ctx(UNITY_LINE_TYPE cmock_line, struct mod_perf_controller_cluster_ctx* cluster_ctx, size_t cmock_size)
+void get_limiters_min_power_limit_stub_CMockReturnMemThruPtr_domain_ctx(UNITY_LINE_TYPE cmock_line, struct mod_perf_controller_domain_ctx* domain_ctx, size_t cmock_size)
 {
-  CMOCK_get_cores_min_power_limit_stub_CALL_INSTANCE* cmock_call_instance = (CMOCK_get_cores_min_power_limit_stub_CALL_INSTANCE*)CMock_Guts_GetAddressFor(CMock_Guts_MemEndOfChain(Mock.get_cores_min_power_limit_stub_CallInstance));
+  CMOCK_get_limiters_min_power_limit_stub_CALL_INSTANCE* cmock_call_instance = (CMOCK_get_limiters_min_power_limit_stub_CALL_INSTANCE*)CMock_Guts_GetAddressFor(CMock_Guts_MemEndOfChain(Mock.get_limiters_min_power_limit_stub_CallInstance));
   UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringPtrPreExp);
-  cmock_call_instance->ReturnThruPtr_cluster_ctx_Used = 1;
-  cmock_call_instance->ReturnThruPtr_cluster_ctx_Val = cluster_ctx;
-  cmock_call_instance->ReturnThruPtr_cluster_ctx_Size = cmock_size;
+  cmock_call_instance->ReturnThruPtr_domain_ctx_Used = 1;
+  cmock_call_instance->ReturnThruPtr_domain_ctx_Val = domain_ctx;
+  cmock_call_instance->ReturnThruPtr_domain_ctx_Size = cmock_size;
 }
 
-void get_cores_min_power_limit_stub_CMockIgnoreArg_cluster_ctx(UNITY_LINE_TYPE cmock_line)
+void get_limiters_min_power_limit_stub_CMockIgnoreArg_domain_ctx(UNITY_LINE_TYPE cmock_line)
 {
-  CMOCK_get_cores_min_power_limit_stub_CALL_INSTANCE* cmock_call_instance = (CMOCK_get_cores_min_power_limit_stub_CALL_INSTANCE*)CMock_Guts_GetAddressFor(CMock_Guts_MemEndOfChain(Mock.get_cores_min_power_limit_stub_CallInstance));
+  CMOCK_get_limiters_min_power_limit_stub_CALL_INSTANCE* cmock_call_instance = (CMOCK_get_limiters_min_power_limit_stub_CALL_INSTANCE*)CMock_Guts_GetAddressFor(CMock_Guts_MemEndOfChain(Mock.get_limiters_min_power_limit_stub_CallInstance));
   UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringIgnPreExp);
-  cmock_call_instance->IgnoreArg_cluster_ctx = 1;
+  cmock_call_instance->IgnoreArg_domain_ctx = 1;
 }
 
 int power_to_performance(fwk_id_t model_id, uint32_t power, uint32_t* performance_level)
@@ -653,25 +653,25 @@ void driver_set_performance_level_CMockIgnoreArg_performance_level(UNITY_LINE_TY
   cmock_call_instance->IgnoreArg_performance_level = 1;
 }
 
-int cluster_apply_performance_granted_stub(struct mod_perf_controller_cluster_ctx* cluster_ctx)
+int domain_apply_performance_granted_stub(struct mod_perf_controller_domain_ctx* domain_ctx)
 {
   UNITY_LINE_TYPE cmock_line = TEST_LINE_NUM;
-  CMOCK_cluster_apply_performance_granted_stub_CALL_INSTANCE* cmock_call_instance;
-  UNITY_SET_DETAIL(CMockString_cluster_apply_performance_granted_stub);
-  cmock_call_instance = (CMOCK_cluster_apply_performance_granted_stub_CALL_INSTANCE*)CMock_Guts_GetAddressFor(Mock.cluster_apply_performance_granted_stub_CallInstance);
-  Mock.cluster_apply_performance_granted_stub_CallInstance = CMock_Guts_MemNext(Mock.cluster_apply_performance_granted_stub_CallInstance);
-  if (Mock.cluster_apply_performance_granted_stub_IgnoreBool)
+  CMOCK_domain_apply_performance_granted_stub_CALL_INSTANCE* cmock_call_instance;
+  UNITY_SET_DETAIL(CMockString_domain_apply_performance_granted_stub);
+  cmock_call_instance = (CMOCK_domain_apply_performance_granted_stub_CALL_INSTANCE*)CMock_Guts_GetAddressFor(Mock.domain_apply_performance_granted_stub_CallInstance);
+  Mock.domain_apply_performance_granted_stub_CallInstance = CMock_Guts_MemNext(Mock.domain_apply_performance_granted_stub_CallInstance);
+  if (Mock.domain_apply_performance_granted_stub_IgnoreBool)
   {
     UNITY_CLR_DETAILS();
     if (cmock_call_instance == NULL)
-      return Mock.cluster_apply_performance_granted_stub_FinalReturn;
-    Mock.cluster_apply_performance_granted_stub_FinalReturn = cmock_call_instance->ReturnVal;
+      return Mock.domain_apply_performance_granted_stub_FinalReturn;
+    Mock.domain_apply_performance_granted_stub_FinalReturn = cmock_call_instance->ReturnVal;
     return cmock_call_instance->ReturnVal;
   }
-  if (!Mock.cluster_apply_performance_granted_stub_CallbackBool &&
-      Mock.cluster_apply_performance_granted_stub_CallbackFunctionPointer != NULL)
+  if (!Mock.domain_apply_performance_granted_stub_CallbackBool &&
+      Mock.domain_apply_performance_granted_stub_CallbackFunctionPointer != NULL)
   {
-    int cmock_cb_ret = Mock.cluster_apply_performance_granted_stub_CallbackFunctionPointer(cluster_ctx, Mock.cluster_apply_performance_granted_stub_CallbackCalls++);
+    int cmock_cb_ret = Mock.domain_apply_performance_granted_stub_CallbackFunctionPointer(domain_ctx, Mock.domain_apply_performance_granted_stub_CallbackCalls++);
     UNITY_CLR_DETAILS();
     return cmock_cb_ret;
   }
@@ -679,128 +679,128 @@ int cluster_apply_performance_granted_stub(struct mod_perf_controller_cluster_ct
   cmock_line = cmock_call_instance->LineNumber;
   if (!cmock_call_instance->ExpectAnyArgsBool)
   {
-  if (!cmock_call_instance->IgnoreArg_cluster_ctx)
+  if (!cmock_call_instance->IgnoreArg_domain_ctx)
   {
-    UNITY_SET_DETAILS(CMockString_cluster_apply_performance_granted_stub,CMockString_cluster_ctx);
-    if (cmock_call_instance->Expected_cluster_ctx == NULL)
-      { UNITY_TEST_ASSERT_NULL(cluster_ctx, cmock_line, CMockStringExpNULL); }
+    UNITY_SET_DETAILS(CMockString_domain_apply_performance_granted_stub,CMockString_domain_ctx);
+    if (cmock_call_instance->Expected_domain_ctx == NULL)
+      { UNITY_TEST_ASSERT_NULL(domain_ctx, cmock_line, CMockStringExpNULL); }
     else
-      { UNITY_TEST_ASSERT_EQUAL_MEMORY_ARRAY((void*)(cmock_call_instance->Expected_cluster_ctx), (void*)(cluster_ctx), sizeof(struct mod_perf_controller_cluster_ctx), cmock_call_instance->Expected_cluster_ctx_Depth, cmock_line, CMockStringMismatch); }
+      { UNITY_TEST_ASSERT_EQUAL_MEMORY_ARRAY((void*)(cmock_call_instance->Expected_domain_ctx), (void*)(domain_ctx), sizeof(struct mod_perf_controller_domain_ctx), cmock_call_instance->Expected_domain_ctx_Depth, cmock_line, CMockStringMismatch); }
   }
   }
-  if (Mock.cluster_apply_performance_granted_stub_CallbackFunctionPointer != NULL)
+  if (Mock.domain_apply_performance_granted_stub_CallbackFunctionPointer != NULL)
   {
-    cmock_call_instance->ReturnVal = Mock.cluster_apply_performance_granted_stub_CallbackFunctionPointer(cluster_ctx, Mock.cluster_apply_performance_granted_stub_CallbackCalls++);
+    cmock_call_instance->ReturnVal = Mock.domain_apply_performance_granted_stub_CallbackFunctionPointer(domain_ctx, Mock.domain_apply_performance_granted_stub_CallbackCalls++);
   }
-  if (cmock_call_instance->ReturnThruPtr_cluster_ctx_Used)
+  if (cmock_call_instance->ReturnThruPtr_domain_ctx_Used)
   {
-    UNITY_TEST_ASSERT_NOT_NULL(cluster_ctx, cmock_line, CMockStringPtrIsNULL);
-    memcpy((void*)cluster_ctx, (void*)cmock_call_instance->ReturnThruPtr_cluster_ctx_Val,
-      cmock_call_instance->ReturnThruPtr_cluster_ctx_Size);
+    UNITY_TEST_ASSERT_NOT_NULL(domain_ctx, cmock_line, CMockStringPtrIsNULL);
+    memcpy((void*)domain_ctx, (void*)cmock_call_instance->ReturnThruPtr_domain_ctx_Val,
+      cmock_call_instance->ReturnThruPtr_domain_ctx_Size);
   }
   UNITY_CLR_DETAILS();
   return cmock_call_instance->ReturnVal;
 }
 
-void CMockExpectParameters_cluster_apply_performance_granted_stub(CMOCK_cluster_apply_performance_granted_stub_CALL_INSTANCE* cmock_call_instance, struct mod_perf_controller_cluster_ctx* cluster_ctx, int cluster_ctx_Depth);
-void CMockExpectParameters_cluster_apply_performance_granted_stub(CMOCK_cluster_apply_performance_granted_stub_CALL_INSTANCE* cmock_call_instance, struct mod_perf_controller_cluster_ctx* cluster_ctx, int cluster_ctx_Depth)
+void CMockExpectParameters_domain_apply_performance_granted_stub(CMOCK_domain_apply_performance_granted_stub_CALL_INSTANCE* cmock_call_instance, struct mod_perf_controller_domain_ctx* domain_ctx, int domain_ctx_Depth);
+void CMockExpectParameters_domain_apply_performance_granted_stub(CMOCK_domain_apply_performance_granted_stub_CALL_INSTANCE* cmock_call_instance, struct mod_perf_controller_domain_ctx* domain_ctx, int domain_ctx_Depth)
 {
-  cmock_call_instance->Expected_cluster_ctx = cluster_ctx;
-  cmock_call_instance->Expected_cluster_ctx_Depth = cluster_ctx_Depth;
-  cmock_call_instance->IgnoreArg_cluster_ctx = 0;
-  cmock_call_instance->ReturnThruPtr_cluster_ctx_Used = 0;
+  cmock_call_instance->Expected_domain_ctx = domain_ctx;
+  cmock_call_instance->Expected_domain_ctx_Depth = domain_ctx_Depth;
+  cmock_call_instance->IgnoreArg_domain_ctx = 0;
+  cmock_call_instance->ReturnThruPtr_domain_ctx_Used = 0;
 }
 
-void cluster_apply_performance_granted_stub_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return)
+void domain_apply_performance_granted_stub_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return)
 {
-  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_cluster_apply_performance_granted_stub_CALL_INSTANCE));
-  CMOCK_cluster_apply_performance_granted_stub_CALL_INSTANCE* cmock_call_instance = (CMOCK_cluster_apply_performance_granted_stub_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
+  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_domain_apply_performance_granted_stub_CALL_INSTANCE));
+  CMOCK_domain_apply_performance_granted_stub_CALL_INSTANCE* cmock_call_instance = (CMOCK_domain_apply_performance_granted_stub_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
   UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringOutOfMemory);
   memset(cmock_call_instance, 0, sizeof(*cmock_call_instance));
-  Mock.cluster_apply_performance_granted_stub_CallInstance = CMock_Guts_MemChain(Mock.cluster_apply_performance_granted_stub_CallInstance, cmock_guts_index);
-  Mock.cluster_apply_performance_granted_stub_IgnoreBool = (char)0;
+  Mock.domain_apply_performance_granted_stub_CallInstance = CMock_Guts_MemChain(Mock.domain_apply_performance_granted_stub_CallInstance, cmock_guts_index);
+  Mock.domain_apply_performance_granted_stub_IgnoreBool = (char)0;
   cmock_call_instance->LineNumber = cmock_line;
   cmock_call_instance->ExpectAnyArgsBool = (char)0;
   cmock_call_instance->ReturnVal = cmock_to_return;
-  Mock.cluster_apply_performance_granted_stub_IgnoreBool = (char)1;
+  Mock.domain_apply_performance_granted_stub_IgnoreBool = (char)1;
 }
 
-void cluster_apply_performance_granted_stub_CMockStopIgnore(void)
+void domain_apply_performance_granted_stub_CMockStopIgnore(void)
 {
-  if(Mock.cluster_apply_performance_granted_stub_IgnoreBool)
-    Mock.cluster_apply_performance_granted_stub_CallInstance = CMock_Guts_MemNext(Mock.cluster_apply_performance_granted_stub_CallInstance);
-  Mock.cluster_apply_performance_granted_stub_IgnoreBool = (char)0;
+  if(Mock.domain_apply_performance_granted_stub_IgnoreBool)
+    Mock.domain_apply_performance_granted_stub_CallInstance = CMock_Guts_MemNext(Mock.domain_apply_performance_granted_stub_CallInstance);
+  Mock.domain_apply_performance_granted_stub_IgnoreBool = (char)0;
 }
 
-void cluster_apply_performance_granted_stub_CMockExpectAnyArgsAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return)
+void domain_apply_performance_granted_stub_CMockExpectAnyArgsAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return)
 {
-  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_cluster_apply_performance_granted_stub_CALL_INSTANCE));
-  CMOCK_cluster_apply_performance_granted_stub_CALL_INSTANCE* cmock_call_instance = (CMOCK_cluster_apply_performance_granted_stub_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
+  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_domain_apply_performance_granted_stub_CALL_INSTANCE));
+  CMOCK_domain_apply_performance_granted_stub_CALL_INSTANCE* cmock_call_instance = (CMOCK_domain_apply_performance_granted_stub_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
   UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringOutOfMemory);
   memset(cmock_call_instance, 0, sizeof(*cmock_call_instance));
-  Mock.cluster_apply_performance_granted_stub_CallInstance = CMock_Guts_MemChain(Mock.cluster_apply_performance_granted_stub_CallInstance, cmock_guts_index);
-  Mock.cluster_apply_performance_granted_stub_IgnoreBool = (char)0;
+  Mock.domain_apply_performance_granted_stub_CallInstance = CMock_Guts_MemChain(Mock.domain_apply_performance_granted_stub_CallInstance, cmock_guts_index);
+  Mock.domain_apply_performance_granted_stub_IgnoreBool = (char)0;
   cmock_call_instance->LineNumber = cmock_line;
   cmock_call_instance->ExpectAnyArgsBool = (char)0;
   cmock_call_instance->ReturnVal = cmock_to_return;
   cmock_call_instance->ExpectAnyArgsBool = (char)1;
 }
 
-void cluster_apply_performance_granted_stub_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, struct mod_perf_controller_cluster_ctx* cluster_ctx, int cmock_to_return)
+void domain_apply_performance_granted_stub_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, struct mod_perf_controller_domain_ctx* domain_ctx, int cmock_to_return)
 {
-  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_cluster_apply_performance_granted_stub_CALL_INSTANCE));
-  CMOCK_cluster_apply_performance_granted_stub_CALL_INSTANCE* cmock_call_instance = (CMOCK_cluster_apply_performance_granted_stub_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
+  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_domain_apply_performance_granted_stub_CALL_INSTANCE));
+  CMOCK_domain_apply_performance_granted_stub_CALL_INSTANCE* cmock_call_instance = (CMOCK_domain_apply_performance_granted_stub_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
   UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringOutOfMemory);
   memset(cmock_call_instance, 0, sizeof(*cmock_call_instance));
-  Mock.cluster_apply_performance_granted_stub_CallInstance = CMock_Guts_MemChain(Mock.cluster_apply_performance_granted_stub_CallInstance, cmock_guts_index);
-  Mock.cluster_apply_performance_granted_stub_IgnoreBool = (char)0;
+  Mock.domain_apply_performance_granted_stub_CallInstance = CMock_Guts_MemChain(Mock.domain_apply_performance_granted_stub_CallInstance, cmock_guts_index);
+  Mock.domain_apply_performance_granted_stub_IgnoreBool = (char)0;
   cmock_call_instance->LineNumber = cmock_line;
   cmock_call_instance->ExpectAnyArgsBool = (char)0;
-  CMockExpectParameters_cluster_apply_performance_granted_stub(cmock_call_instance, cluster_ctx, 1);
+  CMockExpectParameters_domain_apply_performance_granted_stub(cmock_call_instance, domain_ctx, 1);
   cmock_call_instance->ReturnVal = cmock_to_return;
 }
 
-void cluster_apply_performance_granted_stub_AddCallback(CMOCK_cluster_apply_performance_granted_stub_CALLBACK Callback)
+void domain_apply_performance_granted_stub_AddCallback(CMOCK_domain_apply_performance_granted_stub_CALLBACK Callback)
 {
-  Mock.cluster_apply_performance_granted_stub_IgnoreBool = (char)0;
-  Mock.cluster_apply_performance_granted_stub_CallbackBool = (char)1;
-  Mock.cluster_apply_performance_granted_stub_CallbackFunctionPointer = Callback;
+  Mock.domain_apply_performance_granted_stub_IgnoreBool = (char)0;
+  Mock.domain_apply_performance_granted_stub_CallbackBool = (char)1;
+  Mock.domain_apply_performance_granted_stub_CallbackFunctionPointer = Callback;
 }
 
-void cluster_apply_performance_granted_stub_Stub(CMOCK_cluster_apply_performance_granted_stub_CALLBACK Callback)
+void domain_apply_performance_granted_stub_Stub(CMOCK_domain_apply_performance_granted_stub_CALLBACK Callback)
 {
-  Mock.cluster_apply_performance_granted_stub_IgnoreBool = (char)0;
-  Mock.cluster_apply_performance_granted_stub_CallbackBool = (char)0;
-  Mock.cluster_apply_performance_granted_stub_CallbackFunctionPointer = Callback;
+  Mock.domain_apply_performance_granted_stub_IgnoreBool = (char)0;
+  Mock.domain_apply_performance_granted_stub_CallbackBool = (char)0;
+  Mock.domain_apply_performance_granted_stub_CallbackFunctionPointer = Callback;
 }
 
-void cluster_apply_performance_granted_stub_CMockExpectWithArrayAndReturn(UNITY_LINE_TYPE cmock_line, struct mod_perf_controller_cluster_ctx* cluster_ctx, int cluster_ctx_Depth, int cmock_to_return)
+void domain_apply_performance_granted_stub_CMockExpectWithArrayAndReturn(UNITY_LINE_TYPE cmock_line, struct mod_perf_controller_domain_ctx* domain_ctx, int domain_ctx_Depth, int cmock_to_return)
 {
-  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_cluster_apply_performance_granted_stub_CALL_INSTANCE));
-  CMOCK_cluster_apply_performance_granted_stub_CALL_INSTANCE* cmock_call_instance = (CMOCK_cluster_apply_performance_granted_stub_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
+  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_domain_apply_performance_granted_stub_CALL_INSTANCE));
+  CMOCK_domain_apply_performance_granted_stub_CALL_INSTANCE* cmock_call_instance = (CMOCK_domain_apply_performance_granted_stub_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
   UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringOutOfMemory);
   memset(cmock_call_instance, 0, sizeof(*cmock_call_instance));
-  Mock.cluster_apply_performance_granted_stub_CallInstance = CMock_Guts_MemChain(Mock.cluster_apply_performance_granted_stub_CallInstance, cmock_guts_index);
-  Mock.cluster_apply_performance_granted_stub_IgnoreBool = (char)0;
+  Mock.domain_apply_performance_granted_stub_CallInstance = CMock_Guts_MemChain(Mock.domain_apply_performance_granted_stub_CallInstance, cmock_guts_index);
+  Mock.domain_apply_performance_granted_stub_IgnoreBool = (char)0;
   cmock_call_instance->LineNumber = cmock_line;
   cmock_call_instance->ExpectAnyArgsBool = (char)0;
-  CMockExpectParameters_cluster_apply_performance_granted_stub(cmock_call_instance, cluster_ctx, cluster_ctx_Depth);
+  CMockExpectParameters_domain_apply_performance_granted_stub(cmock_call_instance, domain_ctx, domain_ctx_Depth);
   cmock_call_instance->ReturnVal = cmock_to_return;
 }
 
-void cluster_apply_performance_granted_stub_CMockReturnMemThruPtr_cluster_ctx(UNITY_LINE_TYPE cmock_line, struct mod_perf_controller_cluster_ctx* cluster_ctx, size_t cmock_size)
+void domain_apply_performance_granted_stub_CMockReturnMemThruPtr_domain_ctx(UNITY_LINE_TYPE cmock_line, struct mod_perf_controller_domain_ctx* domain_ctx, size_t cmock_size)
 {
-  CMOCK_cluster_apply_performance_granted_stub_CALL_INSTANCE* cmock_call_instance = (CMOCK_cluster_apply_performance_granted_stub_CALL_INSTANCE*)CMock_Guts_GetAddressFor(CMock_Guts_MemEndOfChain(Mock.cluster_apply_performance_granted_stub_CallInstance));
+  CMOCK_domain_apply_performance_granted_stub_CALL_INSTANCE* cmock_call_instance = (CMOCK_domain_apply_performance_granted_stub_CALL_INSTANCE*)CMock_Guts_GetAddressFor(CMock_Guts_MemEndOfChain(Mock.domain_apply_performance_granted_stub_CallInstance));
   UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringPtrPreExp);
-  cmock_call_instance->ReturnThruPtr_cluster_ctx_Used = 1;
-  cmock_call_instance->ReturnThruPtr_cluster_ctx_Val = cluster_ctx;
-  cmock_call_instance->ReturnThruPtr_cluster_ctx_Size = cmock_size;
+  cmock_call_instance->ReturnThruPtr_domain_ctx_Used = 1;
+  cmock_call_instance->ReturnThruPtr_domain_ctx_Val = domain_ctx;
+  cmock_call_instance->ReturnThruPtr_domain_ctx_Size = cmock_size;
 }
 
-void cluster_apply_performance_granted_stub_CMockIgnoreArg_cluster_ctx(UNITY_LINE_TYPE cmock_line)
+void domain_apply_performance_granted_stub_CMockIgnoreArg_domain_ctx(UNITY_LINE_TYPE cmock_line)
 {
-  CMOCK_cluster_apply_performance_granted_stub_CALL_INSTANCE* cmock_call_instance = (CMOCK_cluster_apply_performance_granted_stub_CALL_INSTANCE*)CMock_Guts_GetAddressFor(CMock_Guts_MemEndOfChain(Mock.cluster_apply_performance_granted_stub_CallInstance));
+  CMOCK_domain_apply_performance_granted_stub_CALL_INSTANCE* cmock_call_instance = (CMOCK_domain_apply_performance_granted_stub_CALL_INSTANCE*)CMock_Guts_GetAddressFor(CMock_Guts_MemEndOfChain(Mock.domain_apply_performance_granted_stub_CallInstance));
   UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringIgnPreExp);
-  cmock_call_instance->IgnoreArg_cluster_ctx = 1;
+  cmock_call_instance->IgnoreArg_domain_ctx = 1;
 }
 

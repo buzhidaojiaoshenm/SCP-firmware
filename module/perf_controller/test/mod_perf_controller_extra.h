@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2024-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -11,8 +11,8 @@
 
 #include <stdint.h>
 
-uint32_t get_cores_min_power_limit_stub(
-    struct mod_perf_controller_cluster_ctx *cluster_ctx);
+uint32_t get_limiters_min_power_limit_stub(
+    struct mod_perf_controller_domain_ctx *domain_ctx);
 
 int power_to_performance(
     fwk_id_t model_id,
@@ -24,5 +24,5 @@ int driver_set_performance_level(
     uintptr_t cookie,
     uint32_t performance_level);
 
-int cluster_apply_performance_granted_stub(
-    struct mod_perf_controller_cluster_ctx *cluster_ctx);
+int domain_apply_performance_granted_stub(
+    struct mod_perf_controller_domain_ctx *domain_ctx);

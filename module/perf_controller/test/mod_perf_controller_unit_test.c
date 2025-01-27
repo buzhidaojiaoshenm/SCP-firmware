@@ -23,10 +23,10 @@
 
 #include UNIT_TEST_SRC
 
-static struct mod_perf_controller_cluster_ctx
-    test_cluster_ctx_table[TEST_CLUSTER_COUNT];
-static struct mod_perf_controller_core_ctx
-    test_core_ctx_table[TEST_CLUSTER_COUNT][MAX_CORE_PER_CLUSTER];
+static struct mod_perf_controller_domain_ctx
+    test_domain_ctx_table[TEST_DOMAIN_COUNT];
+static struct mod_perf_controller_limiter_ctx
+    test_limiter_ctx_table[TEST_DOMAIN_COUNT][MAX_LIMITER_PER_DOMAIN];
 
 static struct mod_perf_controller_drv_api perf_driver_api = {
     .set_performance_level = driver_set_performance_level,
@@ -38,26 +38,27 @@ static struct mod_perf_controller_power_model_api power_model_api = {
 
 void setUp(void)
 {
-    unsigned int cluster_idx;
-    struct mod_perf_controller_cluster_ctx *cluster_ctx;
+    unsigned int domain_idx;
+    struct mod_perf_controller_domain_ctx *domain_ctx;
 
-    perf_controller_ctx.cluster_ctx_table = test_cluster_ctx_table;
-    perf_controller_ctx.cluster_count = TEST_CLUSTER_COUNT;
+    perf_controller_ctx.domain_ctx_table = test_domain_ctx_table;
+    perf_controller_ctx.domain_count = TEST_DOMAIN_COUNT;
 
-    for (cluster_idx = 0U; cluster_idx < TEST_CLUSTER_COUNT; cluster_idx++) {
-        cluster_ctx = &perf_controller_ctx.cluster_ctx_table[cluster_idx];
-        cluster_ctx->core_ctx_table = test_core_ctx_table[cluster_idx];
-        cluster_ctx->perf_driver_api = &perf_driver_api;
-        cluster_ctx->power_model_api = &power_model_api;
-        cluster_ctx->config = (struct mod_perf_controller_cluster_config *)
-                                  cluster_config[cluster_idx]
-                                      .data;
-        cluster_ctx->core_count = cluster_config[cluster_idx].sub_element_count;
+    for (domain_idx = 0U; domain_idx < TEST_DOMAIN_COUNT; domain_idx++) {
+        domain_ctx = &perf_controller_ctx.domain_ctx_table[domain_idx];
+        domain_ctx->limiter_ctx_table = test_limiter_ctx_table[domain_idx];
+        domain_ctx->perf_driver_api = &perf_driver_api;
+        domain_ctx->power_model_api = &power_model_api;
+        domain_ctx->config = (struct mod_perf_controller_domain_config *)
+                                 domain_config[domain_idx]
+                                     .data;
+        domain_ctx->limiter_count = domain_config[domain_idx].sub_element_count;
     }
 
-    internal_api.get_cores_min_power_limit = get_cores_min_power_limit_stub;
-    internal_api.cluster_apply_performance_granted =
-        cluster_apply_performance_granted_stub;
+    internal_api.get_limiters_min_power_limit =
+        get_limiters_min_power_limit_stub;
+    internal_api.domain_apply_performance_granted =
+        domain_apply_performance_granted_stub;
 }
 
 void tearDown(void)
@@ -81,33 +82,32 @@ int helper_comp(const void *a, const void *b)
 void test_set_performance_level_within_limits(void)
 {
     int status;
-    unsigned int cluster_idx;
-    fwk_id_t cluster_id;
-    struct mod_perf_controller_cluster_ctx *cluster_ctx;
+    unsigned int domain_idx;
+    fwk_id_t domain_id;
+    struct mod_perf_controller_domain_ctx *domain_ctx;
     uintptr_t cookie;
     uint32_t performance_level;
 
-    for (cluster_idx = 0U; cluster_idx < TEST_CLUSTER_COUNT; cluster_idx++) {
-        cluster_id =
-            FWK_ID_ELEMENT(FWK_MODULE_IDX_PERF_CONTROLLER, cluster_idx);
-        cluster_ctx = &perf_controller_ctx.cluster_ctx_table[cluster_idx];
+    for (domain_idx = 0U; domain_idx < TEST_DOMAIN_COUNT; domain_idx++) {
+        domain_id = FWK_ID_ELEMENT(FWK_MODULE_IDX_PERF_CONTROLLER, domain_idx);
+        domain_ctx = &perf_controller_ctx.domain_ctx_table[domain_idx];
 
         performance_level = 10U;
-        cluster_ctx->performance_limit = performance_level;
+        domain_ctx->performance_limit = performance_level;
 
         cookie = 15U;
         driver_set_performance_level_ExpectAndReturn(
-            cluster_ctx->config->performance_driver_id,
+            domain_ctx->config->performance_driver_id,
             cookie,
             performance_level,
             FWK_SUCCESS);
 
         status = mod_perf_controller_set_performance_level(
-            cluster_id, cookie, performance_level);
+            domain_id, cookie, performance_level);
 
         TEST_ASSERT_EQUAL(
-            cluster_ctx->performance_request_details.level, performance_level);
-        TEST_ASSERT_EQUAL(cluster_ctx->performance_request_details.cookie, 0U);
+            domain_ctx->performance_request_details.level, performance_level);
+        TEST_ASSERT_EQUAL(domain_ctx->performance_request_details.cookie, 0U);
         TEST_ASSERT_EQUAL(status, FWK_SUCCESS);
     }
 }
@@ -115,28 +115,27 @@ void test_set_performance_level_within_limits(void)
 void test_set_performance_level_out_of_limits(void)
 {
     int status;
-    unsigned int cluster_idx;
-    fwk_id_t cluster_id;
-    struct mod_perf_controller_cluster_ctx *cluster_ctx;
+    unsigned int domain_idx;
+    fwk_id_t domain_id;
+    struct mod_perf_controller_domain_ctx *domain_ctx;
     uintptr_t cookie;
     uint32_t performance_level;
 
-    for (cluster_idx = 0U; cluster_idx < TEST_CLUSTER_COUNT; cluster_idx++) {
-        cluster_id =
-            FWK_ID_ELEMENT(FWK_MODULE_IDX_PERF_CONTROLLER, cluster_idx);
-        cluster_ctx = &perf_controller_ctx.cluster_ctx_table[cluster_idx];
+    for (domain_idx = 0U; domain_idx < TEST_DOMAIN_COUNT; domain_idx++) {
+        domain_id = FWK_ID_ELEMENT(FWK_MODULE_IDX_PERF_CONTROLLER, domain_idx);
+        domain_ctx = &perf_controller_ctx.domain_ctx_table[domain_idx];
 
-        cluster_ctx->performance_limit = 10U;
-        performance_level = cluster_ctx->performance_limit + 1U;
+        domain_ctx->performance_limit = 10U;
+        performance_level = domain_ctx->performance_limit + 1U;
 
         cookie = 1U;
         status = mod_perf_controller_set_performance_level(
-            cluster_id, cookie, performance_level);
+            domain_id, cookie, performance_level);
 
         TEST_ASSERT_EQUAL(
-            cluster_ctx->performance_request_details.level, performance_level);
+            domain_ctx->performance_request_details.level, performance_level);
         TEST_ASSERT_EQUAL(
-            cluster_ctx->performance_request_details.cookie, cookie);
+            domain_ctx->performance_request_details.cookie, cookie);
         TEST_ASSERT_EQUAL(status, FWK_PENDING);
     }
 }
@@ -144,52 +143,53 @@ void test_set_performance_level_out_of_limits(void)
 void test_set_power_limit_success(void)
 {
     int status;
-    fwk_id_t core_id;
-    struct mod_perf_controller_core_ctx *core_ctx;
-    struct mod_perf_controller_cluster_ctx *cluster_ctx;
-    unsigned int cluster_idx = TEST_CLUSTER_COUNT - 1U;
-    unsigned int core_idx = MAX_CORE_PER_CLUSTER - 1U;
+    fwk_id_t limiter_id;
+    struct mod_perf_controller_limiter_ctx *limiter_ctx;
+    struct mod_perf_controller_domain_ctx *domain_ctx;
+    unsigned int domain_idx = TEST_DOMAIN_COUNT - 1U;
+    unsigned int limiter_idx = MAX_LIMITER_PER_DOMAIN - 1U;
     uint32_t power_limit;
 
-    for (cluster_idx = 0U; cluster_idx < TEST_CLUSTER_COUNT - 1U;
-         cluster_idx++) {
-        cluster_ctx = &perf_controller_ctx.cluster_ctx_table[cluster_idx];
-        for (core_idx = 0U; core_idx < cluster_ctx->core_count; core_idx++) {
+    for (domain_idx = 0U; domain_idx < TEST_DOMAIN_COUNT - 1U; domain_idx++) {
+        domain_ctx = &perf_controller_ctx.domain_ctx_table[domain_idx];
+        for (limiter_idx = 0U; limiter_idx < domain_ctx->limiter_count;
+             limiter_idx++) {
             fwk_module_is_valid_sub_element_id_ExpectAnyArgsAndReturn(true);
-            core_id = FWK_ID_SUB_ELEMENT(
-                FWK_MODULE_IDX_PERF_CONTROLLER, cluster_idx, core_idx);
-            core_ctx = &perf_controller_ctx.cluster_ctx_table[cluster_idx]
-                            .core_ctx_table[core_idx];
+            limiter_id = FWK_ID_SUB_ELEMENT(
+                FWK_MODULE_IDX_PERF_CONTROLLER, domain_idx, limiter_idx);
+            limiter_ctx = &perf_controller_ctx.domain_ctx_table[domain_idx]
+                               .limiter_ctx_table[limiter_idx];
 
             power_limit = 20U;
-            status = mod_perf_controller_set_power_limit(core_id, power_limit);
+            status =
+                mod_perf_controller_set_power_limit(limiter_id, power_limit);
 
-            TEST_ASSERT_EQUAL(core_ctx->power_limit, power_limit);
+            TEST_ASSERT_EQUAL(limiter_ctx->power_limit, power_limit);
             TEST_ASSERT_EQUAL(status, FWK_SUCCESS);
         }
     }
 }
 
-void test_get_cores_min_power_limit(void)
+void test_get_limiters_min_power_limit(void)
 {
     uint32_t min_power_limit;
-    unsigned int core_idx;
-    unsigned int cluster_idx;
-    struct mod_perf_controller_cluster_ctx *cluster_ctx;
-    uint32_t core_power_limit_test_values[MAX_CORE_PER_CLUSTER] = {
+    unsigned int limiter_idx;
+    unsigned int domain_idx;
+    struct mod_perf_controller_domain_ctx *domain_ctx;
+    uint32_t limiter_power_limit_test_values[MAX_LIMITER_PER_DOMAIN] = {
         100U, 300U, 200U, 10U
     };
 
-    for (cluster_idx = 0U; cluster_idx < TEST_CLUSTER_COUNT - 1U;
-         cluster_idx++) {
-        cluster_ctx = &perf_controller_ctx.cluster_ctx_table[cluster_idx];
+    for (domain_idx = 0U; domain_idx < TEST_DOMAIN_COUNT - 1U; domain_idx++) {
+        domain_ctx = &perf_controller_ctx.domain_ctx_table[domain_idx];
 
-        for (core_idx = 0u; core_idx < cluster_ctx->core_count; core_idx++) {
-            cluster_ctx->core_ctx_table[core_idx].power_limit =
-                core_power_limit_test_values[core_idx];
+        for (limiter_idx = 0u; limiter_idx < domain_ctx->limiter_count;
+             limiter_idx++) {
+            domain_ctx->limiter_ctx_table[limiter_idx].power_limit =
+                limiter_power_limit_test_values[limiter_idx];
         }
 
-        min_power_limit = get_cores_min_power_limit(cluster_ctx);
+        min_power_limit = get_limiters_min_power_limit(domain_ctx);
 
         /*
             Using sorting to determine the minimum. qsort is used as it is a
@@ -198,39 +198,38 @@ void test_get_cores_min_power_limit(void)
         */
 
         qsort(
-            core_power_limit_test_values,
-            cluster_ctx->core_count,
-            sizeof(core_power_limit_test_values[0]),
+            limiter_power_limit_test_values,
+            domain_ctx->limiter_count,
+            sizeof(limiter_power_limit_test_values[0]),
             helper_comp);
 
-        TEST_ASSERT_EQUAL(core_power_limit_test_values[0], min_power_limit);
+        TEST_ASSERT_EQUAL(limiter_power_limit_test_values[0], min_power_limit);
     }
 }
 
-void test_controller_apply_performance_granted_within_limits(void)
+void test_controller_domain_apply_performance_granted_within_limits(void)
 {
     int status;
-    unsigned int cluster_idx;
-    struct mod_perf_controller_cluster_ctx *cluster_ctx;
+    unsigned int domain_idx;
+    struct mod_perf_controller_domain_ctx *domain_ctx;
     uint32_t min_power_limit;
     uint32_t performance_limit;
     uint32_t *requested_performance;
     uintptr_t *cookie;
 
-    for (cluster_idx = 0U; cluster_idx < TEST_CLUSTER_COUNT - 1U;
-         cluster_idx++) {
-        cluster_ctx = &perf_controller_ctx.cluster_ctx_table[cluster_idx];
-        requested_performance = &cluster_ctx->performance_request_details.level;
-        cookie = &cluster_ctx->performance_request_details.cookie;
+    for (domain_idx = 0U; domain_idx < TEST_DOMAIN_COUNT - 1U; domain_idx++) {
+        domain_ctx = &perf_controller_ctx.domain_ctx_table[domain_idx];
+        requested_performance = &domain_ctx->performance_request_details.level;
+        cookie = &domain_ctx->performance_request_details.cookie;
 
         min_power_limit = 500U;
         performance_limit = 700U;
 
-        get_cores_min_power_limit_stub_ExpectAndReturn(
-            cluster_ctx, min_power_limit);
+        get_limiters_min_power_limit_stub_ExpectAndReturn(
+            domain_ctx, min_power_limit);
 
         power_to_performance_ExpectAndReturn(
-            cluster_ctx->config->power_model_id,
+            domain_ctx->config->power_model_id,
             min_power_limit,
             NULL,
             FWK_SUCCESS);
@@ -244,42 +243,41 @@ void test_controller_apply_performance_granted_within_limits(void)
         *cookie = 2U;
 
         driver_set_performance_level_ExpectAndReturn(
-            cluster_ctx->config->performance_driver_id,
+            domain_ctx->config->performance_driver_id,
             *cookie,
             *requested_performance,
             FWK_SUCCESS);
 
-        status = cluster_apply_performance_granted(cluster_ctx);
+        status = domain_apply_performance_granted(domain_ctx);
 
-        TEST_ASSERT_EQUAL(cluster_ctx->performance_limit, performance_limit);
+        TEST_ASSERT_EQUAL(domain_ctx->performance_limit, performance_limit);
         TEST_ASSERT_EQUAL(status, FWK_SUCCESS);
     }
 }
 
-void test_controller_apply_performance_granted_out_of_limits(void)
+void test_controller_domain_apply_performance_granted_out_of_limits(void)
 {
     int status;
-    unsigned int cluster_idx;
-    struct mod_perf_controller_cluster_ctx *cluster_ctx;
+    unsigned int domain_idx;
+    struct mod_perf_controller_domain_ctx *domain_ctx;
     uint32_t min_power_limit;
     uint32_t performance_limit;
     uint32_t *requested_performance;
     uintptr_t *cookie;
 
-    for (cluster_idx = 0U; cluster_idx < TEST_CLUSTER_COUNT - 1U;
-         cluster_idx++) {
-        cluster_ctx = &perf_controller_ctx.cluster_ctx_table[cluster_idx];
-        requested_performance = &cluster_ctx->performance_request_details.level;
-        cookie = &cluster_ctx->performance_request_details.cookie;
+    for (domain_idx = 0U; domain_idx < TEST_DOMAIN_COUNT - 1U; domain_idx++) {
+        domain_ctx = &perf_controller_ctx.domain_ctx_table[domain_idx];
+        requested_performance = &domain_ctx->performance_request_details.level;
+        cookie = &domain_ctx->performance_request_details.cookie;
 
         min_power_limit = 800U;
         performance_limit = 991U;
 
-        get_cores_min_power_limit_stub_ExpectAndReturn(
-            cluster_ctx, min_power_limit);
+        get_limiters_min_power_limit_stub_ExpectAndReturn(
+            domain_ctx, min_power_limit);
 
         power_to_performance_ExpectAndReturn(
-            cluster_ctx->config->power_model_id,
+            domain_ctx->config->power_model_id,
             min_power_limit,
             NULL,
             FWK_SUCCESS);
@@ -293,27 +291,27 @@ void test_controller_apply_performance_granted_out_of_limits(void)
         *cookie = 3U;
 
         driver_set_performance_level_ExpectAndReturn(
-            cluster_ctx->config->performance_driver_id,
+            domain_ctx->config->performance_driver_id,
             0U, /* No cookie */
             performance_limit,
             FWK_SUCCESS);
 
-        status = cluster_apply_performance_granted(cluster_ctx);
+        status = domain_apply_performance_granted(domain_ctx);
 
         TEST_ASSERT_EQUAL(status, FWK_SUCCESS);
     }
 }
 
-void test_controller_apply_performance_granted_success(void)
+void test_controller_domain_apply_performance_granted_success(void)
 {
     int status;
-    unsigned int cluster_idx;
-    struct mod_perf_controller_cluster_ctx *cluster_ctx;
+    unsigned int domain_idx;
+    struct mod_perf_controller_domain_ctx *domain_ctx;
 
-    for (cluster_idx = 0U; cluster_idx < TEST_CLUSTER_COUNT; cluster_idx++) {
-        cluster_ctx = &perf_controller_ctx.cluster_ctx_table[cluster_idx];
-        cluster_apply_performance_granted_stub_ExpectAndReturn(
-            cluster_ctx, FWK_SUCCESS);
+    for (domain_idx = 0U; domain_idx < TEST_DOMAIN_COUNT; domain_idx++) {
+        domain_ctx = &perf_controller_ctx.domain_ctx_table[domain_idx];
+        domain_apply_performance_granted_stub_ExpectAndReturn(
+            domain_ctx, FWK_SUCCESS);
     }
 
     status = mod_perf_controller_apply_performance_granted();
@@ -328,10 +326,10 @@ int perf_controller_test_main(void)
     RUN_TEST(test_set_performance_level_within_limits);
     RUN_TEST(test_set_performance_level_out_of_limits);
     RUN_TEST(test_set_power_limit_success);
-    RUN_TEST(test_get_cores_min_power_limit);
-    RUN_TEST(test_controller_apply_performance_granted_within_limits);
-    RUN_TEST(test_controller_apply_performance_granted_out_of_limits);
-    RUN_TEST(test_controller_apply_performance_granted_success);
+    RUN_TEST(test_get_limiters_min_power_limit);
+    RUN_TEST(test_controller_domain_apply_performance_granted_within_limits);
+    RUN_TEST(test_controller_domain_apply_performance_granted_out_of_limits);
+    RUN_TEST(test_controller_domain_apply_performance_granted_success);
 
     return UNITY_END();
 }

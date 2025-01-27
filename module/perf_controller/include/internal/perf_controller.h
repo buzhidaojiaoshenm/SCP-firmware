@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2024-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -12,32 +12,32 @@
 #include <fwk_id.h>
 
 /*!
- * \brief Performance controller core context.
+ * \brief Performance controller limiter context.
  *
- * \details The performance controller core context is responsible for storing
- *      the power limit for a corresponding core.
+ * \details The performance controller limiter context is responsible for
+ * storing the power limit for a corresponding limiter.
  */
-struct mod_perf_controller_core_ctx {
+struct mod_perf_controller_limiter_ctx {
     uint32_t power_limit;
 };
 
 /*!
- * \brief Performance controller cluster context.
+ * \brief Performance controller domain context.
  *
- * \details The performance controller cluster is responsible for storing the
- *      aggregate information about the cores.
+ * \details The performance controller domain is responsible for storing the
+ *      aggregate information about the limiters.
  */
-struct mod_perf_controller_cluster_ctx {
+struct mod_perf_controller_domain_ctx {
     /*! Power model that converts from a power quantity to performance level. */
     const struct mod_perf_controller_power_model_api *power_model_api;
 
     /*! Performance driver API. */
     const struct mod_perf_controller_drv_api *perf_driver_api;
 
-    /*! Performance limit for the cluster. */
+    /*! Performance limit for the domain. */
     uint32_t performance_limit;
 
-    /*! Requested performance details for the cluster. */
+    /*! Requested performance details for the domain. */
     struct {
         /*! Requested performance level. */
         uint32_t level;
@@ -45,14 +45,14 @@ struct mod_perf_controller_cluster_ctx {
         uintptr_t cookie;
     } performance_request_details;
 
-    /*! Cluster configuration. */
-    const struct mod_perf_controller_cluster_config *config;
+    /*! Domain configuration. */
+    const struct mod_perf_controller_domain_config *config;
 
-    /*! Context table of cores. */
-    struct mod_perf_controller_core_ctx *core_ctx_table;
+    /*! Context table of limiters. */
+    struct mod_perf_controller_limiter_ctx *limiter_ctx_table;
 
-    /*! Number of cores in the cluster. */
-    unsigned int core_count;
+    /*! Number of limiters in the domain. */
+    unsigned int limiter_count;
 
     /*! Notification count. */
     unsigned int notification_count;
@@ -66,23 +66,23 @@ struct mod_perf_controller_cluster_ctx {
  */
 struct mod_perf_controller_internal_api {
     /*! Memeber function to return minimum power limit. */
-    uint32_t (*get_cores_min_power_limit)(
-        struct mod_perf_controller_cluster_ctx *);
+    uint32_t (*get_limiters_min_power_limit)(
+        struct mod_perf_controller_domain_ctx *);
 
-    /*! Memeber function to apply performance granted to the cluster. */
-    int (*cluster_apply_performance_granted)(
-        struct mod_perf_controller_cluster_ctx *cluster_ctx);
+    /*! Memeber function to apply performance granted to the domain. */
+    int (*domain_apply_performance_granted)(
+        struct mod_perf_controller_domain_ctx *domain_ctx);
 };
 
 /*!
  * \brief Module context
  */
 struct mod_perf_controller_ctx {
-    /*! Context table of clusters. */
-    struct mod_perf_controller_cluster_ctx *cluster_ctx_table;
+    /*! Context table of domains. */
+    struct mod_perf_controller_domain_ctx *domain_ctx_table;
 
-    /*! Number of clusters in the module. */
-    unsigned int cluster_count;
+    /*! Number of domains in the module. */
+    unsigned int domain_count;
 };
 
 #endif /* PERF_CONTROLLER_H_ */
