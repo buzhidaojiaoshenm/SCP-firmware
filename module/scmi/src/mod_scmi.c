@@ -434,7 +434,9 @@ static int scmi_message_validation(
         return (int)SCMI_NOT_FOUND;
     }
 
-    if (payload_size != payload_size_table[message_id]) {
+    if ((payload_size != payload_size_table[message_id]) &&
+        (payload_size_table[message_id] !=
+         MOD_SCMI_PROTOCOL_DAYNAMIC_PAYLOAD_SIZE)) {
         /* Incorrect payload size or message is not supported */
         return (int)SCMI_PROTOCOL_ERROR;
     }

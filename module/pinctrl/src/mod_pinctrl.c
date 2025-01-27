@@ -702,7 +702,7 @@ int set_configuration(
     enum mod_pinctrl_selector flag,
     const struct mod_pinctrl_drv_pin_configuration *config)
 {
-    int status;
+    int status = FWK_E_RANGE;
 
     uint16_t pin_id;
     uint16_t pin_count;
@@ -793,7 +793,7 @@ static int is_pin_function_allowed(uint16_t pin_id, uint32_t function_id)
 
 static int set_group_function(uint16_t group_index, uint32_t function)
 {
-    int status;
+    int status = FWK_SUCCESS;
     uint16_t group_pins_count = 0;
     uint16_t pin_index;
     struct mod_pinctrl_drv_api *drv_api;
@@ -907,8 +907,8 @@ static int pinctrl_init(
 
     pinctrl_ctx.config = config;
 
-    pinctrl_ctx.pinctrl_drv_domain_ctx->pinctrl_driver_api =
-        fwk_mm_alloc(element_count, sizeof(struct mod_pinctrl_drv_api *));
+    pinctrl_ctx.pinctrl_drv_domain_ctx =
+        fwk_mm_alloc(element_count, sizeof(struct mod_pinctrl_domain_ctx));
 
     pinctrl_ctx.pinctrl_drv_domain_count = element_count;
 
@@ -974,7 +974,7 @@ static int pinctrl_process_bind_request(
 }
 
 const struct fwk_module module_pinctrl = {
-    .api_count = (unsigned int)MOD_PIN_CONTROL_API_COUNT,
+    .api_count = (unsigned int)MOD_PINCTRL_API_IDX_COUNT,
     .type = FWK_MODULE_TYPE_HAL,
     .init = pinctrl_init,
     .element_init = pinctrl_element_init,

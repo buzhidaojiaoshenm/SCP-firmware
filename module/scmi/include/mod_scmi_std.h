@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2020-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2020-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -41,6 +41,7 @@
 #define MOD_SCMI_PLATFORM_PROTOCOL_ID_MIN 0x80
 /*! Maximum Protocol ID reserved for vendor or platform-specific extensions */
 #define MOD_SCMI_PLATFORM_PROTOCOL_ID_MAX MOD_SCMI_PROTOCOL_ID_MAX
+#define MOD_SCMI_PROTOCOL_DAYNAMIC_PAYLOAD_SIZE SIZE_MAX
 
 /*!
  * \brief SCMI error codes.

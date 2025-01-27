@@ -182,10 +182,10 @@ struct mod_pinctrl_config {
 enum mod_pinctrl_api_idx {
 
     /*! Index for the pin control API */
-    MOD_PIN_CONTROL_API,
+    MOD_PINCTRL_API_IDX,
 
     /*! Number of APIs */
-    MOD_PIN_CONTROL_API_COUNT
+    MOD_PINCTRL_API_IDX_COUNT
 };
 
 struct mod_pinctrl_api {

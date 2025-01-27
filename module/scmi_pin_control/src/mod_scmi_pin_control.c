@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2024-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -54,16 +54,10 @@ static int scmi_pin_control_settings_get_handler(
 static int scmi_pin_control_settings_configure_handler(
     fwk_id_t service_id,
     const uint32_t *payload);
-static int scmi_pin_control_request_handler(
-    fwk_id_t service_id,
-    const uint32_t *payload);
-static int scmi_pin_control_release_handler(
-    fwk_id_t service_id,
-    const uint32_t *payload);
 static int scmi_pin_control_name_get_handler(
     fwk_id_t service_id,
     const uint32_t *payload);
-static int scmi_pin_control_set_permissions_handler(
+static int scmi_pin_control_req_message_not_supported(
     fwk_id_t service_id,
     const uint32_t *payload);
 
@@ -85,11 +79,11 @@ static handler_table_t handler_table[MOD_SCMI_PIN_CONTROL_COMMAND_COUNT] = {
     [MOD_SCMI_PIN_CONTROL_SETTINGS_GET] = scmi_pin_control_settings_get_handler,
     [MOD_SCMI_PIN_CONTROL_SETTINGS_CONFIGURE] =
         scmi_pin_control_settings_configure_handler,
-    [MOD_SCMI_PIN_CONTROL_REQUEST] = scmi_pin_control_request_handler,
-    [MOD_SCMI_PIN_CONTROL_RELEASE] = scmi_pin_control_release_handler,
+    [MOD_SCMI_PIN_CONTROL_REQUEST] = scmi_pin_control_req_message_not_supported,
+    [MOD_SCMI_PIN_CONTROL_RELEASE] = scmi_pin_control_req_message_not_supported,
     [MOD_SCMI_PIN_CONTROL_NAME_GET] = scmi_pin_control_name_get_handler,
     [MOD_SCMI_PIN_CONTROL_SET_PERMISSIONS] =
-        scmi_pin_control_set_permissions_handler,
+        scmi_pin_control_req_message_not_supported,
 };
 
 static const size_t payload_size_table[MOD_SCMI_PIN_CONTROL_COMMAND_COUNT] = {
@@ -104,7 +98,7 @@ static const size_t payload_size_table[MOD_SCMI_PIN_CONTROL_COMMAND_COUNT] = {
     [MOD_SCMI_PIN_CONTROL_SETTINGS_GET] =
         (unsigned int)sizeof(struct scmi_pin_control_settings_get_a2p),
     [MOD_SCMI_PIN_CONTROL_SETTINGS_CONFIGURE] =
-        (unsigned int)sizeof(struct scmi_pin_control_settings_configure_a2p),
+        MOD_SCMI_PROTOCOL_DAYNAMIC_PAYLOAD_SIZE,
     [MOD_SCMI_PIN_CONTROL_REQUEST] =
         (unsigned int)sizeof(struct scmi_pin_control_request_a2p),
     [MOD_SCMI_PIN_CONTROL_RELEASE] =
@@ -114,6 +108,44 @@ static const size_t payload_size_table[MOD_SCMI_PIN_CONTROL_COMMAND_COUNT] = {
     [MOD_SCMI_PIN_CONTROL_SET_PERMISSIONS] =
         (unsigned int)sizeof(struct scmi_pin_control_set_permissions_a2p),
 };
+
+static int scmi_pin_control_req_message_not_supported(
+    fwk_id_t service_id,
+    const uint32_t *payload)
+{
+    int32_t not_supported_message = (int32_t)SCMI_NOT_SUPPORTED;
+    return scmi_pin_control_ctx.scmi_api->respond(
+        service_id, &not_supported_message, sizeof(not_supported_message));
+}
+
+static int validate_setting_config_payload_size(
+    size_t payload_size,
+    const uint32_t *payload)
+{
+    const struct scmi_pin_control_settings_configure_a2p *parameters;
+    uint8_t num_of_configs;
+    uint32_t attributes;
+    size_t calculated_payload_size;
+
+    parameters =
+        (const struct scmi_pin_control_settings_configure_a2p *)payload;
+    attributes = parameters->attributes;
+
+    num_of_configs = (uint8_t)GET_VALUE_FROM_POS(
+        attributes,
+        SCMI_PIN_CONTROL_NUM_OF_CONFIGS_POS,
+        SCMI_PIN_CONTROL_NUM_OF_CONFIGS_POS_MSB);
+
+    calculated_payload_size =
+        sizeof(struct scmi_pin_control_settings_configure_a2p) +
+        (num_of_configs * sizeof(uint64_t));
+
+    if (calculated_payload_size != payload_size) {
+        return SCMI_PROTOCOL_ERROR;
+    }
+
+    return SCMI_SUCCESS;
+}
 
 static int map_identifier(int32_t identifier, uint16_t *mapped_identifier)
 {
@@ -231,13 +263,15 @@ static int scmi_pin_control_protocol_message_attributes_handler(
     message_id = parameters->message_id;
 
     if ((message_id >= FWK_ARRAY_SIZE(handler_table)) ||
-        (handler_table[message_id] == NULL)) {
+        (handler_table[message_id] ==
+         scmi_pin_control_req_message_not_supported)) {
         return_values.status = (int32_t)SCMI_NOT_FOUND;
     }
 
     response_size = (return_values.status == SCMI_SUCCESS) ?
         sizeof(return_values) :
         sizeof(return_values.status);
+
     return scmi_pin_control_ctx.scmi_api->respond(
         service_id, &return_values, response_size);
 }
@@ -385,11 +419,16 @@ static int scmi_pin_control_list_associations_handler(
     }
 
     return_values.status = (int32_t)SCMI_SUCCESS;
+    status = scmi_pin_control_ctx.scmi_api->write_payload(
+        service_id, 0, &return_values, sizeof(return_values));
+    if (status != FWK_SUCCESS) {
+        return_values.status = SCMI_GENERIC_ERROR;
+    }
 
 exit:
     return scmi_pin_control_ctx.scmi_api->respond(
         service_id,
-        (return_values.status == SCMI_SUCCESS) ? (void *)&return_values :
+        (return_values.status == SCMI_SUCCESS) ? NULL :
                                                  (void *)&return_values.status,
         (return_values.status == SCMI_SUCCESS) ? payload_size :
                                                  sizeof(return_values.status));
@@ -555,6 +594,11 @@ static int scmi_pin_control_settings_get_handler(
     }
 
     return_values.status = (int32_t)SCMI_SUCCESS;
+    status = scmi_pin_control_ctx.scmi_api->write_payload(
+        service_id, 0, &return_values, sizeof(return_values));
+    if (status != FWK_SUCCESS) {
+        return_values.status = SCMI_GENERIC_ERROR;
+    }
 
 exit:
     if (status == FWK_E_RANGE) {
@@ -565,7 +609,7 @@ exit:
 
     return scmi_pin_control_ctx.scmi_api->respond(
         service_id,
-        (return_values.status == SCMI_SUCCESS) ? (void *)&return_values :
+        (return_values.status == SCMI_SUCCESS) ? NULL :
                                                  (void *)&return_values.status,
         (return_values.status == SCMI_SUCCESS) ? payload_size :
                                                  sizeof(return_values.status));
@@ -648,30 +692,6 @@ exit:
         service_id, &return_values, sizeof(return_values));
 }
 
-static int scmi_pin_control_request_handler(
-    fwk_id_t service_id,
-    const uint32_t *payload)
-{
-    struct scmi_pin_control_request_p2a return_values = {
-        .status = (int32_t)SCMI_NOT_SUPPORTED,
-    };
-
-    return scmi_pin_control_ctx.scmi_api->respond(
-        service_id, &return_values, sizeof(return_values));
-}
-
-static int scmi_pin_control_release_handler(
-    fwk_id_t service_id,
-    const uint32_t *payload)
-{
-    struct scmi_pin_control_release_p2a return_values = {
-        .status = (int32_t)SCMI_NOT_SUPPORTED,
-    };
-
-    return scmi_pin_control_ctx.scmi_api->respond(
-        service_id, &return_values, sizeof(return_values));
-}
-
 static int scmi_pin_control_name_get_handler(
     fwk_id_t service_id,
     const uint32_t *payload)
@@ -723,18 +743,6 @@ exit:
         service_id, &return_values, response_size);
 }
 
-static int scmi_pin_control_set_permissions_handler(
-    fwk_id_t service_id,
-    const uint32_t *payload)
-{
-    struct scmi_pin_control_set_permissions_p2a return_values = {
-        .status = (int32_t)SCMI_NOT_SUPPORTED,
-    };
-
-    return scmi_pin_control_ctx.scmi_api->respond(
-        service_id, &return_values, sizeof(return_values));
-}
-
 /*
  * SCMI module -> SCMI pin control module interface
  */
@@ -769,6 +777,12 @@ static int scmi_pin_control_message_handler(
         payload_size_table,
         MOD_SCMI_PIN_CONTROL_COMMAND_COUNT,
         handler_table);
+
+    if ((message_id == MOD_SCMI_PIN_CONTROL_SETTINGS_CONFIGURE) &&
+        (validation_result == SCMI_SUCCESS)) {
+        validation_result =
+            validate_setting_config_payload_size(payload_size, payload);
+    }
 
     if (validation_result == SCMI_SUCCESS) {
         return handler_table[message_id](service_id, payload);
@@ -838,7 +852,7 @@ static int scmi_pin_control_bind(fwk_id_t id, unsigned int round)
 
     return fwk_module_bind(
         FWK_ID_MODULE(FWK_MODULE_IDX_PINCTRL),
-        FWK_ID_API(FWK_MODULE_IDX_PINCTRL, MOD_PIN_CONTROL_API),
+        FWK_ID_API(FWK_MODULE_IDX_PINCTRL, MOD_PINCTRL_API_IDX),
         &scmi_pin_control_ctx.pinctrl_api);
 }
 

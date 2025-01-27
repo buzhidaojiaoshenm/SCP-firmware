@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2020-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2020-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -592,6 +592,10 @@ static enum mod_res_perms_permissions agent_protocol_permissions(
     uint32_t protocol_idx;
     mod_res_perms_t perms;
     int status;
+
+    if (protocol_id == MOD_SCMI_PROTOCOL_ID_PIN_CONTROL) {
+        return FWK_SUCCESS;
+    }
 
     /* No Agent:Protocol permissions management */
     if ((agent_id == 0) || (resources_perms_ctx.agent_permissions == NULL) ||
