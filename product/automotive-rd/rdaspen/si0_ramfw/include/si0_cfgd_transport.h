@@ -15,6 +15,7 @@
 /* Module 'transport' element indexes */
 enum scp_cfgd_mod_transport_element_idx {
     SI0_CFGD_MOD_TRANSPORT_EIDX_SYSTEM,
+    SI0_CFGD_MOD_TRANSPORT_EIDX_PSCI,
     SI0_CFGD_MOD_TRANSPORT_EIDX_COUNT,
 };
 

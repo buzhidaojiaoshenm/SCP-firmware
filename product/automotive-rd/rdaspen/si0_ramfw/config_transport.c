@@ -21,6 +21,10 @@
 #include <fwk_module.h>
 #include <fwk_module_idx.h>
 
+/* Secure transport channel with mailbox initialization policy */
+#define TRANSPORT_CH_SEC_MBX_INIT \
+    (MOD_TRANSPORT_POLICY_INIT_MAILBOX | MOD_TRANSPORT_POLICY_SECURE)
+
 /* Module 'transport' element configuration table */
 static const struct fwk_element element_table[]  = {
     [SI0_CFGD_MOD_TRANSPORT_EIDX_SYSTEM] = {
@@ -38,6 +42,27 @@ static const struct fwk_element element_table[]  = {
                     FWK_ID_SUB_ELEMENT_INIT(
                         FWK_MODULE_IDX_MHU3,
                         SI0_CFGD_MOD_MHU3_EIDX_SI0_RSE,
+                        0),
+                .driver_api_id =
+                    FWK_ID_API_INIT(
+                        FWK_MODULE_IDX_MHU3,
+                        MOD_MHU3_API_IDX_TRANSPORT_DRIVER),
+        }),
+    },
+    [SI0_CFGD_MOD_TRANSPORT_EIDX_PSCI] = {
+        .name = "PSCI",
+        .data = &((
+            struct mod_transport_channel_config) {
+                .transport_type = MOD_TRANSPORT_CHANNEL_TRANSPORT_TYPE_OUT_BAND,
+                .policies = TRANSPORT_CH_SEC_MBX_INIT,
+                .channel_type = MOD_TRANSPORT_CHANNEL_TYPE_COMPLETER,
+                .out_band_mailbox_address =
+                    (uintptr_t) SI0_SCMI_PAYLOAD_S_A2P_BASE,
+                .out_band_mailbox_size = SI0_SCMI_PAYLOAD_SIZE,
+                .driver_id =
+                    FWK_ID_SUB_ELEMENT_INIT(
+                        FWK_MODULE_IDX_MHU3,
+                        SI0_CFGD_MOD_MHU3_EIDX_SI0_AP_S,
                         0),
                 .driver_api_id =
                     FWK_ID_API_INIT(

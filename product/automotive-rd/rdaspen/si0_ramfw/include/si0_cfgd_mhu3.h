@@ -14,6 +14,7 @@
 /* MHUv3 device indices */
 enum scp_cfgd_mod_mhu3_device_idx {
     SI0_CFGD_MOD_MHU3_EIDX_SI0_RSE,
+    SI0_CFGD_MOD_MHU3_EIDX_SI0_AP_S,
     SI0_CFGD_MOD_MHU3_EIDX_COUNT
 };
 

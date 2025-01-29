@@ -30,6 +30,12 @@ struct mod_mhu3_channel_config si02rse_s_dbch_config[] = {
     [0] = MOD_MHU3_INIT_DBCH(0, 0, 0, 0),
 };
 
+/* SI0<->AP Secure MHUv3 doorbell channel configuration */
+struct mod_mhu3_channel_config si02ap_s_dbch_config[1] = {
+    /* PBX CH 0, FLAG 0, MBX CH 0, FLAG 0 */
+    [0] = MOD_MHU3_INIT_DBCH(0, 0, 0, 0),
+};
+
 /* Module element table */
 static const struct fwk_element mhu_element_table[]  = {
     [SI0_CFGD_MOD_MHU3_EIDX_SI0_RSE] = {
@@ -40,6 +46,18 @@ static const struct fwk_element mhu_element_table[]  = {
             .in = SI0_RSE2SI0_MHUV3_RCV_BASE,
             .out = SI0_SI02RSE_MHUV3_SEND_BASE,
             .channels = si02rse_s_dbch_config,
+            .timer_id = FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_TIMER, 0),
+            .resp_wait_timeout_us = RESP_WAIT_TIMEOUT_US,
+        },
+    },
+    [SI0_CFGD_MOD_MHU3_EIDX_SI0_AP_S] = {
+        .name = "SI02AP_S_MHU_DBCH",
+        .sub_element_count = FWK_ARRAY_SIZE(si02ap_s_dbch_config),
+        .data = &(struct mod_mhu3_device_config) {
+            .irq = (unsigned int) CL0_MHU3_AP2SI0_S_IRQ,
+            .in = SI0_AP2SI0_S_MHUV3_RCV_BASE,
+            .out = SI0_SI02AP_S_MHUV3_SEND_BASE,
+            .channels = si02ap_s_dbch_config,
             .timer_id = FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_TIMER, 0),
             .resp_wait_timeout_us = RESP_WAIT_TIMEOUT_US,
         },

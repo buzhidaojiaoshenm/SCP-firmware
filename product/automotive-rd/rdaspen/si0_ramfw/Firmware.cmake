@@ -42,6 +42,7 @@ list(APPEND SCP_MODULES
     "power-domain"
     "cmn-cyprus"
     "apcontext"
+    "scmi"
     "sds"
     "si0-platform"
 )
