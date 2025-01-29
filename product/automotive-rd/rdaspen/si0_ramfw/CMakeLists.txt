@@ -31,4 +31,6 @@ target_sources(rdaspen-si0-bl2 PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/config_sds.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/config_apcontext.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/config_scmi.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/config_scmi_power_domain.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/config_scmi_system_power.c"
     )

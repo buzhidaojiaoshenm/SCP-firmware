@@ -44,5 +44,7 @@ list(APPEND SCP_MODULES
     "apcontext"
     "scmi"
     "sds"
+    "scmi-power-domain"
+    "scmi-system-power"
     "si0-platform"
 )
