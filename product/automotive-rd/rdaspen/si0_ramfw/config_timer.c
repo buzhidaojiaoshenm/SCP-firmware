@@ -8,6 +8,7 @@
  *     Configuration data for module 'timer'.
  */
 
+#include "si0_cfgd_timer.h"
 #include "si0_irq.h"
 
 #include <mod_timer.h>
@@ -25,7 +26,8 @@ static const struct fwk_element timer_dev_table[] = {
             .id = FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_GTIMER, 0),
             .timer_irq = CL0_SYSTEM_TIMER_IRQ,
         }),
-        .sub_element_count = 0, /* Number of alarms */
+        .sub_element_count =
+            SI0_CFGD_MOD_TIMER_ALARM_IDX_COUNT, /* Number of alarms */
     },
     [1] = { 0 },
 };
