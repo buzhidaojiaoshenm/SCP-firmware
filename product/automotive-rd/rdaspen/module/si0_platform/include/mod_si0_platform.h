@@ -12,6 +12,7 @@
 #define MOD_SI0_PLATFORM_H
 
 #include <fwk_id.h>
+#include <fwk_module_idx.h>
 
 #include <stdint.h>
 
@@ -34,6 +35,26 @@ enum mod_si0_platform_api_idx {
     /*! Number of exposed interfaces */
     MOD_SI0_PLATFORM_API_COUNT
 };
+
+/*!
+ * \brief Notification indices.
+ */
+enum mod_si0_platform_notification_idx {
+    /*! SI0 subsystem initialization completion notification */
+    MOD_SI0_PLATFORM_NOTIFICATION_IDX_SUBSYS_INITIALIZED,
+
+    /*! Number of notifications defined by the module */
+    MOD_SI0_PLATFORM_NOTIFICATION_COUNT,
+};
+
+/*!
+ * \brief Identifier for the
+ * ::MOD_SI0_PLATFORM_NOTIFICATION_IDX_SUBSYS_INITIALIZED notification.
+ */
+static const fwk_id_t mod_si0_platform_notification_subsys_init =
+    FWK_ID_NOTIFICATION_INIT(
+        FWK_MODULE_IDX_SI0_PLATFORM,
+        MOD_SI0_PLATFORM_NOTIFICATION_IDX_SUBSYS_INITIALIZED);
 
 /*!
  * \brief SCP platform configuration data.

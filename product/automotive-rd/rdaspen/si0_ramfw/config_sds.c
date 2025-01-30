@@ -12,6 +12,7 @@
 #include "si0_mmap.h"
 
 #include <mod_sds.h>
+#include <mod_si0_platform.h>
 
 #include <fwk_assert.h>
 #include <fwk_element.h>
@@ -44,6 +45,13 @@ const struct mod_sds_config sds_module_config = {
     .regions = sds_regions,
     .region_count = SI0_CFGD_MOD_SDS_REGION_IDX_COUNT,
     .clock_id = FWK_ID_NONE_INIT,
+    .platform_notification = {
+        .notification_id = FWK_ID_NOTIFICATION_INIT(
+            FWK_MODULE_IDX_SI0_PLATFORM,
+            MOD_SI0_PLATFORM_NOTIFICATION_IDX_SUBSYS_INITIALIZED),
+        .source_id = FWK_ID_MODULE_INIT(
+            FWK_MODULE_IDX_SI0_PLATFORM),
+    },
 };
 
 static struct fwk_element sds_element_table[MOD_SDS_ELEMENT_COUNT] = {

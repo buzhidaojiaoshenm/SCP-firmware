@@ -25,6 +25,12 @@
 #define TRANSPORT_CH_SEC_MBX_INIT \
     (MOD_TRANSPORT_POLICY_INIT_MAILBOX | MOD_TRANSPORT_POLICY_SECURE)
 
+/* Subsystem initialized notification id (platform notification) */
+#define PLATFORM_SI0_NOTIFICATION_ID \
+    FWK_ID_NOTIFICATION_INIT( \
+        FWK_MODULE_IDX_SI0_PLATFORM, \
+        MOD_SI0_PLATFORM_NOTIFICATION_IDX_SUBSYS_INITIALIZED)
+
 /* Module 'transport' element configuration table */
 static const struct fwk_element element_table[]  = {
     [SI0_CFGD_MOD_TRANSPORT_EIDX_SYSTEM] = {
@@ -68,6 +74,11 @@ static const struct fwk_element element_table[]  = {
                     FWK_ID_API_INIT(
                         FWK_MODULE_IDX_MHU3,
                         MOD_MHU3_API_IDX_TRANSPORT_DRIVER),
+                .platform_notification = {
+                    .notification_id = PLATFORM_SI0_NOTIFICATION_ID,
+                    .source_id = FWK_ID_MODULE_INIT(
+                        FWK_MODULE_IDX_SI0_PLATFORM),
+                },
         }),
     },
     [SI0_CFGD_MOD_TRANSPORT_EIDX_COUNT] = { 0 },
