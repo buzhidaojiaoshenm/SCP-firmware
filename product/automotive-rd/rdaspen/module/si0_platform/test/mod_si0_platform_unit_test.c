@@ -9,6 +9,7 @@
 
 #include <Mockfwk_id.h>
 #include <Mockfwk_module.h>
+#include <Mockfwk_notification.h>
 
 #include <mod_si0_platform.h>
 
@@ -104,8 +105,13 @@ void test_si0_platform_bind_fail(void)
 void test_si0_platform_mod_start_success(void)
 {
     int status;
+    struct fwk_event event = { 0 };
+    event.id = mod_si0_platform_notification_subsys_init;
+    event.source_id = fwk_module_id_si0_platform;
+    unsigned int count = 0U;
 
     notify_rse_and_wait_for_response_ExpectAndReturn(FWK_SUCCESS);
+    fwk_notification_notify_ExpectAndReturn(&event, &count, FWK_SUCCESS);
     init_ap_ExpectAndReturn(FWK_SUCCESS);
 
     status = si0_platform_start(fwk_module_id_si0_platform);
@@ -137,6 +143,7 @@ void test_si0_platform_mod_start_fail_power_mgmt(void)
     int status;
 
     notify_rse_and_wait_for_response_ExpectAndReturn(FWK_SUCCESS);
+    fwk_notification_notify_IgnoreAndReturn(FWK_SUCCESS);
     init_ap_ExpectAndReturn(FWK_E_BUSY);
 
     status = si0_platform_start(fwk_module_id_si0_platform);

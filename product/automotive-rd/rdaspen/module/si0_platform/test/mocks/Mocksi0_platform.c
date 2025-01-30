@@ -6,6 +6,8 @@
 #include "Mocksi0_platform.h"
 
 static const char* CMockString_config = "config";
+static const char* CMockString_get_platform_scmi_power_down_api = "get_platform_scmi_power_down_api";
+static const char* CMockString_get_platform_system_power_driver_api = "get_platform_system_power_driver_api";
 static const char* CMockString_get_platform_transport_signal_api = "get_platform_transport_signal_api";
 static const char* CMockString_init_ap = "init_ap";
 static const char* CMockString_notify_rse_and_wait_for_response = "notify_rse_and_wait_for_response";
@@ -55,6 +57,22 @@ typedef struct _CMOCK_init_ap_CALL_INSTANCE
 
 } CMOCK_init_ap_CALL_INSTANCE;
 
+typedef struct _CMOCK_get_platform_system_power_driver_api_CALL_INSTANCE
+{
+  UNITY_LINE_TYPE LineNumber;
+  char ExpectAnyArgsBool;
+  const void* ReturnVal;
+
+} CMOCK_get_platform_system_power_driver_api_CALL_INSTANCE;
+
+typedef struct _CMOCK_get_platform_scmi_power_down_api_CALL_INSTANCE
+{
+  UNITY_LINE_TYPE LineNumber;
+  char ExpectAnyArgsBool;
+  const void* ReturnVal;
+
+} CMOCK_get_platform_scmi_power_down_api_CALL_INSTANCE;
+
 static struct Mocksi0_platformInstance
 {
   char get_platform_transport_signal_api_IgnoreBool;
@@ -87,6 +105,18 @@ static struct Mocksi0_platformInstance
   CMOCK_init_ap_CALLBACK init_ap_CallbackFunctionPointer;
   int init_ap_CallbackCalls;
   CMOCK_MEM_INDEX_TYPE init_ap_CallInstance;
+  char get_platform_system_power_driver_api_IgnoreBool;
+  const void* get_platform_system_power_driver_api_FinalReturn;
+  char get_platform_system_power_driver_api_CallbackBool;
+  CMOCK_get_platform_system_power_driver_api_CALLBACK get_platform_system_power_driver_api_CallbackFunctionPointer;
+  int get_platform_system_power_driver_api_CallbackCalls;
+  CMOCK_MEM_INDEX_TYPE get_platform_system_power_driver_api_CallInstance;
+  char get_platform_scmi_power_down_api_IgnoreBool;
+  const void* get_platform_scmi_power_down_api_FinalReturn;
+  char get_platform_scmi_power_down_api_CallbackBool;
+  CMOCK_get_platform_scmi_power_down_api_CALLBACK get_platform_scmi_power_down_api_CallbackFunctionPointer;
+  int get_platform_scmi_power_down_api_CallbackCalls;
+  CMOCK_MEM_INDEX_TYPE get_platform_scmi_power_down_api_CallInstance;
 } Mock;
 
 extern jmp_buf AbortFrame;
@@ -156,6 +186,32 @@ void Mocksi0_platform_Verify(void)
     UNITY_TEST_FAIL(cmock_line, CMockStringCalledLess);
   }
   if (Mock.init_ap_CallbackFunctionPointer != NULL)
+  {
+    call_instance = CMOCK_GUTS_NONE;
+    (void)call_instance;
+  }
+  call_instance = Mock.get_platform_system_power_driver_api_CallInstance;
+  if (Mock.get_platform_system_power_driver_api_IgnoreBool)
+    call_instance = CMOCK_GUTS_NONE;
+  if (CMOCK_GUTS_NONE != call_instance)
+  {
+    UNITY_SET_DETAIL(CMockString_get_platform_system_power_driver_api);
+    UNITY_TEST_FAIL(cmock_line, CMockStringCalledLess);
+  }
+  if (Mock.get_platform_system_power_driver_api_CallbackFunctionPointer != NULL)
+  {
+    call_instance = CMOCK_GUTS_NONE;
+    (void)call_instance;
+  }
+  call_instance = Mock.get_platform_scmi_power_down_api_CallInstance;
+  if (Mock.get_platform_scmi_power_down_api_IgnoreBool)
+    call_instance = CMOCK_GUTS_NONE;
+  if (CMOCK_GUTS_NONE != call_instance)
+  {
+    UNITY_SET_DETAIL(CMockString_get_platform_scmi_power_down_api);
+    UNITY_TEST_FAIL(cmock_line, CMockStringCalledLess);
+  }
+  if (Mock.get_platform_scmi_power_down_api_CallbackFunctionPointer != NULL)
   {
     call_instance = CMOCK_GUTS_NONE;
     (void)call_instance;
@@ -626,5 +682,165 @@ void init_ap_Stub(CMOCK_init_ap_CALLBACK Callback)
   Mock.init_ap_IgnoreBool = (char)0;
   Mock.init_ap_CallbackBool = (char)0;
   Mock.init_ap_CallbackFunctionPointer = Callback;
+}
+
+const void* get_platform_system_power_driver_api(void)
+{
+  UNITY_LINE_TYPE cmock_line = TEST_LINE_NUM;
+  CMOCK_get_platform_system_power_driver_api_CALL_INSTANCE* cmock_call_instance;
+  UNITY_SET_DETAIL(CMockString_get_platform_system_power_driver_api);
+  cmock_call_instance = (CMOCK_get_platform_system_power_driver_api_CALL_INSTANCE*)CMock_Guts_GetAddressFor(Mock.get_platform_system_power_driver_api_CallInstance);
+  Mock.get_platform_system_power_driver_api_CallInstance = CMock_Guts_MemNext(Mock.get_platform_system_power_driver_api_CallInstance);
+  if (Mock.get_platform_system_power_driver_api_IgnoreBool)
+  {
+    UNITY_CLR_DETAILS();
+    if (cmock_call_instance == NULL)
+      return Mock.get_platform_system_power_driver_api_FinalReturn;
+    Mock.get_platform_system_power_driver_api_FinalReturn = cmock_call_instance->ReturnVal;
+    return cmock_call_instance->ReturnVal;
+  }
+  if (!Mock.get_platform_system_power_driver_api_CallbackBool &&
+      Mock.get_platform_system_power_driver_api_CallbackFunctionPointer != NULL)
+  {
+    const void* cmock_cb_ret = Mock.get_platform_system_power_driver_api_CallbackFunctionPointer(Mock.get_platform_system_power_driver_api_CallbackCalls++);
+    UNITY_CLR_DETAILS();
+    return cmock_cb_ret;
+  }
+  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringCalledMore);
+  cmock_line = cmock_call_instance->LineNumber;
+  if (Mock.get_platform_system_power_driver_api_CallbackFunctionPointer != NULL)
+  {
+    cmock_call_instance->ReturnVal = Mock.get_platform_system_power_driver_api_CallbackFunctionPointer(Mock.get_platform_system_power_driver_api_CallbackCalls++);
+  }
+  UNITY_CLR_DETAILS();
+  return cmock_call_instance->ReturnVal;
+}
+
+void get_platform_system_power_driver_api_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, const void* cmock_to_return)
+{
+  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_get_platform_system_power_driver_api_CALL_INSTANCE));
+  CMOCK_get_platform_system_power_driver_api_CALL_INSTANCE* cmock_call_instance = (CMOCK_get_platform_system_power_driver_api_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
+  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringOutOfMemory);
+  memset(cmock_call_instance, 0, sizeof(*cmock_call_instance));
+  Mock.get_platform_system_power_driver_api_CallInstance = CMock_Guts_MemChain(Mock.get_platform_system_power_driver_api_CallInstance, cmock_guts_index);
+  Mock.get_platform_system_power_driver_api_IgnoreBool = (char)0;
+  cmock_call_instance->LineNumber = cmock_line;
+  cmock_call_instance->ExpectAnyArgsBool = (char)0;
+  cmock_call_instance->ReturnVal = cmock_to_return;
+  Mock.get_platform_system_power_driver_api_IgnoreBool = (char)1;
+}
+
+void get_platform_system_power_driver_api_CMockStopIgnore(void)
+{
+  if(Mock.get_platform_system_power_driver_api_IgnoreBool)
+    Mock.get_platform_system_power_driver_api_CallInstance = CMock_Guts_MemNext(Mock.get_platform_system_power_driver_api_CallInstance);
+  Mock.get_platform_system_power_driver_api_IgnoreBool = (char)0;
+}
+
+void get_platform_system_power_driver_api_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, const void* cmock_to_return)
+{
+  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_get_platform_system_power_driver_api_CALL_INSTANCE));
+  CMOCK_get_platform_system_power_driver_api_CALL_INSTANCE* cmock_call_instance = (CMOCK_get_platform_system_power_driver_api_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
+  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringOutOfMemory);
+  memset(cmock_call_instance, 0, sizeof(*cmock_call_instance));
+  Mock.get_platform_system_power_driver_api_CallInstance = CMock_Guts_MemChain(Mock.get_platform_system_power_driver_api_CallInstance, cmock_guts_index);
+  Mock.get_platform_system_power_driver_api_IgnoreBool = (char)0;
+  cmock_call_instance->LineNumber = cmock_line;
+  cmock_call_instance->ExpectAnyArgsBool = (char)0;
+  cmock_call_instance->ReturnVal = cmock_to_return;
+}
+
+void get_platform_system_power_driver_api_AddCallback(CMOCK_get_platform_system_power_driver_api_CALLBACK Callback)
+{
+  Mock.get_platform_system_power_driver_api_IgnoreBool = (char)0;
+  Mock.get_platform_system_power_driver_api_CallbackBool = (char)1;
+  Mock.get_platform_system_power_driver_api_CallbackFunctionPointer = Callback;
+}
+
+void get_platform_system_power_driver_api_Stub(CMOCK_get_platform_system_power_driver_api_CALLBACK Callback)
+{
+  Mock.get_platform_system_power_driver_api_IgnoreBool = (char)0;
+  Mock.get_platform_system_power_driver_api_CallbackBool = (char)0;
+  Mock.get_platform_system_power_driver_api_CallbackFunctionPointer = Callback;
+}
+
+const void* get_platform_scmi_power_down_api(void)
+{
+  UNITY_LINE_TYPE cmock_line = TEST_LINE_NUM;
+  CMOCK_get_platform_scmi_power_down_api_CALL_INSTANCE* cmock_call_instance;
+  UNITY_SET_DETAIL(CMockString_get_platform_scmi_power_down_api);
+  cmock_call_instance = (CMOCK_get_platform_scmi_power_down_api_CALL_INSTANCE*)CMock_Guts_GetAddressFor(Mock.get_platform_scmi_power_down_api_CallInstance);
+  Mock.get_platform_scmi_power_down_api_CallInstance = CMock_Guts_MemNext(Mock.get_platform_scmi_power_down_api_CallInstance);
+  if (Mock.get_platform_scmi_power_down_api_IgnoreBool)
+  {
+    UNITY_CLR_DETAILS();
+    if (cmock_call_instance == NULL)
+      return Mock.get_platform_scmi_power_down_api_FinalReturn;
+    Mock.get_platform_scmi_power_down_api_FinalReturn = cmock_call_instance->ReturnVal;
+    return cmock_call_instance->ReturnVal;
+  }
+  if (!Mock.get_platform_scmi_power_down_api_CallbackBool &&
+      Mock.get_platform_scmi_power_down_api_CallbackFunctionPointer != NULL)
+  {
+    const void* cmock_cb_ret = Mock.get_platform_scmi_power_down_api_CallbackFunctionPointer(Mock.get_platform_scmi_power_down_api_CallbackCalls++);
+    UNITY_CLR_DETAILS();
+    return cmock_cb_ret;
+  }
+  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringCalledMore);
+  cmock_line = cmock_call_instance->LineNumber;
+  if (Mock.get_platform_scmi_power_down_api_CallbackFunctionPointer != NULL)
+  {
+    cmock_call_instance->ReturnVal = Mock.get_platform_scmi_power_down_api_CallbackFunctionPointer(Mock.get_platform_scmi_power_down_api_CallbackCalls++);
+  }
+  UNITY_CLR_DETAILS();
+  return cmock_call_instance->ReturnVal;
+}
+
+void get_platform_scmi_power_down_api_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, const void* cmock_to_return)
+{
+  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_get_platform_scmi_power_down_api_CALL_INSTANCE));
+  CMOCK_get_platform_scmi_power_down_api_CALL_INSTANCE* cmock_call_instance = (CMOCK_get_platform_scmi_power_down_api_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
+  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringOutOfMemory);
+  memset(cmock_call_instance, 0, sizeof(*cmock_call_instance));
+  Mock.get_platform_scmi_power_down_api_CallInstance = CMock_Guts_MemChain(Mock.get_platform_scmi_power_down_api_CallInstance, cmock_guts_index);
+  Mock.get_platform_scmi_power_down_api_IgnoreBool = (char)0;
+  cmock_call_instance->LineNumber = cmock_line;
+  cmock_call_instance->ExpectAnyArgsBool = (char)0;
+  cmock_call_instance->ReturnVal = cmock_to_return;
+  Mock.get_platform_scmi_power_down_api_IgnoreBool = (char)1;
+}
+
+void get_platform_scmi_power_down_api_CMockStopIgnore(void)
+{
+  if(Mock.get_platform_scmi_power_down_api_IgnoreBool)
+    Mock.get_platform_scmi_power_down_api_CallInstance = CMock_Guts_MemNext(Mock.get_platform_scmi_power_down_api_CallInstance);
+  Mock.get_platform_scmi_power_down_api_IgnoreBool = (char)0;
+}
+
+void get_platform_scmi_power_down_api_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, const void* cmock_to_return)
+{
+  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_get_platform_scmi_power_down_api_CALL_INSTANCE));
+  CMOCK_get_platform_scmi_power_down_api_CALL_INSTANCE* cmock_call_instance = (CMOCK_get_platform_scmi_power_down_api_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
+  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringOutOfMemory);
+  memset(cmock_call_instance, 0, sizeof(*cmock_call_instance));
+  Mock.get_platform_scmi_power_down_api_CallInstance = CMock_Guts_MemChain(Mock.get_platform_scmi_power_down_api_CallInstance, cmock_guts_index);
+  Mock.get_platform_scmi_power_down_api_IgnoreBool = (char)0;
+  cmock_call_instance->LineNumber = cmock_line;
+  cmock_call_instance->ExpectAnyArgsBool = (char)0;
+  cmock_call_instance->ReturnVal = cmock_to_return;
+}
+
+void get_platform_scmi_power_down_api_AddCallback(CMOCK_get_platform_scmi_power_down_api_CALLBACK Callback)
+{
+  Mock.get_platform_scmi_power_down_api_IgnoreBool = (char)0;
+  Mock.get_platform_scmi_power_down_api_CallbackBool = (char)1;
+  Mock.get_platform_scmi_power_down_api_CallbackFunctionPointer = Callback;
+}
+
+void get_platform_scmi_power_down_api_Stub(CMOCK_get_platform_scmi_power_down_api_CALLBACK Callback)
+{
+  Mock.get_platform_scmi_power_down_api_IgnoreBool = (char)0;
+  Mock.get_platform_scmi_power_down_api_CallbackBool = (char)0;
+  Mock.get_platform_scmi_power_down_api_CallbackFunctionPointer = Callback;
 }
 

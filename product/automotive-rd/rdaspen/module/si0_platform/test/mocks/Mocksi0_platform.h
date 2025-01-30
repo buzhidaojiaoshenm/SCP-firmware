@@ -80,6 +80,26 @@ typedef int (* CMOCK_init_ap_CALLBACK)(int cmock_num_calls);
 void init_ap_AddCallback(CMOCK_init_ap_CALLBACK Callback);
 void init_ap_Stub(CMOCK_init_ap_CALLBACK Callback);
 #define init_ap_StubWithCallback init_ap_Stub
+#define get_platform_system_power_driver_api_IgnoreAndReturn(cmock_retval) get_platform_system_power_driver_api_CMockIgnoreAndReturn(__LINE__, cmock_retval)
+void get_platform_system_power_driver_api_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, const void* cmock_to_return);
+#define get_platform_system_power_driver_api_StopIgnore() get_platform_system_power_driver_api_CMockStopIgnore()
+void get_platform_system_power_driver_api_CMockStopIgnore(void);
+#define get_platform_system_power_driver_api_ExpectAndReturn(cmock_retval) get_platform_system_power_driver_api_CMockExpectAndReturn(__LINE__, cmock_retval)
+void get_platform_system_power_driver_api_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, const void* cmock_to_return);
+typedef const void* (* CMOCK_get_platform_system_power_driver_api_CALLBACK)(int cmock_num_calls);
+void get_platform_system_power_driver_api_AddCallback(CMOCK_get_platform_system_power_driver_api_CALLBACK Callback);
+void get_platform_system_power_driver_api_Stub(CMOCK_get_platform_system_power_driver_api_CALLBACK Callback);
+#define get_platform_system_power_driver_api_StubWithCallback get_platform_system_power_driver_api_Stub
+#define get_platform_scmi_power_down_api_IgnoreAndReturn(cmock_retval) get_platform_scmi_power_down_api_CMockIgnoreAndReturn(__LINE__, cmock_retval)
+void get_platform_scmi_power_down_api_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, const void* cmock_to_return);
+#define get_platform_scmi_power_down_api_StopIgnore() get_platform_scmi_power_down_api_CMockStopIgnore()
+void get_platform_scmi_power_down_api_CMockStopIgnore(void);
+#define get_platform_scmi_power_down_api_ExpectAndReturn(cmock_retval) get_platform_scmi_power_down_api_CMockExpectAndReturn(__LINE__, cmock_retval)
+void get_platform_scmi_power_down_api_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, const void* cmock_to_return);
+typedef const void* (* CMOCK_get_platform_scmi_power_down_api_CALLBACK)(int cmock_num_calls);
+void get_platform_scmi_power_down_api_AddCallback(CMOCK_get_platform_scmi_power_down_api_CALLBACK Callback);
+void get_platform_scmi_power_down_api_Stub(CMOCK_get_platform_scmi_power_down_api_CALLBACK Callback);
+#define get_platform_scmi_power_down_api_StubWithCallback get_platform_scmi_power_down_api_Stub
 
 #if defined(__GNUC__) && !defined(__ICC) && !defined(__TMS470__)
 #if __GNUC__ > 4 || (__GNUC__ == 4 && (__GNUC_MINOR__ > 6 || (__GNUC_MINOR__ == 6 && __GNUC_PATCHLEVEL__ > 0)))

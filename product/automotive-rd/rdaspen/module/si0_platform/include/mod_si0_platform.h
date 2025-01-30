@@ -32,6 +32,10 @@
 enum mod_si0_platform_api_idx {
     /*! Interface for Transport module */
     MOD_SI0_PLATFORM_API_IDX_TRANSPORT_SIGNAL,
+    /*! API index for the powerdown interface of SCMI module */
+    MOD_SI0_PLATFORM_API_IDX_SCMI_POWER_DOWN,
+    /*! API index for the driver interface of the SYSTEM POWER module */
+    MOD_SI0_PLATFORM_API_IDX_SYSTEM_POWER_DRIVER,
     /*! Number of exposed interfaces */
     MOD_SI0_PLATFORM_API_COUNT
 };

@@ -16,6 +16,7 @@
 #include <fwk_log.h>
 #include <fwk_module.h>
 #include <fwk_module_idx.h>
+#include <fwk_notification.h>
 #include <fwk_status.h>
 
 /* Module context */
@@ -90,6 +91,16 @@ static int si0_platform_process_bind_request(
         status = FWK_SUCCESS;
         break;
 
+    case MOD_SI0_PLATFORM_API_IDX_SCMI_POWER_DOWN:
+        *api = get_platform_scmi_power_down_api();
+        status = FWK_SUCCESS;
+        break;
+
+    case MOD_SI0_PLATFORM_API_IDX_SYSTEM_POWER_DRIVER:
+        *api = get_platform_system_power_driver_api();
+        status = FWK_SUCCESS;
+        break;
+
     default:
         status = FWK_E_PARAM;
     }
@@ -100,6 +111,8 @@ static int si0_platform_process_bind_request(
 static int si0_platform_start(fwk_id_t id)
 {
     int status;
+    struct fwk_event event = { 0 };
+    unsigned int event_count = 0U;
 
     FWK_LOG_INFO(MOD_NAME "Performing SCP-RSE handshake");
 
@@ -107,6 +120,16 @@ static int si0_platform_start(fwk_id_t id)
     status = notify_rse_and_wait_for_response();
     if (status != FWK_SUCCESS) {
         FWK_LOG_ERR(MOD_NAME "Error! SCP-RSE handshake failed");
+        return FWK_E_PANIC;
+    }
+
+    /* SI0 subsystem initialization completion notification */
+    event.id = mod_si0_platform_notification_subsys_init;
+    event.source_id = id;
+
+    status = fwk_notification_notify(&event, &event_count);
+    if (status != FWK_SUCCESS) {
+        FWK_LOG_ERR(MOD_NAME "Error! Subsystem init notification failed");
         return FWK_E_PANIC;
     }
 
@@ -124,6 +147,7 @@ static int si0_platform_start(fwk_id_t id)
 const struct fwk_module module_si0_platform = {
     .type = FWK_MODULE_TYPE_DRIVER,
     .api_count = MOD_SI0_PLATFORM_API_COUNT,
+    .notification_count = MOD_SI0_PLATFORM_NOTIFICATION_COUNT,
     .init = si0_platform_mod_init,
     .bind = si0_platform_bind,
     .process_bind_request = si0_platform_process_bind_request,
