@@ -15,6 +15,7 @@
 
 #include <mod_power_domain.h>
 #include <mod_ppu_v1.h>
+#include <mod_system_power.h>
 
 #include <fwk_element.h>
 #include <fwk_id.h>
@@ -60,18 +61,15 @@ static const struct mod_power_domain_config platform_power_domain_config = {
 static const struct fwk_element *platform_power_domain_get_element_table(
     fwk_id_t module_id)
 {
-    unsigned int systop_ppu_idx;
     struct mod_power_domain_element_config *systop_pd_config;
 
-    systop_ppu_idx = platform_get_core_count() + platform_get_cluster_count();
     systop_pd_config =
         fwk_mm_calloc(1, sizeof(struct mod_power_domain_element_config));
     systop_pd_config->attributes.pd_type = MOD_PD_TYPE_SYSTEM;
     systop_pd_config->parent_idx = PD_STATIC_DEV_IDX_NONE;
-    systop_pd_config->driver_id =
-        FWK_ID_ELEMENT(FWK_MODULE_IDX_PPU_V1, systop_ppu_idx);
+    systop_pd_config->driver_id = FWK_ID_MODULE(FWK_MODULE_IDX_SYSTEM_POWER);
     systop_pd_config->api_id = FWK_ID_API(
-        FWK_MODULE_IDX_PPU_V1, MOD_PPU_V1_API_IDX_POWER_DOMAIN_DRIVER);
+        FWK_MODULE_IDX_SYSTEM_POWER, MOD_SYSTEM_POWER_API_IDX_PD_DRIVER);
     systop_pd_config->allowed_state_mask_table =
         systop_allowed_state_mask_table;
     systop_pd_config->allowed_state_mask_table_size =

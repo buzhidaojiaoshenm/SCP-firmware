@@ -41,6 +41,7 @@ list(APPEND SCP_MODULES
     "mhu3"
     "transport"
     "ppu-v1"
+    "system-power"
     "power-domain"
     "cmn-cyprus"
     "apcontext"
