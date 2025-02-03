@@ -355,7 +355,7 @@ void utest_get_pin_configuration_value_from_type(void)
     uint16_t pin_idx = PIN_6_IDX;
     enum mod_pinctrl_selector flags = MOD_PINCTRL_SELECTOR_PIN;
     struct mod_pinctrl_drv_pin_configuration pin_config = {
-        .config_type = DRIVE_OPEN_SOURCE,
+        .config_type = MOD_PINCTRL_DRV_TYPE_DRIVE_OPEN_SOURCE,
         .config_value = DRIVE_OPEN_SOURCE_VALUE,
     };
 
@@ -377,7 +377,7 @@ void utest_get_group_configuration_value_from_type(void)
     enum mod_pinctrl_selector flags = MOD_PINCTRL_SELECTOR_GROUP;
 
     struct mod_pinctrl_drv_pin_configuration config = {
-        .config_type = LOW_POWER_MODE,
+        .config_type = MOD_PINCTRL_DRV_TYPE_LOW_POWER_MODE,
         .config_value = LOW_POWER_MODE_VALUE,
     };
 
@@ -397,7 +397,8 @@ void utest_get_configuration_value_from_type_invalid_flag(void)
     int status;
     uint16_t group_idx = I2C_GROUP_IDX;
     enum mod_pinctrl_selector flags = 3;
-    enum mod_pinctrl_drv_configuration_type config_type = INPUT_DEBOUNCE;
+    enum mod_pinctrl_drv_configuration_type config_type =
+        MOD_PINCTRL_DRV_TYPE_INPUT_DEBOUNCE;
     uint32_t config_value;
 
     status = get_configuration_value_from_type(
@@ -411,7 +412,8 @@ void utest_get_configuration_value_from_type_invalid_group_id(void)
     int status;
     uint16_t group_idx = GROUP_COUNT;
     enum mod_pinctrl_selector flags = MOD_PINCTRL_SELECTOR_GROUP;
-    enum mod_pinctrl_drv_configuration_type config_type = INPUT_DEBOUNCE;
+    enum mod_pinctrl_drv_configuration_type config_type =
+        MOD_PINCTRL_DRV_TYPE_INPUT_DEBOUNCE;
     uint32_t config_value;
 
     status = get_configuration_value_from_type(
@@ -425,7 +427,8 @@ void utest_get_configuration_value_from_type_invalid_group_type(void)
     int status;
     uint16_t group_idx = I2C_GROUP_IDX;
     enum mod_pinctrl_selector flags = MOD_PINCTRL_SELECTOR_GROUP;
-    enum mod_pinctrl_drv_configuration_type config_type = INPUT_DEBOUNCE;
+    enum mod_pinctrl_drv_configuration_type config_type =
+        MOD_PINCTRL_DRV_TYPE_INPUT_DEBOUNCE;
     uint32_t config_value;
 
     status = get_configuration_value_from_type(
@@ -442,7 +445,7 @@ void utest_get_group_configurations(void)
     enum mod_pinctrl_selector flags = MOD_PINCTRL_SELECTOR_GROUP;
     uint16_t configration_index = 1;
     struct mod_pinctrl_drv_pin_configuration config = {
-        .config_type = LOW_POWER_MODE,
+        .config_type = MOD_PINCTRL_DRV_TYPE_LOW_POWER_MODE,
         .config_value = LOW_POWER_MODE_VALUE,
     };
 
@@ -452,7 +455,7 @@ void utest_get_group_configurations(void)
 
     status = get_configuration(group_idx, flags, configration_index, &config);
 
-    TEST_ASSERT_EQUAL(LOW_POWER_MODE, config.config_type);
+    TEST_ASSERT_EQUAL(MOD_PINCTRL_DRV_TYPE_LOW_POWER_MODE, config.config_type);
     TEST_ASSERT_EQUAL(LOW_POWER_MODE_VALUE, config.config_value);
     TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
 }
@@ -465,7 +468,7 @@ void utest_get_pin_configurations(void)
     enum mod_pinctrl_selector flags = MOD_PINCTRL_SELECTOR_PIN;
     uint16_t configration_index = 0;
     struct mod_pinctrl_drv_pin_configuration config = {
-        .config_type = DRIVE_OPEN_SOURCE,
+        .config_type = MOD_PINCTRL_DRV_TYPE_DRIVE_OPEN_SOURCE,
         .config_value = DRIVE_OPEN_SOURCE_VALUE,
     };
 
@@ -475,7 +478,8 @@ void utest_get_pin_configurations(void)
 
     status = get_configuration(pin_idx, flags, configration_index, &config);
 
-    TEST_ASSERT_EQUAL(DRIVE_OPEN_SOURCE, config.config_type);
+    TEST_ASSERT_EQUAL(
+        MOD_PINCTRL_DRV_TYPE_DRIVE_OPEN_SOURCE, config.config_type);
     TEST_ASSERT_EQUAL(DRIVE_OPEN_SOURCE_VALUE, config.config_value);
     TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
 }
@@ -617,7 +621,7 @@ void utest_set_pin_configurations(void)
     uint16_t pin_index = PIN_1_IDX;
     enum mod_pinctrl_selector flags = MOD_PINCTRL_SELECTOR_PIN;
     const struct mod_pinctrl_drv_pin_configuration config = {
-        .config_type = LOW_POWER_MODE,
+        .config_type = MOD_PINCTRL_DRV_TYPE_LOW_POWER_MODE,
         .config_value = 4,
     };
 
@@ -636,7 +640,7 @@ void utest_set_group_configuration(void)
     enum mod_pinctrl_selector flags = MOD_PINCTRL_SELECTOR_GROUP;
 
     const struct mod_pinctrl_drv_pin_configuration configs = {
-        .config_type = DRIVE_OPEN_SOURCE,
+        .config_type = MOD_PINCTRL_DRV_TYPE_DRIVE_OPEN_SOURCE,
         .config_value = 0,
     };
 
@@ -656,7 +660,7 @@ void utest_set_group_configuration_group_id_invalid(void)
     enum mod_pinctrl_selector flags = MOD_PINCTRL_SELECTOR_GROUP;
 
     const struct mod_pinctrl_drv_pin_configuration configs = {
-        .config_type = BIAS_DISABLE,
+        .config_type = MOD_PINCTRL_DRV_TYPE_BIAS_DISABLE,
         .config_value = 1,
     };
 
@@ -673,7 +677,7 @@ void utest_set_group_configuration_invalid_flag(void)
     enum mod_pinctrl_selector flags = MOD_PINCTRL_SELECTOR_FUNCTION;
 
     const struct mod_pinctrl_drv_pin_configuration configs = {
-        .config_type = BIAS_BUS_HOLD,
+        .config_type = MOD_PINCTRL_DRV_TYPE_BIAS_BUS_HOLD,
         .config_value = 1,
     };
 
@@ -689,7 +693,7 @@ void utest_set_pin_read_only_configuration(void)
     uint16_t pin_index = PIN_1_IDX;
     enum mod_pinctrl_selector flags = MOD_PINCTRL_SELECTOR_PIN;
     const struct mod_pinctrl_drv_pin_configuration config = {
-        .config_type = INPUT_VALUE,
+        .config_type = MOD_PINCTRL_DRV_TYPE_INPUT_VALUE,
         .config_value = DISABLE_VALUE,
     };
 
@@ -706,7 +710,7 @@ void utest_set_group_read_only_configuration(void)
     enum mod_pinctrl_selector flags = MOD_PINCTRL_SELECTOR_GROUP;
 
     const struct mod_pinctrl_drv_pin_configuration configs = {
-        .config_type = INPUT_VALUE,
+        .config_type = MOD_PINCTRL_DRV_TYPE_INPUT_VALUE,
         .config_value = ENABLE_VALUE,
     };
 

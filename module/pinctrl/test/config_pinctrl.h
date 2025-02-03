@@ -47,13 +47,13 @@ typedef enum {
 } group_idx;
 
 const enum mod_pinctrl_drv_configuration_type pin_configuration[] = {
-    DRIVE_OPEN_SOURCE,
-    LOW_POWER_MODE,
-    INPUT_VALUE
+    MOD_PINCTRL_DRV_TYPE_DRIVE_OPEN_SOURCE,
+    MOD_PINCTRL_DRV_TYPE_LOW_POWER_MODE,
+    MOD_PINCTRL_DRV_TYPE_INPUT_VALUE
 };
 
 const enum mod_pinctrl_drv_configuration_type read_only_pin_configuration[] = {
-    INPUT_VALUE
+    MOD_PINCTRL_DRV_TYPE_INPUT_VALUE
 };
 
 uint16_t pin_0_allowed_func[] = { GPIO_FUNC_IDX, UART_FUNC_IDX };

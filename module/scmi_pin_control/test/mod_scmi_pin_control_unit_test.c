@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2024-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -503,19 +503,11 @@ int list_association_pins_in_groups_respond_callback(
     size_t size,
     int cmock_num_calls)
 {
-    const uint32_t expected_return_flags =
-        SHIFT_LEFT_BY_POS(
-            (TOTAL_NUMBER_OF_ASSOCIATED_PINS - EXPECTED_NUMBER_OF_IDENTIFIERS),
-            SCMI_PIN_CONTROL_REMAINING_CONFIGS_POS) |
-        SHIFT_LEFT_BY_POS(EXPECTED_NUMBER_OF_IDENTIFIERS, 0);
     const uint32_t expected_payload_size =
         sizeof(struct scmi_pin_control_list_associations_p2a) +
         EXPECTED_NUMBER_OF_IDENTIFIERS * sizeof(uint16_t);
-    struct scmi_pin_control_list_associations_p2a *acctual_return_values =
-        (struct scmi_pin_control_list_associations_p2a *)payload;
 
-    TEST_ASSERT_EQUAL((uint32_t)SCMI_SUCCESS, acctual_return_values->status);
-    TEST_ASSERT_EQUAL(expected_return_flags, acctual_return_values->flags);
+    TEST_ASSERT_EQUAL(NULL, payload);
     TEST_ASSERT_EQUAL(expected_payload_size, size);
 
     return FWK_SUCCESS;
@@ -531,6 +523,17 @@ void utest_list_association_with_valid_identifier(void)
         .identifier = 3,
         .flags = MOD_PINCTRL_SELECTOR_GROUP,
         .index = 0,
+    };
+
+    const uint32_t expected_return_flags =
+        SHIFT_LEFT_BY_POS(
+            (TOTAL_NUMBER_OF_ASSOCIATED_PINS - EXPECTED_NUMBER_OF_IDENTIFIERS),
+            SCMI_PIN_CONTROL_REMAINING_CONFIGS_POS) |
+        SHIFT_LEFT_BY_POS(EXPECTED_NUMBER_OF_IDENTIFIERS, 0);
+
+    struct scmi_pin_control_list_associations_p2a expected_return_value = {
+        .status = FWK_SUCCESS,
+        .flags = expected_return_flags,
     };
 
     size_t max_payload_size = MAX_ALLOWED_RESPOND_BUFFER_SIZE;
@@ -574,6 +577,13 @@ void utest_list_association_with_valid_identifier(void)
         scmi_write_payload_IgnoreArg_payload();
         payload_size += (uint32_t)sizeof(uint16_t);
     }
+
+    scmi_write_payload_ExpectAndReturn(
+        service_id,
+        0,
+        &expected_return_value,
+        sizeof(expected_return_value),
+        FWK_SUCCESS);
 
     respond_StubWithCallback(list_association_pins_in_groups_respond_callback);
 
@@ -746,16 +756,11 @@ int setting_get_respond_callback_specific_configuration_value(
     size_t size,
     int cmock_num_calls)
 {
-    const uint32_t number_of_configurations = 1;
     const uint32_t payload_size =
         sizeof(struct scmi_pin_control_settings_get_p2a) +
         sizeof(struct mod_pinctrl_drv_pin_configuration);
-    struct scmi_pin_control_settings_get_p2a *return_values =
-        (struct scmi_pin_control_settings_get_p2a *)payload;
 
-    TEST_ASSERT_EQUAL(SCMI_SUCCESS, return_values->status);
-    TEST_ASSERT_EQUAL(number_of_configurations, return_values->num_configs);
-    TEST_ASSERT_EQUAL(0, return_values->function_selected);
+    TEST_ASSERT_EQUAL(NULL, payload);
     TEST_ASSERT_EQUAL(payload_size, size);
 
     return FWK_SUCCESS;
@@ -766,8 +771,8 @@ void utest_setting_get_specific_configuration_value(void)
     int status = SCMI_GENERIC_ERROR;
     const uint32_t config_flag = 0;
     const uint32_t flag_selector = 0;
-    enum mod_pinctrl_drv_configuration_type config_type =
-        SHIFT_LEFT_BY_POS(BIAS_PULL_UP, SETTING_GET_CONFIG_TYPE_POS);
+    enum mod_pinctrl_drv_configuration_type config_type = SHIFT_LEFT_BY_POS(
+        MOD_PINCTRL_DRV_TYPE_BIAS_PULL_UP, SETTING_GET_CONFIG_TYPE_POS);
     uint32_t config_value = 1;
 
     struct scmi_pin_control_settings_get_a2p payload = {
@@ -777,8 +782,14 @@ void utest_setting_get_specific_configuration_value(void)
     };
 
     struct mod_pinctrl_drv_pin_configuration config_pair = {
-        .config_type = BIAS_PULL_UP,
+        .config_type = MOD_PINCTRL_DRV_TYPE_BIAS_PULL_UP,
         .config_value = config_value,
+    };
+
+    struct scmi_pin_control_settings_get_p2a expected_return_values = {
+        .status = (int32_t)SCMI_SUCCESS,
+        .function_selected = 0,
+        .num_configs = 1,
     };
 
     mod_scmi_from_protocol_api_scmi_frame_validation_ExpectAnyArgsAndReturn(
@@ -799,7 +810,13 @@ void utest_setting_get_specific_configuration_value(void)
         &config_pair,
         sizeof(config_pair),
         FWK_SUCCESS);
-    scmi_write_payload_IgnoreArg_payload();
+
+    scmi_write_payload_ExpectAndReturn(
+        service_id,
+        0,
+        &expected_return_values,
+        sizeof(expected_return_values),
+        FWK_SUCCESS);
 
     respond_StubWithCallback(
         setting_get_respond_callback_specific_configuration_value);
@@ -825,14 +842,9 @@ int setting_get_all_configurations_respond_callback(
         sizeof(struct scmi_pin_control_settings_get_p2a) +
         number_of_configurations *
             sizeof(struct mod_pinctrl_drv_pin_configuration);
-    struct scmi_pin_control_settings_get_p2a *expected_respond_header =
-        (struct scmi_pin_control_settings_get_p2a *)payload;
 
-    TEST_ASSERT_EQUAL(SCMI_SUCCESS, expected_respond_header->status);
-    TEST_ASSERT_EQUAL(0, expected_respond_header->function_selected);
-    TEST_ASSERT_EQUAL(
-        number_of_configurations, expected_respond_header->num_configs);
     TEST_ASSERT_EQUAL(expected_respond_size, size);
+    TEST_ASSERT_EQUAL(NULL, payload);
 
     return FWK_SUCCESS;
 }
@@ -855,6 +867,13 @@ void utest_setting_get_all_confgurations(void)
     uint32_t payload_offset =
         (uint32_t)sizeof(struct scmi_pin_control_settings_get_p2a);
 
+    /* num_config should be matched with the total number of configs */
+    struct scmi_pin_control_settings_get_p2a expected_return_values = {
+        .status = (int32_t)SCMI_SUCCESS,
+        .function_selected = 0,
+        .num_configs = 2,
+    };
+
     mod_scmi_from_protocol_api_scmi_frame_validation_ExpectAnyArgsAndReturn(
         SCMI_SUCCESS);
 
@@ -871,12 +890,12 @@ void utest_setting_get_all_confgurations(void)
 
     struct mod_pinctrl_drv_pin_configuration config_pair[2] = {
         {
-            .config_type = BIAS_PULL_UP,
+            .config_type = MOD_PINCTRL_DRV_TYPE_BIAS_PULL_UP,
             /* Any random value can be chosen */
             .config_value = 1,
         },
         {
-            .config_type = LOW_POWER_MODE,
+            .config_type = MOD_PINCTRL_DRV_TYPE_LOW_POWER_MODE,
             /* Any random value can be chosen */
             .config_value = 1,
         }
@@ -899,6 +918,14 @@ void utest_setting_get_all_confgurations(void)
         payload_offset += sizeof(struct mod_pinctrl_drv_pin_configuration);
     }
 
+    scmi_write_payload_ExpectAndReturn(
+        service_id,
+        0,
+        &expected_return_values,
+        sizeof(expected_return_values),
+        FWK_SUCCESS);
+    scmi_write_payload_IgnoreArg_payload();
+
     respond_StubWithCallback(setting_get_all_configurations_respond_callback);
 
     status = scmi_pin_control_message_handler(
@@ -917,14 +944,10 @@ int setting_get_function_respond_callback(
     size_t size,
     int cmock_num_calls)
 {
-    const uint32_t function_id = 4;
     const uint32_t expected_respond_size =
         sizeof(struct scmi_pin_control_settings_get_p2a);
-    struct scmi_pin_control_settings_get_p2a *respond =
-        (struct scmi_pin_control_settings_get_p2a *)payload;
 
-    TEST_ASSERT_EQUAL(SCMI_SUCCESS, respond->status);
-    TEST_ASSERT_EQUAL(function_id, respond->function_selected);
+    TEST_ASSERT_EQUAL(NULL, payload);
     TEST_ASSERT_EQUAL(expected_respond_size, size);
 
     return FWK_SUCCESS;
@@ -936,12 +959,18 @@ void utest_setting_get_function_selected(void)
     uint32_t config_flag = SHIFT_LEFT_BY_POS(
         SCMI_PIN_CONTROL_FUNCTION_SELECTED, SETTING_GET_CONFIG_FLAG_POS);
     uint32_t selector_flag = MOD_PINCTRL_SELECTOR_PIN;
-    /* Any chosen random value */
+    /* Any chosen random value between 0x00 and 0xFFFF */
     uint32_t function_id = 4;
     struct scmi_pin_control_settings_get_a2p payload = {
         /* Any random value can be chosen */
         .identifier = 2,
         .attributes = config_flag | selector_flag,
+    };
+
+    struct scmi_pin_control_settings_get_p2a expected_return_values = {
+        .status = (int32_t)SCMI_SUCCESS,
+        .function_selected = function_id,
+        .num_configs = 0,
     };
 
     mod_scmi_from_protocol_api_scmi_frame_validation_ExpectAnyArgsAndReturn(
@@ -951,6 +980,13 @@ void utest_setting_get_function_selected(void)
         payload.identifier, selector_flag, &function_id, FWK_SUCCESS);
     get_current_associated_function_IgnoreArg_function_id();
     get_current_associated_function_ReturnThruPtr_function_id(&function_id);
+
+    scmi_write_payload_ExpectAndReturn(
+        service_id,
+        0,
+        &expected_return_values,
+        sizeof(expected_return_values),
+        FWK_SUCCESS);
 
     respond_StubWithCallback(setting_get_function_respond_callback);
 
@@ -970,14 +1006,10 @@ int setting_get_no_function_selected_respond_callback(
     size_t size,
     int cmock_num_calls)
 {
-    const uint32_t function_id = NO_FUNCTION_IS_SELECTED;
     const uint32_t expected_respond_size =
         sizeof(struct scmi_pin_control_settings_get_p2a);
-    struct scmi_pin_control_settings_get_p2a *respond =
-        (struct scmi_pin_control_settings_get_p2a *)payload;
 
-    TEST_ASSERT_EQUAL(SCMI_SUCCESS, respond->status);
-    TEST_ASSERT_EQUAL(function_id, respond->function_selected);
+    TEST_ASSERT_EQUAL(NULL, payload);
     TEST_ASSERT_EQUAL(expected_respond_size, size);
 
     return FWK_SUCCESS;
@@ -989,11 +1021,17 @@ void utest_setting_get_no_function_is_selected(void)
     uint32_t config_flag = SHIFT_LEFT_BY_POS(
         SCMI_PIN_CONTROL_FUNCTION_SELECTED, SETTING_GET_CONFIG_FLAG_POS);
     uint32_t selector_flag = MOD_PINCTRL_SELECTOR_PIN;
-    uint32_t function_id = 0xFFFFFFFF;
+    uint32_t function_id = NO_FUNCTION_IS_SELECTED;
     struct scmi_pin_control_settings_get_a2p payload = {
         /* Any random value can be chosen */
         .identifier = 2,
         .attributes = config_flag | selector_flag,
+    };
+
+    struct scmi_pin_control_settings_get_p2a expected_return_values = {
+        .status = (int32_t)SCMI_SUCCESS,
+        .function_selected = NO_FUNCTION_IS_SELECTED,
+        .num_configs = 0,
     };
 
     mod_scmi_from_protocol_api_scmi_frame_validation_ExpectAnyArgsAndReturn(
@@ -1003,6 +1041,13 @@ void utest_setting_get_no_function_is_selected(void)
         payload.identifier, selector_flag, &function_id, FWK_SUCCESS);
     get_current_associated_function_IgnoreArg_function_id();
     get_current_associated_function_ReturnThruPtr_function_id(&function_id);
+
+    scmi_write_payload_ExpectAndReturn(
+        service_id,
+        0,
+        &expected_return_values,
+        sizeof(expected_return_values),
+        FWK_SUCCESS);
 
     respond_StubWithCallback(setting_get_no_function_selected_respond_callback);
 
@@ -1038,11 +1083,11 @@ void utest_setting_configuration(void)
 
     struct mod_pinctrl_drv_pin_configuration configs[2] = {
         {
-            .config_type = BIAS_BUS_HOLD,
+            .config_type = MOD_PINCTRL_DRV_TYPE_BIAS_BUS_HOLD,
             .config_value = 1,
         },
         {
-            .config_type = PULL_MODE,
+            .config_type = MOD_PINCTRL_DRV_TYPE_PULL_MODE,
             .config_value = 1,
         }
     };
@@ -1082,7 +1127,7 @@ void utest_setting_configuration(void)
         protocol_id,
         service_id,
         (void *)&raw_payload,
-        PINCTRL_SETTING_CONFIG_SIZE_OF_PAYLOAD,
+        FWK_ARRAY_SIZE(raw_payload) * sizeof(uint32_t),
         MOD_SCMI_PIN_CONTROL_SETTINGS_CONFIGURE);
 
     TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
@@ -1150,11 +1195,11 @@ void utest_setting_configuration_and_function(void)
 
     struct mod_pinctrl_drv_pin_configuration configs[] = {
         {
-            .config_type = BIAS_BUS_HOLD,
+            .config_type = MOD_PINCTRL_DRV_TYPE_BIAS_BUS_HOLD,
             .config_value = 1,
         },
         {
-            .config_type = PULL_MODE,
+            .config_type = MOD_PINCTRL_DRV_TYPE_PULL_MODE,
             .config_value = 1,
         }
     };
@@ -1196,7 +1241,7 @@ void utest_setting_configuration_and_function(void)
         protocol_id,
         service_id,
         (void *)&raw_payload,
-        PINCTRL_SETTING_CONFIG_SIZE_OF_PAYLOAD,
+        PINCTRL_SETTING_CONFIG_SIZE_OF_PAYLOAD * sizeof(uint32_t),
         MOD_SCMI_PIN_CONTROL_SETTINGS_CONFIGURE);
 
     TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
