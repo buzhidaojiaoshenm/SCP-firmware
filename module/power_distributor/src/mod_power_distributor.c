@@ -51,6 +51,7 @@ static struct mod_power_distributor_ctx power_distributor_ctx;
 
 static int subtree_power_distribute(fwk_id_t subtree_root_id);
 static int system_power_distribute(void);
+static void calculate_power_attributes(void);
 static int set_power_limit(fwk_id_t id, uint32_t power_limit);
 static int set_power_demand(fwk_id_t id, uint32_t power_demand);
 
@@ -179,7 +180,73 @@ static int subtree_power_distribute(fwk_id_t subtree_root_id)
     return FWK_E_SUPPORT;
 }
 
-static int system_power_distribute(void)
+static uint32_t calculate_domain_limit(
+    struct mod_power_distributor_domain_ctx *domain_ctx)
+{
+    uint32_t children_limit = 0;
+
+    for (size_t i = 0; i < domain_ctx->node.children_count; i++) {
+        size_t child_idx = domain_ctx->node.children_idx_table[i];
+
+        struct mod_power_distributor_domain_ctx *child_ctx =
+            get_domain_ctx(child_idx);
+
+        uint32_t sum = children_limit + child_ctx->node.data.power_limit;
+        children_limit = (sum < children_limit) ? UINT32_MAX : sum;
+
+        /* No need to check further if accumulator reaches no limit, i.e. max
+         * power */
+        if (children_limit == UINT32_MAX) {
+            break;
+        }
+    }
+
+    return FWK_MIN(domain_ctx->node.data.power_limit, children_limit);
+}
+
+static uint32_t calculate_domain_demand(
+    struct mod_power_distributor_domain_ctx *domain_ctx)
+{
+    uint32_t children_demand = 0;
+
+    for (size_t i = 0; i < domain_ctx->node.children_count; i++) {
+        size_t child_idx = domain_ctx->node.children_idx_table[i];
+
+        struct mod_power_distributor_domain_ctx *child_ctx =
+            get_domain_ctx(child_idx);
+
+        uint32_t sum = children_demand + child_ctx->node.data.power_demand;
+        children_demand = (sum < children_demand) ? UINT32_MAX : sum;
+
+        /* No need to check further if accumulator reaches maximum power */
+        if (children_demand == UINT32_MAX) {
+            break;
+        }
+    }
+
+    return FWK_MAX(domain_ctx->node.data.power_demand, children_demand);
+}
+
+static void calculate_power_attributes(void)
+{
+    size_t domain_count = power_distributor_ctx.domain_count;
+
+    for (int i = domain_count - 1; i >= 0; i--) {
+        uint32_t domain_idx =
+            power_distributor_ctx.tree_traverse_order_table[i];
+        struct mod_power_distributor_domain_ctx *domain_ctx =
+            get_domain_ctx(domain_idx);
+
+        if (domain_ctx->node.children_count > 0u) {
+            domain_ctx->node.data.power_limit =
+                calculate_domain_limit(domain_ctx);
+            domain_ctx->node.data.power_demand =
+                calculate_domain_demand(domain_ctx);
+        }
+    }
+}
+
+static int set_budgets()
 {
     for (size_t i = 0; i < power_distributor_ctx.domain_count; ++i) {
         struct mod_power_distributor_domain_ctx *domain_ctx =
@@ -196,6 +263,12 @@ static int system_power_distribute(void)
     }
 
     return FWK_SUCCESS;
+}
+
+static int system_power_distribute(void)
+{
+    calculate_power_attributes();
+    return set_budgets();
 }
 
 int set_power_limit(fwk_id_t id, uint32_t power_limit)

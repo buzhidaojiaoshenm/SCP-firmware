@@ -333,7 +333,7 @@ void utest_mod_distributor_set_power_limit_demand_api_invalid_params(void)
     TEST_ASSERT_EQUAL(FWK_E_PARAM, status);
 }
 
-void utest_mod_distributor_system_power_distribute(void)
+void utest_mod_distributor_set_budgets(void)
 {
     int status = FWK_E_INIT;
     for (size_t i = 0; i < power_distributor_ctx.domain_count; ++i) {
@@ -355,7 +355,7 @@ void utest_mod_distributor_system_power_distribute(void)
         }
     }
 
-    status = system_power_distribute();
+    status = set_budgets();
     TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
 }
 
@@ -521,10 +521,173 @@ void utest_construct_tree_traverse_order_table_no_root(void)
     TEST_ASSERT_EQUAL(FWK_E_DATA, status);
 }
 
+void utest_mod_distributor_calculate_power_attributes(void)
+{
+    size_t children_of_soc[] = { TEST_DOMAIN_CPU, TEST_DOMAIN_GPU };
+    size_t children_of_cpu[] = { TEST_DOMAIN_CPU_BIG, TEST_DOMAIN_CPU_LITTLE };
+
+    struct mod_power_distributor_domain_ctx test_domains[TEST_DOMAIN_COUNT] = {
+        [TEST_DOMAIN_SOC] = { .node = { .children_idx_table = children_of_soc,
+                                        .children_count = FWK_ARRAY_SIZE(children_of_soc),
+                                        .data = { .power_limit = 25,
+                                                  .power_demand = 20, }, }, },
+        [TEST_DOMAIN_CPU] = { .node = { .children_idx_table = children_of_cpu,
+                                        .children_count = FWK_ARRAY_SIZE(children_of_cpu),
+                                        .data = { .power_limit = 9,
+                                                  .power_demand = 17, }, }, },
+
+        [TEST_DOMAIN_GPU] = { .node = { .children_idx_table = NULL,
+                                        .children_count = 0,
+                                        .data = { .power_limit = 10,
+                                                  .power_demand = 20, }, }, },
+
+        [TEST_DOMAIN_CPU_BIG] = { .node = { .children_idx_table = NULL,
+                                            .children_count = 0,
+                                            .data = { .power_limit = 6,
+                                                      .power_demand = 5, }, }, },
+
+        [TEST_DOMAIN_CPU_LITTLE] = { .node = { .children_idx_table = NULL,
+                                               .children_count = 0,
+                                               .data = { .power_limit = 5,
+                                                         .power_demand = 10, }, }, },
+    };
+
+    uint32_t tree_traverse_order_table[TEST_DOMAIN_COUNT] = {
+        TEST_DOMAIN_SOC,
+        TEST_DOMAIN_CPU,
+        TEST_DOMAIN_GPU,
+        TEST_DOMAIN_CPU_BIG,
+        TEST_DOMAIN_CPU_LITTLE
+    };
+
+    power_distributor_ctx.domain_count = TEST_DOMAIN_COUNT;
+    power_distributor_ctx.domain = test_domains;
+    power_distributor_ctx.tree_traverse_order_table = tree_traverse_order_table;
+
+    calculate_power_attributes();
+
+    TEST_ASSERT_EQUAL(
+        19,
+        power_distributor_ctx.domain[TEST_DOMAIN_SOC].node.data.power_limit);
+    TEST_ASSERT_EQUAL(
+        9, power_distributor_ctx.domain[TEST_DOMAIN_CPU].node.data.power_limit);
+    TEST_ASSERT_EQUAL(
+        6,
+        power_distributor_ctx.domain[TEST_DOMAIN_CPU_BIG]
+            .node.data.power_limit);
+    TEST_ASSERT_EQUAL(
+        5,
+        power_distributor_ctx.domain[TEST_DOMAIN_CPU_LITTLE]
+            .node.data.power_limit);
+    TEST_ASSERT_EQUAL(
+        10,
+        power_distributor_ctx.domain[TEST_DOMAIN_GPU].node.data.power_limit);
+
+    TEST_ASSERT_EQUAL(
+        37,
+        power_distributor_ctx.domain[TEST_DOMAIN_SOC].node.data.power_demand);
+    TEST_ASSERT_EQUAL(
+        17,
+        power_distributor_ctx.domain[TEST_DOMAIN_CPU].node.data.power_demand);
+    TEST_ASSERT_EQUAL(
+        5,
+        power_distributor_ctx.domain[TEST_DOMAIN_CPU_BIG]
+            .node.data.power_demand);
+    TEST_ASSERT_EQUAL(
+        10,
+        power_distributor_ctx.domain[TEST_DOMAIN_CPU_LITTLE]
+            .node.data.power_demand);
+    TEST_ASSERT_EQUAL(
+        20,
+        power_distributor_ctx.domain[TEST_DOMAIN_GPU].node.data.power_demand);
+}
+
+void utest_mod_distributor_calculate_power_attributes_max_power(void)
+{
+    size_t children_of_soc[] = { TEST_DOMAIN_CPU, TEST_DOMAIN_GPU };
+    size_t children_of_cpu[] = { TEST_DOMAIN_CPU_BIG, TEST_DOMAIN_CPU_LITTLE };
+
+    struct mod_power_distributor_domain_ctx test_domains[TEST_DOMAIN_COUNT] = {
+        [TEST_DOMAIN_SOC] = { .node = { .children_idx_table = children_of_soc,
+                                        .children_count = FWK_ARRAY_SIZE(children_of_soc),
+                                        .data = { .power_limit = 25,
+                                                  .power_demand = 14, }, }, },
+        [TEST_DOMAIN_CPU] = { .node = { .children_idx_table = children_of_cpu,
+                                        .children_count = FWK_ARRAY_SIZE(children_of_cpu),
+                                        .data = { .power_limit = 9,
+                                                  .power_demand = 17, }, }, },
+
+        [TEST_DOMAIN_GPU] = { .node = { .children_idx_table = NULL,
+                                        .children_count = 0,
+                                        .data = { .power_limit = 10,
+                                                  .power_demand = MAX_POWER, }, }, },
+
+        [TEST_DOMAIN_CPU_BIG] = { .node = { .children_idx_table = NULL,
+                                            .children_count = 0,
+                                            .data = { .power_limit = 6,
+                                                      .power_demand = 5, }, }, },
+
+        [TEST_DOMAIN_CPU_LITTLE] = { .node = { .children_idx_table = NULL,
+                                               .children_count = 0,
+                                               .data = { .power_limit = NO_POWER_LIMIT,
+                                                         .power_demand = 10, }, }, },
+    };
+
+    uint32_t tree_traverse_order_table[TEST_DOMAIN_COUNT] = {
+        TEST_DOMAIN_SOC,
+        TEST_DOMAIN_CPU,
+        TEST_DOMAIN_GPU,
+        TEST_DOMAIN_CPU_BIG,
+        TEST_DOMAIN_CPU_LITTLE
+    };
+
+    power_distributor_ctx.domain_count = TEST_DOMAIN_COUNT;
+    power_distributor_ctx.domain = test_domains;
+    power_distributor_ctx.tree_traverse_order_table = tree_traverse_order_table;
+
+    calculate_power_attributes();
+
+    TEST_ASSERT_EQUAL(
+        19,
+        power_distributor_ctx.domain[TEST_DOMAIN_SOC].node.data.power_limit);
+    TEST_ASSERT_EQUAL(
+        9, power_distributor_ctx.domain[TEST_DOMAIN_CPU].node.data.power_limit);
+    TEST_ASSERT_EQUAL(
+        6,
+        power_distributor_ctx.domain[TEST_DOMAIN_CPU_BIG]
+            .node.data.power_limit);
+    TEST_ASSERT_EQUAL(
+        NO_POWER_LIMIT,
+        power_distributor_ctx.domain[TEST_DOMAIN_CPU_LITTLE]
+            .node.data.power_limit);
+    TEST_ASSERT_EQUAL(
+        10,
+        power_distributor_ctx.domain[TEST_DOMAIN_GPU].node.data.power_limit);
+
+    TEST_ASSERT_EQUAL(
+        MAX_POWER,
+        power_distributor_ctx.domain[TEST_DOMAIN_SOC].node.data.power_demand);
+    TEST_ASSERT_EQUAL(
+        17,
+        power_distributor_ctx.domain[TEST_DOMAIN_CPU].node.data.power_demand);
+    TEST_ASSERT_EQUAL(
+        5,
+        power_distributor_ctx.domain[TEST_DOMAIN_CPU_BIG]
+            .node.data.power_demand);
+    TEST_ASSERT_EQUAL(
+        10,
+        power_distributor_ctx.domain[TEST_DOMAIN_CPU_LITTLE]
+            .node.data.power_demand);
+    TEST_ASSERT_EQUAL(
+        MAX_POWER,
+        power_distributor_ctx.domain[TEST_DOMAIN_GPU].node.data.power_demand);
+}
+
 void tearDown(void)
 {
     Mockmod_power_distributor_extra_Verify();
     Mockfwk_mm_Verify();
+    Mockmod_power_distributor_extra_Destroy();
 }
 
 int power_distributor_test_main(void)
@@ -541,11 +704,13 @@ int power_distributor_test_main(void)
     RUN_TEST(utest_mod_distributor_post_init_success);
     RUN_TEST(utest_mod_distributor_set_power_limit_demand_api_success);
     RUN_TEST(utest_mod_distributor_set_power_limit_demand_api_invalid_params);
-    RUN_TEST(utest_mod_distributor_system_power_distribute);
+    RUN_TEST(utest_mod_distributor_set_budgets);
     RUN_TEST(utest_construct_tree_traverse_order_table_success);
     RUN_TEST(utest_construct_tree_traverse_order_table_multipe_roots);
     RUN_TEST(utest_construct_tree_traverse_order_table_exceeded);
     RUN_TEST(utest_construct_tree_traverse_order_table_no_root);
+    RUN_TEST(utest_mod_distributor_calculate_power_attributes);
+    RUN_TEST(utest_mod_distributor_calculate_power_attributes_max_power);
 
     return UNITY_END();
 }
