@@ -29,4 +29,5 @@ target_sources(rdaspen-si0-bl2 PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/config_gtimer.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/config_timer.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/config_sds.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/config_apcontext.c"
     )

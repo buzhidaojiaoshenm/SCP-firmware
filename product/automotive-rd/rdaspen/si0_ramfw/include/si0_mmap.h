@@ -116,6 +116,7 @@ static_assert(
 /* Secure Shared memory between AP and SI0 */
 #define SI0_AP_PERIPHERAL_SRAM_SHARED_SECURE_BASE \
     (SI0_ATW6_AP_PERIPHERAL_SRAM_BASE)
+#define SI0_AP_PERIPHERAL_SRAM_SHARED_SECURE_SIZE (4 * FWK_KIB)
 
 /*
  * SDS Memory Region inside Secure AP Peripheral SRAM that is shared between
@@ -123,5 +124,14 @@ static_assert(
  */
 #define SI0_SDS_SECURE_BASE (SI0_AP_PERIPHERAL_SRAM_SHARED_SECURE_BASE)
 #define SI0_SDS_SECURE_SIZE (3520)
+
+/*
+ * AP Context Memory Region inside Secure AP Peripheral SRAM that is shared
+ * between AP and SI0.
+ */
+#define SI0_AP_CONTEXT_SIZE (64)
+#define SI0_AP_CONTEXT_BASE \
+    (SI0_AP_PERIPHERAL_SRAM_SHARED_SECURE_BASE + \
+     SI0_AP_PERIPHERAL_SRAM_SHARED_SECURE_SIZE - SI0_AP_CONTEXT_SIZE)
 
 #endif /* SI0_MMAP_H */

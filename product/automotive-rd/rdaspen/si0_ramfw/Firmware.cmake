@@ -41,6 +41,7 @@ list(APPEND SCP_MODULES
     "ppu-v1"
     "power-domain"
     "cmn-cyprus"
+    "apcontext"
     "sds"
     "si0-platform"
 )
