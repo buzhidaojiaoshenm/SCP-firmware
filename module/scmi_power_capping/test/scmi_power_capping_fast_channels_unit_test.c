@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2023-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2023-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -11,7 +11,6 @@
 #include <Mockfwk_mm.h>
 #include <Mockfwk_module.h>
 #include <Mockmod_power_capping_extra.h>
-#include <Mockmod_power_coordinator_extra.h>
 #include <Mockmod_transport_extra.h>
 #include <internal/Mockfwk_core_internal.h>
 
@@ -87,16 +86,15 @@ static const struct mod_transport_fast_channels_api transport_fch_api = {
 static const struct mod_power_capping_api power_capping_api = {
     .get_applied_cap = get_applied_cap,
     .request_cap = request_cap,
-};
-
-static const struct mod_power_coordinator_api power_coordinator_api = {
-    .get_coordinator_period = get_coordinator_period,
-    .set_coordinator_period = set_coordinator_period,
+    .get_average_power = get_average_power,
+    .get_averaging_interval = get_averaging_interval,
+    .get_averaging_interval_range = get_averaging_interval_range,
+    .get_averaging_interval_step = get_averaging_interval_step,
+    .set_averaging_interval = set_averaging_interval,
 };
 
 static const struct mod_scmi_power_capping_power_apis power_management_apis = {
     .power_capping_api = &power_capping_api,
-    .power_coordinator_api = &power_coordinator_api,
 };
 
 static uint32_t local_fast_channel_memory_emulation;
@@ -205,13 +203,12 @@ void utest_pcapping_fast_channel_process_command_pai_get(void)
         (FAKE_POWER_CAPPING_IDX_1 * MOD_SCMI_PCAPPING_FAST_CHANNEL_COUNT) +
         MOD_SCMI_PCAPPING_FAST_CHANNEL_PAI_GET;
 
-    get_coordinator_period_ExpectWithArrayAndReturn(
-        scmi_power_capping_default_config.power_coordinator_domain_id,
-        &pai,
-        sizeof(pai),
+    get_averaging_interval_ExpectAndReturn(
+        scmi_power_capping_default_config.power_capping_domain_id,
+        NULL,
         FWK_SUCCESS);
-    get_coordinator_period_IgnoreArg_period();
-    get_coordinator_period_ReturnMemThruPtr_period(&pai, sizeof(pai));
+    get_averaging_interval_IgnoreArg_pai();
+    get_averaging_interval_ReturnThruPtr_pai(&pai);
 
     pcapping_fast_channel_process_command(fch_idx);
     TEST_ASSERT_EQUAL(local_fast_channel_memory_emulation, pai);
@@ -227,10 +224,11 @@ void utest_pcapping_fast_channel_process_command_pai_set(void)
 
     local_fast_channel_memory_emulation = __LINE__;
 
-    set_coordinator_period_ExpectAndReturn(
-        scmi_power_capping_default_config.power_coordinator_domain_id,
+    set_averaging_interval_ExpectAndReturn(
+        scmi_power_capping_default_config.power_capping_domain_id,
         local_fast_channel_memory_emulation,
         FWK_SUCCESS);
+
     pcapping_fast_channel_process_command(fch_idx);
 }
 
@@ -287,16 +285,15 @@ void utest_pcapping_fast_channel_process_event_timer_interrupt(void)
                 FWK_SUCCESS);
             break;
         case MOD_SCMI_PCAPPING_FAST_CHANNEL_PAI_GET:
-            get_coordinator_period_ExpectWithArrayAndReturn(
-                scmi_power_capping_default_config.power_coordinator_domain_id,
+            get_averaging_interval_ExpectAndReturn(
+                scmi_power_capping_default_config.power_capping_domain_id,
                 NULL,
-                0,
                 FWK_SUCCESS);
-            get_coordinator_period_IgnoreArg_period();
+            get_averaging_interval_IgnoreArg_pai();
             break;
         case MOD_SCMI_PCAPPING_FAST_CHANNEL_PAI_SET:
-            set_coordinator_period_ExpectAndReturn(
-                scmi_power_capping_default_config.power_coordinator_domain_id,
+            set_averaging_interval_ExpectAndReturn(
+                scmi_power_capping_default_config.power_capping_domain_id,
                 local_fast_channel_memory_emulation,
                 FWK_SUCCESS);
             break;

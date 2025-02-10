@@ -240,6 +240,12 @@ enum mod_power_capping_notification_idx {
     /*! Power cap change notification. */
     MOD_POWER_CAPPING_NOTIFICATION_IDX_CAP_CHANGE,
 
+    /*! PAI changed notification. */
+    MOD_POWER_CAPPING_NOTIFICATION_IDX_PAI_CHANGED,
+
+    /*! Measurements changed notification. */
+    MOD_POWER_CAPPING_NOTIFICATION_IDX_MEASUREMENTS_CHANGED,
+
     /*! Number of defined notifications. */
     MOD_POWER_CAPPING_NOTIFICATION_IDX_COUNT,
 };

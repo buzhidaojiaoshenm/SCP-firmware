@@ -1,6 +1,6 @@
 #
 # Arm SCP/MCP Software
-# Copyright (c) 2023-2024, Arm Limited and Contributors. All rights reserved.
+# Copyright (c) 2023-2025, Arm Limited and Contributors. All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -72,9 +72,7 @@ target_compile_definitions(${UNIT_TEST_TARGET} PUBLIC "BUILD_HAS_SCMI_POWER_CAPP
 target_sources(${UNIT_TEST_TARGET}
     PRIVATE
         ${MODULE_UT_MOCK_SRC}/Mockmod_scmi_extra.c
-        ${MODULE_UT_MOCK_SRC}/Mockmod_power_capping_extra.c
-        ${MODULE_UT_MOCK_SRC}/Mockmod_power_coordinator_extra.c
-        ${MODULE_UT_MOCK_SRC}/Mockmod_power_meter_extra.c)
+        ${MODULE_UT_MOCK_SRC}/Mockmod_power_capping_extra.c)
 
 ################################################################################
 # Test scmi_power_capping_protocol.c + resource permissions                    #
@@ -108,8 +106,6 @@ target_sources(${UNIT_TEST_TARGET}
     PRIVATE
         ${MODULE_UT_MOCK_SRC}/Mockmod_scmi_extra.c
         ${MODULE_UT_MOCK_SRC}/Mockmod_power_capping_extra.c
-        ${MODULE_UT_MOCK_SRC}/Mockmod_power_coordinator_extra.c
-        ${MODULE_UT_MOCK_SRC}/Mockmod_power_meter_extra.c
         ${MODULE_UT_MOCK_SRC}/Mockmod_resource_perms_extra.c)
 
 ################################################################################
@@ -142,9 +138,7 @@ target_compile_definitions(${UNIT_TEST_TARGET} PUBLIC "BUILD_HAS_SCMI_NOTIFICATI
 target_sources(${UNIT_TEST_TARGET}
     PRIVATE
         ${MODULE_UT_MOCK_SRC}/Mockmod_scmi_extra.c
-        ${MODULE_UT_MOCK_SRC}/Mockmod_power_capping_extra.c
-        ${MODULE_UT_MOCK_SRC}/Mockmod_power_coordinator_extra.c
-        ${MODULE_UT_MOCK_SRC}/Mockmod_power_meter_extra.c)
+        ${MODULE_UT_MOCK_SRC}/Mockmod_power_capping_extra.c)
 
 ################################################################################
 # Test scmi_power_capping_fast_channels.c with standard protocol commands      #
@@ -177,7 +171,6 @@ target_compile_definitions(${UNIT_TEST_TARGET} PUBLIC "BUILD_HAS_SCMI_POWER_CAPP
 target_sources(${UNIT_TEST_TARGET}
     PRIVATE
         ${MODULE_UT_MOCK_SRC}/Mockmod_power_capping_extra.c
-        ${MODULE_UT_MOCK_SRC}/Mockmod_power_coordinator_extra.c
         ${MODULE_UT_MOCK_SRC}/Mockmod_transport_extra.c)
 
 ################################################################################
@@ -210,5 +203,4 @@ target_compile_definitions(${UNIT_TEST_TARGET} PUBLIC "BUILD_HAS_SCMI_POWER_CAPP
 target_sources(${UNIT_TEST_TARGET}
     PRIVATE
         ${MODULE_UT_MOCK_SRC}/Mockmod_power_capping_extra.c
-        ${MODULE_UT_MOCK_SRC}/Mockmod_power_coordinator_extra.c
         ${MODULE_UT_MOCK_SRC}/Mockmod_transport_extra.c)

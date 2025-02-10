@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2023-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2023-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -52,14 +52,6 @@ static fwk_id_t pcapping_fast_channel_get_power_capping_id(uint32_t domain_idx)
     return pcapping_fast_channel_global_ctx
         .power_capping_domain_ctx_table[domain_idx]
         .config->power_capping_domain_id;
-}
-
-static fwk_id_t pcapping_fast_channel_get_power_coordinator_id(
-    uint32_t domain_idx)
-{
-    return pcapping_fast_channel_global_ctx
-        .power_capping_domain_ctx_table[domain_idx]
-        .config->power_coordinator_domain_id;
 }
 
 static void pcapping_fast_channel_callback(uintptr_t param)
@@ -122,8 +114,8 @@ static void pcapping_fast_channel_get_pai(
     int status;
 
     status = pcapping_fast_channel_global_ctx.power_management_apis
-                 ->power_coordinator_api->get_coordinator_period(
-                     pcapping_fast_channel_get_power_coordinator_id(domain_idx),
+                 ->power_capping_api->get_averaging_interval(
+                     pcapping_fast_channel_get_power_capping_id(domain_idx),
                      fch_addr);
     if (status != FWK_SUCCESS) {
         FWK_LOG_ERR("[SCMI-Power-Capping-Fast-Channel] Error getting PAI.");
@@ -137,8 +129,8 @@ static void pcapping_fast_channel_set_pai(
     int status;
 
     status = pcapping_fast_channel_global_ctx.power_management_apis
-                 ->power_coordinator_api->set_coordinator_period(
-                     pcapping_fast_channel_get_power_coordinator_id(domain_idx),
+                 ->power_capping_api->set_averaging_interval(
+                     pcapping_fast_channel_get_power_capping_id(domain_idx),
                      *fch_addr);
     if (status != FWK_SUCCESS) {
         FWK_LOG_ERR("[SCMI-Power-Capping-Fast-Channel] Error setting PAI.");

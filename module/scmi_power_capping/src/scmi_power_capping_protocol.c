@@ -10,8 +10,6 @@
 #include "internal/scmi_power_capping.h"
 #include "internal/scmi_power_capping_fast_channels.h"
 #include "internal/scmi_power_capping_protocol.h"
-#include "mod_power_coordinator.h"
-#include "mod_power_meter.h"
 
 #include <mod_scmi.h>
 #ifdef BUILD_HAS_MOD_RESOURCE_PERMS
@@ -117,12 +115,12 @@ static const fwk_id_t pcapping_protocol_cap_notification =
 #ifdef BUILD_HAS_SCMI_NOTIFICATIONS
 static const fwk_id_t pcapping_protocol_pai_notification =
     FWK_ID_NOTIFICATION_INIT(
-        FWK_MODULE_IDX_POWER_COORDINATOR,
-        MOD_POWER_COORDINATOR_NOTIFICATION_IDX_PERIOD_CHANGED);
+        FWK_MODULE_IDX_POWER_CAPPING,
+        MOD_POWER_CAPPING_NOTIFICATION_IDX_PAI_CHANGED);
 static const fwk_id_t pcapping_protocol_power_measurements_notification =
     FWK_ID_NOTIFICATION_INIT(
-        FWK_MODULE_IDX_POWER_METER,
-        MOD_POWER_METER_NOTIFICATION_IDX_MEASUREMENTS_CHANGED);
+        FWK_MODULE_IDX_POWER_CAPPING,
+        MOD_POWER_CAPPING_NOTIFICATION_IDX_MEASUREMENTS_CHANGED);
 #endif
 
 static handler_table_t handler_table[MOD_SCMI_POWER_CAPPING_COMMAND_COUNT] = {
@@ -240,6 +238,19 @@ static struct mod_scmi_power_capping_domain_context *get_domain_ctx(
 }
 
 /*
+ * Static helper function to set disabled pai values
+ */
+static void pcapping_protocol_set_disabled_pai_values(
+    uint32_t *pai_step,
+    uint32_t *min_pai,
+    uint32_t *max_pai)
+{
+    *pai_step = 0u;
+    *min_pai = UNSUPPORTED_CONFIG_PAI_VALUE;
+    *max_pai = UNSUPPORTED_CONFIG_PAI_VALUE;
+}
+
+/*
  * Static helper function to populate domain attributes return values.
  */
 static inline void scmi_power_capping_populate_domain_attributes(
@@ -248,24 +259,14 @@ static inline void scmi_power_capping_populate_domain_attributes(
 {
     const struct mod_scmi_power_capping_domain_context *domain_ctx;
     const struct mod_scmi_power_capping_domain_config *config;
-    fwk_id_t domain_id;
 
     domain_ctx = get_domain_ctx(domain_idx);
     config = domain_ctx->config;
 
     return_values->attributes = SCMI_POWER_CAPPING_DOMAIN_ATTRIBUTES(
         domain_ctx->cap_config_support,
-        domain_ctx->pai_config_support,
+        config->pai_config_support,
         config->power_cap_unit);
-
-    domain_id = domain_ctx->config->power_capping_domain_id;
-
-    pcapping_protocol_ctx.power_management_apis->power_capping_api
-        ->get_averaging_interval_step(domain_id, &return_values->pai_step);
-
-    pcapping_protocol_ctx.power_management_apis->power_capping_api
-        ->get_averaging_interval_range(
-            domain_id, &return_values->min_pai, &return_values->max_pai);
 
 #ifdef BUILD_HAS_SCMI_POWER_CAPPING_FAST_CHANNELS_COMMANDS
     return_values->attributes |= SCMI_POWER_CAPPING_DOMAIN_FCH_SUPPORT(
@@ -279,11 +280,6 @@ static inline void scmi_power_capping_populate_domain_attributes(
         SCMI_POWER_CAPPING_DOMAIN_MEASUREMENTS_NOTIF_SUPPORT(
             config->power_measurements_change_notification_support);
 #endif
-    return_values->min_power_cap = config->min_power_cap;
-    return_values->max_power_cap = config->max_power_cap;
-    return_values->power_cap_step = config->power_cap_step;
-    return_values->max_sustainable_power = config->max_sustainable_power;
-    return_values->parent_id = config->parent_idx;
 }
 
 /*
@@ -305,15 +301,8 @@ static int pcapping_protocol_check_domain_configuration(
     const struct mod_scmi_power_capping_domain_config *config)
 {
     if ((config->min_power_cap == (uint32_t)0) ||
-        (config->max_power_cap == (uint32_t)0) ||
-        (config->min_pai == (uint32_t)0) || (config->max_pai == (uint32_t)0)) {
+        (config->max_power_cap == (uint32_t)0)) {
         return FWK_E_DATA;
-    }
-
-    if (config->min_pai != config->max_pai) {
-        if (config->pai_step == (uint32_t)0) {
-            return FWK_E_DATA;
-        }
     }
 
     if (config->min_power_cap != config->max_power_cap) {
@@ -331,8 +320,6 @@ static void pcapping_protocol_set_cap_config_support(
 {
     domain_ctx->cap_config_support =
         (config->min_power_cap != config->max_power_cap);
-
-    domain_ctx->pai_config_support = (config->min_pai != config->max_pai);
 }
 
 /*
@@ -519,12 +506,53 @@ static int scmi_power_capping_domain_attributes_handler(
 {
     const struct scmi_power_capping_domain_attributes_a2p *parameters;
     struct scmi_power_capping_domain_attributes_p2a return_values = { 0 };
+    const struct mod_scmi_power_capping_domain_context *domain_ctx;
+    const struct mod_scmi_power_capping_domain_config *config;
+    fwk_id_t domain_id;
+    int status;
 
     parameters =
         (const struct scmi_power_capping_domain_attributes_a2p *)payload;
 
     scmi_power_capping_populate_domain_attributes(
         &return_values, parameters->domain_id);
+
+    domain_ctx = get_domain_ctx(parameters->domain_id);
+    config = domain_ctx->config;
+
+    domain_id = domain_ctx->config->power_capping_domain_id;
+
+    if (config->pai_config_support == false) {
+        pcapping_protocol_set_disabled_pai_values(
+            &return_values.pai_step,
+            &return_values.min_pai,
+            &return_values.max_pai);
+    } else {
+        status = pcapping_protocol_ctx.power_management_apis->power_capping_api
+                     ->get_averaging_interval_step(
+                         domain_id, &return_values.pai_step);
+
+        if (status != FWK_SUCCESS) {
+            return scmi_power_capping_respond_error(
+                service_id, SCMI_GENERIC_ERROR);
+        }
+
+        status =
+            pcapping_protocol_ctx.power_management_apis->power_capping_api
+                ->get_averaging_interval_range(
+                    domain_id, &return_values.min_pai, &return_values.max_pai);
+
+        if (status != FWK_SUCCESS) {
+            return scmi_power_capping_respond_error(
+                service_id, SCMI_GENERIC_ERROR);
+        }
+    }
+
+    return_values.min_power_cap = config->min_power_cap;
+    return_values.max_power_cap = config->max_power_cap;
+    return_values.power_cap_step = config->power_cap_step;
+    return_values.max_sustainable_power = config->max_sustainable_power;
+    return_values.parent_id = config->parent_idx;
 
     fwk_str_strncpy(
         (char *)return_values.name,
@@ -689,24 +717,21 @@ static int scmi_power_capping_pai_set_handler(
     const struct scmi_power_capping_pai_set_a2p *parameters;
     struct scmi_power_capping_pai_set_p2a return_values;
     struct mod_scmi_power_capping_domain_context *ctx;
+    const struct mod_scmi_power_capping_domain_config *config;
     int status;
     fwk_id_t domain_id;
 
     parameters = (const struct scmi_power_capping_pai_set_a2p *)payload;
     ctx = get_domain_ctx(parameters->domain_id);
+    config = ctx->config;
 
     if (parameters->flags != SCMI_POWER_CAPPING_PAI_RESERVED_FLAG) {
         return scmi_power_capping_respond_error(
             service_id, SCMI_INVALID_PARAMETERS);
     }
 
-    if (!ctx->pai_config_support) {
+    if (!config->pai_config_support) {
         return scmi_power_capping_respond_error(service_id, SCMI_NOT_SUPPORTED);
-    }
-
-    if ((parameters->pai < ctx->config->min_pai) ||
-        (parameters->pai > ctx->config->max_pai)) {
-        return scmi_power_capping_respond_error(service_id, SCMI_OUT_OF_RANGE);
     }
 
 #ifdef BUILD_HAS_SCMI_NOTIFICATIONS
@@ -722,7 +747,11 @@ static int scmi_power_capping_pai_set_handler(
     status = pcapping_protocol_ctx.power_management_apis->power_capping_api
                  ->set_averaging_interval(domain_id, parameters->pai);
 
-    if (status != FWK_SUCCESS) {
+    if (status == FWK_E_RANGE) {
+        return scmi_power_capping_respond_error(service_id, SCMI_OUT_OF_RANGE);
+    } else if (status == FWK_E_SUPPORT) {
+        return scmi_power_capping_respond_error(service_id, SCMI_NOT_SUPPORTED);
+    } else if (status != FWK_SUCCESS) {
         return scmi_power_capping_respond_error(service_id, SCMI_GENERIC_ERROR);
     }
 #ifdef BUILD_HAS_SCMI_NOTIFICATIONS
@@ -1077,7 +1106,7 @@ int pcapping_protocol_start(fwk_id_t id)
 
     status = fwk_notification_subscribe(
         pcapping_protocol_pai_notification,
-        FWK_ID_MODULE(FWK_MODULE_IDX_POWER_COORDINATOR),
+        FWK_ID_MODULE(FWK_MODULE_IDX_POWER_CAPPING),
         id);
 
     if (status != FWK_SUCCESS) {
@@ -1086,7 +1115,7 @@ int pcapping_protocol_start(fwk_id_t id)
 
     status = fwk_notification_subscribe(
         pcapping_protocol_power_measurements_notification,
-        FWK_ID_MODULE(FWK_MODULE_IDX_POWER_METER),
+        FWK_ID_MODULE(FWK_MODULE_IDX_POWER_CAPPING),
         id);
 
     if (status != FWK_SUCCESS) {
@@ -1187,9 +1216,9 @@ int pcapping_protocol_process_cap_pai_notify_event(
         return status;
     }
 
-    status = pcapping_protocol_ctx.power_management_apis->power_coordinator_api
-                 ->get_coordinator_period(
-                     ctx->config->power_coordinator_domain_id, &(payload.pai));
+    status = pcapping_protocol_ctx.power_management_apis->power_capping_api
+                 ->get_averaging_interval(
+                     ctx->config->power_capping_domain_id, &(payload.pai));
 
     if (status != FWK_SUCCESS) {
         return status;
@@ -1220,9 +1249,9 @@ int pcapping_protocol_process_measurements_notify_event(
 
     ctx = get_domain_ctx(event_params->domain_idx);
 
-    status =
-        pcapping_protocol_ctx.power_management_apis->power_meter_api->get_power(
-            ctx->config->power_meter_domain_id, &(payload.power));
+    status = pcapping_protocol_ctx.power_management_apis->power_capping_api
+                 ->get_average_power(
+                     ctx->config->power_capping_domain_id, &(payload.power));
 
     if (status != FWK_SUCCESS) {
         return status;

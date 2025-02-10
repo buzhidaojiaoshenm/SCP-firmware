@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2023-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2023-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -11,7 +11,6 @@
 #include "fwk_module_idx.h"
 #include "internal/scmi_power_capping_protocol.h"
 #include "mod_power_capping.h"
-#include "mod_power_meter.h"
 
 #ifdef BUILD_HAS_SCMI_POWER_CAPPING_FAST_CHANNELS_COMMANDS
 #    include "internal/scmi_power_capping.h"
@@ -32,33 +31,10 @@ static const fwk_id_t mod_scmi_power_capping_event_id_fch_callback =
 static int scmi_power_capping_power_api_bind(
     struct mod_scmi_power_capping_power_apis *power_apis)
 {
-    int status;
-
-    status = fwk_module_bind(
+    return fwk_module_bind(
         FWK_ID_MODULE(FWK_MODULE_IDX_POWER_CAPPING),
         FWK_ID_API(FWK_MODULE_IDX_POWER_CAPPING, MOD_POWER_CAPPING_API_IDX_CAP),
         &(power_apis->power_capping_api));
-
-    if (status != FWK_SUCCESS) {
-        return status;
-    }
-
-    status = fwk_module_bind(
-        FWK_ID_MODULE(FWK_MODULE_IDX_POWER_COORDINATOR),
-        FWK_ID_API(
-            FWK_MODULE_IDX_POWER_COORDINATOR,
-            MOD_POWER_COORDINATOR_API_IDX_PERIOD),
-        &(power_apis->power_coordinator_api));
-
-    if (status != FWK_SUCCESS) {
-        return status;
-    }
-
-    return fwk_module_bind(
-        FWK_ID_MODULE(FWK_MODULE_IDX_POWER_METER),
-        FWK_ID_API(
-            FWK_MODULE_IDX_POWER_METER, MOD_POWER_METER_API_IDX_MEASUREMENT),
-        &(power_apis->power_meter_api));
 }
 
 #ifdef BUILD_HAS_SCMI_NOTIFICATIONS

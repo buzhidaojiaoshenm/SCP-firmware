@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2023, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2023-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -95,6 +95,9 @@ enum scmi_power_capping_notification_id {
 #define SCMI_POWER_CAPPING_DISABLE_CAP_VALUE ((uint32_t)0)
 
 #define SCMI_POWER_CAPPING_PAI_RESERVED_FLAG 0u
+
+#define UNSUPPORTED_CONFIG_PAI_VALUE 1u
+
 /*
  * Power capping Domain attributes
  */

@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2023-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2023-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -125,21 +125,6 @@ void utest_scmi_power_capping_bind_success(void)
         &(power_management_apis.power_capping_api),
         FWK_SUCCESS);
 
-    fwk_module_bind_ExpectAndReturn(
-        FWK_ID_MODULE(FWK_MODULE_IDX_POWER_COORDINATOR),
-        FWK_ID_API(
-            FWK_MODULE_IDX_POWER_COORDINATOR,
-            MOD_POWER_COORDINATOR_API_IDX_PERIOD),
-        &(power_management_apis.power_coordinator_api),
-        FWK_SUCCESS);
-
-    fwk_module_bind_ExpectAndReturn(
-        FWK_ID_MODULE(FWK_MODULE_IDX_POWER_METER),
-        FWK_ID_API(
-            FWK_MODULE_IDX_POWER_METER, MOD_POWER_METER_API_IDX_MEASUREMENT),
-        &(power_management_apis.power_meter_api),
-        FWK_SUCCESS);
-
 #ifdef BUILD_HAS_SCMI_POWER_CAPPING_STD_COMMANDS
     pcapping_protocol_bind_ExpectAndReturn(FWK_SUCCESS);
     pcapping_protocol_set_power_apis_Expect(&power_management_apis);
@@ -164,21 +149,6 @@ void utest_scmi_power_capping_bind_failure(void)
         FWK_ID_MODULE(FWK_MODULE_IDX_POWER_CAPPING),
         FWK_ID_API(FWK_MODULE_IDX_POWER_CAPPING, MOD_POWER_CAPPING_API_IDX_CAP),
         &(power_management_apis.power_capping_api),
-        FWK_SUCCESS);
-
-    fwk_module_bind_ExpectAndReturn(
-        FWK_ID_MODULE(FWK_MODULE_IDX_POWER_COORDINATOR),
-        FWK_ID_API(
-            FWK_MODULE_IDX_POWER_COORDINATOR,
-            MOD_POWER_COORDINATOR_API_IDX_PERIOD),
-        &(power_management_apis.power_coordinator_api),
-        FWK_SUCCESS);
-
-    fwk_module_bind_ExpectAndReturn(
-        FWK_ID_MODULE(FWK_MODULE_IDX_POWER_METER),
-        FWK_ID_API(
-            FWK_MODULE_IDX_POWER_METER, MOD_POWER_METER_API_IDX_MEASUREMENT),
-        &(power_management_apis.power_meter_api),
         FWK_SUCCESS);
 
 #ifdef BUILD_HAS_SCMI_POWER_CAPPING_STD_COMMANDS

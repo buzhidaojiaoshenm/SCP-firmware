@@ -14,8 +14,6 @@
 #include <Mockfwk_module.h>
 #include <Mockfwk_notification.h>
 #include <Mockmod_power_capping_extra.h>
-#include <Mockmod_power_coordinator_extra.h>
-#include <Mockmod_power_meter_extra.h>
 #include <Mockmod_resource_perms_extra.h>
 #include <Mockmod_scmi_extra.h>
 #include <internal/Mockfwk_core_internal.h>
@@ -95,15 +93,6 @@ static const struct mod_power_capping_api power_capping_api = {
     .set_averaging_interval = set_averaging_interval,
 };
 
-static const struct mod_power_coordinator_api power_coordinator_api = {
-    .get_coordinator_period = get_coordinator_period,
-    .set_coordinator_period = set_coordinator_period,
-};
-
-static const struct mod_power_meter_api power_meter_api = {
-    .get_power = get_power,
-};
-
 #ifdef BUILD_HAS_MOD_RESOURCE_PERMS
 static const struct mod_res_permissions_api res_perms_api = {
     .agent_has_protocol_permission = agent_has_protocol_permission,
@@ -122,8 +111,6 @@ static const struct mod_scmi_notification_api scmi_notification_api = {
 
 static const struct mod_scmi_power_capping_power_apis power_management_apis = {
     .power_capping_api = &power_capping_api,
-    .power_coordinator_api = &power_coordinator_api,
-    .power_meter_api = &power_meter_api,
 };
 
 static fwk_id_t service_id_1 =
@@ -139,12 +126,10 @@ static const struct mod_scmi_power_capping_domain_config
 #ifdef BUILD_HAS_SCMI_NOTIFICATIONS
         .cap_pai_change_notification_support = true,
 #endif
-        .min_pai = MIN_DEFAULT_PAI,
-        .max_pai = MAX_DEFAULT_PAI,
-        .pai_step = 1,
         .min_power_cap = MIN_DEFAULT_POWER_CAP,
         .max_power_cap = MAX_DEFAULT_POWER_CAP,
         .power_cap_step = 1,
+        .pai_config_support = true,
     };
 
 static const struct mod_scmi_power_capping_domain_config
@@ -154,6 +139,7 @@ static const struct mod_scmi_power_capping_domain_config
             FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_POWER_CAPPING, __LINE__),
         .min_power_cap = MIN_DEFAULT_POWER_CAP,
         .max_power_cap = MIN_DEFAULT_POWER_CAP,
+        .pai_config_support = true,
     };
 
 static struct mod_scmi_power_capping_domain_context
@@ -190,12 +176,6 @@ static void test_request_cap_config_supported(
     domain_ctx_table[domain_idx].cap_config_support = cap_config_supported;
 }
 
-static void test_set_pai_config_supported(
-    unsigned int domain_idx,
-    bool pai_config_supported)
-{
-    domain_ctx_table[domain_idx].pai_config_support = pai_config_supported;
-}
 /* Test functions */
 /* Initialize the tests */
 static void test_init(void)
@@ -235,8 +215,6 @@ void tearDown(void)
 {
     Mockmod_power_capping_extra_Verify();
     Mockmod_scmi_extra_Verify();
-    Mockmod_power_coordinator_extra_Verify();
-    Mockmod_power_meter_extra_Verify();
     Mockfwk_id_Verify();
 #ifdef BUILD_HAS_MOD_RESOURCE_PERMS
     Mockmod_resource_perms_extra_Verify();
@@ -396,6 +374,10 @@ void utest_message_handler_domain_invalid(void)
 
 void utest_message_handler_domain_attributes_valid(void)
 {
+    uint32_t min_pai = MIN_DEFAULT_PAI;
+    uint32_t max_pai = MAX_DEFAULT_PAI;
+    uint32_t pai_step = 1;
+
     struct mod_scmi_power_capping_domain_context *domain_ctx =
         &domain_ctx_table[FAKE_POWER_CAPPING_IDX_1];
     const struct mod_scmi_power_capping_domain_config *config =
@@ -409,12 +391,12 @@ void utest_message_handler_domain_attributes_valid(void)
 
     struct scmi_power_capping_domain_attributes_p2a ret_payload = {
         .status = SCMI_SUCCESS,
-        .attributes = 1u << POWER_CAP_CONF_SUP_POS |
+        .attributes = 1u << POWER_CAP_CONF_SUP_POS | 1u << PAI_CONF_SUP_POS |
             config->power_cap_unit << POWER_UNIT_POS,
         .name = "TestPowerCap",
-        .min_pai = config->min_pai,
-        .max_pai = config->max_pai,
-        .pai_step = config->pai_step,
+        .min_pai = min_pai,
+        .max_pai = max_pai,
+        .pai_step = pai_step,
         .min_power_cap = config->min_power_cap,
         .max_power_cap = config->max_power_cap,
         .power_cap_step = config->power_cap_step,
@@ -422,9 +404,9 @@ void utest_message_handler_domain_attributes_valid(void)
         .parent_id = config->parent_idx,
     };
 
-    uint32_t expected_pai_step = config->pai_step;
-    uint32_t expected_min_pai = config->min_pai;
-    uint32_t expected_max_pai = config->max_pai;
+    uint32_t expected_pai_step = pai_step;
+    uint32_t expected_min_pai = min_pai;
+    uint32_t expected_max_pai = max_pai;
 
     get_averaging_interval_step_ExpectAndReturn(
         config->power_capping_domain_id, NULL, FWK_SUCCESS);
@@ -795,8 +777,6 @@ void utest_message_handler_power_capping_set_pai_valid(void)
         .status = SCMI_SUCCESS,
     };
 
-    test_set_pai_config_supported(cmd_payload.domain_id, true);
-
 #ifdef BUILD_HAS_SCMI_NOTIFICATIONS
     fwk_id_is_equal_ExpectAndReturn(FWK_ID_NONE, FWK_ID_NONE, true);
 #endif
@@ -825,8 +805,6 @@ void utest_message_handler_power_capping_set_pai_failure(void)
         .status = SCMI_GENERIC_ERROR,
     };
 
-    test_set_pai_config_supported(cmd_payload.domain_id, true);
-
 #ifdef BUILD_HAS_SCMI_NOTIFICATIONS
     fwk_id_is_equal_ExpectAndReturn(FWK_ID_NONE, FWK_ID_NONE, true);
 #endif
@@ -854,7 +832,14 @@ void utest_message_handler_power_capping_set_less_than_min_pai(void)
         .status = SCMI_OUT_OF_RANGE,
     };
 
-    test_set_pai_config_supported(cmd_payload.domain_id, true);
+#ifdef BUILD_HAS_SCMI_NOTIFICATIONS
+    fwk_id_is_equal_ExpectAndReturn(FWK_ID_NONE, FWK_ID_NONE, true);
+#endif
+
+    set_averaging_interval_ExpectAndReturn(
+        scmi_power_capping_default_config.power_capping_domain_id,
+        pai,
+        FWK_E_RANGE);
 
     mod_scmi_from_protocol_api_scmi_frame_validation_ExpectAnyArgsAndReturn(
         SCMI_SUCCESS);
@@ -874,7 +859,15 @@ void utest_message_handler_power_capping_set_more_than_max_pai(void)
         .status = SCMI_OUT_OF_RANGE,
     };
 
-    test_set_pai_config_supported(cmd_payload.domain_id, true);
+#ifdef BUILD_HAS_SCMI_NOTIFICATIONS
+    fwk_id_is_equal_ExpectAndReturn(FWK_ID_NONE, FWK_ID_NONE, true);
+#endif
+
+    set_averaging_interval_ExpectAndReturn(
+        scmi_power_capping_default_config.power_capping_domain_id,
+        pai,
+        FWK_E_RANGE);
+
     mod_scmi_from_protocol_api_scmi_frame_validation_ExpectAnyArgsAndReturn(
         SCMI_SUCCESS);
     EXPECT_RESPONSE_ERROR(ret_payload);
@@ -1086,13 +1079,13 @@ void utest_pcapping_protocol_process_cap_pai_notify_event_success(void)
     get_applied_cap_IgnoreArg_cap();
     get_applied_cap_ReturnMemThruPtr_cap(&cap, sizeof(cap));
 
-    get_coordinator_period_ExpectWithArrayAndReturn(
-        scmi_power_capping_default_config.power_coordinator_domain_id,
+    get_averaging_interval_ExpectWithArrayAndReturn(
+        scmi_power_capping_default_config.power_capping_domain_id,
         &pai,
         sizeof(pai),
         FWK_SUCCESS);
-    get_coordinator_period_IgnoreArg_period();
-    get_coordinator_period_ReturnMemThruPtr_period(&pai, sizeof(pai));
+    get_averaging_interval_IgnoreArg_pai();
+    get_averaging_interval_ReturnThruPtr_pai(&pai);
 
     scmi_notification_notify_ExpectWithArrayAndReturn(
         MOD_SCMI_PROTOCOL_ID_POWER_CAPPING,
@@ -1132,13 +1125,12 @@ void utest_pcapping_protocol_process_measurements_notify_event_success(void)
 
     *event_params_ptr = event_params;
 
-    get_power_ExpectWithArrayAndReturn(
-        scmi_power_capping_default_config.power_meter_domain_id,
-        &power,
-        sizeof(power),
+    get_average_power_ExpectAndReturn(
+        scmi_power_capping_default_config.power_capping_domain_id,
+        NULL,
         FWK_SUCCESS);
-    get_power_IgnoreArg_power();
-    get_power_ReturnMemThruPtr_power(&power, sizeof(power));
+    get_average_power_IgnoreArg_power();
+    get_average_power_ReturnThruPtr_power(&power);
 
     scmi_notification_notify_ExpectWithArrayAndReturn(
         MOD_SCMI_PROTOCOL_ID_POWER_CAPPING,
@@ -1325,17 +1317,17 @@ void utest_pcapping_protocol_start_element(void)
 
     fwk_notification_subscribe_ExpectAndReturn(
         FWK_ID_NOTIFICATION(
-            FWK_MODULE_IDX_POWER_COORDINATOR,
-            MOD_POWER_COORDINATOR_NOTIFICATION_IDX_PERIOD_CHANGED),
-        FWK_ID_MODULE(FWK_MODULE_IDX_POWER_COORDINATOR),
+            FWK_MODULE_IDX_POWER_CAPPING,
+            MOD_POWER_CAPPING_NOTIFICATION_IDX_PAI_CHANGED),
+        FWK_ID_MODULE(FWK_MODULE_IDX_POWER_CAPPING),
         element_id,
         FWK_SUCCESS);
 
     fwk_notification_subscribe_ExpectAndReturn(
         FWK_ID_NOTIFICATION(
-            FWK_MODULE_IDX_POWER_METER,
-            MOD_POWER_METER_NOTIFICATION_IDX_MEASUREMENTS_CHANGED),
-        FWK_ID_MODULE(FWK_MODULE_IDX_POWER_METER),
+            FWK_MODULE_IDX_POWER_CAPPING,
+            MOD_POWER_CAPPING_NOTIFICATION_IDX_MEASUREMENTS_CHANGED),
+        FWK_ID_MODULE(FWK_MODULE_IDX_POWER_CAPPING),
         element_id,
         FWK_SUCCESS);
 

@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2023-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2023-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -70,30 +70,6 @@ struct scmi_pcapping_fch_config {
 struct mod_scmi_power_capping_domain_config {
 #ifdef BUILD_HAS_SCMI_POWER_CAPPING_STD_COMMANDS
     /*!
-     * \brief Minimum PAI.
-     *
-     * \details The minimum supported power averaging interval (PAI),
-     *     expressed in microseconds, its value cannot be zero.
-     */
-    uint32_t min_pai;
-
-    /*!
-     * \brief Maximum PAI.
-     *
-     * \details The maximum supported power averaging interval (PAI),
-     *     expressed in microseconds, its value cannot be zero.
-     */
-    uint32_t max_pai;
-
-    /*!
-     * \brief PAI step.
-     *
-     * \details The step size between two consecutive PAI supported by
-     *     this power capping domain. This value cannot be zero if min_pai and
-     *     max_pai have different values.
-     */
-    uint32_t pai_step;
-    /*!
      * \brief Minimum power cap.
      *
      * \details The minimum power value that can be set as the power cap for
@@ -125,6 +101,11 @@ struct mod_scmi_power_capping_domain_config {
      *     all known external factors like thermal constraints.
      */
     uint32_t max_sustainable_power;
+
+    /*!
+     * \brief PAI configuration support.
+     */
+    bool pai_config_support;
 
     /*!
      * \brief Parent id.
