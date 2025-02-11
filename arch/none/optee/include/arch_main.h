@@ -1,6 +1,7 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2022, Linaro Limited and Contributors. All rights reserved.
+ * Copyright (c) 2022-2025, Linaro Limited and Contributors. All rights
+ * reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -44,5 +45,24 @@ extern void scmi_process_mbx_smt(unsigned int id);
 
 extern void scmi_process_mbx_msg(unsigned int id, void *in_buf, size_t in_size,
                                  void *out_buf, size_t *out_size);
+
+struct scpfw_config;
+#ifdef CFG_SCMI_SCPFW_FROM_DT
+
+/*!
+ * \brief Configure resources directly from OPTEE.
+ *
+ */
+int scmi_configure(struct scpfw_config *cfg);
+
+#else
+
+static inline int scmi_configure(struct scpfw_config *cfg)
+{
+    (void)cfg;
+    return 0;
+}
+
+#endif /* CFG_SCMI_SCPFW_FROM_DT */
 
 #endif /* ARCH_MAIN_H */
