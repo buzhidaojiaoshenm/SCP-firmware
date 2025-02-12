@@ -1,6 +1,6 @@
 #
 # Arm SCP/MCP Software
-# Copyright (c) 2021-2024, Arm Limited and Contributors. All rights reserved.
+# Copyright (c) 2021-2025, Arm Limited and Contributors. All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -126,7 +126,9 @@ ENABLE_COVERAGE ?= $(DEFAULT_ENABLE_COVERAGE)
 #
 # Products
 #
-PRODUCTS := $(sort $(shell find product -name "product.mk" -printf "%h\n" | cut -d'/' -f2-3))
+PRODUCTS := $(sort $(patsubst product/%/product.mk, %, \
+             $(wildcard product/*/product.mk \
+                       product/*/*/product.mk)))
 
 #
 # Deprecated Products/Platforms
