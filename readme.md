@@ -1,4 +1,4 @@
-SCP-firmware - version 2.15
+SCP-firmware - version 2.16
 ===========================
 
 Copyright (c) 2011-2025, Arm Limited. All rights reserved.
@@ -6,15 +6,9 @@ Copyright (c) 2011-2025, Arm Limited. All rights reserved.
 References
 ----------
 
-[1] Power Control System Architecture - DEN0050C (Please contact Arm directly to
-obtain a copy of this document)
+[1] [Power Control System Architecture - DEN0050C] (https://developer.arm.com/documentation/den0050/d/?lang=en)
 
-[2] [System Control and Management Interface - DEN0056A](https://developer.arm.com/documentation/den0056/d/)
-
-[3] Power Policy Unit - DEN0051C (Please contact Arm directly to obtain a copy
-of this document)
-
-[4] [System Guidance](https://developer.arm.com/products/system-design/system-guidance)
+[2] [System Control and Management Interface - DEN0056A] (https://developer.arm.com/documentation/den0056/d/)
 
 Introduction
 ------------
