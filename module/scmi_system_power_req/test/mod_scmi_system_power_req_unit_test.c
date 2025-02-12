@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2022-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2022-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -29,6 +29,11 @@ enum scp_sys_pow_nums {
     MOD_SCMI_SYS_POWER_REQ_IDX_0,
     MOD_SCMI_SYS_POWER_REQ_IDX_1,
     MOD_SCMI_SYS_POWER_REQ_COUNT,
+};
+
+enum scp_sys_pow_req_states {
+    MOD_SPR_STATE_OFF,
+    MOD_SPR_STATE_ON,
 };
 
 /*
@@ -98,8 +103,8 @@ void setUp(void)
     mod_ctx.dev_count = MOD_SCMI_SYS_POWER_REQ_COUNT;
     mod_ctx.scmi_api = &scmi_api;
     mod_ctx.token = 0;
-    mod_ctx.dev_ctx_table[0].state = MOD_PD_STATE_ON;
-    mod_ctx.dev_ctx_table[1].state = MOD_PD_STATE_OFF;
+    mod_ctx.dev_ctx_table[0].state = MOD_SPR_STATE_ON;
+    mod_ctx.dev_ctx_table[1].state = MOD_SPR_STATE_OFF;
 
     handler_table[MOD_SCMI_SYS_POWER_REQ_STATE_SET] = fake_message_handler;
 }
@@ -302,13 +307,13 @@ void test_function_scmi_system_power_req_get_state(void)
     fwk_id_is_type_ExpectAnyArgsAndReturn(true);
     status = scmi_system_power_req_get_state(id, &system_state);
     TEST_ASSERT_EQUAL(status, FWK_SUCCESS);
-    TEST_ASSERT_EQUAL(system_state, MOD_PD_STATE_ON);
+    TEST_ASSERT_EQUAL(system_state, MOD_SPR_STATE_ON);
 
     fwk_id_get_element_idx_ExpectAnyArgsAndReturn(1);
     fwk_id_is_type_ExpectAnyArgsAndReturn(true);
     status = scmi_system_power_req_get_state(id, &system_state);
     TEST_ASSERT_EQUAL(status, FWK_SUCCESS);
-    TEST_ASSERT_EQUAL(system_state, MOD_PD_STATE_OFF);
+    TEST_ASSERT_EQUAL(system_state, MOD_SPR_STATE_OFF);
 
     status = scmi_system_power_req_get_state(id, NULL);
     TEST_ASSERT_EQUAL(status, FWK_E_PARAM);
@@ -318,7 +323,7 @@ void test_function_scmi_system_power_req_set_state(void)
 {
     int status;
     uint32_t flags = 0xAA;
-    uint32_t state = MOD_PD_STATE_OFF;
+    uint32_t state = MOD_SPR_STATE_OFF;
     uint8_t scmi_protocol_id = (uint8_t)MOD_SCMI_PROTOCOL_ID_SYS_POWER;
     uint8_t scmi_message_id = (uint8_t)MOD_SCMI_SYS_POWER_REQ_STATE_SET;
 
@@ -350,7 +355,7 @@ void test_function_scmi_system_power_req_set_state_no_response(void)
 {
     int status;
     uint32_t flags = 0xAA;
-    uint32_t state = MOD_PD_STATE_OFF;
+    uint32_t state = MOD_SPR_STATE_OFF;
     uint8_t scmi_protocol_id = (uint8_t)MOD_SCMI_PROTOCOL_ID_SYS_POWER;
     uint8_t scmi_message_id = (uint8_t)MOD_SCMI_SYS_POWER_REQ_STATE_SET;
 
@@ -519,7 +524,7 @@ void test_scmi_scmi_system_power_req_notification_handler(void)
     unsigned int count = 0;
 
     const struct scmi_sys_power_notification_payload payload = {
-        .system_state = MOD_PD_STATE_OFF,
+        .system_state = MOD_SPR_STATE_OFF,
         .flags = 1,
     };
 
@@ -570,7 +575,7 @@ void test_scmi_scmi_system_power_req_notification_handler_wrong_size(void)
     unsigned int message_id = SCMI_SYS_POWER_STATE_SET_NOTIFY;
 
     const struct scmi_sys_power_notification_payload payload = {
-        .system_state = MOD_PD_STATE_OFF,
+        .system_state = MOD_SPR_STATE_OFF,
         .flags = 0,
     };
 

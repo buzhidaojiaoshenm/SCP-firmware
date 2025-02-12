@@ -1,12 +1,11 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2022-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2022-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 #include <internal/scmi_system_power_req.h>
 
-#include <mod_power_domain.h>
 #include <mod_scmi.h>
 #include <mod_scmi_system_power_req.h>
 
