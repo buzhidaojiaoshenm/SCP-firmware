@@ -1,7 +1,121 @@
 SCP-firmware Change Log
 =======================
 
-Copyright (c) 2019-2024, Arm Limited and Contributors. All rights reserved.
+Copyright (c) 2019-2025, Arm Limited and Contributors. All rights reserved.
+
+SCP-firmware - version 2.16
+============================
+
+New features
+------------
+
+- Documentation:
+    - scmi_power_domain_req: Add a documentation for scmi_power_domain_req.
+    - thermal_power_estimator: Add documentations.
+    - maintainers: Add maintainers for Automotive RD platforms.
+
+- Arch:
+    - arch: Introduce Aarch64 architecture support.
+
+- Framework:
+    - fwk: Introduce Memory-Mapped I/O (MMIO) interface.
+
+- Interface:
+    - address_remapper: Move to the common interface.
+
+- Modules:
+    - mpmm_v2.
+    - power_capping.
+    - ccsm.
+    - pid_controller.
+    - thermal_power_estimator.
+    - power_distributor.
+    - scmi_power_domain_req.
+    - armv8r_mpu.
+    - gicx00.
+    - system_coordinator.
+
+- Platforms:
+    - TC23.
+    - TC24.
+    - rdv3r1.
+    - rd1ae.
+    - fvp-baser-aemv8r.
+
+Changed
+-------
+
+- Documentation:
+    - totalcompute: Update TC maintainers.
+    - user_guide: update the build instructions and dependency changes.
+    - security: Update the security issues reporting
+
+- Arch:
+    - arm: Add .entrypoint to text section, Fix Clang linker section syntax.
+
+- Modules:
+    - ppu_v1: Include AE feature in the ppu_v1.
+    - nrd/rdv3: Add memory region that targets GIC HNI.
+    - tc_system: No power on the primary cluster and core.
+    - scmi_pin_control: Add scmi_pin_control to the scmi protocol.
+    - pinctrl: Add pinctrl backend to enable management of pins, and interfacing
+        with drivers.
+    - spmi: Add SPMI HAL.
+    - scmi_clock: Update clock protocol to version v2.0.
+    - gtimer: Fix check of gtimer control register frame base address.
+    - atu: show active ATU region info only when SCP_LOG_LEVEL is DEBUG.
+    - sp805: Support usage without clock module.
+    - scmi: add SCMI notification support, support pending requests.
+    - atu: Add support for MMIO.
+    - power_management: Include `power` in API's names and Add set power demand
+        API.
+
+- Platforms:
+    - additional TC configuration.
+    - tc/tc4: Modify fch, transport configs.
+    - products: Update timeout value to microseconds in all platforms.
+    - n1sdp: Handle unsupported SCMI message.
+    - tc4: Integrate CME power domain, add opmode for SLC.
+    - nrd/rdv3: Add new configurations.
+
+- tools:
+    - ci_gcc_version: Update gcc compiler version and fix compielr warnings.
+    - ci: Refactor the daily and deployment pipelines stages.
+    - ci/test-count: Add test count in CI.
+    - ci/docker: Upgrade AArch64 gcc version to 13.3rel1, Avoid LOG_LEVEL and
+        PRODUCT env var clashes.
+    - ci: Add docker tag variable.
+    - ci: Disable coverity job from ci pipelines.
+    - llvm: Update llvm verison.
+    - git: move get_changed_files to utils.py.
+    - git: removes `.github` directory.
+    - Ignore renamed-only files from check_style.py.
+    - scmi-test: Use the scp tester container.
+    - coverity: remove Coverity template job.
+    - check_build: Removed TC2 from default_products_build.yml.
+
+Resolved issues
+---------------
+
+- Documentation:
+    - Removed references to TC2 in user guide.
+
+- Framework:
+    - Add fwk_str_is_in_boundry function.
+
+- Modules:
+    - cmn700: Fix unused variable error.
+    - transport: Fix possible buffer overrun issue.
+    - scmi_clock: Fix clock indexing in device table and extended name handler.
+    - sds: Fix indentation for get_structure_info.
+    - transport: Handle SCMI payload size error.
+    - noc_s3: Fix FWK_LOG_ERR format specifier type, Use PRIu32 for format
+        specifier.
+    - scmi: Handle unsupported SCMI message.
+
+- Platforms:
+    - tc3: Fix mpmm_v2 configuration.
+    - rdn2: Fix typo while enabling cli for mcp.
 
 SCP-firmware - version 2.15
 ============================
