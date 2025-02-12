@@ -329,6 +329,55 @@ void utest_mod_pcapping_get_averaging_interval_range(void)
     }
 }
 
+void utest_mod_pcapping_set_power_thresholds_success(void)
+{
+    int status;
+    fwk_id_t domain_id;
+    struct pcapping_domain_ctx *domain_ctx;
+    uint32_t threshold_low = 10U;
+    uint32_t threshold_high = 50U;
+
+    for (unsigned int index = 0U; index < TEST_DOMAIN_COUNT; index++) {
+        domain_id = FWK_ID_ELEMENT(FWK_MODULE_IDX_POWER_CAPPING, index);
+        domain_ctx = &pcapping_domain_ctx_table[index];
+
+        status = mod_pcapping_set_power_thresholds(
+            domain_id, threshold_low, threshold_high);
+
+        TEST_ASSERT_EQUAL(status, FWK_SUCCESS);
+        TEST_ASSERT_EQUAL(domain_ctx->threshold_low, threshold_low);
+        TEST_ASSERT_EQUAL(domain_ctx->threshold_high, threshold_high);
+    }
+}
+
+void utest_mod_pcapping_set_power_thresholds_invalid_thresholds(void)
+{
+    int status;
+    fwk_id_t domain_id;
+    uint32_t threshold_low = 60U;
+    uint32_t threshold_high = 40U;
+
+    for (unsigned int index = 0U; index < TEST_DOMAIN_COUNT; index++) {
+        domain_id = FWK_ID_ELEMENT(FWK_MODULE_IDX_POWER_CAPPING, index);
+
+        status = mod_pcapping_set_power_thresholds(
+            domain_id, threshold_low, threshold_high);
+        TEST_ASSERT_EQUAL(status, FWK_E_PARAM);
+    }
+}
+
+void utest_mod_pcapping_set_power_thresholds_invalid_id(void)
+{
+    int status;
+
+    /*out-of-bounds*/
+    fwk_id_t invalid_id =
+        FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_POWER_CAPPING, TEST_DOMAIN_COUNT);
+
+    status = mod_pcapping_set_power_thresholds(invalid_id, 10U, 20U);
+    TEST_ASSERT_EQUAL(status, FWK_E_PARAM);
+}
+
 void utest_pcapping_init_success(void)
 {
     int status;
@@ -565,6 +614,9 @@ int power_capping_test_main(void)
     RUN_TEST(utest_mod_pcapping_get_averaging_interval);
     RUN_TEST(utest_mod_pcapping_get_averaging_interval_step);
     RUN_TEST(utest_mod_pcapping_get_averaging_interval_range);
+    RUN_TEST(utest_mod_pcapping_set_power_thresholds_success);
+    RUN_TEST(utest_mod_pcapping_set_power_thresholds_invalid_thresholds);
+    RUN_TEST(utest_mod_pcapping_set_power_thresholds_invalid_id);
     RUN_TEST(utest_pcapping_init_success);
     RUN_TEST(utest_pcapping_domain_init_success);
     RUN_TEST(utest_mod_pcapping_process_notification_success);

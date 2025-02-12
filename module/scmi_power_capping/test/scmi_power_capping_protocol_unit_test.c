@@ -707,9 +707,14 @@ void utest_message_handler_power_capping_cap_notify_valid_disable(void)
 
 void utest_message_handler_power_capping_measurements_notify_valid_enable(void)
 {
+    uint32_t threshold_low = MIN_DEFAULT_POWER_THRESH;
+    uint32_t threshold_high = MAX_DEFAULT_POWER_THRESH;
+
     struct scmi_power_capping_measurements_notify_a2p cmd_payload = {
         .domain_id = FAKE_POWER_CAPPING_IDX_1,
         .notify_enable = MEASUREMENTS_NOTIFY_ENABLE,
+        .threshold_low = threshold_low,
+        .threshold_high = threshold_high,
     };
 
     struct scmi_power_capping_measurements_notify_p2a ret_payload = {
@@ -722,6 +727,9 @@ void utest_message_handler_power_capping_measurements_notify_valid_enable(void)
         MOD_SCMI_POWER_CAPPING_MEASUREMENTS_NOTIFY,
         service_id_1,
         FWK_SUCCESS);
+
+    pcapping_core_set_power_thresholds_ExpectAndReturn(
+        cmd_payload.domain_id, threshold_low, threshold_high, FWK_SUCCESS);
 
     EXPECT_RESPONSE_SUCCESS(ret_payload);
     TEST_SCMI_COMMAND(MOD_SCMI_POWER_CAPPING_MEASUREMENTS_NOTIFY, cmd_payload);

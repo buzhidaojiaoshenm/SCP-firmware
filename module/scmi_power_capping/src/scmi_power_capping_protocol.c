@@ -622,6 +622,17 @@ static int scmi_power_capping_measurements_notify_handler(
                          parameters->domain_id,
                          MOD_SCMI_POWER_CAPPING_MEASUREMENTS_NOTIFY,
                          cap_service_id);
+
+        if (status != FWK_SUCCESS) {
+            return scmi_power_capping_respond_error(
+                cap_service_id, SCMI_GENERIC_ERROR);
+        }
+
+        status = pcapping_core_set_power_thresholds(
+            parameters->domain_id,
+            parameters->threshold_low,
+            parameters->threshold_high);
+
     } else {
         status = pcapping_protocol_ctx.scmi_api->get_agent_id(
             cap_service_id, &agent_id);

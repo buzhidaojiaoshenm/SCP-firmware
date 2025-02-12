@@ -172,6 +172,24 @@ void get_averaging_interval_range_CMockIgnoreArg_id(UNITY_LINE_TYPE cmock_line);
 void get_averaging_interval_range_CMockIgnoreArg_min_pai(UNITY_LINE_TYPE cmock_line);
 #define get_averaging_interval_range_IgnoreArg_max_pai() get_averaging_interval_range_CMockIgnoreArg_max_pai(__LINE__)
 void get_averaging_interval_range_CMockIgnoreArg_max_pai(UNITY_LINE_TYPE cmock_line);
+#define set_power_thresholds_IgnoreAndReturn(cmock_retval) set_power_thresholds_CMockIgnoreAndReturn(__LINE__, cmock_retval)
+void set_power_thresholds_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return);
+#define set_power_thresholds_StopIgnore() set_power_thresholds_CMockStopIgnore()
+void set_power_thresholds_CMockStopIgnore(void);
+#define set_power_thresholds_ExpectAnyArgsAndReturn(cmock_retval) set_power_thresholds_CMockExpectAnyArgsAndReturn(__LINE__, cmock_retval)
+void set_power_thresholds_CMockExpectAnyArgsAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return);
+#define set_power_thresholds_ExpectAndReturn(domain_id, threshold_low, threshold_high, cmock_retval) set_power_thresholds_CMockExpectAndReturn(__LINE__, domain_id, threshold_low, threshold_high, cmock_retval)
+void set_power_thresholds_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, fwk_id_t domain_id, uint32_t threshold_low, uint32_t threshold_high, int cmock_to_return);
+typedef int (* CMOCK_set_power_thresholds_CALLBACK)(fwk_id_t domain_id, uint32_t threshold_low, uint32_t threshold_high, int cmock_num_calls);
+void set_power_thresholds_AddCallback(CMOCK_set_power_thresholds_CALLBACK Callback);
+void set_power_thresholds_Stub(CMOCK_set_power_thresholds_CALLBACK Callback);
+#define set_power_thresholds_StubWithCallback set_power_thresholds_Stub
+#define set_power_thresholds_IgnoreArg_domain_id() set_power_thresholds_CMockIgnoreArg_domain_id(__LINE__)
+void set_power_thresholds_CMockIgnoreArg_domain_id(UNITY_LINE_TYPE cmock_line);
+#define set_power_thresholds_IgnoreArg_threshold_low() set_power_thresholds_CMockIgnoreArg_threshold_low(__LINE__)
+void set_power_thresholds_CMockIgnoreArg_threshold_low(UNITY_LINE_TYPE cmock_line);
+#define set_power_thresholds_IgnoreArg_threshold_high() set_power_thresholds_CMockIgnoreArg_threshold_high(__LINE__)
+void set_power_thresholds_CMockIgnoreArg_threshold_high(UNITY_LINE_TYPE cmock_line);
 
 #if defined(__GNUC__) && !defined(__ICC) && !defined(__TMS470__)
 #if __GNUC__ > 4 || (__GNUC__ == 4 && (__GNUC_MINOR__ > 6 || (__GNUC_MINOR__ == 6 && __GNUC_PATCHLEVEL__ > 0)))

@@ -127,7 +127,8 @@ struct mod_power_capping_api {
      * \param id Power measurements domain ID.
      * \param[out] power Average power measured in microwatt.
      *
-     * \retval ::FWK_SUCCESS The requested cap was applied successfully.
+     * \retval ::FWK_SUCCESS The average power applied to the system
+     * measured over PAI interval was returned successfully.
      * \return One of the standard framework error codes.
      */
     int (*get_average_power)(fwk_id_t id, uint32_t *power);
@@ -138,7 +139,7 @@ struct mod_power_capping_api {
      * \param id Power measurements domain ID.
      * \param pai Averaging interval measured in microseconds.
      *
-     * \retval ::FWK_SUCCESS The requested cap was applied successfully.
+     * \retval ::FWK_SUCCESS The PAI was applied successfully.
      * \return One of the standard framework error codes.
      */
     int (*set_averaging_interval)(fwk_id_t id, uint32_t pai);
@@ -149,7 +150,7 @@ struct mod_power_capping_api {
      * \param id Power measurements domain ID.
      * \param[out] pai Averaging interval measured in microseconds.
      *
-     * \retval ::FWK_SUCCESS The requested cap was applied successfully.
+     * \retval ::FWK_SUCCESS The PAI was returned successfully.
      * \return One of the standard framework error codes.
      */
     int (*get_averaging_interval)(fwk_id_t id, uint32_t *pai);
@@ -161,7 +162,7 @@ struct mod_power_capping_api {
      * \param[out] pai_step The step size between two consecutive averaging
      * intervals in microseconds.
      *
-     * \retval ::FWK_SUCCESS The requested cap was applied successfully.
+     * \retval ::FWK_SUCCESS The PAI step was returned successfully.
      * \return One of the standard framework error codes.
      */
     int (*get_averaging_interval_step)(fwk_id_t id, uint32_t *pai_step);
@@ -173,13 +174,34 @@ struct mod_power_capping_api {
      * \param[out] min_pai Min averaging interval measured in microseconds.
      * \param[out] max_pai Max averaging interval measured in microseconds.
      *
-     * \retval ::FWK_SUCCESS The requested cap was applied successfully.
+     * \retval ::FWK_SUCCESS The averaging interval range was returned
+     * successfully.
      * \return One of the standard framework error codes.
      */
     int (*get_averaging_interval_range)(
         fwk_id_t id,
         uint32_t *min_pai,
         uint32_t *max_pai);
+
+    /*!
+     * \brief Set power thresholds specified in power units which are in use
+     *  by this domain. The platform sends a notification to the agent when
+     *  the average power consumption of the power capping domain, measured
+     *  over PAI, is outside the threshold values.
+     *
+     * \param domain_id Power Capping domain ID.
+     * \param threshold_low The lower threshold specified in power units
+     * used by this domain.
+     * \param threshold_high The higher threshold specified in power units
+     * used by this domain.
+     *
+     * \retval ::FWK_SUCCESS The power thresholds were applied successfully.
+     * \return One of the standard framework error codes.
+     */
+    int (*set_power_thresholds)(
+        fwk_id_t domain_id,
+        uint32_t threshold_low,
+        uint32_t threshold_high);
 };
 
 /*!
@@ -240,11 +262,13 @@ enum mod_power_capping_notification_idx {
     /*! Power cap change notification. */
     MOD_POWER_CAPPING_NOTIFICATION_IDX_CAP_CHANGE,
 
+#ifdef BUILD_HAS_SCMI_NOTIFICATIONS
     /*! PAI changed notification. */
     MOD_POWER_CAPPING_NOTIFICATION_IDX_PAI_CHANGED,
 
     /*! Measurements changed notification. */
     MOD_POWER_CAPPING_NOTIFICATION_IDX_MEASUREMENTS_CHANGED,
+#endif
 
     /*! Number of defined notifications. */
     MOD_POWER_CAPPING_NOTIFICATION_IDX_COUNT,

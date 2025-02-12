@@ -38,6 +38,7 @@ const struct mod_power_capping_api power_capping_api = {
     .get_averaging_interval_range = get_averaging_interval_range,
     .get_averaging_interval_step = get_averaging_interval_step,
     .set_averaging_interval = set_averaging_interval,
+    .set_power_thresholds = set_power_thresholds,
 
 };
 
@@ -696,6 +697,70 @@ void utest_pcapping_core_get_power_success(void)
     TEST_ASSERT_EQUAL(expected_power, returned_power);
 }
 
+void utest_pcapping_core_set_power_thresholds_success(void)
+{
+    int status;
+    uint32_t threshold_low = 20;
+    uint32_t threshold_high = 50;
+    unsigned int domain_idx = FAKE_POWER_CAPPING_IDX_COUNT - 1u;
+
+    struct mod_scmi_power_capping_domain_context *ctx =
+        &pcapping_core_ctx.power_capping_domain_ctx_table[domain_idx];
+
+    struct mod_scmi_power_capping_domain_config config = valid_config;
+    config.power_capping_domain_id =
+        FWK_ID_ELEMENT(FWK_MODULE_IDX_POWER_CAPPING, 0);
+    ctx->config = &config;
+
+    set_power_thresholds_ExpectAndReturn(
+        config.power_capping_domain_id,
+        threshold_low,
+        threshold_high,
+        FWK_SUCCESS);
+
+    status = pcapping_core_set_power_thresholds(
+        domain_idx, threshold_low, threshold_high);
+
+    TEST_ASSERT_EQUAL(status, FWK_SUCCESS);
+}
+
+void utest_pcapping_core_set_power_thresholds_invalid_index(void)
+{
+    int status;
+    unsigned int invalid_idx = FAKE_POWER_CAPPING_IDX_COUNT;
+
+    status = pcapping_core_set_power_thresholds(invalid_idx, 10, 20);
+
+    TEST_ASSERT_EQUAL(status, FWK_E_RANGE);
+}
+
+void utest_pcapping_core_set_power_thresholds_hal_error(void)
+{
+    int status;
+    uint32_t threshold_low = 20;
+    uint32_t threshold_high = 10;
+    unsigned int domain_idx = FAKE_POWER_CAPPING_IDX_COUNT - 1u;
+
+    struct mod_scmi_power_capping_domain_context *ctx =
+        &pcapping_core_ctx.power_capping_domain_ctx_table[domain_idx];
+
+    struct mod_scmi_power_capping_domain_config config = valid_config;
+    config.power_capping_domain_id =
+        FWK_ID_ELEMENT(FWK_MODULE_IDX_POWER_CAPPING, 0);
+    ctx->config = &config;
+
+    set_power_thresholds_ExpectAndReturn(
+        config.power_capping_domain_id,
+        threshold_low,
+        threshold_high,
+        FWK_E_PARAM);
+
+    status = pcapping_core_set_power_thresholds(
+        domain_idx, threshold_low, threshold_high);
+
+    TEST_ASSERT_EQUAL(status, FWK_E_PARAM);
+}
+
 int fwk_put_event_notifications_callback(struct fwk_event *event, int numCalls)
 {
     TEST_ASSERT_EQUAL_MEMORY(
@@ -882,6 +947,9 @@ int scmi_test_main(void)
     RUN_TEST(utest_pcapping_core_get_pai_success);
     RUN_TEST(utest_pcapping_core_get_power_out_of_range);
     RUN_TEST(utest_pcapping_core_get_power_success);
+    RUN_TEST(utest_pcapping_core_set_power_thresholds_success);
+    RUN_TEST(utest_pcapping_core_set_power_thresholds_invalid_index);
+    RUN_TEST(utest_pcapping_core_set_power_thresholds_hal_error);
     RUN_TEST(utest_pcapping_core_process_cap_fwk_notification);
 #ifdef BUILD_HAS_SCMI_NOTIFICATIONS
     RUN_TEST(

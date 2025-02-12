@@ -21,4 +21,8 @@ int get_averaging_interval_range(
     fwk_id_t id,
     uint32_t *min_pai,
     uint32_t *max_pai);
+int set_power_thresholds(
+    fwk_id_t domain_id,
+    uint32_t threshold_low,
+    uint32_t threshold_high);
 #endif /* MOD_POWER_CAPPING_EXTRA_H_ */

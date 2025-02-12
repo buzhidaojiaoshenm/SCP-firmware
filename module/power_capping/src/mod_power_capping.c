@@ -26,6 +26,8 @@ struct pcapping_domain_ctx {
     struct mod_power_capping_domain_config *config;
     uint32_t applied_cap;
     uint32_t requested_cap;
+    uint32_t threshold_low;
+    uint32_t threshold_high;
     uint32_t cookie;
     unsigned int notifications_sent_count;
     struct interface_power_management_api *power_management_api;
@@ -43,6 +45,19 @@ static const fwk_id_t mod_pcapping_notification_id_cap_change =
     FWK_ID_NOTIFICATION_INIT(
         FWK_MODULE_IDX_POWER_CAPPING,
         MOD_POWER_CAPPING_NOTIFICATION_IDX_CAP_CHANGE);
+
+#ifdef BUILD_HAS_SCMI_NOTIFICATIONS
+static const fwk_id_t mod_pcapping_notification_id_pai_changed =
+    FWK_ID_NOTIFICATION_INIT(
+        FWK_MODULE_IDX_POWER_CAPPING,
+        MOD_POWER_CAPPING_NOTIFICATION_IDX_PAI_CHANGED);
+
+static const fwk_id_t mod_pcapping_notification_id_meas_changed =
+    FWK_ID_NOTIFICATION_INIT(
+        FWK_MODULE_IDX_POWER_CAPPING,
+        MOD_POWER_CAPPING_NOTIFICATION_IDX_MEASUREMENTS_CHANGED);
+
+#endif
 
 static int pcapping_get_ctx(
     fwk_id_t domain_id,
@@ -129,7 +144,18 @@ static int mod_pcapping_set_averaging_interval(fwk_id_t domain_id, uint32_t pai)
         return status;
     }
 
-    return FWK_SUCCESS;
+#ifdef BUILD_HAS_SCMI_NOTIFICATIONS
+    struct fwk_event outbound_event = {
+        .id = mod_pcapping_notification_id_pai_changed,
+        .source_id = domain_id,
+    };
+
+    status = fwk_notification_notify(
+        &outbound_event, &(domain_ctx->notifications_sent_count));
+
+#endif
+
+    return status;
 }
 
 static int mod_pcapping_get_averaging_interval(
@@ -203,6 +229,30 @@ static int mod_pcapping_get_averaging_interval_range(
     return FWK_SUCCESS;
 }
 
+static int mod_pcapping_set_power_thresholds(
+    fwk_id_t domain_id,
+    uint32_t threshold_low,
+    uint32_t threshold_high)
+{
+    int status;
+    struct pcapping_domain_ctx *domain_ctx;
+
+    status = pcapping_get_ctx(domain_id, &domain_ctx);
+
+    if (status != FWK_SUCCESS) {
+        return status;
+    }
+
+    if (threshold_low > threshold_high) {
+        return FWK_E_PARAM;
+    }
+
+    domain_ctx->threshold_low = threshold_low;
+    domain_ctx->threshold_high = threshold_high;
+
+    return FWK_SUCCESS;
+}
+
 static int mod_pcapping_get_power_limit(
     fwk_id_t domain_id,
     uint32_t *power_limit)
@@ -224,6 +274,23 @@ static int mod_pcapping_get_power_limit(
     if (status != FWK_SUCCESS) {
         return status;
     }
+
+#ifdef BUILD_HAS_SCMI_NOTIFICATIONS
+    if (power < domain_ctx->threshold_low ||
+        power > domain_ctx->threshold_high) {
+        struct fwk_event outbound_event = {
+            .id = mod_pcapping_notification_id_meas_changed,
+            .source_id = domain_id,
+        };
+
+        status = fwk_notification_notify(
+            &outbound_event, &(domain_ctx->notifications_sent_count));
+
+        if (status != FWK_SUCCESS) {
+            return status;
+        }
+    }
+#endif
 
     status = domain_ctx->pid_ctrl_api->update(
         domain_ctx->config->pid_controller_id, power, &pid_output);
@@ -251,6 +318,7 @@ struct mod_power_capping_api pcapping_api = {
     .get_averaging_interval_range = mod_pcapping_get_averaging_interval_range,
     .get_averaging_interval_step = mod_pcapping_get_averaging_interval_step,
     .set_averaging_interval = mod_pcapping_set_averaging_interval,
+    .set_power_thresholds = mod_pcapping_set_power_thresholds,
 };
 
 struct interface_power_management_api power_management_api = {

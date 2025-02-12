@@ -36,6 +36,10 @@ int pcapping_core_get_pai(unsigned int domain_idx, uint32_t *pai);
 
 int pcapping_core_get_power(unsigned int domain_idx, uint32_t *power);
 
+int pcapping_core_set_power_thresholds(
+    unsigned int domain_idx,
+    uint32_t threshold_low,
+    uint32_t threshold_high);
 struct pcapping_core_cap_pai_event_parameters {
     fwk_id_t service_id;
     uint32_t domain_idx;

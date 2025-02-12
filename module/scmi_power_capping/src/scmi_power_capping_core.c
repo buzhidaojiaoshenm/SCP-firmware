@@ -541,6 +541,24 @@ int pcapping_core_get_power(unsigned int domain_idx, uint32_t *power)
     return status;
 }
 
+int pcapping_core_set_power_thresholds(
+    unsigned int domain_idx,
+    uint32_t threshold_low,
+    uint32_t threshold_high)
+{
+    int status;
+    struct mod_scmi_power_capping_domain_context *ctx;
+
+    status = pcapping_core_get_domain_ctx(domain_idx, &ctx);
+
+    if (status != FWK_SUCCESS) {
+        return status;
+    }
+
+    return pcapping_core_ctx.power_capping_api->set_power_thresholds(
+        ctx->config->power_capping_domain_id, threshold_low, threshold_high);
+}
+
 bool pcapping_core_is_cap_request_async(uint32_t domain_idx)
 {
     if (domain_idx < pcapping_core_ctx.power_capping_domain_count) {

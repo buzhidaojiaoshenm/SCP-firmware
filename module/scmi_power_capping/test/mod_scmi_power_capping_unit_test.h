@@ -46,6 +46,9 @@ enum fake_power_capping_domains {
 #define MIN_DEFAULT_POWER_CAP (10u)
 #define MAX_DEFAULT_POWER_CAP (MIN_DEFAULT_POWER_CAP * 10u)
 
+#define MIN_DEFAULT_POWER_THRESH (10u)
+#define MAX_DEFAULT_POWER_THRESH (MIN_DEFAULT_POWER_THRESH * 10u)
+
 #define DISABLE_CAP_VALUE ((uint32_t)0)
 
 #define POWER_CAP_NOTIFY_ENABLE  (1)

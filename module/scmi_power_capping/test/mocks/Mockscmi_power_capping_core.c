@@ -8,7 +8,6 @@
 static const char* CMockString_async_flag = "async_flag";
 static const char* CMockString_cap = "cap";
 static const char* CMockString_config = "config";
-static const char* CMockString_domain_id = "domain_id";
 static const char* CMockString_domain_idx = "domain_idx";
 static const char* CMockString_element_count = "element_count";
 static const char* CMockString_fwk_notification_event = "fwk_notification_event";
@@ -30,10 +29,13 @@ static const char* CMockString_pcapping_core_is_cap_request_async = "pcapping_co
 static const char* CMockString_pcapping_core_process_fwk_notification = "pcapping_core_process_fwk_notification";
 static const char* CMockString_pcapping_core_set_cap = "pcapping_core_set_cap";
 static const char* CMockString_pcapping_core_set_pai = "pcapping_core_set_pai";
+static const char* CMockString_pcapping_core_set_power_thresholds = "pcapping_core_set_power_thresholds";
 static const char* CMockString_pcapping_core_start = "pcapping_core_start";
 static const char* CMockString_power = "power";
 static const char* CMockString_service_id = "service_id";
 static const char* CMockString_support = "support";
+static const char* CMockString_threshold_high = "threshold_high";
+static const char* CMockString_threshold_low = "threshold_low";
 
 typedef struct _CMOCK_pcapping_core_set_cap_CALL_INSTANCE
 {
@@ -113,6 +115,20 @@ typedef struct _CMOCK_pcapping_core_get_power_CALL_INSTANCE
 
 } CMOCK_pcapping_core_get_power_CALL_INSTANCE;
 
+typedef struct _CMOCK_pcapping_core_set_power_thresholds_CALL_INSTANCE
+{
+  UNITY_LINE_TYPE LineNumber;
+  char ExpectAnyArgsBool;
+  int ReturnVal;
+  unsigned int Expected_domain_idx;
+  uint32_t Expected_threshold_low;
+  uint32_t Expected_threshold_high;
+  char IgnoreArg_domain_idx;
+  char IgnoreArg_threshold_low;
+  char IgnoreArg_threshold_high;
+
+} CMOCK_pcapping_core_set_power_thresholds_CALL_INSTANCE;
+
 typedef struct _CMOCK_pcapping_core_get_cap_support_CALL_INSTANCE
 {
   UNITY_LINE_TYPE LineNumber;
@@ -186,8 +202,8 @@ typedef struct _CMOCK_pcapping_core_start_CALL_INSTANCE
   UNITY_LINE_TYPE LineNumber;
   char ExpectAnyArgsBool;
   int ReturnVal;
-  unsigned int Expected_domain_id;
-  char IgnoreArg_domain_id;
+  unsigned int Expected_domain_idx;
+  char IgnoreArg_domain_idx;
 
 } CMOCK_pcapping_core_start_CALL_INSTANCE;
 
@@ -274,6 +290,12 @@ static struct Mockscmi_power_capping_coreInstance
   CMOCK_pcapping_core_get_power_CALLBACK pcapping_core_get_power_CallbackFunctionPointer;
   int pcapping_core_get_power_CallbackCalls;
   CMOCK_MEM_INDEX_TYPE pcapping_core_get_power_CallInstance;
+  char pcapping_core_set_power_thresholds_IgnoreBool;
+  int pcapping_core_set_power_thresholds_FinalReturn;
+  char pcapping_core_set_power_thresholds_CallbackBool;
+  CMOCK_pcapping_core_set_power_thresholds_CALLBACK pcapping_core_set_power_thresholds_CallbackFunctionPointer;
+  int pcapping_core_set_power_thresholds_CallbackCalls;
+  CMOCK_MEM_INDEX_TYPE pcapping_core_set_power_thresholds_CallInstance;
   char pcapping_core_get_cap_support_IgnoreBool;
   int pcapping_core_get_cap_support_FinalReturn;
   char pcapping_core_get_cap_support_CallbackBool;
@@ -402,6 +424,19 @@ void Mockscmi_power_capping_core_Verify(void)
     UNITY_TEST_FAIL(cmock_line, CMockStringCalledLess);
   }
   if (Mock.pcapping_core_get_power_CallbackFunctionPointer != NULL)
+  {
+    call_instance = CMOCK_GUTS_NONE;
+    (void)call_instance;
+  }
+  call_instance = Mock.pcapping_core_set_power_thresholds_CallInstance;
+  if (Mock.pcapping_core_set_power_thresholds_IgnoreBool)
+    call_instance = CMOCK_GUTS_NONE;
+  if (CMOCK_GUTS_NONE != call_instance)
+  {
+    UNITY_SET_DETAIL(CMockString_pcapping_core_set_power_thresholds);
+    UNITY_TEST_FAIL(cmock_line, CMockStringCalledLess);
+  }
+  if (Mock.pcapping_core_set_power_thresholds_CallbackFunctionPointer != NULL)
   {
     call_instance = CMOCK_GUTS_NONE;
     (void)call_instance;
@@ -1350,6 +1385,151 @@ void pcapping_core_get_power_CMockIgnoreArg_power(UNITY_LINE_TYPE cmock_line)
   cmock_call_instance->IgnoreArg_power = 1;
 }
 
+int pcapping_core_set_power_thresholds(unsigned int domain_idx, uint32_t threshold_low, uint32_t threshold_high)
+{
+  UNITY_LINE_TYPE cmock_line = TEST_LINE_NUM;
+  CMOCK_pcapping_core_set_power_thresholds_CALL_INSTANCE* cmock_call_instance;
+  UNITY_SET_DETAIL(CMockString_pcapping_core_set_power_thresholds);
+  cmock_call_instance = (CMOCK_pcapping_core_set_power_thresholds_CALL_INSTANCE*)CMock_Guts_GetAddressFor(Mock.pcapping_core_set_power_thresholds_CallInstance);
+  Mock.pcapping_core_set_power_thresholds_CallInstance = CMock_Guts_MemNext(Mock.pcapping_core_set_power_thresholds_CallInstance);
+  if (Mock.pcapping_core_set_power_thresholds_IgnoreBool)
+  {
+    UNITY_CLR_DETAILS();
+    if (cmock_call_instance == NULL)
+      return Mock.pcapping_core_set_power_thresholds_FinalReturn;
+    Mock.pcapping_core_set_power_thresholds_FinalReturn = cmock_call_instance->ReturnVal;
+    return cmock_call_instance->ReturnVal;
+  }
+  if (!Mock.pcapping_core_set_power_thresholds_CallbackBool &&
+      Mock.pcapping_core_set_power_thresholds_CallbackFunctionPointer != NULL)
+  {
+    int cmock_cb_ret = Mock.pcapping_core_set_power_thresholds_CallbackFunctionPointer(domain_idx, threshold_low, threshold_high, Mock.pcapping_core_set_power_thresholds_CallbackCalls++);
+    UNITY_CLR_DETAILS();
+    return cmock_cb_ret;
+  }
+  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringCalledMore);
+  cmock_line = cmock_call_instance->LineNumber;
+  if (!cmock_call_instance->ExpectAnyArgsBool)
+  {
+  if (!cmock_call_instance->IgnoreArg_domain_idx)
+  {
+    UNITY_SET_DETAILS(CMockString_pcapping_core_set_power_thresholds,CMockString_domain_idx);
+    UNITY_TEST_ASSERT_EQUAL_HEX32(cmock_call_instance->Expected_domain_idx, domain_idx, cmock_line, CMockStringMismatch);
+  }
+  if (!cmock_call_instance->IgnoreArg_threshold_low)
+  {
+    UNITY_SET_DETAILS(CMockString_pcapping_core_set_power_thresholds,CMockString_threshold_low);
+    UNITY_TEST_ASSERT_EQUAL_HEX32(cmock_call_instance->Expected_threshold_low, threshold_low, cmock_line, CMockStringMismatch);
+  }
+  if (!cmock_call_instance->IgnoreArg_threshold_high)
+  {
+    UNITY_SET_DETAILS(CMockString_pcapping_core_set_power_thresholds,CMockString_threshold_high);
+    UNITY_TEST_ASSERT_EQUAL_HEX32(cmock_call_instance->Expected_threshold_high, threshold_high, cmock_line, CMockStringMismatch);
+  }
+  }
+  if (Mock.pcapping_core_set_power_thresholds_CallbackFunctionPointer != NULL)
+  {
+    cmock_call_instance->ReturnVal = Mock.pcapping_core_set_power_thresholds_CallbackFunctionPointer(domain_idx, threshold_low, threshold_high, Mock.pcapping_core_set_power_thresholds_CallbackCalls++);
+  }
+  UNITY_CLR_DETAILS();
+  return cmock_call_instance->ReturnVal;
+}
+
+void CMockExpectParameters_pcapping_core_set_power_thresholds(CMOCK_pcapping_core_set_power_thresholds_CALL_INSTANCE* cmock_call_instance, unsigned int domain_idx, uint32_t threshold_low, uint32_t threshold_high);
+void CMockExpectParameters_pcapping_core_set_power_thresholds(CMOCK_pcapping_core_set_power_thresholds_CALL_INSTANCE* cmock_call_instance, unsigned int domain_idx, uint32_t threshold_low, uint32_t threshold_high)
+{
+  cmock_call_instance->Expected_domain_idx = domain_idx;
+  cmock_call_instance->IgnoreArg_domain_idx = 0;
+  cmock_call_instance->Expected_threshold_low = threshold_low;
+  cmock_call_instance->IgnoreArg_threshold_low = 0;
+  cmock_call_instance->Expected_threshold_high = threshold_high;
+  cmock_call_instance->IgnoreArg_threshold_high = 0;
+}
+
+void pcapping_core_set_power_thresholds_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return)
+{
+  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_pcapping_core_set_power_thresholds_CALL_INSTANCE));
+  CMOCK_pcapping_core_set_power_thresholds_CALL_INSTANCE* cmock_call_instance = (CMOCK_pcapping_core_set_power_thresholds_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
+  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringOutOfMemory);
+  memset(cmock_call_instance, 0, sizeof(*cmock_call_instance));
+  Mock.pcapping_core_set_power_thresholds_CallInstance = CMock_Guts_MemChain(Mock.pcapping_core_set_power_thresholds_CallInstance, cmock_guts_index);
+  Mock.pcapping_core_set_power_thresholds_IgnoreBool = (char)0;
+  cmock_call_instance->LineNumber = cmock_line;
+  cmock_call_instance->ExpectAnyArgsBool = (char)0;
+  cmock_call_instance->ReturnVal = cmock_to_return;
+  Mock.pcapping_core_set_power_thresholds_IgnoreBool = (char)1;
+}
+
+void pcapping_core_set_power_thresholds_CMockStopIgnore(void)
+{
+  if(Mock.pcapping_core_set_power_thresholds_IgnoreBool)
+    Mock.pcapping_core_set_power_thresholds_CallInstance = CMock_Guts_MemNext(Mock.pcapping_core_set_power_thresholds_CallInstance);
+  Mock.pcapping_core_set_power_thresholds_IgnoreBool = (char)0;
+}
+
+void pcapping_core_set_power_thresholds_CMockExpectAnyArgsAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return)
+{
+  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_pcapping_core_set_power_thresholds_CALL_INSTANCE));
+  CMOCK_pcapping_core_set_power_thresholds_CALL_INSTANCE* cmock_call_instance = (CMOCK_pcapping_core_set_power_thresholds_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
+  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringOutOfMemory);
+  memset(cmock_call_instance, 0, sizeof(*cmock_call_instance));
+  Mock.pcapping_core_set_power_thresholds_CallInstance = CMock_Guts_MemChain(Mock.pcapping_core_set_power_thresholds_CallInstance, cmock_guts_index);
+  Mock.pcapping_core_set_power_thresholds_IgnoreBool = (char)0;
+  cmock_call_instance->LineNumber = cmock_line;
+  cmock_call_instance->ExpectAnyArgsBool = (char)0;
+  cmock_call_instance->ReturnVal = cmock_to_return;
+  cmock_call_instance->ExpectAnyArgsBool = (char)1;
+}
+
+void pcapping_core_set_power_thresholds_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, unsigned int domain_idx, uint32_t threshold_low, uint32_t threshold_high, int cmock_to_return)
+{
+  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_pcapping_core_set_power_thresholds_CALL_INSTANCE));
+  CMOCK_pcapping_core_set_power_thresholds_CALL_INSTANCE* cmock_call_instance = (CMOCK_pcapping_core_set_power_thresholds_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
+  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringOutOfMemory);
+  memset(cmock_call_instance, 0, sizeof(*cmock_call_instance));
+  Mock.pcapping_core_set_power_thresholds_CallInstance = CMock_Guts_MemChain(Mock.pcapping_core_set_power_thresholds_CallInstance, cmock_guts_index);
+  Mock.pcapping_core_set_power_thresholds_IgnoreBool = (char)0;
+  cmock_call_instance->LineNumber = cmock_line;
+  cmock_call_instance->ExpectAnyArgsBool = (char)0;
+  CMockExpectParameters_pcapping_core_set_power_thresholds(cmock_call_instance, domain_idx, threshold_low, threshold_high);
+  cmock_call_instance->ReturnVal = cmock_to_return;
+}
+
+void pcapping_core_set_power_thresholds_AddCallback(CMOCK_pcapping_core_set_power_thresholds_CALLBACK Callback)
+{
+  Mock.pcapping_core_set_power_thresholds_IgnoreBool = (char)0;
+  Mock.pcapping_core_set_power_thresholds_CallbackBool = (char)1;
+  Mock.pcapping_core_set_power_thresholds_CallbackFunctionPointer = Callback;
+}
+
+void pcapping_core_set_power_thresholds_Stub(CMOCK_pcapping_core_set_power_thresholds_CALLBACK Callback)
+{
+  Mock.pcapping_core_set_power_thresholds_IgnoreBool = (char)0;
+  Mock.pcapping_core_set_power_thresholds_CallbackBool = (char)0;
+  Mock.pcapping_core_set_power_thresholds_CallbackFunctionPointer = Callback;
+}
+
+void pcapping_core_set_power_thresholds_CMockIgnoreArg_domain_idx(UNITY_LINE_TYPE cmock_line)
+{
+  CMOCK_pcapping_core_set_power_thresholds_CALL_INSTANCE* cmock_call_instance = (CMOCK_pcapping_core_set_power_thresholds_CALL_INSTANCE*)CMock_Guts_GetAddressFor(CMock_Guts_MemEndOfChain(Mock.pcapping_core_set_power_thresholds_CallInstance));
+  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringIgnPreExp);
+  cmock_call_instance->IgnoreArg_domain_idx = 1;
+}
+
+void pcapping_core_set_power_thresholds_CMockIgnoreArg_threshold_low(UNITY_LINE_TYPE cmock_line)
+{
+  CMOCK_pcapping_core_set_power_thresholds_CALL_INSTANCE* cmock_call_instance = (CMOCK_pcapping_core_set_power_thresholds_CALL_INSTANCE*)CMock_Guts_GetAddressFor(CMock_Guts_MemEndOfChain(Mock.pcapping_core_set_power_thresholds_CallInstance));
+  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringIgnPreExp);
+  cmock_call_instance->IgnoreArg_threshold_low = 1;
+}
+
+void pcapping_core_set_power_thresholds_CMockIgnoreArg_threshold_high(UNITY_LINE_TYPE cmock_line)
+{
+  CMOCK_pcapping_core_set_power_thresholds_CALL_INSTANCE* cmock_call_instance = (CMOCK_pcapping_core_set_power_thresholds_CALL_INSTANCE*)CMock_Guts_GetAddressFor(CMock_Guts_MemEndOfChain(Mock.pcapping_core_set_power_thresholds_CallInstance));
+  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringIgnPreExp);
+  cmock_call_instance->IgnoreArg_threshold_high = 1;
+}
+
 int pcapping_core_get_cap_support(uint32_t domain_idx, bool* support)
 {
   UNITY_LINE_TYPE cmock_line = TEST_LINE_NUM;
@@ -1990,7 +2170,7 @@ void pcapping_core_get_domain_count_Stub(CMOCK_pcapping_core_get_domain_count_CA
   Mock.pcapping_core_get_domain_count_CallbackFunctionPointer = Callback;
 }
 
-int pcapping_core_start(unsigned int domain_id)
+int pcapping_core_start(unsigned int domain_idx)
 {
   UNITY_LINE_TYPE cmock_line = TEST_LINE_NUM;
   CMOCK_pcapping_core_start_CALL_INSTANCE* cmock_call_instance;
@@ -2008,7 +2188,7 @@ int pcapping_core_start(unsigned int domain_id)
   if (!Mock.pcapping_core_start_CallbackBool &&
       Mock.pcapping_core_start_CallbackFunctionPointer != NULL)
   {
-    int cmock_cb_ret = Mock.pcapping_core_start_CallbackFunctionPointer(domain_id, Mock.pcapping_core_start_CallbackCalls++);
+    int cmock_cb_ret = Mock.pcapping_core_start_CallbackFunctionPointer(domain_idx, Mock.pcapping_core_start_CallbackCalls++);
     UNITY_CLR_DETAILS();
     return cmock_cb_ret;
   }
@@ -2016,25 +2196,25 @@ int pcapping_core_start(unsigned int domain_id)
   cmock_line = cmock_call_instance->LineNumber;
   if (!cmock_call_instance->ExpectAnyArgsBool)
   {
-  if (!cmock_call_instance->IgnoreArg_domain_id)
+  if (!cmock_call_instance->IgnoreArg_domain_idx)
   {
-    UNITY_SET_DETAILS(CMockString_pcapping_core_start,CMockString_domain_id);
-    UNITY_TEST_ASSERT_EQUAL_HEX32(cmock_call_instance->Expected_domain_id, domain_id, cmock_line, CMockStringMismatch);
+    UNITY_SET_DETAILS(CMockString_pcapping_core_start,CMockString_domain_idx);
+    UNITY_TEST_ASSERT_EQUAL_HEX32(cmock_call_instance->Expected_domain_idx, domain_idx, cmock_line, CMockStringMismatch);
   }
   }
   if (Mock.pcapping_core_start_CallbackFunctionPointer != NULL)
   {
-    cmock_call_instance->ReturnVal = Mock.pcapping_core_start_CallbackFunctionPointer(domain_id, Mock.pcapping_core_start_CallbackCalls++);
+    cmock_call_instance->ReturnVal = Mock.pcapping_core_start_CallbackFunctionPointer(domain_idx, Mock.pcapping_core_start_CallbackCalls++);
   }
   UNITY_CLR_DETAILS();
   return cmock_call_instance->ReturnVal;
 }
 
-void CMockExpectParameters_pcapping_core_start(CMOCK_pcapping_core_start_CALL_INSTANCE* cmock_call_instance, unsigned int domain_id);
-void CMockExpectParameters_pcapping_core_start(CMOCK_pcapping_core_start_CALL_INSTANCE* cmock_call_instance, unsigned int domain_id)
+void CMockExpectParameters_pcapping_core_start(CMOCK_pcapping_core_start_CALL_INSTANCE* cmock_call_instance, unsigned int domain_idx);
+void CMockExpectParameters_pcapping_core_start(CMOCK_pcapping_core_start_CALL_INSTANCE* cmock_call_instance, unsigned int domain_idx)
 {
-  cmock_call_instance->Expected_domain_id = domain_id;
-  cmock_call_instance->IgnoreArg_domain_id = 0;
+  cmock_call_instance->Expected_domain_idx = domain_idx;
+  cmock_call_instance->IgnoreArg_domain_idx = 0;
 }
 
 void pcapping_core_start_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return)
@@ -2072,7 +2252,7 @@ void pcapping_core_start_CMockExpectAnyArgsAndReturn(UNITY_LINE_TYPE cmock_line,
   cmock_call_instance->ExpectAnyArgsBool = (char)1;
 }
 
-void pcapping_core_start_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, unsigned int domain_id, int cmock_to_return)
+void pcapping_core_start_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, unsigned int domain_idx, int cmock_to_return)
 {
   CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_pcapping_core_start_CALL_INSTANCE));
   CMOCK_pcapping_core_start_CALL_INSTANCE* cmock_call_instance = (CMOCK_pcapping_core_start_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
@@ -2082,7 +2262,7 @@ void pcapping_core_start_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, unsign
   Mock.pcapping_core_start_IgnoreBool = (char)0;
   cmock_call_instance->LineNumber = cmock_line;
   cmock_call_instance->ExpectAnyArgsBool = (char)0;
-  CMockExpectParameters_pcapping_core_start(cmock_call_instance, domain_id);
+  CMockExpectParameters_pcapping_core_start(cmock_call_instance, domain_idx);
   cmock_call_instance->ReturnVal = cmock_to_return;
 }
 
@@ -2100,11 +2280,11 @@ void pcapping_core_start_Stub(CMOCK_pcapping_core_start_CALLBACK Callback)
   Mock.pcapping_core_start_CallbackFunctionPointer = Callback;
 }
 
-void pcapping_core_start_CMockIgnoreArg_domain_id(UNITY_LINE_TYPE cmock_line)
+void pcapping_core_start_CMockIgnoreArg_domain_idx(UNITY_LINE_TYPE cmock_line)
 {
   CMOCK_pcapping_core_start_CALL_INSTANCE* cmock_call_instance = (CMOCK_pcapping_core_start_CALL_INSTANCE*)CMock_Guts_GetAddressFor(CMock_Guts_MemEndOfChain(Mock.pcapping_core_start_CallInstance));
   UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringIgnPreExp);
-  cmock_call_instance->IgnoreArg_domain_id = 1;
+  cmock_call_instance->IgnoreArg_domain_idx = 1;
 }
 
 int pcapping_core_bind(void)
