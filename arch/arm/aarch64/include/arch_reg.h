@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2024-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -81,6 +81,7 @@
     (FWK_BIT(29) | FWK_BIT(28) | FWK_BIT(23) | FWK_BIT(22) | FWK_BIT(18) | \
      FWK_BIT(16) | FWK_BIT(11) | FWK_BIT(5) | FWK_BIT(4))
 #define SCTLR_EL2_RESET SCTLR_EL2_RES1
+#define SCTLR_EL2_I     FWK_BIT(12)
 #define SCTLR_EL2_C     FWK_BIT(2)
 #define SCTLR_EL2_M     FWK_BIT(0)
 

@@ -87,9 +87,9 @@ el2_init:
     dsb sy
     isb
 
-    /* Enable PMSA and data cache */
+    /* Enable PMSA, data cache and instruction cache */
     ldr x0, =SCTLR_EL2_RESET
-    mov x1, #(SCTLR_EL2_M | SCTLR_EL2_C)
+    mov x1, #(SCTLR_EL2_M | SCTLR_EL2_C | SCTLR_EL2_I)
     orr x0, x0, x1
     msr sctlr_el2, x0
     dsb sy
