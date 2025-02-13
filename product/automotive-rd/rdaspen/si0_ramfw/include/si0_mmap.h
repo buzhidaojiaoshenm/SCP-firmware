@@ -113,4 +113,15 @@ static_assert(
 #define SI0_CLUSTER_UTILITY_CORE_PPU0_OFFSET   (0x1080000UL)
 #define SI0_CLUSTER_UTILITY_CORE_PPU_OFFSET    (0x100000UL)
 
+/* Secure Shared memory between AP and SI0 */
+#define SI0_AP_PERIPHERAL_SRAM_SHARED_SECURE_BASE \
+    (SI0_ATW6_AP_PERIPHERAL_SRAM_BASE)
+
+/*
+ * SDS Memory Region inside Secure AP Peripheral SRAM that is shared between
+ * AP and SI0.
+ */
+#define SI0_SDS_SECURE_BASE (SI0_AP_PERIPHERAL_SRAM_SHARED_SECURE_BASE)
+#define SI0_SDS_SECURE_SIZE (3520)
+
 #endif /* SI0_MMAP_H */
