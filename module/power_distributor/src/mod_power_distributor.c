@@ -18,6 +18,8 @@
 #include <fwk_module.h>
 #include <fwk_module_idx.h>
 
+#define MOD_NAME "[PWR_DISTRIBUTOR] "
+
 struct mod_power_distributor_data {
     uint32_t power_demand;
     uint32_t power_budget;
@@ -131,7 +133,7 @@ static int system_power_distribute(void)
             &power_distributor_ctx.domain[i];
         if (domain_ctx->controller_api != NULL) {
             FWK_LOG_DEBUG(
-                "Grant power for %s",
+                MOD_NAME "Grant power for %s",
                 fwk_module_get_element_name(
                     FWK_ID_ELEMENT(FWK_MODULE_IDX_POWER_DISTRIBUTOR, i)));
             domain_ctx->controller_api->set_power_limit(
