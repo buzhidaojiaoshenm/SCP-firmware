@@ -24,6 +24,7 @@
 #include UNIT_TEST_SRC
 
 struct mod_power_distributor_domain_ctx test_ctx_table[TEST_DOMAIN_COUNT];
+uint32_t test_tree_traverse_order_table[TEST_DOMAIN_COUNT];
 
 struct interface_power_management_api test_power_management_api = {
     .get_power_limit = &mock_get_power_limit,
@@ -34,7 +35,14 @@ struct interface_power_management_api test_power_management_api = {
 void setUp(void)
 {
     memset((void *)test_ctx_table, 0U, sizeof(test_ctx_table));
+    memset(
+        (void *)test_tree_traverse_order_table,
+        TEST_DOMAIN_COUNT,
+        sizeof(test_tree_traverse_order_table));
+
     power_distributor_ctx.domain = test_ctx_table;
+    power_distributor_ctx.tree_traverse_order_table =
+        test_tree_traverse_order_table;
 
     power_distributor_ctx.domain_count = TEST_DOMAIN_COUNT;
     for (unsigned int i = 0U; i < TEST_DOMAIN_COUNT; i++) {
@@ -53,17 +61,34 @@ void setUp(void)
 void utest_power_distributor_init_success(void)
 {
     int status;
-    unsigned int element_count = 23U;
-    struct mod_power_distributor_domain_ctx domain = { 0 };
+    unsigned int element_count = 4;
+    uint32_t test_tree_traverse_order_table[4] = { 0, 1, 2, 3 };
+    uint32_t test_tree_traverse_order_table_init_values[4] = { -1, -1, -1, -1 };
+    struct mod_power_distributor_domain_ctx domain[4] = { 0 };
     power_distributor_ctx.domain_count = 0;
 
     fwk_mm_calloc_ExpectAndReturn(
         element_count, sizeof(power_distributor_ctx.domain[0]), &domain);
 
+    fwk_mm_alloc_ExpectAndReturn(
+        element_count,
+        sizeof(power_distributor_ctx.tree_traverse_order_table[0]),
+        test_tree_traverse_order_table);
+
     status = power_distributor_init(
         FWK_ID_MODULE(FWK_MODULE_IDX_POWER_DISTRIBUTOR), element_count, NULL);
+
     TEST_ASSERT_EQUAL(element_count, power_distributor_ctx.domain_count);
-    TEST_ASSERT_EQUAL(&domain, power_distributor_ctx.domain);
+    TEST_ASSERT_EQUAL(domain, power_distributor_ctx.domain);
+
+    TEST_ASSERT_EQUAL(
+        test_tree_traverse_order_table,
+        power_distributor_ctx.tree_traverse_order_table);
+    TEST_ASSERT_EQUAL_HEX_ARRAY(
+        test_tree_traverse_order_table_init_values,
+        test_tree_traverse_order_table,
+        element_count);
+
     TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
 }
 
@@ -211,6 +236,10 @@ void utest_mod_distributor_post_init_success(void)
         power_distributor_ctx.domain[i].config = &config[i];
     }
 
+    uint32_t test_tree_traverse_order_table[TEST_DOMAIN_COUNT];
+    power_distributor_ctx.tree_traverse_order_table =
+        test_tree_traverse_order_table;
+
     fwk_mm_calloc_ExpectAndReturn(
         2, sizeof(children_of_soc[0]), &children_of_soc);
     fwk_mm_calloc_ExpectAndReturn(
@@ -250,6 +279,16 @@ void utest_mod_distributor_post_init_success(void)
         0,
         power_distributor_ctx.domain[TEST_DOMAIN_CPU_LITTLE]
             .node.children_count);
+
+    uint32_t expected_tree_traverse_order_table[] = {
+        TEST_DOMAIN_SOC,     TEST_DOMAIN_CPU,        TEST_DOMAIN_GPU,
+        TEST_DOMAIN_CPU_BIG, TEST_DOMAIN_CPU_LITTLE,
+    };
+
+    TEST_ASSERT_EQUAL_HEX32_ARRAY(
+        expected_tree_traverse_order_table,
+        power_distributor_ctx.tree_traverse_order_table,
+        TEST_DOMAIN_COUNT);
 }
 
 void utest_mod_distributor_set_power_limit_demand_api_success(void)
@@ -320,6 +359,168 @@ void utest_mod_distributor_system_power_distribute(void)
     TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
 }
 
+void utest_construct_tree_traverse_order_table_success(void)
+{
+    int status = FWK_E_INIT;
+    size_t children_of_soc[] = { TEST_DOMAIN_CPU, TEST_DOMAIN_GPU };
+    size_t children_of_cpu[] = { TEST_DOMAIN_CPU_BIG, TEST_DOMAIN_CPU_LITTLE };
+    uint32_t expected_tree_traverse_order_table[] = {
+        TEST_DOMAIN_SOC,     TEST_DOMAIN_CPU,        TEST_DOMAIN_GPU,
+        TEST_DOMAIN_CPU_BIG, TEST_DOMAIN_CPU_LITTLE,
+    };
+    struct mod_power_distributor_domain_config config[TEST_DOMAIN_COUNT] = {
+        [TEST_DOMAIN_SOC] = { .parent_idx = TEST_DOMAIN_NONE,},
+        [TEST_DOMAIN_CPU] = { .parent_idx = TEST_DOMAIN_SOC, },
+        [TEST_DOMAIN_GPU] = { .parent_idx = TEST_DOMAIN_SOC, },
+        [TEST_DOMAIN_CPU_BIG] = { .parent_idx = TEST_DOMAIN_CPU, },
+        [TEST_DOMAIN_CPU_LITTLE] = { .parent_idx = TEST_DOMAIN_CPU, },
+    };
+    struct mod_power_distributor_domain_ctx test_domains[TEST_DOMAIN_COUNT] = {
+        0
+    };
+    uint32_t test_tree_traverse_order_table[TEST_DOMAIN_COUNT];
+
+    power_distributor_ctx.domain = test_domains;
+    power_distributor_ctx.domain_count = TEST_DOMAIN_COUNT;
+    power_distributor_ctx.tree_traverse_order_table =
+        test_tree_traverse_order_table;
+
+    power_distributor_ctx.domain[TEST_DOMAIN_SOC].node.children_count =
+        FWK_ARRAY_SIZE(children_of_soc);
+    power_distributor_ctx.domain[TEST_DOMAIN_SOC].node.children_idx_table =
+        children_of_soc;
+    power_distributor_ctx.domain[TEST_DOMAIN_CPU].node.children_count =
+        FWK_ARRAY_SIZE(children_of_cpu);
+    power_distributor_ctx.domain[TEST_DOMAIN_CPU].node.children_idx_table =
+        children_of_cpu;
+
+    for (size_t i = 0; i < TEST_DOMAIN_COUNT; ++i) {
+        power_distributor_ctx.domain[i].config = &config[i];
+    }
+
+    status = construct_tree_traverse_order_table();
+    TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
+
+    TEST_ASSERT_EQUAL_HEX32_ARRAY(
+        expected_tree_traverse_order_table,
+        power_distributor_ctx.tree_traverse_order_table,
+        TEST_DOMAIN_COUNT);
+}
+
+void utest_construct_tree_traverse_order_table_multipe_roots(void)
+{
+    int status = FWK_E_INIT;
+
+    struct mod_power_distributor_domain_config config[TEST_DOMAIN_COUNT] = {
+        [TEST_DOMAIN_SOC] = { .parent_idx = TEST_DOMAIN_NONE,},
+        [TEST_DOMAIN_CPU] = { .parent_idx = TEST_DOMAIN_NONE, },
+        [TEST_DOMAIN_GPU] = { .parent_idx = TEST_DOMAIN_SOC, },
+        [TEST_DOMAIN_CPU_BIG] = { .parent_idx = TEST_DOMAIN_CPU, },
+        [TEST_DOMAIN_CPU_LITTLE] = { .parent_idx = TEST_DOMAIN_CPU, },
+    };
+
+    struct mod_power_distributor_domain_ctx test_domains[TEST_DOMAIN_COUNT] = {
+        0
+    };
+    uint32_t test_tree_traverse_order_table[TEST_DOMAIN_COUNT];
+
+    power_distributor_ctx.domain = test_domains;
+    power_distributor_ctx.domain_count = TEST_DOMAIN_COUNT;
+    power_distributor_ctx.tree_traverse_order_table =
+        test_tree_traverse_order_table;
+    for (size_t i = 0; i < TEST_DOMAIN_COUNT; ++i) {
+        power_distributor_ctx.domain[i].config = &config[i];
+    }
+
+    status = construct_tree_traverse_order_table();
+    TEST_ASSERT_EQUAL(FWK_E_DATA, status);
+}
+
+void utest_construct_tree_traverse_order_table_exceeded(void)
+{
+    int status = FWK_E_INIT;
+    size_t children_of_soc[] = { TEST_DOMAIN_CPU, TEST_DOMAIN_GPU };
+    size_t children_of_cpu[] = { TEST_DOMAIN_CPU_BIG, TEST_DOMAIN_CPU_LITTLE };
+    /* bad config */
+    size_t children_of_gpu[] = { TEST_DOMAIN_CPU_BIG, TEST_DOMAIN_CPU_LITTLE };
+    uint32_t expected_tree_traverse_order_table[] = {
+        TEST_DOMAIN_SOC,     TEST_DOMAIN_CPU,        TEST_DOMAIN_GPU,
+        TEST_DOMAIN_CPU_BIG, TEST_DOMAIN_CPU_LITTLE,
+    };
+    struct mod_power_distributor_domain_config config[TEST_DOMAIN_COUNT] = {
+        [TEST_DOMAIN_SOC] = { .parent_idx = TEST_DOMAIN_NONE,},
+        [TEST_DOMAIN_CPU] = { .parent_idx = TEST_DOMAIN_SOC, },
+        [TEST_DOMAIN_GPU] = { .parent_idx = TEST_DOMAIN_SOC, },
+        [TEST_DOMAIN_CPU_BIG] = { .parent_idx = TEST_DOMAIN_CPU, },
+        [TEST_DOMAIN_CPU_LITTLE] = { .parent_idx = TEST_DOMAIN_CPU, },
+    };
+    struct mod_power_distributor_domain_ctx test_domains[TEST_DOMAIN_COUNT] = {
+        0
+    };
+    uint32_t test_tree_traverse_order_table[TEST_DOMAIN_COUNT];
+
+    power_distributor_ctx.domain = test_domains;
+    power_distributor_ctx.domain_count = TEST_DOMAIN_COUNT;
+    power_distributor_ctx.tree_traverse_order_table =
+        test_tree_traverse_order_table;
+
+    power_distributor_ctx.domain[TEST_DOMAIN_SOC].node.children_count =
+        FWK_ARRAY_SIZE(children_of_soc);
+    power_distributor_ctx.domain[TEST_DOMAIN_SOC].node.children_idx_table =
+        children_of_soc;
+    power_distributor_ctx.domain[TEST_DOMAIN_CPU].node.children_count =
+        FWK_ARRAY_SIZE(children_of_cpu);
+    power_distributor_ctx.domain[TEST_DOMAIN_CPU].node.children_idx_table =
+        children_of_cpu;
+    power_distributor_ctx.domain[TEST_DOMAIN_GPU].node.children_count =
+        FWK_ARRAY_SIZE(children_of_gpu);
+    power_distributor_ctx.domain[TEST_DOMAIN_GPU].node.children_idx_table =
+        children_of_gpu;
+
+    for (size_t i = 0; i < TEST_DOMAIN_COUNT; ++i) {
+        power_distributor_ctx.domain[i].config = &config[i];
+    }
+
+    status = construct_tree_traverse_order_table();
+    TEST_ASSERT_EQUAL(FWK_E_DATA, status);
+
+    TEST_ASSERT_EQUAL_HEX32_ARRAY(
+        expected_tree_traverse_order_table,
+        power_distributor_ctx.tree_traverse_order_table,
+        TEST_DOMAIN_COUNT);
+}
+
+void utest_construct_tree_traverse_order_table_no_root(void)
+{
+    int status = FWK_E_INIT;
+
+    /* Invalid: No true root and forms a loop */
+    struct mod_power_distributor_domain_config config[TEST_DOMAIN_COUNT] = {
+        [TEST_DOMAIN_SOC] = { .parent_idx = TEST_DOMAIN_CPU, },
+        [TEST_DOMAIN_CPU] = { .parent_idx = TEST_DOMAIN_GPU, },
+        [TEST_DOMAIN_GPU] = { .parent_idx = TEST_DOMAIN_CPU_BIG, },
+        [TEST_DOMAIN_CPU_BIG] = { .parent_idx = TEST_DOMAIN_CPU_LITTLE, },
+        [TEST_DOMAIN_CPU_LITTLE] = { .parent_idx = TEST_DOMAIN_SOC, },
+    };
+
+    struct mod_power_distributor_domain_ctx test_domains[TEST_DOMAIN_COUNT] = {
+        0
+    };
+    uint32_t test_tree_traverse_order_table[TEST_DOMAIN_COUNT];
+
+    power_distributor_ctx.domain = test_domains;
+    power_distributor_ctx.domain_count = TEST_DOMAIN_COUNT;
+    power_distributor_ctx.tree_traverse_order_table =
+        test_tree_traverse_order_table;
+
+    for (size_t i = 0; i < TEST_DOMAIN_COUNT; ++i) {
+        power_distributor_ctx.domain[i].config = &config[i];
+    }
+
+    status = construct_tree_traverse_order_table();
+    TEST_ASSERT_EQUAL(FWK_E_DATA, status);
+}
+
 void tearDown(void)
 {
     Mockmod_power_distributor_extra_Verify();
@@ -341,6 +542,10 @@ int power_distributor_test_main(void)
     RUN_TEST(utest_mod_distributor_set_power_limit_demand_api_success);
     RUN_TEST(utest_mod_distributor_set_power_limit_demand_api_invalid_params);
     RUN_TEST(utest_mod_distributor_system_power_distribute);
+    RUN_TEST(utest_construct_tree_traverse_order_table_success);
+    RUN_TEST(utest_construct_tree_traverse_order_table_multipe_roots);
+    RUN_TEST(utest_construct_tree_traverse_order_table_exceeded);
+    RUN_TEST(utest_construct_tree_traverse_order_table_no_root);
 
     return UNITY_END();
 }

@@ -43,6 +43,8 @@ struct mod_power_distributor_ctx {
     struct mod_power_distributor_domain_ctx *domain;
     /* Number of domains */
     size_t domain_count;
+    /* Table contains the tree traversing order of the domain (level by level)*/
+    uint32_t *tree_traverse_order_table;
 };
 
 static struct mod_power_distributor_ctx power_distributor_ctx;
@@ -121,6 +123,57 @@ static inline bool is_element_id_valid(fwk_id_t id)
         fwk_id_get_element_idx(id) < power_distributor_ctx.domain_count;
 }
 
+static inline void construct_tree(void)
+{
+    calculate_children_count();
+    allocate_children_table();
+    set_domain_relations();
+}
+
+static inline int construct_tree_traverse_order_table(void)
+{
+    uint32_t traverse_idx = 0;
+    /* Find the root */
+    for (size_t i = 0; i < power_distributor_ctx.domain_count; ++i) {
+        if (domain_has_parent(&power_distributor_ctx.domain[i]) == false) {
+            if (traverse_idx > 0) {
+                /* Multi roots are not allowed as traverse_idx > 0 means
+                 * Root has already been detected.
+                 */
+                FWK_LOG_ERR(MOD_NAME "Multiple roots are not allowed");
+                return FWK_E_DATA;
+            }
+            power_distributor_ctx.tree_traverse_order_table[traverse_idx++] = i;
+        }
+    }
+
+    if (traverse_idx == 0) {
+        /* No root found */
+        FWK_LOG_ERR(MOD_NAME "System must have a root");
+        return FWK_E_DATA;
+    }
+
+    /* Store tree traverse order */
+    for (size_t i = 0; i < power_distributor_ctx.domain_count; ++i) {
+        struct mod_power_distributor_domain_ctx *parent_ctx =
+            &power_distributor_ctx
+                 .domain[power_distributor_ctx.tree_traverse_order_table[i]];
+        for (size_t j = 0; j < parent_ctx->node.children_count; ++j) {
+            /* When reaching the end of the traverse order table.
+             * Domains are consider leaves and should not have children.
+             */
+            if (traverse_idx >= power_distributor_ctx.domain_count) {
+                FWK_LOG_ERR(MOD_NAME "Incorrect Domain relations");
+                return FWK_E_DATA;
+            }
+            power_distributor_ctx.tree_traverse_order_table[traverse_idx++] =
+                parent_ctx->node.children_idx_table[j];
+        }
+    }
+
+    return FWK_SUCCESS;
+}
+
 static int subtree_power_distribute(fwk_id_t subtree_root_id)
 {
     return FWK_E_SUPPORT;
@@ -188,6 +241,17 @@ static int power_distributor_init(
     power_distributor_ctx.domain =
         fwk_mm_calloc(element_count, sizeof(power_distributor_ctx.domain[0]));
 
+    power_distributor_ctx.tree_traverse_order_table = fwk_mm_alloc(
+        element_count,
+        sizeof(power_distributor_ctx.tree_traverse_order_table[0]));
+    fwk_assert(power_distributor_ctx.tree_traverse_order_table != NULL);
+
+    memset(
+        power_distributor_ctx.tree_traverse_order_table,
+        MOD_POWER_DISTRIBUTOR_DOMAIN_PARENT_IDX_NONE,
+        element_count *
+            sizeof(power_distributor_ctx.tree_traverse_order_table[0]));
+
     return FWK_SUCCESS;
 }
 
@@ -196,8 +260,9 @@ static int power_distributor_element_init(
     unsigned int sub_element_count,
     const void *data)
 {
+    unsigned int element_idx = fwk_id_get_element_idx(element_id);
     struct mod_power_distributor_domain_ctx *domain_ctx =
-        get_domain_ctx(fwk_id_get_element_idx(element_id));
+        get_domain_ctx(element_idx);
 
     domain_ctx->node.data.power_demand = 0;
     domain_ctx->node.data.power_limit = NO_POWER_LIMIT;
@@ -212,11 +277,8 @@ static int power_distributor_element_init(
 
 static int power_distributor_post_init(fwk_id_t module_id)
 {
-    calculate_children_count();
-    allocate_children_table();
-    set_domain_relations();
-
-    return FWK_SUCCESS;
+    construct_tree();
+    return construct_tree_traverse_order_table();
 }
 
 static int power_distributor_bind(fwk_id_t id, unsigned int round)
