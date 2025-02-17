@@ -24,6 +24,12 @@
  */
 
 /*!
+ * \brief A parent index definition for domains that have no parents to use.
+ *        (root domain).
+ */
+#define MOD_POWER_DISTRIBUTOR_DOMAIN_PARENT_IDX_NONE (UINT32_MAX)
+
+/*!
  * \brief API indices
  */
 enum mod_power_distributor_api_idx {
@@ -68,7 +74,10 @@ struct mod_power_distributor_api {
  * \brief Power Distributor domain configuration data.
  */
 struct mod_power_distributor_domain_config {
-    /*! The parent domain index */
+    /*! The parent domain index.
+     * Set to MOD_POWER_DISTRIBUTOR_DOMAIN_PARENT_IDX_NONE
+     * if no parent available.
+     */
     uint32_t parent_idx;
     /*! Controller ID associated with the domain to apply the power budget. */
     fwk_optional_id_t controller_id;

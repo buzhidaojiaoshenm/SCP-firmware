@@ -18,7 +18,7 @@ enum test_power_distributor_domain_idx {
     TEST_DOMAIN_CPU_LITTLE,
     TEST_DOMAIN_GPU,
     TEST_DOMAIN_COUNT,
-    TEST_DOMAIN_NONE = UINT32_MAX,
+    TEST_DOMAIN_NONE = MOD_POWER_DISTRIBUTOR_DOMAIN_PARENT_IDX_NONE,
 };
 
 enum test_power_controller_api_idx {
