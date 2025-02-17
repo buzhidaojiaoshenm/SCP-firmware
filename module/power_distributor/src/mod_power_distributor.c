@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2024-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -33,7 +33,7 @@ struct mod_power_distributor_node {
 struct mod_power_distributor_domain_ctx {
     struct mod_power_distributor_node node;
     struct interface_power_management_api *controller_api;
-    struct mod_power_distibutor_domain_config *config;
+    struct mod_power_distributor_domain_config *config;
 };
 
 struct mod_power_distributor_ctx {
@@ -201,7 +201,7 @@ static int power_distributor_element_init(
     domain_ctx->node.data.power_limit = NO_POWER_LIMIT;
     domain_ctx->node.data.power_budget = 0;
     domain_ctx->controller_api = NULL;
-    domain_ctx->config = (struct mod_power_distibutor_domain_config *)data;
+    domain_ctx->config = (struct mod_power_distributor_domain_config *)data;
     domain_ctx->node.children_idx_table = NULL;
     domain_ctx->node.children_count = 0;
 

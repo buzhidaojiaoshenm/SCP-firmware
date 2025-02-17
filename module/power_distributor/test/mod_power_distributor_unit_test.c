@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2024-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -39,12 +39,12 @@ void setUp(void)
     power_distributor_ctx.domain_count = TEST_DOMAIN_COUNT;
     for (unsigned int i = 0U; i < TEST_DOMAIN_COUNT; i++) {
         if (fwk_optional_id_is_defined(
-                test_power_distibutor_domain_config[i].controller_id)) {
+                test_power_distributor_domain_config[i].controller_id)) {
             power_distributor_ctx.domain[i].controller_api =
                 &test_power_management_api;
         }
         power_distributor_ctx.domain[i].config =
-            &test_power_distibutor_domain_config[i];
+            &test_power_distributor_domain_config[i];
     }
     Mockfwk_mm_Init();
     Mockmod_power_distributor_extra_Init();
@@ -71,7 +71,7 @@ void utest_power_distributor_element_init_success(void)
 {
     int status;
     fwk_id_t element_id;
-    static struct mod_power_distibutor_domain_config
+    static struct mod_power_distributor_domain_config
         domains_config[TEST_DOMAIN_COUNT] = { 0 };
 
     for (unsigned int index = 0U; index < TEST_DOMAIN_COUNT; index++) {
@@ -196,7 +196,7 @@ void utest_mod_distributor_process_bind_request_invalid_module(void)
 void utest_mod_distributor_post_init_success(void)
 {
     int status = FWK_E_DATA;
-    struct mod_power_distibutor_domain_config config[TEST_DOMAIN_COUNT] = {
+    struct mod_power_distributor_domain_config config[TEST_DOMAIN_COUNT] = {
         [TEST_DOMAIN_SOC] = { .parent_idx = TEST_DOMAIN_NONE,},
         [TEST_DOMAIN_CPU] = { .parent_idx = TEST_DOMAIN_SOC, },
         [TEST_DOMAIN_GPU] = { .parent_idx = TEST_DOMAIN_SOC, },

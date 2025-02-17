@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2024-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -67,7 +67,7 @@ struct mod_power_distributor_api {
 /*!
  * \brief Power Distributor domain configuration data.
  */
-struct mod_power_distibutor_domain_config {
+struct mod_power_distributor_domain_config {
     /*! The parent domain index */
     uint32_t parent_idx;
     /*! Controller ID associated with the domain to apply the power budget. */

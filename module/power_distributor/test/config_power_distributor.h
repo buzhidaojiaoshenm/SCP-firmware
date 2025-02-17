@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2024-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -30,7 +30,8 @@ enum test_power_controller_api_idx {
     TEST_CONTROLLER_API_COUNT,
 };
 
-struct mod_power_distibutor_domain_config test_power_distibutor_domain_config[TEST_DOMAIN_COUNT] = {
+struct mod_power_distributor_domain_config
+    test_power_distributor_domain_config[TEST_DOMAIN_COUNT] = {
     [TEST_DOMAIN_SOC] = {
         .parent_idx = TEST_DOMAIN_NONE,
         .controller_api_id = FWK_ID_API_INIT(
