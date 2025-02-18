@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2024-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -251,6 +251,7 @@ void test_controller_apply_performance_granted_within_limits(void)
 
         status = cluster_apply_performance_granted(cluster_ctx);
 
+        TEST_ASSERT_EQUAL(cluster_ctx->performance_limit, performance_limit);
         TEST_ASSERT_EQUAL(status, FWK_SUCCESS);
     }
 }

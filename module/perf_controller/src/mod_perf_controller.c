@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2024-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -51,6 +51,8 @@ static int cluster_apply_performance_granted(
     if (status != FWK_SUCCESS) {
         return status;
     }
+
+    cluster_ctx->performance_limit = performance_limit;
 
     if (cluster_ctx->performance_request_details.level <= performance_limit) {
         cookie = cluster_ctx->performance_request_details.cookie;
