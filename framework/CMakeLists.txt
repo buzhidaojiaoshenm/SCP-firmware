@@ -1,6 +1,6 @@
 #
 # Arm SCP/MCP Software
-# Copyright (c) 2021-2024, Arm Limited and Contributors. All rights reserved.
+# Copyright (c) 2021-2025, Arm Limited and Contributors. All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -135,7 +135,7 @@ if(SCP_ENABLE_SCMI_POWER_CAPPING_FAST_CHANNELS_COMMANDS)
     target_compile_definitions(framework PUBLIC "BUILD_HAS_SCMI_POWER_CAPPING_FAST_CHANNELS_COMMANDS")
 endif()
 
-if(NOT SCP_EXCLUDE_SCMI_POWER_CAPPING_FAST_CHANNELS_COMMANDS)
+if(NOT SCP_EXCLUDE_SCMI_POWER_CAPPING_STD_COMMANDS)
     target_compile_definitions(framework PUBLIC "BUILD_HAS_SCMI_POWER_CAPPING_STD_COMMANDS")
 endif()
 

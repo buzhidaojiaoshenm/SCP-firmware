@@ -59,8 +59,8 @@ options for specific firmware targets (e.g., scp_ramfw or scp_romfw).
 - `SCP_ENABLE_SCMI_POWER_CAPPING_FAST_CHANNELS_COMMANDS`: Enable/disable
   Fast Channels support for Power Capping.
 
-- `SCP_EXCLUDE_SCMI_POWER_CAPPING_FAST_CHANNELS_COMMANDS`: Exclude
-  Fast Channels support for Power Capping.
+- `SCP_EXCLUDE_SCMI_POWER_CAPPING_STD_COMMANDS`: Exclude
+  standard commands support for Power Capping.
 
 ### Clock Configurations
 
