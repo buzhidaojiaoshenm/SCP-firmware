@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2023-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2023-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -593,13 +593,15 @@ void utest_dvfs_get_latency(void)
 
 void utest_dvfs_handle_set_opp_set_rate_inc_voltage(void)
 {
+    struct mod_dvfs_domain_ctx dvfs_domain_ctx = { 0 };
+    struct mod_dvfs_domain_config config = { 0 };
+    uint32_t voltage = 2;
     int32_t status;
 
-    struct mod_dvfs_domain_ctx dvfs_domain_ctx;
     dvfs_domain_ctx.request.new_opp.voltage = 5;
     dvfs_domain_ctx.apis.psu = &psu_api;
     dvfs_domain_ctx.apis.clock = &clock_api;
-    uint32_t voltage = 2;
+    dvfs_domain_ctx.config = &config;
 
     mod_psu_device_api_set_voltage_ExpectAnyArgsAndReturn(FWK_SUCCESS);
     mod_clock_api_set_rate_ExpectAnyArgsAndReturn(FWK_PENDING);
@@ -611,12 +613,14 @@ void utest_dvfs_handle_set_opp_set_rate_inc_voltage(void)
 
 void utest_dvfs_handle_set_opp_set_rate_dec_voltage(void)
 {
+    struct mod_dvfs_domain_ctx dvfs_domain_ctx = { 0 };
+    struct mod_dvfs_domain_config config = { 0 };
+    uint32_t voltage = 5;
     int32_t status;
 
-    struct mod_dvfs_domain_ctx dvfs_domain_ctx;
     dvfs_domain_ctx.request.new_opp.voltage = 2;
     dvfs_domain_ctx.apis.clock = &clock_api;
-    uint32_t voltage = 5;
+    dvfs_domain_ctx.config = &config;
 
     mod_clock_api_set_rate_ExpectAnyArgsAndReturn(FWK_PENDING);
 
@@ -627,14 +631,16 @@ void utest_dvfs_handle_set_opp_set_rate_dec_voltage(void)
 
 void utest_dvfs_handle_set_opp_set_rate_startup(void)
 {
+    struct mod_dvfs_domain_ctx dvfs_domain_ctx = { 0 };
+    struct mod_dvfs_domain_config config = { 0 };
+    uint32_t voltage = 0;
     int32_t status;
 
-    struct mod_dvfs_domain_ctx dvfs_domain_ctx;
     dvfs_domain_ctx.request.new_opp.voltage = 0;
     dvfs_domain_ctx.current_opp.frequency = 0;
     dvfs_domain_ctx.apis.psu = &psu_api;
     dvfs_domain_ctx.apis.clock = &clock_api;
-    uint32_t voltage = 0;
+    dvfs_domain_ctx.config = &config;
 
     mod_psu_device_api_set_voltage_ExpectAnyArgsAndReturn(FWK_SUCCESS);
     mod_clock_api_set_rate_ExpectAnyArgsAndReturn(FWK_PENDING);
@@ -646,16 +652,18 @@ void utest_dvfs_handle_set_opp_set_rate_startup(void)
 
 void utest_dvfs_handle_psu_set_voltage_resp_set_rate(void)
 {
-    int32_t status;
-
-    struct mod_dvfs_domain_ctx dvfs_domain_ctx;
+    struct mod_dvfs_domain_ctx dvfs_domain_ctx = { 0 };
+    struct mod_dvfs_domain_config config = { 0 };
     struct fwk_event event;
     struct mod_psu_driver_response *psu_response;
+    int32_t status;
+
     psu_response = (struct mod_psu_driver_response *)&(event.params[0]);
     psu_response->status = FWK_SUCCESS;
 
     dvfs_domain_ctx.state = DVFS_DOMAIN_SET_FREQUENCY;
     dvfs_domain_ctx.apis.clock = &clock_api;
+    dvfs_domain_ctx.config = &config;
 
     mod_clock_api_set_rate_ExpectAnyArgsAndReturn(FWK_PENDING);
 
