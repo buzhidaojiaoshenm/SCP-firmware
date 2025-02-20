@@ -28,8 +28,11 @@ contributions.
 - [Miklos Balint](https://gitlab.arm.com/Miklos.Balint)
 - [Abhishek Rawat](https://gitlab.arm.com/abhishek-arm)
 - [Wen Ping Teh](https://gitlab.arm.com/wenping-arm)
-- [James McGregor](https://gitlab.arm.com/James.McGregor2)
-
+- [Mina Aziz](https://gitlab.arm.com/Mina.Aziz)
+- [Matthew Wellings](https://gitlab.arm.com/Matthew.Wellings)
+- [Wei-Chia Su](https://gitlab.arm.com/Wei-Chia.Su)
+- [Mahmoud Elsabbagh](https://gitlab.arm.com/Mahmoud.Elsabbagh)
+- [Francesco Rosati](https://gitlab.arm.com/Francesco.Rosati)
 ---
 
 ## Platform Maintainers
