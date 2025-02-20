@@ -1,6 +1,6 @@
 #
 # Arm SCP/MCP Software
-# Copyright (c) 2021-2024, Arm Limited and Contributors. All rights reserved.
+# Copyright (c) 2021-2025, Arm Limited and Contributors. All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -60,6 +60,7 @@ list(APPEND SCP_MODULE_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/perf_controller")
 list(APPEND SCP_MODULE_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/pid_controller")
 list(APPEND SCP_MODULE_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/pik_clock")
 list(APPEND SCP_MODULE_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/pinctrl")
+list(APPEND SCP_MODULE_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/pinctrl_drv")
 list(APPEND SCP_MODULE_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/pl011")
 list(APPEND SCP_MODULE_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/power_capping")
 list(APPEND SCP_MODULE_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/power_distributor")
