@@ -54,6 +54,11 @@ struct mod_system_pll_dev_config {
      */
     const uint32_t lock_flag_mask;
 
+    /*!
+     * Bit position of the period field in the control register.
+     */
+    const uint32_t period_shift;
+
     /*! The initial rate the PLL is set to during initialization. */
     const uint64_t initial_rate;
 

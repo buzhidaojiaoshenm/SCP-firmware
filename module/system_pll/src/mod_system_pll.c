@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2017-2021, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2017-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -134,7 +134,7 @@ static int system_pll_set_rate(fwk_id_t dev_id, uint64_t rate,
     if (picoseconds == 0)
         return FWK_E_RANGE;
 
-    *ctx->config->control_reg = picoseconds;
+    *ctx->config->control_reg = picoseconds << ctx->config->period_shift;
 
     if (ctx->config->status_reg != NULL) {
         /* Wait until the PLL has locked */
