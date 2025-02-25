@@ -26,22 +26,16 @@ typedef void(*cmock_fwk_interrupt_func_ptr1)(void);
 typedef void(*cmock_fwk_interrupt_func_ptr2)(uintptr_t param);
 
 
-#define fwk_interrupt_init_IgnoreAndReturn(cmock_retval) fwk_interrupt_init_CMockIgnoreAndReturn(__LINE__, cmock_retval)
-void fwk_interrupt_init_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return);
-#define fwk_interrupt_init_StopIgnore() fwk_interrupt_init_CMockStopIgnore()
-void fwk_interrupt_init_CMockStopIgnore(void);
-#define fwk_interrupt_init_ExpectAnyArgsAndReturn(cmock_retval) fwk_interrupt_init_CMockExpectAnyArgsAndReturn(__LINE__, cmock_retval)
-void fwk_interrupt_init_CMockExpectAnyArgsAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return);
-#define fwk_interrupt_init_ExpectAndReturn(driver, cmock_retval) fwk_interrupt_init_CMockExpectAndReturn(__LINE__, driver, cmock_retval)
-void fwk_interrupt_init_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, const struct fwk_arch_interrupt_driver* driver, int cmock_to_return);
-typedef int (* CMOCK_fwk_interrupt_init_CALLBACK)(const struct fwk_arch_interrupt_driver* driver, int cmock_num_calls);
-void fwk_interrupt_init_AddCallback(CMOCK_fwk_interrupt_init_CALLBACK Callback);
-void fwk_interrupt_init_Stub(CMOCK_fwk_interrupt_init_CALLBACK Callback);
-#define fwk_interrupt_init_StubWithCallback fwk_interrupt_init_Stub
-#define fwk_interrupt_init_ExpectWithArrayAndReturn(driver, driver_Depth, cmock_retval) fwk_interrupt_init_CMockExpectWithArrayAndReturn(__LINE__, driver, driver_Depth, cmock_retval)
-void fwk_interrupt_init_CMockExpectWithArrayAndReturn(UNITY_LINE_TYPE cmock_line, const struct fwk_arch_interrupt_driver* driver, int driver_Depth, int cmock_to_return);
-#define fwk_interrupt_init_IgnoreArg_driver() fwk_interrupt_init_CMockIgnoreArg_driver(__LINE__)
-void fwk_interrupt_init_CMockIgnoreArg_driver(UNITY_LINE_TYPE cmock_line);
+#define fwk_arch_interrupt_init_IgnoreAndReturn(cmock_retval) fwk_arch_interrupt_init_CMockIgnoreAndReturn(__LINE__, cmock_retval)
+void fwk_arch_interrupt_init_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return);
+#define fwk_arch_interrupt_init_StopIgnore() fwk_arch_interrupt_init_CMockStopIgnore()
+void fwk_arch_interrupt_init_CMockStopIgnore(void);
+#define fwk_arch_interrupt_init_ExpectAndReturn(cmock_retval) fwk_arch_interrupt_init_CMockExpectAndReturn(__LINE__, cmock_retval)
+void fwk_arch_interrupt_init_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return);
+typedef int (* CMOCK_fwk_arch_interrupt_init_CALLBACK)(int cmock_num_calls);
+void fwk_arch_interrupt_init_AddCallback(CMOCK_fwk_arch_interrupt_init_CALLBACK Callback);
+void fwk_arch_interrupt_init_Stub(CMOCK_fwk_arch_interrupt_init_CALLBACK Callback);
+#define fwk_arch_interrupt_init_StubWithCallback fwk_arch_interrupt_init_Stub
 #define fwk_interrupt_is_enabled_IgnoreAndReturn(cmock_retval) fwk_interrupt_is_enabled_CMockIgnoreAndReturn(__LINE__, cmock_retval)
 void fwk_interrupt_is_enabled_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return);
 #define fwk_interrupt_is_enabled_StopIgnore() fwk_interrupt_is_enabled_CMockStopIgnore()

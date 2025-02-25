@@ -62,6 +62,10 @@ set(CMOCK_SRC_ROOT ${CMOCK_ROOT}/src)
 # Framework mock sources
 set(FWK_MOCKS_SRC_ROOT ${TEST_ROOT}/unity_mocks/mocks)
 
+# Architecture sources
+set(ARCH_ROOT ${SCP_ROOT}/arch/none/host)
+set(ARCH_SRC_ROOT ${ARCH_ROOT}/src)
+
 set(TEST_ON_HOST TRUE)
 
 # Common flags
@@ -102,6 +106,7 @@ list(APPEND FWK_SRC ${FWK_SRC_ROOT}/fwk_string.c)
 list(APPEND FWK_SRC ${FWK_SRC_ROOT}/fwk_delayed_resp.c)
 list(APPEND FWK_SRC ${FWK_SRC_ROOT}/fwk_time.c)
 list(APPEND FWK_SRC ${UNITY_SRC_ROOT}/unity.c)
+list(APPEND FWK_SRC ${ARCH_SRC_ROOT}/arch_interrupt.c)
 
 list(APPEND SCP_UNITY_SRC ${TEST_ROOT}/unity_mocks/scp_unity.c)
 

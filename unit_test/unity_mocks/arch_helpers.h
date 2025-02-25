@@ -33,4 +33,6 @@ inline static void arch_suspend(void)
 {
 }
 
+int arch_interrupt_init();
+
 #endif /* ARCH_HELPERS_H */
