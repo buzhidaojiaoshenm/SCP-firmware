@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2022, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2022-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -11,6 +11,7 @@
  * This variable is used to ensure spurious nested calls won't
  * enable interrupts. This is been defined in fwk_test.c
  */
+
 extern unsigned int critical_section_nest_level;
 
 /*!
@@ -43,5 +44,7 @@ inline static unsigned int arch_interrupts_disable(void)
 inline static void arch_suspend(void)
 {
 }
+
+int arch_interrupt_init();
 
 #endif /* ARCH_HELPERS_H */

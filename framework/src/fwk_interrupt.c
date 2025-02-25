@@ -16,8 +16,6 @@
 
 #include <arch_helpers.h>
 
-#include <stddef.h>
-
 int fwk_arch_interrupt_init()
 {
     return arch_interrupt_init();
