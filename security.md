@@ -1,8 +1,20 @@
 ## Reporting Vulnerabilities
 
-If you think you have found an SCP-firmware security vulnerability, then please
-send an email to the security team at
-<arm-security@arm.com>.
+Arm is committed to the security, and values input from researchers and the
+broader security community in our continuous efforts to enhance the security of
+our software.
 
-Further details of reporting vulnerabilities can be found on the
-[Arm Developer Website](https://developer.arm.com/documentation/102850/latest/).
+## Report
+
+For all security issues, contact Arm by email at <psirt@arm.com>.
+
+## Secure submission using PGP
+
+Secure submission of vulnerability reports using PGP is encouraged and supported
+with the key below. To receive encrypted replies, provide your own public key
+through a secure mechanism.
+
+[security_scp_firmware_pub_key](./security_scp_firmware_pub_key.txt) 
+
+For more information visit
+[Arm Developer Website](https://developer.arm.com/support/arm-security-updates/report-security-vulnerabilities)

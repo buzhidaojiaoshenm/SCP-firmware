@@ -1,7 +1,7 @@
 SCP-firmware - version 2.15
 ===========================
 
-Copyright (c) 2011-2024, Arm Limited. All rights reserved.
+Copyright (c) 2011-2025, Arm Limited. All rights reserved.
 
 References
 ----------
@@ -104,9 +104,3 @@ maintainers.md).
 To request support please contact Arm by email at support@arm.com. Arm licensees
 may also contact Arm via their partner managers.
 
-Security issues reporting
--------------------------
-
-To report any security issue please contact Arm by email at arm-security@arm.com.
-
-More details can be found at [Arm Developer website](https://developer.arm.com/support/arm-security-updates/report-security-vulnerabilities).
