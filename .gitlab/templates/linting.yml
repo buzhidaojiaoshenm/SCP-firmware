@@ -20,12 +20,14 @@
 .check-copyright:
   image: ${CONTAINER_REGISTRY_PATH}/ci-base:${DOCKER_IMAGE_TAG}
   script:
-    - python3 tools/check_copyright.py -c "${CI_MERGE_REQUEST_DIFF_BASE_SHA}"
+    - python3 tools/check_copyright.py -c \
+      "${CI_MERGE_REQUEST_DIFF_BASE_SHA:-$(git merge-base HEAD origin/main)}"
 
 .check-style:
   image: ${CONTAINER_REGISTRY_PATH}/ci-base:${DOCKER_IMAGE_TAG}
   script:
-    - python3 tools/check_style.py -c "${CI_MERGE_REQUEST_DIFF_BASE_SHA}"
+    - python3 tools/check_style.py -c \
+      "${CI_MERGE_REQUEST_DIFF_BASE_SHA:-$(git merge-base HEAD origin/main)}"
   artifacts:
     when: on_failure
     expire_in: 2 days
@@ -43,3 +45,15 @@
         exit 1
       fi
       echo "SUCCESS: No merge commits in range."
+
+.check-commit-msg:
+  image: ${CI_REGISTRY_IMAGE}/ci-base:${DOCKER_IMAGE_TAG}
+  script:
+    - python3 tools/check_commit_msg.py -c \
+      ${CI_MERGE_REQUEST_DIFF_BASE_SHA:-$(git merge-base HEAD origin/main)}
+  artifacts:
+    paths:
+      - commit_msg_validation.xml  # Store XML file for review
+    expire_in: 1 day
+    reports:
+      junit: commit_msg_validation.xml  # Attach XML report for GitLab MR
