@@ -1,6 +1,6 @@
 /*
  * Renesas SCP/MCP Software
- * Copyright (c) 2020-2024, Renesas Electronics Corporation. All rights
+ * Copyright (c) 2020-2025, Renesas Electronics Corporation. All rights
  * reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
@@ -357,19 +357,19 @@ void gic_init(void)
 
 /* --------------------------------------------------- */
 
-static int global_enable(void)
+int arch_interrupt_global_enable(void)
 {
     __asm__ volatile("msr DAIFClr, #1"); /* FIQ */
     return FWK_SUCCESS;
 }
 
-static int global_disable(void)
+int arch_interrupt_global_disable(void)
 {
     __asm__ volatile("msr DAIFSet, #1"); /* FIQ */
     return FWK_SUCCESS;
 }
 
-static int is_enabled(unsigned int interrupt, bool *enabled)
+int arch_interrupt_is_enabled(unsigned int interrupt, bool *enabled)
 {
     if (!IS_SUPPORT_INT(interrupt))
         return FWK_E_PARAM;
@@ -379,7 +379,7 @@ static int is_enabled(unsigned int interrupt, bool *enabled)
     return FWK_SUCCESS;
 }
 
-static int enable(unsigned int interrupt)
+int arch_interrupt_enable(unsigned int interrupt)
 {
     if (!IS_SUPPORT_INT(interrupt))
         return FWK_E_PARAM;
@@ -389,7 +389,7 @@ static int enable(unsigned int interrupt)
     return FWK_SUCCESS;
 }
 
-static int disable(unsigned int interrupt)
+int arch_interrupt_disable(unsigned int interrupt)
 {
     if (!IS_SUPPORT_INT(interrupt))
         return FWK_E_PARAM;
@@ -399,7 +399,7 @@ static int disable(unsigned int interrupt)
     return FWK_SUCCESS;
 }
 
-static int is_pending(unsigned int interrupt, bool *pending)
+int arch_interrupt_is_pending(unsigned int interrupt, bool *pending)
 {
     unsigned int bit;
 
@@ -414,7 +414,7 @@ static int is_pending(unsigned int interrupt, bool *pending)
     return FWK_SUCCESS;
 }
 
-static int set_pending(unsigned int interrupt)
+int arch_interrupt_set_pending(unsigned int interrupt)
 {
     unsigned int bit;
 
@@ -427,7 +427,7 @@ static int set_pending(unsigned int interrupt)
     return FWK_SUCCESS;
 }
 
-static int clear_pending(unsigned int interrupt)
+int arch_interrupt_clear_pending(unsigned int interrupt)
 {
     unsigned int bit;
 
@@ -442,49 +442,49 @@ static int clear_pending(unsigned int interrupt)
 
 #else
 
-static int global_enable(void)
+int arch_interrupt_global_enable(void)
 {
     return FWK_SUCCESS;
 }
 
-static int global_disable(void)
+int arch_interrupt_global_disable(void)
 {
     return FWK_SUCCESS;
 }
 
-static int is_enabled(unsigned int interrupt, bool *enabled)
+int arch_interrupt_is_enabled(unsigned int interrupt, bool *enabled)
 {
     return FWK_SUCCESS;
 }
 
-static int enable(unsigned int interrupt)
+int arch_interrupt_enable(unsigned int interrupt)
 {
     return FWK_SUCCESS;
 }
 
-static int disable(unsigned int interrupt)
+int arch_interrupt_disable(unsigned int interrupt)
 {
     return FWK_SUCCESS;
 }
 
-static int is_pending(unsigned int interrupt, bool *pending)
+int arch_interrupt_is_pending(unsigned int interrupt, bool *pending)
 {
     return FWK_SUCCESS;
 }
 
-static int set_pending(unsigned int interrupt)
+int arch_interrupt_set_pending(unsigned int interrupt)
 {
     return FWK_SUCCESS;
 }
 
-static int clear_pending(unsigned int interrupt)
+int arch_interrupt_clear_pending(unsigned int interrupt)
 {
     return FWK_SUCCESS;
 }
 
 #endif /* RCAR_SCMI_LIB */
 
-static int set_isr_irq(unsigned int interrupt, void (*isr)(void))
+int arch_interrupt_set_isr_irq(unsigned int interrupt, void (*isr)(void))
 {
     struct callback *entry;
     int ret;
@@ -505,7 +505,7 @@ static int set_isr_irq(unsigned int interrupt, void (*isr)(void))
     return FWK_SUCCESS;
 }
 
-static int set_isr_irq_param(
+int arch_interrupt_set_isr_irq_param(
     unsigned int interrupt,
     void (*isr)(uintptr_t param),
     uintptr_t parameter)
@@ -529,19 +529,31 @@ static int set_isr_irq_param(
     return FWK_SUCCESS;
 }
 
-static int set_isr_dummy(void (*isr)(void))
+int arch_interrupt_set_isr_dummy(void (*isr)(void))
 {
     return FWK_SUCCESS;
 }
 
-static int set_isr_dummy_param(
+int arch_interrupt_set_isr_dummy_param(
     void (*isr)(uintptr_t param),
     uintptr_t parameter)
 {
     return FWK_SUCCESS;
 }
 
-static int get_current(unsigned int *interrupt)
+int arch_interrupt_set_isr_nmi(void (*isr)(void))
+{
+    return FWK_E_SUPPORT;
+}
+
+int arch_interrupt_set_isr_nmi_param(
+    void (*isr)(uintptr_t),
+    uintptr_t parameter)
+{
+    return FWK_E_SUPPORT;
+}
+
+int arch_interrupt_get_current(unsigned int *interrupt)
 {
     *interrupt = c_interrupt;
 
@@ -552,7 +564,7 @@ static int get_current(unsigned int *interrupt)
     return FWK_SUCCESS;
 }
 
-static bool is_interrupt_context(void)
+bool arch_interrupt_is_interrupt_context(void)
 {
     /* Not an interrupt */
     if (c_interrupt == 0) {
@@ -562,25 +574,7 @@ static bool is_interrupt_context(void)
     return true;
 }
 
-static const struct fwk_arch_interrupt_driver arm_gic_driver = {
-    .global_enable = global_enable,
-    .global_disable = global_disable,
-    .is_enabled = is_enabled,
-    .enable = enable,
-    .disable = disable,
-    .is_pending = is_pending,
-    .set_pending = set_pending,
-    .clear_pending = clear_pending,
-    .set_isr_irq = set_isr_irq,
-    .set_isr_irq_param = set_isr_irq_param,
-    .set_isr_nmi = set_isr_dummy,
-    .set_isr_nmi_param = set_isr_dummy_param,
-    .set_isr_fault = set_isr_dummy,
-    .get_current = get_current,
-    .is_interrupt_context = is_interrupt_context,
-};
-
-int arm_gic_init(const struct fwk_arch_interrupt_driver **driver)
+int arch_interrupt_init()
 {
     /*
      * Allocate and initialize a table for the callback functions and their
@@ -591,16 +585,6 @@ int arm_gic_init(const struct fwk_arch_interrupt_driver **driver)
         return FWK_E_NOMEM;
 
     gic_init();
-
-    /*
-     * Initialize all exception entries to point to the arm_exception_invalid()
-     * handler.
-     *
-     * Note: Initialization starts from entry 1 since entry 0 is not an
-     * exception pointer but the default stack pointer.
-     */
-
-    *driver = &arm_gic_driver;
 
     return FWK_SUCCESS;
 }

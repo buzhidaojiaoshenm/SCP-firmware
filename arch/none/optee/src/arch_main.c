@@ -1,9 +1,14 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2022-2023, Linaro Limited and Contributors. All rights reserved.
+ * Copyright (c) 2022-2025, Linaro Limited and Contributors. All rights
+ * reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
+
+#include <internal/fwk_context.h>
+
+#include <mod_optee_mbx.h>
 
 #include <fwk_arch.h>
 #include <fwk_core.h>
@@ -11,28 +16,20 @@
 #include <fwk_log.h>
 #include <fwk_noreturn.h>
 #include <fwk_status.h>
-#include <internal/fwk_context.h>
 
+#include <arch_helpers.h>
+#include <arch_main.h>
+
+#include <malloc.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <malloc.h>
-
-#include <mod_optee_mbx.h>
-
-#include <arch_interrupt.h>
-#include <arch_main.h>
-
-static const struct fwk_arch_init_driver scmi_init_driver = {
-    .interrupt = arch_interrupt_init,
-};
-
 int scmi_arch_init(void)
 {
     int status;
 
-    status = fwk_arch_init(&scmi_init_driver);
+    status = fwk_arch_init();
 
     fwk_log_flush();
 

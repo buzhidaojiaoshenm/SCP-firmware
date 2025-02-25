@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2015-2023, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2015-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -11,12 +11,9 @@
 #include <fwk_assert.h>
 #include <fwk_macros.h>
 
-#include <arch_nvic.h>
-
 #include <fmw_cmsis.h>
 
 #include <stdbool.h>
-#include <stdint.h>
 
 /*
  * This variable is used to ensure spurious nested calls won't
@@ -34,10 +31,6 @@ void _exit(int status)
     }
 }
 #endif
-
-static const struct fwk_arch_init_driver arch_init_driver = {
-    .interrupt = arch_nvic_init,
-};
 
 #ifndef ARMV6M
 static void arch_init_ccr(void)
@@ -70,5 +63,5 @@ int main(void)
     arch_init_ccr();
 #endif
 
-    return fwk_arch_init(&arch_init_driver);
+    return fwk_arch_init();
 }

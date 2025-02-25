@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2024-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -85,21 +85,7 @@ void irq_global(void)
     current_iar = INTERRUPT_ID_INVALID;
 }
 
-static int global_enable(void)
-{
-    arch_interrupts_enable(0);
-
-    return FWK_SUCCESS;
-}
-
-static int global_disable(void)
-{
-    arch_interrupts_disable();
-
-    return FWK_SUCCESS;
-}
-
-static int is_enabled(unsigned int interrupt, bool *enabled)
+int arch_interrupt_is_enabled(unsigned int interrupt, bool *enabled)
 {
     switch (interrupt_type_from_id(interrupt)) {
     case INTERRUPT_TYPE_SGI:
@@ -120,7 +106,7 @@ static int is_enabled(unsigned int interrupt, bool *enabled)
     return FWK_SUCCESS;
 }
 
-static int enable(unsigned int interrupt)
+int arch_interrupt_enable(unsigned int interrupt)
 {
     switch (interrupt_type_from_id(interrupt)) {
     case INTERRUPT_TYPE_SGI:
@@ -141,7 +127,7 @@ static int enable(unsigned int interrupt)
     return FWK_SUCCESS;
 }
 
-static int disable(unsigned int interrupt)
+int arch_interrupt_disable(unsigned int interrupt)
 {
     switch (interrupt_type_from_id(interrupt)) {
     case INTERRUPT_TYPE_SGI:
@@ -162,7 +148,7 @@ static int disable(unsigned int interrupt)
     return FWK_SUCCESS;
 }
 
-static int is_pending(unsigned int interrupt, bool *pending)
+int arch_interrupt_is_pending(unsigned int interrupt, bool *pending)
 {
     switch (interrupt_type_from_id(interrupt)) {
     case INTERRUPT_TYPE_SGI:
@@ -183,7 +169,7 @@ static int is_pending(unsigned int interrupt, bool *pending)
     return FWK_SUCCESS;
 }
 
-static int set_pending(unsigned int interrupt)
+int arch_interrupt_set_pending(unsigned int interrupt)
 {
     switch (interrupt_type_from_id(interrupt)) {
     case INTERRUPT_TYPE_SGI:
@@ -203,7 +189,7 @@ static int set_pending(unsigned int interrupt)
     return FWK_SUCCESS;
 }
 
-static int clear_pending(unsigned int interrupt)
+int arch_interrupt_clear_pending(unsigned int interrupt)
 {
     switch (interrupt_type_from_id(interrupt)) {
     case INTERRUPT_TYPE_SGI:
@@ -223,7 +209,7 @@ static int clear_pending(unsigned int interrupt)
     return FWK_SUCCESS;
 }
 
-static int set_isr_irq(unsigned int interrupt, void (*isr)(void))
+int arch_interrupt_set_isr_irq(unsigned int interrupt, void (*isr)(void))
 {
     struct isr_callback *entry;
 
@@ -238,7 +224,7 @@ static int set_isr_irq(unsigned int interrupt, void (*isr)(void))
     return FWK_SUCCESS;
 }
 
-static int set_isr_irq_param(
+int arch_interrupt_set_isr_irq_param(
     unsigned int interrupt,
     void (*isr)(uintptr_t param),
     uintptr_t parameter)
@@ -256,19 +242,31 @@ static int set_isr_irq_param(
     return FWK_SUCCESS;
 }
 
-static int set_isr_dummy(void (*isr)(void))
+int arch_interrupt_set_isr_nmi(void (*isr)(void))
 {
     return FWK_E_SUPPORT;
 }
 
-static int set_isr_dummy_param(
+int arch_interrupt_set_isr_nmi_param(
+    void (*isr)(uintptr_t),
+    uintptr_t parameter)
+{
+    return FWK_E_SUPPORT;
+}
+
+int arch_interrupt_set_isr_dummy(void (*isr)(void))
+{
+    return FWK_E_SUPPORT;
+}
+
+int arch_interrupt_set_isr_dummy_param(
     void (*isr)(uintptr_t param),
     uintptr_t parameter)
 {
     return FWK_E_SUPPORT;
 }
 
-static int get_current(unsigned int *interrupt)
+int arch_interrupt_get_current(unsigned int *interrupt)
 {
     if (interrupt == NULL) {
         return FWK_E_PARAM;
@@ -279,36 +277,12 @@ static int get_current(unsigned int *interrupt)
     return FWK_SUCCESS;
 }
 
-static bool is_interrupt_context(void)
+bool arch_interrupt_is_interrupt_context(void)
 {
     return current_iar != INTERRUPT_ID_INVALID;
 }
 
-const struct fwk_arch_interrupt_driver arm_gic_driver = {
-    .global_enable = global_enable,
-    .global_disable = global_disable,
-    .is_enabled = is_enabled,
-    .enable = enable,
-    .disable = disable,
-    .is_pending = is_pending,
-    .set_pending = set_pending,
-    .clear_pending = clear_pending,
-    .set_isr_irq = set_isr_irq,
-    .set_isr_irq_param = set_isr_irq_param,
-    .set_isr_nmi = set_isr_dummy,
-    .set_isr_nmi_param = set_isr_dummy_param,
-    .set_isr_fault = set_isr_dummy,
-    .get_current = get_current,
-    .is_interrupt_context = is_interrupt_context,
-};
-
-int arch_gic_init(const struct fwk_arch_interrupt_driver **driver)
+int arch_interrupt_init()
 {
-    if (driver == NULL) {
-        return FWK_E_PARAM;
-    }
-
-    *driver = &arm_gic_driver;
-
     return FWK_SUCCESS;
 }

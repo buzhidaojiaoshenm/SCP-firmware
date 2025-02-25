@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2015-2022, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2015-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -15,9 +15,7 @@
 #include <fwk_macros.h>
 #include <fwk_status.h>
 
-#if FWK_HAS_INCLUDE(<arch_helpers.h>)
-#    include <arch_helpers.h>
-#endif
+#include <arch_helpers.h>
 
 #include <limits.h>
 #include <stdbool.h>
@@ -65,16 +63,6 @@
 #define FWK_INTERRUPT_EXCEPTION (UINT_MAX - 2)
 
 /*!
- * \brief Register interrupt driver in the framework.
- *
- * \param driver Interrupt driver instance to register
- *
- * \retval ::FWK_SUCCESS Operation succeeded.
- * \retval ::FWK_E_PARAM One or more parameters were invalid.
- */
-int fwk_interrupt_init(const struct fwk_arch_interrupt_driver *driver);
-
-/*!
  * \brief Enable interrupts.
  *
  * \param flags Value returned by fwk_interrupt_global_disable.
@@ -94,6 +82,7 @@ inline static unsigned int fwk_interrupt_global_disable(void)
     return arch_interrupts_disable();
 }
 
+int fwk_arch_interrupt_init();
 /*!
  * \brief Test whether an interrupt is enabled.
  *

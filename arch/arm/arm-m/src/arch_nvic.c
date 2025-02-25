@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2015-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2015-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -22,7 +22,6 @@
 
 #include <limits.h>
 #include <stdbool.h>
-#include <stddef.h>
 #include <stdint.h>
 #include <string.h>
 
@@ -61,28 +60,28 @@ struct irq_callback {
 
 static struct irq_callback *callback;
 
-static void irq_global(void)
+void irq_global(void)
 {
     struct irq_callback *entry = &callback[__get_IPSR() - 1];
 
     entry->func(entry->param);
 }
 
-static int global_enable(void)
+int arch_interrupt_global_enable(void)
 {
     __enable_irq();
 
     return FWK_SUCCESS;
 }
 
-static int global_disable(void)
+int arch_interrupt_global_disable(void)
 {
     __disable_irq();
 
     return FWK_SUCCESS;
 }
 
-static int is_enabled(unsigned int interrupt, bool *enabled)
+int arch_interrupt_is_enabled(unsigned int interrupt, bool *enabled)
 {
     if (interrupt >= irq_count) {
         return FWK_E_PARAM;
@@ -93,7 +92,7 @@ static int is_enabled(unsigned int interrupt, bool *enabled)
     return FWK_SUCCESS;
 }
 
-static int enable(unsigned int interrupt)
+int arch_interrupt_enable(unsigned int interrupt)
 {
     if (interrupt >= irq_count) {
         return FWK_E_PARAM;
@@ -104,7 +103,7 @@ static int enable(unsigned int interrupt)
     return FWK_SUCCESS;
 }
 
-static int disable(unsigned int interrupt)
+int arch_interrupt_disable(unsigned int interrupt)
 {
     if (interrupt >= irq_count) {
         return FWK_E_PARAM;
@@ -115,7 +114,7 @@ static int disable(unsigned int interrupt)
     return FWK_SUCCESS;
 }
 
-static int is_pending(unsigned int interrupt, bool *pending)
+int arch_interrupt_is_pending(unsigned int interrupt, bool *pending)
 {
     if (interrupt >= irq_count) {
         return FWK_E_PARAM;
@@ -126,7 +125,7 @@ static int is_pending(unsigned int interrupt, bool *pending)
     return FWK_SUCCESS;
 }
 
-static int set_pending(unsigned int interrupt)
+int arch_interrupt_set_pending(unsigned int interrupt)
 {
     if (interrupt >= irq_count) {
         return FWK_E_PARAM;
@@ -137,7 +136,7 @@ static int set_pending(unsigned int interrupt)
     return FWK_SUCCESS;
 }
 
-static int clear_pending(unsigned int interrupt)
+int arch_interrupt_clear_pending(unsigned int interrupt)
 {
     if (interrupt >= irq_count) {
         return FWK_E_PARAM;
@@ -148,7 +147,7 @@ static int clear_pending(unsigned int interrupt)
     return FWK_SUCCESS;
 }
 
-static int set_isr_irq(unsigned int interrupt, void (*isr)(void))
+int arch_interrupt_set_isr_irq(unsigned int interrupt, void (*isr)(void))
 {
     if (interrupt >= irq_count) {
         return FWK_E_PARAM;
@@ -159,7 +158,7 @@ static int set_isr_irq(unsigned int interrupt, void (*isr)(void))
     return FWK_SUCCESS;
 }
 
-static int set_isr_irq_param(
+int arch_interrupt_set_isr_irq_param(
     unsigned int interrupt,
     void (*isr)(uintptr_t param),
     uintptr_t parameter)
@@ -178,14 +177,16 @@ static int set_isr_irq_param(
     return FWK_SUCCESS;
 }
 
-static int set_isr_nmi(void (*isr)(void))
+int arch_interrupt_set_isr_nmi(void (*isr)(void))
 {
     NVIC_SetVector(NonMaskableInt_IRQn, (uint32_t)isr);
 
     return FWK_SUCCESS;
 }
 
-static int set_isr_nmi_param(void (*isr)(uintptr_t param), uintptr_t parameter)
+int arch_interrupt_set_isr_nmi_param(
+    void (*isr)(uintptr_t param),
+    uintptr_t parameter)
 {
     struct irq_callback *entry;
 
@@ -198,7 +199,7 @@ static int set_isr_nmi_param(void (*isr)(uintptr_t param), uintptr_t parameter)
     return FWK_SUCCESS;
 }
 
-static int set_isr_fault(void (*isr)(void))
+int arch_interrupt_set_isr_fault(void (*isr)(void))
 {
     NVIC_SetVector(HardFault_IRQn, (uint32_t)isr);
     NVIC_SetVector(MemoryManagement_IRQn, (uint32_t)isr);
@@ -208,7 +209,7 @@ static int set_isr_fault(void (*isr)(void))
     return FWK_SUCCESS;
 }
 
-static int get_current(unsigned int *interrupt)
+int arch_interrupt_get_current(unsigned int *interrupt)
 {
     *interrupt = __get_IPSR();
 
@@ -228,7 +229,7 @@ static int get_current(unsigned int *interrupt)
     return FWK_SUCCESS;
 }
 
-static bool is_interrupt_context(void)
+bool arch_interrupt_is_interrupt_context(void)
 {
     /* Not an interrupt */
     if (__get_IPSR() == 0) {
@@ -238,41 +239,19 @@ static bool is_interrupt_context(void)
     return true;
 }
 
-static const struct fwk_arch_interrupt_driver arch_nvic_driver = {
-    .global_enable = global_enable,
-    .global_disable = global_disable,
-    .is_enabled = is_enabled,
-    .enable = enable,
-    .disable = disable,
-    .is_pending = is_pending,
-    .set_pending = set_pending,
-    .clear_pending = clear_pending,
-    .set_isr_irq = set_isr_irq,
-    .set_isr_irq_param = set_isr_irq_param,
-    .set_isr_nmi = set_isr_nmi,
-    .set_isr_nmi_param = set_isr_nmi_param,
-    .set_isr_fault = set_isr_fault,
-    .get_current = get_current,
-    .is_interrupt_context = is_interrupt_context,
-};
-
-static void irq_invalid(void)
+void arch_interrupt_irq_invalid(void)
 {
-    (void)disable(__get_IPSR());
+    (void)arch_interrupt_disable(__get_IPSR());
 }
 
 #ifndef ARMV6M
-int arch_nvic_init(const struct fwk_arch_interrupt_driver **driver)
+int arch_interrupt_init()
 {
     uint32_t ictr_intlinesnum;
     uint32_t align_entries;
     uint32_t align_word;
     uint32_t *vector;
     uint32_t irq;
-
-    if (driver == NULL) {
-        return FWK_E_PARAM;
-    }
 
     /* Find the number of interrupt lines implemented in hardware */
 #    ifdef SCnSCB
@@ -333,8 +312,9 @@ int arch_nvic_init(const struct fwk_arch_interrupt_driver **driver)
         NVIC_DisableIRQ((IRQn_Type)irq);
         NVIC_ClearPendingIRQ((IRQn_Type)irq);
 
-        /* Initialize all IRQ entries to point to the irq_invalid() handler */
-        NVIC_SetVector((IRQn_Type)irq, (uint32_t)irq_invalid);
+        /* Initialize all IRQ entries to point to the
+         * arch_interrupt_irq_invalid() handler */
+        NVIC_SetVector((IRQn_Type)irq, (uint32_t)arch_interrupt_irq_invalid);
     }
 
     __enable_irq();
@@ -343,20 +323,14 @@ int arch_nvic_init(const struct fwk_arch_interrupt_driver **driver)
     SCB->SHCSR |= SCB_SHCSR_MEMFAULTENA_Msk | SCB_SHCSR_BUSFAULTENA_Msk |
         SCB_SHCSR_USGFAULTENA_Msk;
 
-    *driver = &arch_nvic_driver;
-
     return FWK_SUCCESS;
 }
 #else
 
-int arch_nvic_init(const struct fwk_arch_interrupt_driver **driver)
+int arch_interrupt_init()
 {
     uint32_t ictr_intlinesnum;
     uint32_t irq;
-
-    if (driver == NULL) {
-        return FWK_E_PARAM;
-    }
 
     /* Find the number of interrupt lines implemented in hardware */
     ictr_intlinesnum = 0;
@@ -380,13 +354,12 @@ int arch_nvic_init(const struct fwk_arch_interrupt_driver **driver)
         NVIC_DisableIRQ((IRQn_Type)irq);
         NVIC_ClearPendingIRQ((IRQn_Type)irq);
 
-        /* Initialize all IRQ entries to point to the irq_invalid() handler */
-        NVIC_SetVector((IRQn_Type)irq, (uint32_t)irq_invalid);
+        /* Initialize all IRQ entries to point to the
+         * arch_interrupt_irq_invalid() handler */
+        NVIC_SetVector((IRQn_Type)irq, (uint32_t)arch_interrupt_irq_invalid);
     }
 
     __enable_irq();
-
-    *driver = &arch_nvic_driver;
 
     return FWK_SUCCESS;
 }

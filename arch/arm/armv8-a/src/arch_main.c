@@ -1,6 +1,6 @@
 /*
  * Renesas SCP/MCP Software
- * Copyright (c) 2020-2022, Renesas Electronics Corporation. All rights
+ * Copyright (c) 2020-2025, Renesas Electronics Corporation. All rights
  * reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
@@ -37,10 +37,6 @@ void panic(void)
         wfi();
 }
 
-static struct fwk_arch_init_driver arch_init_driver = {
-    .interrupt = arm_gic_init,
-};
-
 void arm_main(void)
 {
     int status;
@@ -52,7 +48,7 @@ void arm_main(void)
     __asm__ volatile("msr cntv_ctl_el0, %0" ::"r"(cntv_ctl));
 #endif /* BUILD_MODE_DEBUG */
 
-    status = fwk_arch_init(&arch_init_driver);
+    status = fwk_arch_init();
     if (status != FWK_SUCCESS)
         panic();
 }

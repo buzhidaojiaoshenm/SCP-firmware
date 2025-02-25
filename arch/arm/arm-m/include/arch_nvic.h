@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2020-2022, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2020-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -20,6 +20,6 @@
  *
  * \return Status code representing the result of the operation.
  */
-int arch_nvic_init(const struct fwk_arch_interrupt_driver **driver);
+int arch_interrupt_init();
 
 #endif /* ARCH_NVIC_H */

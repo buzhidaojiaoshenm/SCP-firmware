@@ -1,6 +1,6 @@
 /*
  * Renesas SCP/MCP Software
- * Copyright (c) 2020-2021, Renesas Electronics Corporation. All rights
+ * Copyright (c) 2020-2025, Renesas Electronics Corporation. All rights
  * reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
@@ -129,7 +129,6 @@
 #define RCAR_GICV_BASE U(0xF1060000)
 
 void gic_init(void);
-int arm_gic_init(const struct fwk_arch_interrupt_driver **driver);
 void irq_global(uint32_t iid);
 
 #endif /* ARMV8A_GIC_H */
