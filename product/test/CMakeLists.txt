@@ -67,6 +67,10 @@ set(FWK_MOCKS_SRC_ROOT ${SCP_ROOT}/unit_test/unity_mocks/mocks)
 
 set(TEST_ON_HOST TRUE)
 
+# Architecture sources
+set(ARCH_ROOT ${SCP_ROOT}/arch/none/host)
+set(ARCH_SRC_ROOT ${ARCH_ROOT}/src)
+
 # Common flags
 list(APPEND EXTRA_COMPILE_FLAGS -g3)
 list(APPEND EXTRA_COMPILE_FLAGS -Wall)
@@ -104,6 +108,7 @@ list(APPEND FWK_SRC ${FWK_SRC_ROOT}/fwk_status.c)
 list(APPEND FWK_SRC ${FWK_SRC_ROOT}/fwk_string.c)
 list(APPEND FWK_SRC ${FWK_SRC_ROOT}/fwk_delayed_resp.c)
 list(APPEND FWK_SRC ${FWK_SRC_ROOT}/fwk_time.c)
+list(APPEND FWK_SRC ${ARCH_ROOT}/src/arch_interrupt.c)
 list(APPEND FWK_SRC ${UNITY_SRC_ROOT}/unity.c)
 
 list(APPEND SCP_UNITY_SRC ${SCP_ROOT}/unit_test/unity_mocks/scp_unity.c)
