@@ -36,6 +36,18 @@
 
 #include <inttypes.h>
 
+/* This is the exhaustive list of supported SCMI protocols. Add new
+ * introduced protocols at the bottom of the list.
+ */
+static const uint8_t valid_protocol_ids[] = {
+    MOD_SCMI_PROTOCOL_ID_BASE,          MOD_SCMI_PROTOCOL_ID_POWER_DOMAIN,
+    MOD_SCMI_PROTOCOL_ID_SYS_POWER,     MOD_SCMI_PROTOCOL_ID_PERF,
+    MOD_SCMI_PROTOCOL_ID_CLOCK,         MOD_SCMI_PROTOCOL_ID_SENSOR,
+    MOD_SCMI_PROTOCOL_ID_RESET_DOMAIN,  MOD_SCMI_PROTOCOL_ID_VOLTAGE_DOMAIN,
+    MOD_SCMI_PROTOCOL_ID_POWER_CAPPING, MOD_SCMI_PROTOCOL_ID_PIN_CONTROL,
+    MOD_SCMI_PROTOCOL_ID_TELEMETRY
+};
+
 #ifdef BUILD_HAS_SCMI_NOTIFICATIONS
 
 /* Following macros are used for scmi notification related operations */
@@ -408,6 +420,18 @@ static int scmi_permissions_handler(
 }
 #endif
 
+static inline bool is_valid_protocol_id(uint8_t protocol_id)
+{
+    unsigned int i;
+    for (i = 0; i < FWK_ARRAY_SIZE(valid_protocol_ids); ++i) {
+        if (protocol_id == valid_protocol_ids[i]) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 static int scmi_message_validation(
     uint8_t protocol_id,
     fwk_id_t service_id,
@@ -424,9 +448,7 @@ static int scmi_message_validation(
 
     fwk_assert(payload != NULL);
 
-    if ((payload_size_table == NULL) ||
-        (protocol_id < MOD_SCMI_PROTOCOL_ID_BASE) ||
-        (protocol_id > MOD_SCMI_PROTOCOL_ID_PIN_CONTROL)) {
+    if ((payload_size_table == NULL) || !is_valid_protocol_id(protocol_id)) {
         return (int)SCMI_INVALID_PARAMETERS;
     }
 

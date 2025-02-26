@@ -277,6 +277,26 @@ enum scmi_pin_control_command_id {
 };
 
 /*!
+ * \brief SCMI Telemetry Protocol
+ */
+#define MOD_SCMI_PROTOCOL_ID_TELEMETRY UINT32_C(0x1B)
+
+/*!
+ * \brief SCMI Telemetry Protocol Message IDs
+ */
+enum scmi_telemetry_command_id {
+    MOD_SCMI_TELEMETRY_LIST_SHMTI = 0x003,
+    MOD_SCMI_TELEMETRY_DE_DESCRIPTION = 0x004,
+    MOD_SCMI_TELEMETRY_LIST_UPDATE_INTERVALS = 0x005,
+    MOD_SCMI_TELEMETRY_DE_CONFIGURE = 0x006,
+    MOD_SCMI_TELEMETRY_DE_ENABLED_LIST = 0x007,
+    MOD_SCMI_TELEMETRY_CONFIG_SET = 0x008,
+    MOD_SCMI_TELEMETRY_CONFIG_GET = 0x009,
+    MOD_SCMI_TELEMETRY_RESET = 0x00A,
+    MOD_SCMI_TELEMETRY_COMMAND_COUNT,
+};
+
+/*!
  * \}
  */
 

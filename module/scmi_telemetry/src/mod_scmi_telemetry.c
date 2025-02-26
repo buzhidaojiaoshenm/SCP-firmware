@@ -23,6 +23,7 @@
 #include <fwk_module_idx.h>
 #include <fwk_notification.h>
 #include <fwk_status.h>
+#include <fwk_string.h>
 
 #include <string.h>
 
@@ -55,6 +56,12 @@ struct scmi_telemetry_context {
     /*! Pointer to the table storing telemetry agents */
     struct mod_scmi_telemetry_agent *agent_table;
 
+    /*! Total enabled Data Events */
+    uint32_t total_de_enabled_count;
+
+    /*! List of data events enabled. */
+    telemetry_de_handle_st *de_enabled_list;
+
 #ifdef BUILD_HAS_SCMI_NOTIFICATIONS
     /*! SCMI notification ID */
     fwk_id_t notification_id;
@@ -77,10 +84,6 @@ struct scmi_telemetry_context {
 static int protocol_version_handler(
     fwk_id_t service_id,
     const uint32_t *payload); /*!< Handles SCMI Protocol Version request */
-
-static int negotiate_protocol_version_handler(
-    fwk_id_t service_id,
-    const uint32_t *payload); /*!< Handles SCMI Protocol Version negotiation */
 
 static int protocol_attributes_handler(
     fwk_id_t service_id,
@@ -123,6 +126,10 @@ static int scmi_telemetry_config_get_handler(
     const uint32_t
         *payload); /*!< Handles retrieval of current telemetry configuration */
 
+static int scmi_telemetry_reset_handler(
+    fwk_id_t service_id,
+    const uint32_t *payload); /*!< Resets the telemetry infrastructure. */
+
 #ifdef BUILD_HAS_SCMI_NOTIFICATIONS
 static int scmi_telemetry_notify_handler(
     fwk_id_t service_id,
@@ -156,7 +163,7 @@ static handler_table_t msg_handler_table[] = {
         scmi_telemetry_de_enabled_list_handler,
     [MOD_SCMI_TELEMETRY_CONFIG_SET] = scmi_telemetry_config_set_handler,
     [MOD_SCMI_TELEMETRY_CONFIG_GET] = scmi_telemetry_config_get_handler,
-    [MOD_SCMI_NEGOTIATE_PROTOCOL_VERSION] = negotiate_protocol_version_handler,
+    [MOD_SCMI_TELEMETRY_RESET] = scmi_telemetry_reset_handler,
 };
 
 /*!
@@ -171,16 +178,18 @@ static size_t payload_size_table[] = {
         (unsigned int)sizeof(struct scmi_protocol_message_attributes_a2p),
     [MOD_SCMI_TELEMETRY_LIST_SHMTI] = (unsigned int)sizeof(uint32_t),
     [MOD_SCMI_TELEMETRY_DE_DESCRIPTION] = (unsigned int)sizeof(uint32_t),
-    [MOD_SCMI_TELEMETRY_LIST_UPDATE_INTERVALS] = (unsigned int)sizeof(uint32_t),
+    [MOD_SCMI_TELEMETRY_LIST_UPDATE_INTERVALS] =
+        (unsigned int)sizeof(struct scmi_telemetry_list_update_intervals_a2p),
     [MOD_SCMI_TELEMETRY_DE_CONFIGURE] =
         (unsigned int)sizeof(struct scmi_telemetry_de_configure_a2p),
-    [MOD_SCMI_TELEMETRY_DE_ENABLED_LIST] = (unsigned int)sizeof(uint32_t),
+    [MOD_SCMI_TELEMETRY_DE_ENABLED_LIST] =
+        (unsigned int)sizeof(struct scmi_telemetry_de_enabled_list_a2p),
     [MOD_SCMI_TELEMETRY_CONFIG_SET] =
         (unsigned int)sizeof(struct scmi_telemetry_config_set_a2p),
     [MOD_SCMI_TELEMETRY_CONFIG_GET] =
-        0, /*!< No payload for telemetry config get request */
-    [MOD_SCMI_NEGOTIATE_PROTOCOL_VERSION] = (unsigned int)sizeof(
-        struct scmi_telemetry_negotiate_protocol_version_a2p),
+        (unsigned int)sizeof(struct scmi_telemetry_config_get_a2p),
+    [MOD_SCMI_TELEMETRY_RESET] =
+        (unsigned int)sizeof(struct scmi_telemetry_reset_a2p),
 };
 
 /* Ensure the message and payload size tables are consistent */
@@ -233,6 +242,9 @@ static int protocol_attributes_handler(
         return status;
     }
 
+    /* Assign number of groups. */
+    outmsg.num_groups = 0; // Groups are not supported yet.
+
     /* Assign protocol attributes */
     outmsg.attributes = scmi_telemetry_ctx.config->attributes;
 
@@ -260,8 +272,7 @@ static int protocol_message_attributes_handler(
     params = *(const struct scmi_protocol_message_attributes_a2p *)payload;
 
     /* Validate message ID and check if a handler exists */
-    if ((params.message_id <= MOD_SCMI_NEGOTIATE_PROTOCOL_VERSION) &&
-        (msg_handler_table[params.message_id] != NULL)) {
+    if (msg_handler_table[params.message_id] != NULL) {
         outmsg.status = (int32_t)SCMI_SUCCESS;
         outmsg_size = sizeof(outmsg);
     }
@@ -367,6 +378,11 @@ FWK_WEAK int scmi_telemetry_reset_request_policy(
 #endif
 
 /*!
+ * Data event configuration handlers.
+ *
+ */
+
+/*!
  * \brief Determines the maximum number of objects that can fit in a payload.
  *
  * This function calculates how many objects can be included in a single SCMI
@@ -466,8 +482,7 @@ static int scmi_telemetry_list_shmti_handler(
     uint32_t index;
     uint32_t num_shmti;
     struct mod_telemetry_shmti_desc shmti_desc;
-    uint32_t count;
-    uint32_t remain_count;
+    uint32_t count, remain_count;
     int respond_status;
 
     struct scmi_telemetry_list_shmti_p2a return_values = {
@@ -571,18 +586,17 @@ static int scmi_telemetry_de_description_handler(
     const uint32_t *payload)
 {
     size_t i;
-    uint32_t num_de;
-    uint32_t de_desc_index;
+    int status, respond_status;
     uint32_t count, remain_count;
+    uint32_t num_de, de_desc_index;
     struct mod_telemetry_de_desc de_desc;
+    struct mod_telemetry_de_fch_attr de_fch_attr;
+    char de_name[SCMI_TELEMETRY_DE_NAME_SIZE];
     struct scmi_telemetry_de_desc_p2a return_values = {
         .status = SCMI_GENERIC_ERROR
     };
 
     uint32_t payload_size = sizeof(return_values);
-    int status = FWK_SUCCESS;
-    int respond_status;
-
     /* Validate payload pointer */
     if (payload == NULL) {
         return FWK_E_PARAM;
@@ -606,11 +620,12 @@ static int scmi_telemetry_de_description_handler(
     remain_count = num_de - de_desc_index;
 
     /* Determine the maximum number of entries that can fit in the response
-     * payload */
+     * payload based on the largest possible data event description.
+     */
     status = max_objects_in_payload(
         service_id,
         sizeof(struct scmi_telemetry_de_desc_p2a),
-        sizeof(struct mod_telemetry_de_desc),
+        SCMI_TELEMETRY_DE_DESC_MAX_SIZE,
         &remain_count,
         &count);
 
@@ -620,24 +635,63 @@ static int scmi_telemetry_de_description_handler(
 
     /* Iterate through the DE descriptors and add them to the response */
     for (i = 0; i < count; i++, de_desc_index++) {
+        /* Write Data Event description in payload. */
         status =
             scmi_telemetry_ctx.telemetry_api->get_de(de_desc_index, &de_desc);
         if (status != FWK_SUCCESS) {
             goto exit;
         }
 
+        /* Write mandatory part of the DE Description.*/
         status = scmi_telemetry_ctx.scmi_api->write_payload(
-            service_id, payload_size, &de_desc, sizeof(de_desc));
+            service_id,
+            payload_size,
+            &de_desc,
+            sizeof(struct mod_telemetry_de_desc));
         if (status != FWK_SUCCESS) {
             goto exit;
         }
+        payload_size += sizeof(struct mod_telemetry_de_desc);
 
-        payload_size += sizeof(de_desc);
+        /* Write Data Event FastChannel description if applicable. */
+        if (de_desc.attributes[0] & SCMI_TELEMETRY_DE_FCH_MASK) {
+            status = scmi_telemetry_ctx.telemetry_api->get_de_fch_desc(
+                de_desc_index, &de_fch_attr);
+            if (status != FWK_SUCCESS) {
+                goto exit;
+            }
+
+            status = scmi_telemetry_ctx.scmi_api->write_payload(
+                service_id,
+                payload_size,
+                &de_fch_attr,
+                sizeof(struct mod_telemetry_de_fch_attr));
+            if (status != FWK_SUCCESS) {
+                goto exit;
+            }
+            payload_size += sizeof(struct mod_telemetry_de_fch_attr);
+        }
+
+        /* Write Data Event name if applicable. */
+        if (de_desc.attributes[0] & SCMI_TELEMETRY_DE_NAME_MASK) {
+            status = scmi_telemetry_ctx.telemetry_api->get_de_name(
+                de_desc_index, de_name);
+            if (status != FWK_SUCCESS) {
+                goto exit;
+            }
+
+            status = scmi_telemetry_ctx.scmi_api->write_payload(
+                service_id, payload_size, &de_name, sizeof(de_name));
+            if (status != FWK_SUCCESS) {
+                goto exit;
+            }
+            payload_size += sizeof(de_name);
+        }
     }
 
     /* Populate response values */
-    return_values.num_desc = SCMI_TELEMETRY_DE_DESC_TOTAL(remain_count, count);
     return_values.status = SCMI_SUCCESS;
+    return_values.num_desc = SCMI_TELEMETRY_DE_DESC_TOTAL(remain_count, count);
 
     /* Write the final response data */
     status = scmi_telemetry_ctx.scmi_api->write_payload(
@@ -685,10 +739,10 @@ static uint32_t encode_interval(uint32_t seconds_base, int8_t exponent)
     uint32_t exponent_field;
 
     /* Shift seconds to proper bit position */
-    seconds_field = seconds_base << MOD_TELEMETRY_INTERVAL_SECONDS_POS;
+    seconds_field = seconds_base << SCMI_TELEMETRY_SAMPLING_RATE_SECONDS_POS;
 
     /* Validate seconds field fits within defined mask */
-    if (seconds_field & ~(MOD_TELEMETRY_INTERVAL_NUM_SECONDS_MASK)) {
+    if (seconds_field & ~(SCMI_TELEMETRY_SAMPLING_RATE_SEC_MASK)) {
         return 0; /* Indicate error */
     }
 
@@ -697,7 +751,7 @@ static uint32_t encode_interval(uint32_t seconds_base, int8_t exponent)
      * Assumes two's complement representation.
      */
     exponent_field =
-        ((uint32_t)exponent) & MOD_TELEMETRY_INTERVAL_NUM_EXPONENT_MASK;
+        ((uint32_t)exponent) & SCMI_TELEMETRY_SAMPLING_RATE_EXP_MASK;
 
     /* Combine the shifted seconds and masked exponent */
     return seconds_field | exponent_field;
@@ -725,11 +779,13 @@ static int scmi_telemetry_list_update_intervals_handler(
     uint32_t num_intervals;
     /* Index received from the agent as part of the payload */
     uint32_t index, count, remain_count;
+    uint8_t selector;
 
     uint32_t sampling_rate;
     uint32_t interval;
     enum mod_telemetry_update_interval_formats interval_format;
 
+    struct scmi_telemetry_list_update_intervals_a2p *params = NULL;
     struct scmi_telemetry_list_update_intervals_p2a return_values = {
         .status = SCMI_GENERIC_ERROR
     };
@@ -743,8 +799,18 @@ static int scmi_telemetry_list_update_intervals_handler(
         return FWK_E_PARAM;
     }
 
-    /* Extract index from the payload */
-    index = *payload;
+    params = (struct scmi_telemetry_list_update_intervals_a2p *)payload;
+    index = params->index;
+    selector =
+        SCMI_TELEMETRY_UPDATE_INTERVALS_GET_GROUP_ID_SELECTOR(params->flags);
+
+    /* Group ID not supported. */
+    if (selector ==
+        SCMI_TELEMETRY_UPDATE_INTERVALS_GROUP_ID_SELECTOR_EVENT_GROUP) {
+        status = FWK_E_PARAM;
+        return_values.status = SCMI_NOT_SUPPORTED;
+        goto exit;
+    }
 
     /* Retrieve available update interval information */
     status = scmi_telemetry_ctx.telemetry_api->get_update_intervals_info(
@@ -829,6 +895,130 @@ exit:
 }
 
 /*!
+ * \brief Finds the DE handle from the enabled list.
+ *
+ * \param[in] scmi_de_id SCMI DE_ID for the requested data event.
+ * \param[out] de_handle Data Event handle found in the enabled de list.
+ * \param[out] enabled_de_index Index of the Data Event in the enabled de list.
+ */
+static int find_enabled_de(
+    uint32_t scmi_de_id,
+    telemetry_de_handle_st *de_handle,
+    size_t *enabled_de_index)
+{
+    int status;
+    size_t i;
+    struct mod_telemetry_de_status de_status;
+    telemetry_de_handle_st curr_de;
+
+    for (i = 0; i < scmi_telemetry_ctx.total_de_enabled_count; ++i) {
+        curr_de = scmi_telemetry_ctx.de_enabled_list[i];
+        status = scmi_telemetry_ctx.telemetry_api->get_de_enabled(
+            curr_de, &de_status);
+        if (status == FWK_SUCCESS && scmi_de_id == de_status.de_id) {
+            *de_handle = curr_de;
+            *enabled_de_index = i;
+            return FWK_SUCCESS;
+        }
+    }
+
+    return FWK_E_PARAM;
+}
+
+/*!
+ * \brief Enables new DE and add it to the enabled DE list.
+ *
+ * \param[in] scmi_de_id SCMI DE_ID for the requested data event.
+ * \param[in] enable_ts Flag to indicate if DE needs to be enabled with
+ *            timestamp.
+ * \param[out] shmti_id SHMTI ID containing the given Data Event.
+ * \param[out] shmti_de_offset Byte offset from the start of the given shmti.
+ */
+static int de_configure_enable_data_event(
+    uint32_t scmi_de_id,
+    bool enable_ts,
+    uint32_t *shmti_id,
+    uint32_t *shmti_de_offset)
+{
+    int status;
+    size_t de_index;
+    telemetry_de_handle_st de_handle;
+
+    if (scmi_telemetry_ctx.total_de_enabled_count ==
+        scmi_telemetry_ctx.config->max_enabled_de_count) {
+        return FWK_E_PARAM;
+    }
+
+    status = find_enabled_de(scmi_de_id, &de_handle, &de_index);
+    if (status == FWK_SUCCESS) {
+        /* DE is already enabled. */
+        return FWK_E_PARAM;
+    }
+
+    if (enable_ts) {
+        status = scmi_telemetry_ctx.telemetry_api->enable_de_ts(
+            scmi_de_id, &de_handle, shmti_id, shmti_de_offset);
+    } else {
+        status = scmi_telemetry_ctx.telemetry_api->enable_de_non_ts(
+            scmi_de_id, &de_handle, shmti_id, shmti_de_offset);
+    }
+
+    if (status != FWK_SUCCESS) {
+        return status;
+    }
+
+    /* Add the enabled Data event to enabled DE list */
+    scmi_telemetry_ctx
+        .de_enabled_list[scmi_telemetry_ctx.total_de_enabled_count++] =
+        de_handle;
+
+    return FWK_SUCCESS;
+}
+
+/*!
+ * \brief Disables data event and remove the it from the enabled DE list.
+ *
+ * \param[in] scmi_de_id SCMI DE_ID for the requested data event.
+ *
+ */
+static int de_configure_disable_data_event(uint32_t scmi_de_id)
+{
+    int status;
+    size_t de_index;
+    telemetry_de_handle_st de_handle;
+
+    if (scmi_telemetry_ctx.total_de_enabled_count == 0) {
+        return FWK_E_PARAM;
+    }
+
+    status = find_enabled_de(scmi_de_id, &de_handle, &de_index);
+    if (status != FWK_SUCCESS) {
+        return status;
+    }
+
+    status = scmi_telemetry_ctx.telemetry_api->disable_de(de_handle);
+    if (status != FWK_SUCCESS) {
+        return status;
+    }
+
+    /*!
+     * Shift elements left to fill the removed entry.
+     * This maintains list continuity while removing the DE index.
+     * The loop runs until the second-last element since the last one
+     * is already shifted properly.
+     */
+    for (; de_index < scmi_telemetry_ctx.total_de_enabled_count - 1;
+         de_index++) {
+        scmi_telemetry_ctx.de_enabled_list[de_index] =
+            scmi_telemetry_ctx.de_enabled_list[de_index + 1];
+    }
+    /* Decrement the enabled DE count */
+    scmi_telemetry_ctx.total_de_enabled_count--;
+
+    return FWK_SUCCESS;
+}
+
+/*!
  * \brief Handles the configuration of a specific Data Event (DE) for SCMI
  * Telemetry.
  *
@@ -853,12 +1043,13 @@ static int scmi_telemetry_de_configure_handler(
     uint32_t de_id;
     uint32_t flags;
     uint32_t response_size;
+    uint8_t selector;
+    uint32_t shmti_id = SCMI_TELEMETRY_DE_SHMTI_ID_NOT_SUPPORTED;
+    uint32_t shmti_de_offset = SCMI_TELEMETRY_DE_SHMTI_ID_OFFSET_NOT_SUPPORTED;
 
     struct scmi_telemetry_de_configure_a2p *params = NULL;
     struct scmi_telemetry_de_configure_p2a return_values = {
         .status = SCMI_GENERIC_ERROR,
-        .shmti_id = SCMI_TELEMETRY_DE_SHMTI_ID_NOT_SUPPORTED,
-        .shmti_de_offset = SCMI_TELEMETRY_DE_SHMTI_ID_OFFSET_NOT_SUPPORTED,
     };
 
     /* Validate payload pointer */
@@ -869,8 +1060,16 @@ static int scmi_telemetry_de_configure_handler(
     /* Parse request parameters */
     params = (struct scmi_telemetry_de_configure_a2p *)payload;
 
-    de_id = params->de_id;
+    de_id = params->id;
     flags = params->flags;
+    selector = SCMI_TELEMETRY_DE_CONFIGURE_ID_SELECTOR(flags);
+
+    /* Event Group Selector is not supported.*/
+    if (selector == SCMI_TELEMETRY_DE_CONFIGURE_ID_SELECTOR_EVENT_GROUP) {
+        status = FWK_E_PARAM;
+        return_values.status = SCMI_NOT_SUPPORTED;
+        goto exit;
+    }
 
     /* Check if all DEs should be disabled */
     if (SCMI_TELEMETRY_ALL_DE_DISABLED(flags)) {
@@ -889,26 +1088,28 @@ static int scmi_telemetry_de_configure_handler(
     /* Process DE configuration mode */
     switch (SCMI_TELEMETRY_DE_CONFIGURE_DE_MODE(flags)) {
     case SCMI_TELEMETRY_DE_DISABLE:
-        status = scmi_telemetry_ctx.telemetry_api->disable_de(de_id);
-        return_values.status =
-            (status == FWK_SUCCESS) ? SCMI_SUCCESS : SCMI_GENERIC_ERROR;
+        status = de_configure_disable_data_event(de_id);
         break;
     case SCMI_TELEMETRY_DE_ENABLE_NON_TS:
-        status = scmi_telemetry_ctx.telemetry_api->enable_de_non_ts(de_id);
-        return_values.status =
-            (status == FWK_SUCCESS) ? SCMI_SUCCESS : SCMI_GENERIC_ERROR;
+        status = de_configure_enable_data_event(
+            de_id, false, &shmti_id, &shmti_de_offset);
         break;
     case SCMI_TELEMETRY_DE_ENABLE_TS:
-        status = scmi_telemetry_ctx.telemetry_api->enable_de_ts(de_id);
-        return_values.status =
-            (status == FWK_SUCCESS) ? SCMI_SUCCESS : SCMI_GENERIC_ERROR;
+        status = de_configure_enable_data_event(
+            de_id, true, &shmti_id, &shmti_de_offset);
         break;
     default:
         status = FWK_E_PARAM;
-        return_values.status = SCMI_INVALID_PARAMETERS;
         break;
     }
+    return_values.shmti_id = shmti_id;
+    return_values.shmti_de_offset = shmti_de_offset;
 
+    if (status == FWK_SUCCESS) {
+        return_values.status = SCMI_SUCCESS;
+    } else if (status == FWK_E_PARAM) {
+        return_values.status = SCMI_INVALID_PARAMETERS;
+    }
 exit:
     /* Determine response size */
     response_size = (return_values.status == SCMI_SUCCESS) ?
@@ -946,10 +1147,13 @@ static int scmi_telemetry_de_enabled_list_handler(
     fwk_id_t service_id,
     const uint32_t *payload)
 {
+    int status = FWK_SUCCESS;
     size_t i;
-    uint32_t num_de_enabled;
-    uint32_t index, count, remain_count;
+    telemetry_de_handle_st de_handle;
+    uint32_t start_index, count, remain_count;
+    uint8_t selector;
     struct mod_telemetry_de_status de_status;
+    struct scmi_telemetry_de_enabled_list_a2p *params = NULL;
     struct scmi_telemetry_de_enabled_list_p2a return_values = {
         .status = SCMI_GENERIC_ERROR
     };
@@ -957,7 +1161,6 @@ static int scmi_telemetry_de_enabled_list_handler(
     uint32_t de_enabled_value[2];
 
     uint32_t payload_size = sizeof(return_values);
-    int status = FWK_SUCCESS;
     int respond_status;
 
     /* Validate payload pointer */
@@ -965,23 +1168,26 @@ static int scmi_telemetry_de_enabled_list_handler(
         return FWK_E_PARAM;
     }
 
-    /* Get index from parameter */
-    index = *payload;
+    /* Parse request parameters */
+    params = (struct scmi_telemetry_de_enabled_list_a2p *)payload;
 
-    /* Retrieve the number of currently enabled DEs */
-    status =
-        scmi_telemetry_ctx.telemetry_api->get_num_de_enabled(&num_de_enabled);
-    if (status != FWK_SUCCESS) {
+    start_index = params->index;
+    selector = SCMI_TELEMETRY_DE_ENABLED_LIST_ID_SELECTOR(params->flags);
+
+    /* Event Group Selector is not supported.*/
+    if (selector == SCMI_TELEMETRY_DE_ENABLED_LIST_ID_SELECTOR_EVENT_GROUP) {
+        status = FWK_E_PARAM;
+        return_values.status = SCMI_NOT_SUPPORTED;
         goto exit;
     }
 
-    /* Validate the requested index */
-    if (index >= num_de_enabled) {
+    /* Validate the requested first enabled event index */
+    if (start_index >= scmi_telemetry_ctx.total_de_enabled_count) {
         return_values.status = SCMI_NOT_FOUND;
         goto exit;
     }
 
-    remain_count = num_de_enabled - index;
+    remain_count = scmi_telemetry_ctx.total_de_enabled_count - start_index;
 
     /*!
      * Determine the maximum number of entries that can fit in the response
@@ -998,14 +1204,16 @@ static int scmi_telemetry_de_enabled_list_handler(
     }
 
     /* Retrieve the list of enabled DEs */
-    for (i = 0; i < count; i++, index++) {
-        status =
-            scmi_telemetry_ctx.telemetry_api->get_de_enabled(index, &de_status);
+    for (i = 0; i < count; ++i) {
+        de_handle = scmi_telemetry_ctx.de_enabled_list[start_index + i];
+        status = scmi_telemetry_ctx.telemetry_api->get_de_enabled(
+            de_handle, &de_status);
         if (status != FWK_SUCCESS) {
             goto exit;
         }
         de_enabled_value[0] = de_status.de_id;
         de_enabled_value[1] = de_status.de_ts_mode;
+
         status = scmi_telemetry_ctx.scmi_api->write_payload(
             service_id,
             payload_size,
@@ -1047,38 +1255,27 @@ exit:
  * \brief Retrieves the  multiplier for a given sampling rate.
  *
  * This function extracts the exponent from the sampling rate and adjusts it
- * for conversion. The exponent is extracted using the
- * `MOD_TELEMETRY_INTERVAL_EXPONENT` macro and then incremented by 7 to
- * account for the `sec * 10^7` conversion.
+ * for conversion. The exponent is incremented by 7 to account for the
+ * `sec * 10^7` conversion.
  *
  * \param[in] sampling_rate The raw sampling rate value from SCMI.
  *
  * \return The computed multiplier for converting seconds.
  */
-static uint64_t get_sec_multiplier(uint32_t sampling_rate)
+static inline uint64_t decode_sampling_rate_sec_multiplier(
+    uint32_t sampling_rate)
 {
-    struct mod_telemetry_update_interval_exponent exponent;
-    int32_t val;
+    int32_t exp_raw =
+        (int32_t)((sampling_rate & SCMI_TELEMETRY_SAMPLING_RATE_EXP_MASK) >> SCMI_TELEMETRY_SAMPLING_RATE_EXP_POS);
 
-    /*!
-     * Extract and sign-extend the exponent from the sampling rate
-     * Sign-extend happens automatically due to exponent.value is an
-     * integer type.
-     */
-    exponent.value = MOD_TELEMETRY_INTERVAL_EXPONENT(sampling_rate);
+    if (exp_raw & SCMI_TELEMETRY_SAMPLING_RATE_EXPONENT_SIGN_BIT) {
+        exp_raw |=
+            ~(SCMI_TELEMETRY_SAMPLING_RATE_EXP_MASK >>
+              SCMI_TELEMETRY_SAMPLING_RATE_EXP_POS);
+    }
 
-    val = exponent.value;
-
-    /*
-     * Adjust the exponent, so that resulting value remain >= 0
-     * Note: Extra variable 'var' is required  because
-     * width(5 bits) of exponent.value may not sufficient
-     * if following operation is done directly on exponent.value
-     */
-    val += 7;
-
-    /* Compute the multiplier using power-of-10 */
-    return (uint64_t)__builtin_powi(10, val);
+    /* Compute the multiplier using power-of-10 adjusted by 7. */
+    return (uint64_t)__builtin_powi(10, exp_raw + 7);
 }
 
 /*!
@@ -1097,10 +1294,10 @@ uint64_t convert_sampling_rate_to_msecs(uint32_t sampling_rate)
     uint64_t sec_multiplier;
 
     /* Get the multiplier */
-    sec_multiplier = get_sec_multiplier(sampling_rate);
+    sec_multiplier = decode_sampling_rate_sec_multiplier(sampling_rate);
 
     /* Extract the seconds component from the sampling rate */
-    seconds = MOD_TELEMETRY_INTERVAL_SECONDS(sampling_rate);
+    seconds = SCMI_TELEMETRY_SAMPLING_RATE_SECONDS(sampling_rate);
 
     /* Compute and return the final value in milliseconds
      * Since sec_multiplier is adjusted by 10^7 for msec
@@ -1131,6 +1328,7 @@ static int scmi_telemetry_config_set_handler(
     int respond_status;
     uint32_t response_size;
     uint64_t sampling_rate_msec;
+    uint8_t selector;
 
     struct scmi_telemetry_config_set_a2p *params = NULL;
     struct scmi_telemetry_config_set_p2a return_values = {
@@ -1144,6 +1342,14 @@ static int scmi_telemetry_config_set_handler(
 
     /* Parse request parameters */
     params = (struct scmi_telemetry_config_set_a2p *)payload;
+
+    /* Validate ID selector */
+    selector = SCMI_TELEMETRY_CONFIG_SET_ID_SELECTOR(params->control);
+    if (selector == SCMI_TELEMETRY_CONFIG_CONTROL_ID_SELECTOR_EVENT_GROUP) {
+        status = FWK_E_PARAM;
+        return_values.status = SCMI_NOT_SUPPORTED;
+        goto exit;
+    }
 
     /* Check if telemetry should be disabled */
     if ((SCMI_TELEMETRY_CONFIG_CONTROL_EN_MASK & params->control) == 0) {
@@ -1170,8 +1376,14 @@ static int scmi_telemetry_config_set_handler(
         return_values.status = SCMI_PROTOCOL_ERROR;
         goto exit;
     }
-
     scmi_telemetry_ctx.telemetry_enable = true;
+
+    if (SCMI_TELEMETRY_SAMPLING_RATE_SECONDS(params->sampling_rate) == 0) {
+        /* Sampling rate is mandatory for enablement of DE. */
+        status = FWK_E_PARAM;
+        return_values.status = SCMI_INVALID_PARAMETERS;
+        goto exit;
+    }
 
     sampling_rate_msec = convert_sampling_rate_to_msecs(params->sampling_rate);
     status = scmi_telemetry_ctx.telemetry_api->set_sampling_rate(
@@ -1182,6 +1394,7 @@ static int scmi_telemetry_config_set_handler(
     }
     scmi_telemetry_ctx.current_sampling_rate = params->sampling_rate;
 
+    return_values.status = SCMI_SUCCESS;
 exit:
     /* Determine response size */
     response_size = (return_values.status == SCMI_SUCCESS) ?
@@ -1219,42 +1432,133 @@ static int scmi_telemetry_config_get_handler(
     fwk_id_t service_id,
     const uint32_t *payload)
 {
-    int status;
+    int status = FWK_SUCCESS;
+    int respond_status;
+    uint32_t response_size;
+    uint8_t selector;
+    struct scmi_telemetry_config_get_a2p *params = NULL;
     struct scmi_telemetry_config_get_p2a return_values = {
-        .status = SCMI_SUCCESS,
-        .control = 0,
-        .sampling_rate = 0,
+        .status = SCMI_GENERIC_ERROR,
     };
+
+    /* Validate payload pointer */
+    if (payload == NULL) {
+        return FWK_E_PARAM;
+    }
+
+    /* Parse request parameters */
+    params = (struct scmi_telemetry_config_get_a2p *)payload;
+
+    /* Validate ID selector */
+    selector = SCMI_TELEMETRY_CONFIG_GET_ID_SELECTOR(params->flags);
+    if (selector == SCMI_TELEMETRY_CONFIG_GET_FLAGS_ID_SELECTOR_EVENT_GROUP) {
+        status = FWK_E_PARAM;
+        return_values.status = SCMI_NOT_SUPPORTED;
+        goto exit;
+    }
 
     /* Check if telemetry is enabled and set the response accordingly */
     if (scmi_telemetry_ctx.telemetry_enable) {
         return_values.control = (1U << SCMI_TELEMETRY_CONFIG_CONTROL_EN_POS);
         return_values.sampling_rate = scmi_telemetry_ctx.current_sampling_rate;
+    } else {
+        return_values.control = 0;
+        return_values.sampling_rate = 0;
     }
 
+    return_values.status = SCMI_SUCCESS;
+exit:
+    /* Determine response size */
+    response_size = (return_values.status == SCMI_SUCCESS) ?
+        sizeof(return_values) :
+        sizeof(return_values.status);
+
     /* Send response */
-    status = scmi_telemetry_ctx.scmi_api->respond(
-        service_id, &return_values, sizeof(return_values));
+    respond_status = scmi_telemetry_ctx.scmi_api->respond(
+        service_id, &return_values, response_size);
+
+    /* Log response failure */
+    if (respond_status != FWK_SUCCESS) {
+        FWK_LOG_DEBUG(
+            "[SCMI-TELEMETRY] Response failed in %s @%d", __func__, __LINE__);
+        return respond_status;
+    }
 
     return status;
 }
 
 /*!
- * \brief Handles the negotiation of SCMI protocol version.
+ * \brief Handles resetting of current telemetry infrastructure.
  *
- * This function is currently not supported and returns `FWK_E_SUPPORT`
- * indicating that version negotiation is not implemented.
+ * This function processes a request to reset all the telemetry.
  *
  * \param[in] service_id The SCMI service identifier.
- * \param[in] payload Pointer to the request payload (unused).
+ * \param[in] payload Pointer to the request payload (unused in this function).
  *
- * \retval ::FWK_E_SUPPORT Protocol version negotiation is not supported.
+ * \retval ::FWK_SUCCESS The operation was successful.
+ * \return One of the standard framework error codes.
  */
-static int negotiate_protocol_version_handler(
+static int scmi_telemetry_reset_handler(
     fwk_id_t service_id,
     const uint32_t *payload)
 {
-    return FWK_E_SUPPORT;
+    int status;
+    int respond_status;
+    uint32_t response_size;
+    struct scmi_telemetry_reset_a2p *params = NULL;
+    struct scmi_telemetry_reset_p2a return_values = {
+        .status = SCMI_GENERIC_ERROR,
+    };
+
+    /* Validate payload pointer */
+    if (payload == NULL) {
+        return FWK_E_PARAM;
+    }
+
+    if (scmi_telemetry_ctx.config->attributes &
+        SCMI_TELEMETRY_PROTOCOL_ATTR_TELEMETRY_RESET_MASK) {
+        status = FWK_E_PARAM;
+        return_values.status = SCMI_NOT_SUPPORTED;
+        goto exit;
+    }
+
+    /* Parse request parameters */
+    params = (struct scmi_telemetry_reset_a2p *)payload;
+    if (params->flags != 0) {
+        status = FWK_E_PARAM;
+        return_values.status = SCMI_INVALID_PARAMETERS;
+        goto exit;
+    }
+
+    status = scmi_telemetry_ctx.telemetry_api->telemetry_reset();
+    if (status != FWK_SUCCESS) {
+        return_values.status = SCMI_PROTOCOL_ERROR;
+        goto exit;
+    }
+
+    /* Resets the sampling rate. */
+    scmi_telemetry_ctx.current_sampling_rate = 0;
+    scmi_telemetry_ctx.telemetry_enable = false;
+
+    return_values.status = SCMI_SUCCESS;
+exit:
+    /* Determine response size */
+    response_size = (return_values.status == SCMI_SUCCESS) ?
+        sizeof(return_values) :
+        sizeof(return_values.status);
+
+    /* Send response */
+    respond_status = scmi_telemetry_ctx.scmi_api->respond(
+        service_id, &return_values, response_size);
+
+    /* Log response failure */
+    if (respond_status != FWK_SUCCESS) {
+        FWK_LOG_DEBUG(
+            "[SCMI-TELEMETRY] Response failed in %s @%d", __func__, __LINE__);
+        return respond_status;
+    }
+
+    return status;
 }
 
 #ifdef BUILD_HAS_MOD_RESOURCE_PERMS
@@ -1408,6 +1712,11 @@ static int scmi_telemetry_init(
         return FWK_E_PARAM;
     }
 
+    scmi_telemetry_ctx.de_enabled_list = fwk_mm_calloc(
+        config->max_enabled_de_count, sizeof(telemetry_de_handle_st));
+    if (scmi_telemetry_ctx.de_enabled_list == NULL) {
+        return FWK_E_NOMEM;
+    }
     scmi_telemetry_ctx.config = config;
 
     return FWK_SUCCESS;

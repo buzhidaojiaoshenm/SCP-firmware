@@ -80,6 +80,9 @@ struct mod_scmi_telemetry_config {
     /*! Number of agents in the system */
     uint32_t agent_count;
 
+    /*! Maximum number of DEs that can be enabled at once. */
+    uint32_t max_enabled_de_count;
+
     /*! Attributes supported by SCMI telemetry protocol */
     uint32_t attributes;
 };

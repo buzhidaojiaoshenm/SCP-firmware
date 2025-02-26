@@ -41,6 +41,8 @@ struct scmi_telemetry_negotiate_protocol_version_a2p {
  * PROTOCOL_ATTRIBUTES
  */
 
+#define SCMI_TELEMETRY_PROTOCOL_ATTRIBUTES_IMPL_VERSION_MAX_DWORD 4
+
 /*
  * SCMI Telemetry Protocol Attributes Macros
  *
@@ -54,6 +56,10 @@ struct scmi_telemetry_negotiate_protocol_version_a2p {
 
 /* Bit position indicating support for continuous telemetry updates */
 #define SCMI_TELEMETRY_PROTOCOL_ATTR_CONTINUOUS_UPDATE_POS 30
+
+/* Bit position indicating whether telemetry supports different update intervals
+ * for individual groups. */
+#define SCMI_TELEMETRY_PROTOCOL_ATTR_GROUP_SAMPLING_RATES_POS 18
 
 /* Bit position indicating whether telemetry reset is supported */
 #define SCMI_TELEMETRY_PROTOCOL_ATTR_TELEMETRY_RESET_POS 17
@@ -82,6 +88,15 @@ struct scmi_telemetry_negotiate_protocol_version_a2p {
  */
 #define SCMI_TELEMETRY_PROTOCOL_ATTR_CONTINUOUS_UPDATE_MASK \
     (UINT32_C(0x1) << SCMI_TELEMETRY_PROTOCOL_ATTR_CONTINUOUS_UPDATE_POS)
+
+/*
+ * SCMI_TELEMETRY_PROTOCOL_ATTR_GROUP_SAMPLING_RATES_POS
+ *
+ * Mask for enabling or disabling continuous updates.
+ * When set, this indicates that telemetry data is updated continuously.
+ */
+#define SCMI_TELEMETRY_PROTOCOL_ATTR_GROUP_SAMPLING_RATES_MASK \
+    (UINT32_C(0x1) << SCMI_TELEMETRY_PROTOCOL_ATTR_GROUP_SAMPLING_RATES_POS)
 
 /*
  * SCMI_TELEMETRY_PROTOCOL_ATTR_NUM_SHMTI_MASK
@@ -159,6 +174,13 @@ struct scmi_telemetry_protocol_attributes_p2a {
 
     /*! Total number of Data Event (DE) descriptors available */
     uint32_t num_de;
+
+    /*! Total number of Event Groups. */
+    uint32_t num_groups;
+
+    /*! Array of Dwords for DE Implementation Revision. */
+    uint32_t de_impl_rev_dword
+        [SCMI_TELEMETRY_PROTOCOL_ATTRIBUTES_IMPL_VERSION_MAX_DWORD];
 
     /*! Encoded attribute flags representing protocol capabilities */
     uint32_t attributes;
@@ -248,6 +270,7 @@ struct scmi_telemetry_list_shmti_p2a {
 /*!
  * \brief Bit positions for DE attribute fields in `de_attributes_1`
  */
+#define SCMI_TELEMETRY_DE_NAME_POS              31
 #define SCMI_TELEMETRY_DE_FCH_POS               30
 #define SCMI_TELEMETRY_DE_TYPE_POS              22
 #define SCMI_TELEMETRY_DE_PERSISTENT_POS        21
@@ -257,6 +280,8 @@ struct scmi_telemetry_list_shmti_p2a {
 #define SCMI_TELEMETRY_DE_TIMESTAMP_SUPPORT_POS 0
 
 /* Bit masks for `de_attributes_1` */
+#define SCMI_TELEMETRY_DE_NAME_MASK \
+    (UINT32_C(0x1) << SCMI_TELEMETRY_DE_NAME_POS)
 #define SCMI_TELEMETRY_DE_FCH_MASK (UINT32_C(0x1) << SCMI_TELEMETRY_DE_FCH_POS)
 #define SCMI_TELEMETRY_DE_TYPE_MASK \
     (UINT32_C(0xFF) << SCMI_TELEMETRY_DE_TYPE_POS)
@@ -334,6 +359,14 @@ struct scmi_telemetry_list_shmti_p2a {
       SCMI_TELEMETRY_DE_COMP_TYPE_MASK))
 
 /*!
+ * \brief Size of DE name field in Bytes.
+ */
+#define SCMI_TELEMETRY_DE_NAME_SIZE 16
+#define SCMI_TELEMETRY_DE_DESC_MAX_SIZE \
+    (sizeof(struct mod_telemetry_de_desc) + \
+     sizeof(struct mod_telemetry_de_fch_attr) + SCMI_TELEMETRY_DE_NAME_SIZE)
+
+/*!
  * \brief SCMI response structure for DE descriptions.
  *
  * This structure is used in the SCMI Telemetry DE Description response,
@@ -352,13 +385,17 @@ struct scmi_telemetry_de_desc_p2a {
  * in the SCMI telemetry protocol. These intervals determine how often
  * telemetry data is refreshed.
  */
-
-/* Bit positions for the update interval fields */
+/* Bit positions for the update intervals request and response. */
+#define SCMI_TELEMETRY_UPDATE_INTERVALS_GROUP_ID_SELECTOR_POS 0
 #define SCMI_TELEMETRY_UPDATE_INTERVALS_NUM_REMAIN_POS \
     16 /*!< Remaining intervals */
 #define SCMI_TELEMETRY_UPDATE_INTERVALS_FORMAT_POS \
     12 /*!< Format of the interval */
 #define SCMI_TELEMETRY_UPDATE_INTERVALS_NUM_POS 0 /*!< Number of intervals */
+
+/* Bit Mask for Group ID selector. */
+#define SCMI_TELEMETRY_UPDATE_INTERVALS_GROUP_ID_SELECTOR_MASK \
+    (UINT32_C(0xF) << SCMI_TELEMETRY_UPDATE_INTERVALS_GROUP_ID_SELECTOR_POS)
 
 /* Bit masks for extracting interval properties */
 #define SCMI_TELEMETRY_UPDATE_INTERVALS_NUM_REMAIN_MASK \
@@ -367,6 +404,13 @@ struct scmi_telemetry_de_desc_p2a {
     (UINT32_C(0x1) << SCMI_TELEMETRY_UPDATE_INTERVALS_FORMAT_POS)
 #define SCMI_TELEMETRY_UPDATE_INTERVALS_NUM_MASK \
     (UINT32_C(0xFFF) << SCMI_TELEMETRY_UPDATE_INTERVALS_NUM_POS)
+
+#define SCMI_TELEMETRY_UPDATE_INTERVALS_GET_GROUP_ID_SELECTOR(flags) \
+    ((flags)&SCMI_TELEMETRY_UPDATE_INTERVALS_GROUP_ID_SELECTOR_MASK)
+
+#define SCMI_TELEMETRY_UPDATE_INTERVALS_GROUP_ID_SELECTOR_DE          0U
+#define SCMI_TELEMETRY_UPDATE_INTERVALS_GROUP_ID_SELECTOR_EVENT_GROUP 1U
+#define SCMI_TELEMETRY_UPDATE_INTERVALS_GROUP_ID_SELECTOR_ALL         2U
 
 /*!
  * \brief Constructs a telemetry update interval flag.
@@ -387,6 +431,18 @@ struct scmi_telemetry_de_desc_p2a {
       SCMI_TELEMETRY_UPDATE_INTERVALS_NUM_MASK))
 
 /*!
+ * \brief SCMI request structure for telemetry update intervals.
+ *
+ * This structure is used in SCMI requests to retrieve the telemetry update
+ * intervals.
+ */
+struct scmi_telemetry_list_update_intervals_a2p {
+    uint32_t index; /*!< Index of the first update interval to be listed */
+    uint32_t group_id; /*!< Group identifier */
+    uint32_t flags; /*!< Group identifier selector flags */
+};
+
+/*!
  * \brief SCMI response structure for telemetry update intervals.
  *
  * This structure is used in the SCMI telemetry response to provide
@@ -403,6 +459,15 @@ struct scmi_telemetry_list_update_intervals_p2a {
  * Defines macros and structures for configuring Data Events (DE)
  * in the SCMI telemetry protocol.
  */
+
+/*!
+ * \brief DE_CONFIGURE selector.
+ *
+ * The selector specifies if agent has provided a Data Event or an Event Group
+ * in the request.
+ */
+#define SCMI_TELEMETRY_DE_CONFIGURE_ID_SELECTOR_DE          0
+#define SCMI_TELEMETRY_DE_CONFIGURE_ID_SELECTOR_EVENT_GROUP 1
 
 /*!
  * \brief Data Event (DE) Modes
@@ -427,6 +492,9 @@ struct scmi_telemetry_list_update_intervals_p2a {
 /*!
  * \brief Bit positions and masks for DE configuration flags
  */
+#define SCMI_TELEMETRY_DE_CONFIGURE_ID_SELECTOR_POS 3
+#define SCMI_TELEMETRY_DE_CONFIGURE_ID_SELECTOR_MASK \
+    (UINT32_C(0x1) << SCMI_TELEMETRY_DE_CONFIGURE_ID_SELECTOR_POS)
 #define SCMI_TELEMETRY_DE_CONFIGURE_ALL_DE_DISABLE_POS \
     2 /*!< Disable flag position */
 #define SCMI_TELEMETRY_DE_CONFIGURE_ALL_DE_DISABLE_MASK \
@@ -438,6 +506,17 @@ struct scmi_telemetry_list_update_intervals_p2a {
      << SCMI_TELEMETRY_DE_CONFIGURE_DE_MODE_POS) /*!< Uses 2 bits */
 
 /*!
+ * \brief Extract selector from configuration flags
+ *
+ * \param[in] DE_CONFIGURE_FLAGS The flags containing selector.
+ *
+ * \return The extracted selector value.
+ */
+#define SCMI_TELEMETRY_DE_CONFIGURE_ID_SELECTOR(DE_CONFIGURE_FLAGS) \
+    (((DE_CONFIGURE_FLAGS)&SCMI_TELEMETRY_DE_CONFIGURE_ID_SELECTOR_MASK) >> \
+     SCMI_TELEMETRY_DE_CONFIGURE_ID_SELECTOR_POS)
+
+/*!
  * \brief Check if all DEs are disabled
  *
  * \param[in] DE_CONFIGURE_FLAGS The flags to check.
@@ -445,7 +524,7 @@ struct scmi_telemetry_list_update_intervals_p2a {
  * \return Nonzero if all DEs are disabled, zero otherwise.
  */
 #define SCMI_TELEMETRY_ALL_DE_DISABLED(DE_CONFIGURE_FLAGS) \
-    ((DE_CONFIGURE_FLAGS) & SCMI_TELEMETRY_DE_CONFIGURE_ALL_DE_DISABLE_MASK)
+    ((DE_CONFIGURE_FLAGS)&SCMI_TELEMETRY_DE_CONFIGURE_ALL_DE_DISABLE_MASK)
 
 /*!
  * \brief Extract DE mode from configuration flags
@@ -455,7 +534,7 @@ struct scmi_telemetry_list_update_intervals_p2a {
  * \return The extracted DE mode.
  */
 #define SCMI_TELEMETRY_DE_CONFIGURE_DE_MODE(DE_CONFIGURE_FLAGS) \
-    (((DE_CONFIGURE_FLAGS) & SCMI_TELEMETRY_DE_CONFIGURE_DE_MODE_MASK) >> \
+    (((DE_CONFIGURE_FLAGS)&SCMI_TELEMETRY_DE_CONFIGURE_DE_MODE_MASK) >> \
      SCMI_TELEMETRY_DE_CONFIGURE_DE_MODE_POS)
 
 /*!
@@ -472,7 +551,7 @@ struct scmi_telemetry_list_update_intervals_p2a {
  * This structure is used in SCMI requests to configure Data Events (DEs).
  */
 struct scmi_telemetry_de_configure_a2p {
-    uint32_t de_id; /*!< ID of the Data Event to configure */
+    uint32_t id; /*!< ID of the Data Event/Event group to configure */
     uint32_t flags; /*!< Configuration flags (enable/disable/mode) */
 };
 
@@ -495,6 +574,13 @@ struct scmi_telemetry_de_configure_p2a {
  * enabled Data Events (DE) in SCMI Telemetry.
  */
 
+/*! \brief Bit position and mask for the ID Selector. */
+#define SCMI_TELEMETRY_DE_ENABLED_LIST_ID_SELECTOR_DE          0
+#define SCMI_TELEMETRY_DE_ENABLED_LIST_ID_SELECTOR_EVENT_GROUP 1
+#define SCMI_TELEMETRY_DE_ENABLED_LIST_ID_SELECTOR_POS         0
+#define SCMI_TELEMETRY_DE_ENABLED_LIST_ID_SELECTOR_MASK \
+    (UINT32_C(0x1) << SCMI_TELEMETRY_DE_CONFIGURE_ID_SELECTOR_POS)
+
 /*! \brief Bit position and mask for the number of remaining DEs */
 #define SCMI_TELEMETRY_DE_ENABLED_LIST_NUM_REMAIN_POS 16
 #define SCMI_TELEMETRY_DE_ENABLED_LIST_NUM_REMAIN_MASK \
@@ -504,6 +590,17 @@ struct scmi_telemetry_de_configure_p2a {
 #define SCMI_TELEMETRY_DE_ENABLED_LIST_NUM_POS 0
 #define SCMI_TELEMETRY_DE_ENABLED_LIST_NUM_MASK \
     (UINT32_C(0xFFFF) << SCMI_TELEMETRY_DE_ENABLED_LIST_NUM_POS)
+
+/*!
+ * \brief Extract selector from identifier flags
+ *
+ * \param[in] DE_IDENTIFIER_FLAGS The flags containing selector.
+ *
+ * \return The extracted selector value.
+ */
+#define SCMI_TELEMETRY_DE_ENABLED_LIST_ID_SELECTOR(DE_IDENTIFIER_FLAGS) \
+    (((DE_IDENTIFIER_FLAGS)&SCMI_TELEMETRY_DE_ENABLED_LIST_ID_SELECTOR_MASK) >> \
+     SCMI_TELEMETRY_DE_ENABLED_LIST_ID_SELECTOR_POS)
 
 /*!
  * \brief Macro to construct the enabled DE list flag.
@@ -526,6 +623,14 @@ struct scmi_telemetry_de_configure_p2a {
  */
 #define SCMI_TELEMETRY_DE_TS_DISABLED 1U /*!< Timestamp disabled */
 #define SCMI_TELEMETRY_DE_TS_ENABLED  2U /*!< Timestamp enabled */
+
+/*!
+ * \brief SCMI request structure for enabled DE list.
+ */
+struct scmi_telemetry_de_enabled_list_a2p {
+    uint32_t index; /*!< Index of the first enabled Data Event or Event Group */
+    uint32_t flags; /*!< Identifier flags (Data Event/Event Group) */
+};
 
 /*!
  * \brief Response structure for enabled DE list.
@@ -563,8 +668,33 @@ struct scmi_telemetry_de_enabled_list_p2a {
  * \return The extracted telemetry control mode.
  */
 #define SCMI_TELEMETRY_CONFIG_SET_CONTROL_MODE(CONTROL_VAL) \
-    (((CONTROL_VAL) & SCMI_TELEMETRY_CONFIG_CONTROL_MODE_MASK) >> \
+    (((CONTROL_VAL)&SCMI_TELEMETRY_CONFIG_CONTROL_MODE_MASK) >> \
      SCMI_TELEMETRY_CONFIG_CONTROL_MODE_POS)
+
+/*! \brief Bit position and mask for configuring telemetry selector */
+#define SCMI_TELEMETRY_CONFIG_CONTROL_ID_SELECTOR_POS 5
+#define SCMI_TELEMETRY_CONFIG_CONTROL_ID_SELECTOR_MASK \
+    (UINT32_C(0xF) << SCMI_TELEMETRY_CONFIG_CONTROL_ID_SELECTOR_POS)
+
+/*!
+ * \brief Extracts telemetry control id selector configuration flags.
+ *
+ * \param[in] CONTROL_VAL The control value containing mode settings.
+ *
+ * \return The extracted ID selector.
+ */
+#define SCMI_TELEMETRY_CONFIG_SET_ID_SELECTOR(CONTROL_VAL) \
+    (((CONTROL_VAL)&SCMI_TELEMETRY_CONFIG_CONTROL_ID_SELECTOR_MASK) >> \
+     SCMI_TELEMETRY_CONFIG_CONTROL_ID_SELECTOR_POS)
+
+/*!
+ * \brief Enumeration for Telemetry CONFIG_SET ID selector.
+ *
+ * Used to specify the ID selector interpretation.
+ */
+#define SCMI_TELEMETRY_CONFIG_CONTROL_ID_SELECTOR_NON_GROUP_DE 0U
+#define SCMI_TELEMETRY_CONFIG_CONTROL_ID_SELECTOR_EVENT_GROUP  1U
+#define SCMI_TELEMETRY_CONFIG_CONTROL_ID_SELECTOR_ALL          2U
 
 /*!
  * \brief Constructs telemetry control settings.
@@ -580,26 +710,29 @@ struct scmi_telemetry_de_enabled_list_p2a {
      (((EN) << SCMI_TELEMETRY_CONFIG_CONTROL_EN_POS) & \
       SCMI_TELEMETRY_CONFIG_CONTROL_EN_MASK))
 
+/*! \brief Bit position and mask for exponent in sampling rate */
+#define SCMI_TELEMETRY_SAMPLING_RATE_EXP_POS      0
+#define SCMI_TELEMETRY_SAMPLING_RATE_SIGN_BIT_POS 4
+/*! Bit position of second field in 32 bit value */
+#define SCMI_TELEMETRY_SAMPLING_RATE_SECONDS_POS 5U
+/*! Number of bits for exponent field in a 32 bit interval value */
+#define SCMI_TELEMETRY_SAMPLING_RATE_NUM_EXPONENT_BITS 5U
+/*! Number of bits for second field in a 32 bit interval value */
+#define SCMI_TELEMETRY_SAMPLING_RATE_NUM_SECONDS_BITS 16U
+
+/*! Bitmask for exponent field */
+#define SCMI_TELEMETRY_SAMPLING_RATE_EXP_MASK \
+    (INT32_C(0x1F) << SCMI_TELEMETRY_SAMPLING_RATE_EXP_POS)
+#define SCMI_TELEMETRY_SAMPLING_RATE_EXPONENT_SIGN_BIT \
+    (INT32_C(0x1) << (SCMI_TELEMETRY_SAMPLING_RATE_NUM_EXPONENT_BITS - 1))
+
 /*!
  * \brief Macros for setting telemetry sampling rate.
  *
  * Defines bit positions and masks for configuring the telemetry sampling rate.
  */
-
-/*! \brief Bit position and mask for specifying sampling rate in seconds */
-#define SCMI_TELEMETRY_SAMPLING_RATE_SEC_POS 5
 #define SCMI_TELEMETRY_SAMPLING_RATE_SEC_MASK \
-    (UINT32_C(0xFFFF) << SCMI_TELEMETRY_SAMPLING_RATE_SEC_POS)
-
-/*! \brief Bit position and mask for exponent in sampling rate */
-#define SCMI_TELEMETRY_SAMPLING_RATE_EXP_POS 0
-/*!
- * \brief Max for exponent in sampling rate
- * \note Since exponent can be a negative value, left shift or right shift
- *     using field position can not be done as shift on some compilers
- *     are not defined
- */
-#define SCMI_TELEMETRY_SAMPLING_RATE_EXP_MASK (UINT32_C(0x1F))
+    (UINT32_C(0xFFFF) << SCMI_TELEMETRY_SAMPLING_RATE_SECONDS_POS)
 
 /*!
  * \brief Constructs the telemetry sampling rate value.
@@ -610,9 +743,14 @@ struct scmi_telemetry_de_enabled_list_p2a {
  * \return Encoded sampling rate value.
  */
 #define SCMI_TELEMETRY_SAMPLING_RATE(SEC, EXP) \
-    ((((SEC) << SCMI_TELEMETRY_SAMPLING_RATE_SEC_POS) & \
+    ((((SEC) << SCMI_TELEMETRY_SAMPLING_RATE_SECONDS_POS) & \
       SCMI_TELEMETRY_SAMPLING_RATE_SEC_MASK) | \
      (((EXP)) & SCMI_TELEMETRY_SAMPLING_RATE_EXP_MASK))
+
+/*! Extract second field */
+#define SCMI_TELEMETRY_SAMPLING_RATE_SECONDS(rate_value) \
+    (((rate_value)&SCMI_TELEMETRY_SAMPLING_RATE_SEC_MASK) >> \
+     SCMI_TELEMETRY_SAMPLING_RATE_SECONDS_POS)
 
 /*!
  * \brief Enumeration for telemetry configuration control modes.
@@ -632,6 +770,7 @@ enum scmi_telemetry_config_control_modes {
  * This structure is used in SCMI requests to set telemetry configuration.
  */
 struct scmi_telemetry_config_set_a2p {
+    uint32_t group_identifier; /*!< Event Group identifier */
     uint32_t control; /*!< Encoded control flags (mode, enable/disable) */
     uint32_t sampling_rate; /*!< Encoded sampling rate value */
 };
@@ -645,6 +784,41 @@ struct scmi_telemetry_config_set_p2a {
     int32_t status; /*!< Status of the request (SCMI_SUCCESS, etc.) */
 };
 
+/*! \brief Bit position and mask for configuring telemetry selector */
+#define SCMI_TELEMETRY_CONFIG_GET_FLAGS_ID_SELECTOR_POS 5
+#define SCMI_TELEMETRY_CONFIG_GET_FLAGS_ID_SELECTOR_MASK \
+    (UINT32_C(0xF) << SCMI_TELEMETRY_CONFIG_GET_FLAGS_ID_SELECTOR_POS)
+
+/*!
+ * \brief Extracts id selector from request configuration flags.
+ *
+ * \param[in] FLAGS The flags value containing ID selector .
+ *
+ * \return The extracted ID selector.
+ */
+#define SCMI_TELEMETRY_CONFIG_GET_ID_SELECTOR(FLAGS) \
+    (((FLAGS)&SCMI_TELEMETRY_CONFIG_GET_FLAGS_ID_SELECTOR_MASK) >> \
+     SCMI_TELEMETRY_CONFIG_GET_FLAGS_ID_SELECTOR_POS)
+
+/*!
+ * \brief Enumeration for Telemetry CONFIG_GET ID selector.
+ *
+ * Used to specify the ID selector interpretation.
+ */
+#define SCMI_TELEMETRY_CONFIG_GET_FLAGS_ID_SELECTOR_NON_GROUP_DE 0U
+#define SCMI_TELEMETRY_CONFIG_GET_FLAGS_ID_SELECTOR_EVENT_GROUP  1U
+#define SCMI_TELEMETRY_CONFIG_GET_FLAGS_ID_SELECTOR_ALL          2U
+
+/*!
+ * \brief Request structure for retrieving telemetry configuration.
+ *
+ * This structure is used in SCMI requests to get telemetry configuration.
+ */
+struct scmi_telemetry_config_get_a2p {
+    uint32_t group_identifier; /*!< Event Group identifier */
+    uint32_t flags; /*!< Encoded flags (ID selector) */
+};
+
 /*!
  * \brief Response structure for retrieving telemetry configuration.
  *
@@ -655,6 +829,24 @@ struct scmi_telemetry_config_get_p2a {
     int32_t status; /*!< Status of the request */
     uint32_t control; /*!< Current control settings */
     uint32_t sampling_rate; /*!< Current sampling rate settings */
+};
+
+/*!
+ * \brief Request structure for resetting telemetry.
+ *
+ * This structure is used in SCMI request to reset telemetry.
+ */
+struct scmi_telemetry_reset_a2p {
+    uint32_t flags; /*!< Reserved, Must be 0. */
+};
+
+/*!
+ * \brief Response structure for resetting telemetry.
+ *
+ * This structure is used in SCMI responses to reset the telemetry.
+ */
+struct scmi_telemetry_reset_p2a {
+    int32_t status; /*!< Status of the request */
 };
 
 /*!
