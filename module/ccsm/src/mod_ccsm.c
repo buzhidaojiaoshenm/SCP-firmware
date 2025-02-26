@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2024-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -114,7 +114,9 @@ static int get_register_value_rate(
         return FWK_E_PARAM;
     }
 
-    fwk_assert((pll_settings_0 != NULL) || (pll_settings_1 != NULL));
+    if (!fwk_expect((pll_settings_0 != NULL) && (pll_settings_1 != NULL))) {
+        return FWK_E_PARAM;
+    }
 
     /*
      * Perform a binary search to find the entry matching the requested rate.
@@ -364,8 +366,8 @@ static int ccsm_mod_set_configuration(
         return FWK_E_RANGE;
     }
 
-    if ((config->numerator_regular < config->numerator_oc) |
-        (config->denominator < config->numerator_oc) |
+    if ((config->numerator_regular < config->numerator_oc) ||
+        (config->denominator < config->numerator_oc) ||
         (config->denominator < config->numerator_regular)) {
         return FWK_E_PARAM;
     }
