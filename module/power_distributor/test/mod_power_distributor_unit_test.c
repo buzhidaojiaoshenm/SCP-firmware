@@ -759,6 +759,44 @@ void utest_mod_distributor_domain_power_distribute(void)
     }
 }
 #undef INIT_LEAF_NODE
+void utest_clear_domains_budget(void)
+{
+    struct mod_power_distributor_domain_ctx test_domains[TEST_DOMAIN_COUNT] = {
+        0
+    };
+
+    power_distributor_ctx.domain_count = TEST_DOMAIN_COUNT;
+    power_distributor_ctx.domain = test_domains;
+
+    for (size_t i = 0; i < TEST_DOMAIN_COUNT; i++) {
+        test_domains[i].node.data.power_budget = 100; /* Assign some value */
+    }
+
+    clear_domains_budget();
+
+    for (size_t i = 0; i < TEST_DOMAIN_COUNT; i++) {
+        TEST_ASSERT_EQUAL(0, test_domains[i].node.data.power_budget);
+    }
+}
+
+void utest_set_root_budget(void)
+{
+    struct mod_power_distributor_domain_ctx test_domains[TEST_DOMAIN_COUNT] = {
+        0
+    };
+    uint32_t tree_traverse_order_table[TEST_DOMAIN_COUNT];
+    tree_traverse_order_table[0] = TEST_DOMAIN_SOC;
+
+    power_distributor_ctx.domain_count = TEST_DOMAIN_COUNT;
+    power_distributor_ctx.domain = test_domains;
+    power_distributor_ctx.tree_traverse_order_table = tree_traverse_order_table;
+
+    test_domains[TEST_DOMAIN_SOC].node.data.power_limit = 200;
+
+    set_root_budget();
+    TEST_ASSERT_EQUAL(
+        200, test_domains[TEST_DOMAIN_SOC].node.data.power_budget);
+}
 
 void tearDown(void)
 {
@@ -789,6 +827,8 @@ int power_distributor_test_main(void)
     RUN_TEST(utest_mod_distributor_calculate_power_attributes);
     RUN_TEST(utest_mod_distributor_calculate_power_attributes_max_power);
     RUN_TEST(utest_mod_distributor_domain_power_distribute);
+    RUN_TEST(utest_clear_domains_budget);
+    RUN_TEST(utest_set_root_budget);
 
     return UNITY_END();
 }

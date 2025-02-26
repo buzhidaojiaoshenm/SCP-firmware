@@ -377,9 +377,63 @@ static int set_budgets()
     return FWK_SUCCESS;
 }
 
+static inline void clear_domains_budget(void)
+{
+    for (size_t i = 0; i < power_distributor_ctx.domain_count; ++i) {
+        struct mod_power_distributor_domain_ctx *domain_ctx = get_domain_ctx(i);
+        domain_ctx->node.data.power_budget = 0;
+    }
+}
+
+static inline void set_root_budget(void)
+{
+    uint32_t root_idx = power_distributor_ctx.tree_traverse_order_table[0];
+    struct mod_power_distributor_domain_ctx *root_ctx =
+        get_domain_ctx(root_idx);
+
+    root_ctx->node.data.power_budget = root_ctx->node.data.power_limit;
+}
+
+static inline int domains_power_distribute(void)
+{
+    int status = FWK_SUCCESS;
+
+    for (size_t i = 0; i < power_distributor_ctx.domain_count; ++i) {
+        uint32_t domain_idx =
+            power_distributor_ctx.tree_traverse_order_table[i];
+        struct mod_power_distributor_domain_ctx *domain_ctx =
+            get_domain_ctx(domain_idx);
+
+        fwk_assert(domain_ctx);
+
+        status = domain_power_distribute(domain_ctx);
+        if (status != FWK_SUCCESS) {
+            fwk_id_t domain_id =
+                FWK_ID_ELEMENT(FWK_MODULE_IDX_POWER_DISTRIBUTOR, domain_idx);
+            FWK_LOG_ERR(
+                MOD_NAME "Failed to distribute domain %s (index: %u)",
+                fwk_module_get_element_name(domain_id),
+                domain_idx);
+            break;
+        }
+    }
+    return status;
+}
+
 static int system_power_distribute(void)
 {
+    int status = FWK_SUCCESS;
+
     calculate_power_attributes();
+    clear_domains_budget();
+    set_root_budget();
+
+    status = domains_power_distribute();
+    if (status != FWK_SUCCESS) {
+        clear_domains_budget();
+        return status;
+    }
+
     return set_budgets();
 }
 
