@@ -12,14 +12,14 @@
 #include <fwk_status.h>
 
 #include <arch_gic.h>
-#include <arch_helpers.h>
+#include <arch_interrupt.h>
 
 #include <stdbool.h>
 
 /*
  * This variable is used to ensure spurious nested calls won't
  * enable interrupts. This is been accessed from inline function defined in
- * arch_helpers.h
+ * arch_interrupt.h
  */
 unsigned int critical_section_nest_level;
 

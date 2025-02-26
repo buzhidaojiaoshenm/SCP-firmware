@@ -26,6 +26,16 @@
  */
 
 /*!
+ * \brief Initialize the architecture interrupt management component.
+ *
+ * \retval ::FWK_E_PANIC The operation failed.
+ * \retval ::FWK_SUCCESS The operation succeeded.
+ *
+ * \return Status code representing the result of the operation.
+ */
+int arch_interrupt_init(void);
+
+/*!
  * \brief Enable interrupts.
  *
  * \retval ::FWK_SUCCESS Operation succeeded.

@@ -17,7 +17,7 @@
 #include <fwk_noreturn.h>
 #include <fwk_status.h>
 
-#include <arch_helpers.h>
+#include <arch_interrupt.h>
 #include <arch_main.h>
 
 #include <malloc.h>

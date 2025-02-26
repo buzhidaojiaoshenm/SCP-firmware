@@ -1,13 +1,13 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2024-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
 #include <internal/armv8r_mpu_reg.h>
 
-#include <arch_helpers.h>
+#include <arch_interrupt.h>
 #include <arch_reg.h>
 
 uint64_t read_mair_el2(void)

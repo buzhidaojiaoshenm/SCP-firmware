@@ -60,6 +60,4 @@ inline static void arch_suspend(void)
     __asm volatile("wfe");
 }
 
-int arch_interrupt_init();
-
 #endif /* ARCH_HELPERS_H */

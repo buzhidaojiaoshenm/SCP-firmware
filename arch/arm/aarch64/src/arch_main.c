@@ -10,7 +10,7 @@
 #include <fwk_macros.h>
 #include <fwk_status.h>
 
-#include <arch_helpers.h>
+#include <arch_interrupt.h>
 
 int arm_main(void)
 {

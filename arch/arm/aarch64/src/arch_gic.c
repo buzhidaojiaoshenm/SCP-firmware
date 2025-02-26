@@ -10,7 +10,7 @@
 #include <fwk_core.h>
 #include <fwk_mmio.h>
 
-#include <arch_helpers.h>
+#include <arch_interrupt.h>
 #include <arch_reg.h>
 
 #include <fmw_gic.h>

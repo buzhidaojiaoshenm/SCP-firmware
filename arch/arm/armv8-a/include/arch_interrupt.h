@@ -430,10 +430,10 @@ DEFINE_SYSREG_RW_FUNCS(cnthctl_el2)
     (((x) >> CNTP_CTL_ISTATUS_SHIFT) & CNTP_CTL_ISTATUS_MASK)
 
 #define set_cntp_ctl_enable(x) ((x) |= (U(1) << CNTP_CTL_ENABLE_SHIFT))
-#define set_cntp_ctl_imask(x) ((x) |= (U(1) << CNTP_CTL_IMASK_SHIFT))
+#define set_cntp_ctl_imask(x)  ((x) |= (U(1) << CNTP_CTL_IMASK_SHIFT))
 
 #define clr_cntp_ctl_enable(x) ((x) &= ~(U(1) << CNTP_CTL_ENABLE_SHIFT))
-#define clr_cntp_ctl_imask(x) ((x) &= ~(U(1) << CNTP_CTL_IMASK_SHIFT))
+#define clr_cntp_ctl_imask(x)  ((x) &= ~(U(1) << CNTP_CTL_IMASK_SHIFT))
 
 DEFINE_SYSREG_RW_FUNCS(tpidr_el3)
 
@@ -540,13 +540,13 @@ static inline uint64_t el_implemented(unsigned int el)
 
 #define read_mpidr() read_mpidr_el1()
 
-#define read_scr() read_scr_el3()
+#define read_scr()    read_scr_el3()
 #define write_scr(_v) write_scr_el3(_v)
 
-#define read_hcr() read_hcr_el2()
+#define read_hcr()    read_hcr_el2()
 #define write_hcr(_v) write_hcr_el2(_v)
 
-#define read_cpacr() read_cpacr_el1()
+#define read_cpacr()    read_cpacr_el1()
 #define write_cpacr(_v) write_cpacr_el1(_v)
 
 /*
@@ -598,7 +598,5 @@ inline static void arch_suspend(void)
 {
     wfe();
 }
-
-int arch_interrupt_init();
 
 #endif /* ARCH_HELPERS_H */

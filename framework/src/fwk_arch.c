@@ -12,7 +12,7 @@
 #include <fwk_arch.h>
 #include <fwk_assert.h>
 
-#include <arch_helpers.h>
+#include <arch_interrupt.h>
 
 #if FWK_HAS_INCLUDE(<fmw_arch.h>)
 #    include <fmw_arch.h>

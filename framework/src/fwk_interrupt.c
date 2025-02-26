@@ -14,7 +14,7 @@
 #include <fwk_interrupt.h>
 #include <fwk_status.h>
 
-#include <arch_helpers.h>
+#include <arch_interrupt.h>
 
 int fwk_arch_interrupt_init()
 {

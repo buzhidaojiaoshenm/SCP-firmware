@@ -1,12 +1,10 @@
 /*
  * Renesas SCP/MCP Software
- * Copyright (c) 2020-2021, Renesas Electronics Corporation. All rights
+ * Copyright (c) 2020-2025, Renesas Electronics Corporation. All rights
  * reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
-
-#include <arch_helpers.h>
 
 #include <mod_clock.h>
 #include <mod_rcar_arch_timer.h>
@@ -21,6 +19,8 @@
 #include <fwk_notification.h>
 #include <fwk_status.h>
 #include <fwk_time.h>
+
+#include <arch_interrupt.h>
 
 #include <stddef.h>
 #include <stdint.h>

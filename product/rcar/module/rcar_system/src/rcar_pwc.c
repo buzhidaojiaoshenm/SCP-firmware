@@ -1,6 +1,6 @@
 /*
  * Renesas SCP/MCP Software
- * Copyright (c) 2020-2024, Renesas Electronics Corporation. All rights
+ * Copyright (c) 2020-2025, Renesas Electronics Corporation. All rights
  * reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
@@ -14,7 +14,7 @@
 #include <fwk_attributes.h>
 #include <fwk_mmio.h>
 
-#include <arch_helpers.h>
+#include <arch_interrupt.h>
 
 #include <stdint.h>
 #include <stdlib.h>

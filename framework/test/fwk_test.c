@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2015-2022, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2015-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -18,7 +18,7 @@
 /*
  * This variable is used by arm architecture to ensure spurious nested calls
  * won't enable interrupts. This is been accessed from inline function defined
- * in arch_helpers.h
+ * in arch_interrupt.h
  */
 unsigned int critical_section_nest_level;
 

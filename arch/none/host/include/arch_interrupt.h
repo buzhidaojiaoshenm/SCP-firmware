@@ -5,21 +5,32 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-#ifndef ARCH_INTERRUPT_H
-#define ARCH_INTERRUPT_H
-
-#include <fwk_arch.h>
+#ifndef ARCH_HELPERS_H
+#define ARCH_HELPERS_H
 
 /*!
- * \brief Initialize the architecture interrupt management component.
+ * \brief Enables global CPU interrupts. (stub)
  *
- * \param[out] Pointer to the interrupt driver.
- *
- * \retval ::FWK_E_PANIC The operation failed.
- * \retval ::FWK_SUCCESS The operation succeeded.
- *
- * \return Status code representing the result of the operation.
  */
-int arch_interrupt_init();
+inline static void arch_interrupts_enable(unsigned int not_used)
+{
+}
 
-#endif /* ARCH_INTERRUPT_H */
+/*!
+ * \brief Disables global CPU interrupts. (stub)
+ *
+ */
+inline static unsigned int arch_interrupts_disable(void)
+{
+    return 0;
+}
+
+/*!
+ * \brief Suspend execution of current CPU.
+ *
+ */
+inline static void arch_suspend(void)
+{
+}
+
+#endif /* ARCH_HELPERS_H */

@@ -18,7 +18,7 @@
 /*
  * This variable is used to ensure spurious nested calls won't
  * enable interrupts. This is been accessed from inline function defined in
- * arch_helpers.h
+ * arch_interrupt.h
  */
 unsigned int critical_section_nest_level;
 

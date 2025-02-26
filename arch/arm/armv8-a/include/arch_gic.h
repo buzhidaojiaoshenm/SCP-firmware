@@ -11,7 +11,7 @@
 
 #include <fwk_arch.h>
 
-#include <arch_helpers.h>
+#include <arch_interrupt.h>
 
 /* Constants to categorise priorities */
 #define GIC_HIGHEST_SEC_PRIORITY 0x0

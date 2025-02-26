@@ -11,7 +11,7 @@
 #include <fwk_arch.h>
 #include <fwk_status.h>
 
-#include <arch_helpers.h>
+#include <arch_interrupt.h>
 
 #include <stdbool.h>
 #include <stdint.h>

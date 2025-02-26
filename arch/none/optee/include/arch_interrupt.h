@@ -44,6 +44,5 @@ inline static void arch_suspend(void)
  *
  * \return Status code representing the result of the operation.
  */
-int arch_interrupt_init();
 
 #endif /* ARCH_HELPERS_H */
