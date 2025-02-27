@@ -1,5 +1,5 @@
 \ingroup GroupModules Modules
-\defgroup GroupNoCS3 NoCS3
+\defgroup GroupNoCS3 Network on Chip S3
 
 # Module NoCS3 Architecture
 

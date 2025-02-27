@@ -217,6 +217,7 @@ For more guidance and information on the build system, refer to the full set of
 documentation included in the *Build System* chapter of the Doxygen-generated
 documentation.
 
+<a name="building-with-llvm"></a>
 ### Building with LLVM
 
 When building with the LLVM toolchain, it is mandatory to pass the required

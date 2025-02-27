@@ -1,5 +1,5 @@
 \ingroup GroupModules Modules
-\defgroup GroupMPMM Max Power Mitigation Mechanism Version 2(MPMM_V2)
+\defgroup GroupMPMM_V2 Max Power Mitigation Mechanism Version 2(MPMM_V2)
 
 Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
 

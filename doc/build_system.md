@@ -293,75 +293,77 @@ module tests.
 
 - Using cmake command line option
 
-> ```sh
-> cmake -B /tmp/build  -DSCP_FIRMWARE_SOURCE_DIR:PATH=juno/scp_ramfw\
-> -DSCP_ENABLE_DEBUG_UNIT=TRUE
-> ```
-> It will configure cmake to build firmware for Juno platform `scp_ramfw`
-> firmware. with debug unit enabled
-> where:
-> - `/tmp/build`:  is the directory where the build will be generated.
-> - `juno/scp_romfw`: is the firmware to build for the platform.
->
-> ```sh
-> $ cmake --build /tmp/build    # will build the configured cmake
-> ```
+  ```sh
+  cmake -B /tmp/build  -DSCP_FIRMWARE_SOURCE_DIR:PATH=juno/scp_ramfw\
+  -DSCP_ENABLE_DEBUG_UNIT=TRUE
+  ```
+
+  It will configure cmake to build firmware for Juno platform `scp_ramfw`
+  firmware. with debug unit enabled
+  where:
+  - `/tmp/build`:  is the directory where the build will be generated.
+  - `juno/scp_romfw`: is the firmware to build for the platform.
+
+  ```sh
+  cmake --build /tmp/build    # will build the configured cmake
+  ```
 
 - Using ccmake or cmake-gui
 
-> ```sh
-> $ ccmake -B /tmp/build  -DSCP_FIRMWARE_SOURCE_DIR:PATH=juno/scp_ramfw
-> ```
-> It will configure cmake to build firmware for Juno platform scp_ramfw
-> firmware with debug unit enabled
-> where:
-> * `/tmp/build`:  is the directory where the build will be generated.
-> * `juno/scp_romfw`: is the firmware to build for the platform.
->
-> It opens a curses based UI. If `/tmp/build` is not present i.e. if this
-> is the first time the configuration is generated, select `'c'` (Configure)
-> and then modify the options as desired. After selecting the options
-> select `'c'` (Configure) and `'g'`(Generate) to generate the build system.
->
-> ```sh
-> $ cmake --build /tmp/build    # will build the configured cmake
-> ```
->
-> Build options can subsequently tuned using below command
-> ```sh
-> $ ccmake /tmp/build
-> ```
+  ```sh
+  $ ccmake -B /tmp/build  -DSCP_FIRMWARE_SOURCE_DIR:PATH=juno/scp_ramfw
+  ```
+
+  It will configure cmake to build firmware for Juno platform scp_ramfw
+  firmware with debug unit enabled
+  where:
+  * `/tmp/build`:  is the directory where the build will be generated.
+  * `juno/scp_romfw`: is the firmware to build for the platform.
+
+  It opens a curses based UI. If `/tmp/build` is not present i.e. if this
+  is the first time the configuration is generated, select `'c'` (Configure)
+  and then modify the options as desired. After selecting the options
+  select `'c'` (Configure) and `'g'`(Generate) to generate the build system.
+
+  ```sh
+  $ cmake --build /tmp/build    # will build the configured cmake
+  ```
+
+  Build options can subsequently tuned using below command
+  ```sh
+  $ ccmake /tmp/build
+  ```
 
 - Using default value set for a specific option in `Firmware.cmake`.
->
-> Every SCP firmware specific option(e.g. `SCP_ENABLE_XXX`) has a corresponding
-> `_INIT` variable in respective `Firmware.cmake` and can be modified before
-> build generation
->
-> e.g.
-> For Arm Juno platform `scp_ramfw/Firmware.cmake` following value can be edited
-> manually before build configuration is generated.
->
-> ```cmake
-> set(SCP_ENABLE_DEBUG_UNIT_INIT FALSE)
-> ```
->
-> **NOTE** In this method, if value needs to be re-modified then old build
-> folder must be manually deleted. Subsequent re-run without deleting old
-> configuration will not update the earlier configured value, See CACHE
-> variables in CMake documentation.
 
-**NOTE**: Enabling/disabling option may result in inclusion or exclusion of
-a particular module in the firmware.
-e.g. See module/resource_perms/Module.cmake and note following
-```cmake
-if(SCP_ENABLE_RESOURCE_PERMISSIONS)
-   list(APPEND SCP_MODULES "resource-perms")
-endif()
-```
-The above code will include `resource-perms` module in the firmware only if
-`SCP_ENABLE_RESOURCE_PERMISSIONS` is enabled. This also means, define
-`BUILD_HAS_MOD_RESOURCE_PERMS` will available only if this option is enabled.
+  Every SCP firmware specific option(e.g. `SCP_ENABLE_XXX`) has a corresponding
+  `_INIT` variable in respective `Firmware.cmake` and can be modified before
+  build generation
+
+  e.g.
+  For Arm Juno platform `scp_ramfw/Firmware.cmake` following value can be edited
+  manually before build configuration is generated.
+
+  ```
+  set(SCP_ENABLE_DEBUG_UNIT_INIT FALSE)
+  ```
+
+  **NOTE** In this method, if value needs to be re-modified then old build
+  folder must be manually deleted. Subsequent re-run without deleting old
+  configuration will not update the earlier configured value, See CACHE
+  variables in CMake documentation.
+
+  **NOTE**: Enabling/disabling option may result in inclusion or exclusion of
+  a particular module in the firmware.
+  e.g. See module/resource_perms/Module.cmake and note following
+  ```cmake
+  if(SCP_ENABLE_RESOURCE_PERMISSIONS)
+    list(APPEND SCP_MODULES "resource-perms")
+  endif()
+  ```
+  The above code will include `resource-perms` module in the firmware only if
+  `SCP_ENABLE_RESOURCE_PERMISSIONS` is enabled. This also means, define
+  `BUILD_HAS_MOD_RESOURCE_PERMS` will available only if this option is enabled.
 
 ### Variables
 
@@ -443,6 +445,7 @@ Along with core CMake build system, also provided is a option to generate
 a build environment, please see details below.
 
 ## Vagrant (recommended)
+\anchor vagrant
 
 > **NOTE**: If you're unfamiliar with Vagrant, we recommend you read the brief
 > introduction found [here][Vagrant].
@@ -460,11 +463,11 @@ have them both installed:
 >
 > - Ubuntu and other Debian-based Linux distributions:
 >   https://docs.docker.com/engine/install/ubuntu/
->
-> ```sh
-> $ sudo apt install vagrant
-> ```
->
+
+ ```sh
+ $ sudo apt install vagrant
+ ```
+
 
 When using Vagrant, there are no additional prerequisites for the host system,
 as all build and quality assurance tools are packaged with the container.
