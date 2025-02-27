@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2020-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2020-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -12,7 +12,7 @@
 #include <fwk_id.h>
 
 /*!
- * \ingroup GroupModules Modules
+ * \ingroup GroupModules
  * \defgroup GroupSCMIPowerDomain SCMI Power Domain
  * \{
  */
@@ -133,6 +133,10 @@ int scmi_pd_power_state_set_policy(
     uint32_t *state,
     unsigned int agent_id,
     fwk_id_t pd_id);
+
+/*!
+ * \}
+ */
 
 /*!
  * \}

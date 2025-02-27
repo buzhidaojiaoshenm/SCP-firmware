@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2024-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -18,7 +18,7 @@
 #include <stdint.h>
 
 /*!
- * \ingroup GroupModules Modules
+ * \ingroup GroupModules
  * \defgroup GroupSystemCCSM Module
  *
  * \details A driver for Clock Control State Machines.
@@ -39,7 +39,7 @@ struct mod_ccsm_clock_rate {
     /*! Rate of nominal clock in Hertz. */
     uint64_t nominal_clock_rate_hz;
 
-    /* Rate of fallback clock in Hertz. */
+    /*! Rate of fallback clock in Hertz. */
     uint64_t fallback_clock_rate_hz;
 };
 
@@ -209,5 +209,9 @@ struct mod_ccsm_dev_config {
     /*! Element identifier for the timer device. */
     fwk_id_t timer_id;
 };
+
+/*!
+ * \}
+ */
 
 #endif /* MOD_CCSM_H */

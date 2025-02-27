@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2015-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2015-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -19,7 +19,7 @@
 #include <stdint.h>
 
 /*!
- * \ingroup GroupModules Modules
+ * \ingroup GroupModules
  * \defgroup GroupSCMI_CLOCK SCMI Clock Management Protocol
  * \{
  */

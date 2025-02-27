@@ -1,7 +1,7 @@
 
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2018-2023, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2018-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -15,7 +15,7 @@
 #include <stdint.h>
 
 /*!
- * \ingroup GroupModules Modules
+ * \ingroup GroupModules
  * \defgroup GroupModuleAPContext AP Context
  *
  * \brief Application Processor (AP) context module.

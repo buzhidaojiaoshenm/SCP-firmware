@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2024-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -88,9 +88,9 @@ enum noc_s3_granularity {
  * \brief NoC S3 discovery data.
  */
 struct noc_s3_discovery_data {
-    /* Offset table. */
+    /*! Offset table. */
     uintptr_t *table[MOD_NOC_S3_NODE_TYPE_COUNT];
-    /* Size of each row, for each node type in the offset table. */
+    /*! Size of each row, for each node type in the offset table. */
     uint8_t max_node_size[MOD_NOC_S3_NODE_TYPE_COUNT];
 };
 

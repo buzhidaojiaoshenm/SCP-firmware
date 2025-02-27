@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2015-2021, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2015-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -19,7 +19,7 @@
 #include <stdint.h>
 
 /*!
- * \ingroup GroupModules Modules
+ * \ingroup GroupModules
  * \defgroup GroupSCMI_VOLTD SCMI Voltage Domain Management Protocol
  * \{
  */

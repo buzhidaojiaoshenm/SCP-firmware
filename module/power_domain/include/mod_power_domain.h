@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2015-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2015-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -104,9 +104,9 @@ struct mod_power_domain_config {
     /*! Number of identifiers in the "authorized_id_table" table. */
     size_t authorized_id_table_size;
 
-    /*
+    /*!
      *  A flag to choose between sending notification when the last core going
-     * off or doing complete system suspend by the power domain
+     *  off or doing complete system suspend by the power domain
      */
     bool enable_system_suspend_notification;
 };
@@ -184,7 +184,7 @@ struct mod_power_domain_element_config {
     /*! Disable power domain transition notifications */
     bool disable_state_transition_notifications;
 
-    /* ! Optional mapping for the enum_mod_pd_state to the driver state */
+    /*! Optional mapping for the enum_mod_pd_state to the driver state */
     const unsigned int *pd_state_mapping_table;
 };
 

@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2024-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -13,7 +13,7 @@
 
 /*!
  * \addtogroup GroupLibFramework
- * \defgroup GroupTime Trace operations.
+ * \defgroup GroupTrace Trace operations.
  *
  * \details This component adds support for various trace operations.
  *

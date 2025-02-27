@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2024-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -15,7 +15,7 @@
 
 /*!
  * \ingroup GroupModules
- *  \defgroup GroupMPMM Max Power Mitigation Mechanism (MPMM)
+ *  \defgroup GroupMPMM_V2 Max Power Mitigation Mechanism Version 2(MPMM_V2)
  * \{
  */
 /*! Default gear. */

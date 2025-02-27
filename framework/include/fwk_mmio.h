@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2024-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -291,6 +291,10 @@ static inline void fwk_mmio_clrsetbits_64(
 {
     fwk_mmio_write_64(addr, (fwk_mmio_read_64(addr) & ~clear) | set);
 }
+
+/*!
+ * \}
+ */
 
 /*!
  * \}

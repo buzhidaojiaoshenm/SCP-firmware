@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2023-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2023-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -363,7 +363,7 @@ struct mod_cmn_cyprus_cml_config {
     /*! Logical Device ID(s) of the CCG node(s) */
     unsigned int *ccg_ldid;
 
-    /* HAID(s) to be assigned to the CCG HA node(s) */
+    /*! HAID(s) to be assigned to the CCG HA node(s) */
     unsigned int *haid;
 
     /*!

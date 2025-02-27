@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2022-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2022-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -38,13 +38,13 @@ struct scmi_sys_power_req_state_set_a2p {
     uint32_t system_state;
 };
 
-/* Supported notifications */
+/*! Supported notifications */
 enum mod_system_power_req_notifications {
     MOD_SYS_POWER_REQ_STATE_CHANGE_NOTIFICATION,
     MOD_SYS_POWER_REQ_NOTIFICATION_COUNT,
 };
 
-/* System change notification */
+/*! System change notification */
 static const fwk_id_t mod_scmi_system_power_notification_system_power_change =
     FWK_ID_NOTIFICATION_INIT(
         FWK_MODULE_IDX_SCMI_SYSTEM_POWER_REQ,
