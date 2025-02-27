@@ -21,6 +21,22 @@
 #include <fwk_module_idx.h>
 
 static const struct fwk_element service_table[SI0_CFGD_MOD_SCMI_EIDX_COUNT + 1] = {
+    [SI0_CFGD_MOD_SCMI_EIDX_RSE] = {
+        .name = "SCMI_SERVICE_TO_RSE",
+        .data = &((struct mod_scmi_service_config) {
+            .transport_id = FWK_ID_ELEMENT_INIT(
+                FWK_MODULE_IDX_TRANSPORT,
+                SI0_CFGD_MOD_TRANSPORT_EIDX_SCMI_RSE),
+            .transport_api_id = FWK_ID_API_INIT(
+                FWK_MODULE_IDX_TRANSPORT,
+                MOD_TRANSPORT_API_IDX_SCMI_TO_TRANSPORT),
+            .transport_notification_init_id = FWK_ID_NOTIFICATION_INIT(
+                FWK_MODULE_IDX_TRANSPORT,
+                MOD_TRANSPORT_NOTIFICATION_IDX_INITIALIZED),
+            .scmi_agent_id = SI0_SCMI_AGENT_IDX_RSE,
+            .scmi_p2a_id = FWK_ID_NONE_INIT,
+        }),
+    },
     [SI0_CFGD_MOD_SCMI_EIDX_PSCI] = {
         .name = "SERVICE0",
         .data = &((struct mod_scmi_service_config) {
@@ -46,6 +62,10 @@ static const struct fwk_element *get_service_table(fwk_id_t module_id)
 }
 
 static struct mod_scmi_agent agent_table[SI0_SCMI_AGENT_IDX_COUNT] = {
+    [SI0_SCMI_AGENT_IDX_RSE] = {
+        .type = SCMI_AGENT_TYPE_PSCI,
+        .name = "SI0_SCMI_AGENT_RSE",
+    },
     [SI0_SCMI_AGENT_IDX_PSCI] = {
         .type = SCMI_AGENT_TYPE_PSCI,
         .name = "PSCI",

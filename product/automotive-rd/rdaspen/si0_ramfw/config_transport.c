@@ -9,6 +9,7 @@
  */
 
 #include "si0_cfgd_mhu3.h"
+#include "si0_cfgd_power_domain.h"
 #include "si0_cfgd_transport.h"
 #include "si0_mmap.h"
 
@@ -33,17 +34,16 @@
 
 /* Module 'transport' element configuration table */
 static const struct fwk_element element_table[]  = {
-    [SI0_CFGD_MOD_TRANSPORT_EIDX_SYSTEM] = {
-        .name = "SI0_PLATFORM_TRANSPORT",
+    [SI0_CFGD_MOD_TRANSPORT_EIDX_SCMI_RSE] = {
+        .name = "SI0_RSE_SCMI_TRANSPORT",
         .data = &((
             struct mod_transport_channel_config) {
-                .transport_type = MOD_TRANSPORT_CHANNEL_TRANSPORT_TYPE_NONE,
-                .policies = MOD_TRANSPORT_POLICY_NONE,
+                .transport_type = MOD_TRANSPORT_CHANNEL_TRANSPORT_TYPE_OUT_BAND,
+                .policies = TRANSPORT_CH_SEC_MBX_INIT,
                 .channel_type = MOD_TRANSPORT_CHANNEL_TYPE_COMPLETER,
-                .signal_api_id =
-                    FWK_ID_API_INIT(
-                        FWK_MODULE_IDX_SI0_PLATFORM,
-                        MOD_SI0_PLATFORM_API_IDX_TRANSPORT_SIGNAL),
+                .out_band_mailbox_address =
+                    (uintptr_t) SI0_RSE_SCMI_PAYLOAD_BASE,
+                .out_band_mailbox_size = SI0_SCMI_PAYLOAD_SIZE,
                 .driver_id =
                     FWK_ID_SUB_ELEMENT_INIT(
                         FWK_MODULE_IDX_MHU3,
@@ -53,6 +53,10 @@ static const struct fwk_element element_table[]  = {
                     FWK_ID_API_INIT(
                         FWK_MODULE_IDX_MHU3,
                         MOD_MHU3_API_IDX_TRANSPORT_DRIVER),
+                .platform_notification = {
+                    .notification_id = FWK_ID_NONE,
+                    .source_id = FWK_ID_NONE,
+                },
         }),
     },
     [SI0_CFGD_MOD_TRANSPORT_EIDX_PSCI] = {
