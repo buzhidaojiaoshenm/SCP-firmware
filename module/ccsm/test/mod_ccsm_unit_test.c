@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2024-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -1361,6 +1361,27 @@ void test_function_ccsm_bind(void)
     TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
 }
 
+void test_function_get_register_value_rate_fail(void)
+{
+    int status;
+    struct ccsm_dev_ctx *ctx;
+    uint32_t pll_settings;
+
+    ctx = &module_ctx.dev_ctx_table[FAKE_CCSM_IDX_CONTINUOUS];
+
+    status = get_register_value_rate(NULL, 0, &pll_settings, &pll_settings);
+
+    TEST_ASSERT_EQUAL(FWK_E_PARAM, status);
+
+    status = get_register_value_rate(ctx, 0, NULL, &pll_settings);
+
+    TEST_ASSERT_EQUAL(FWK_E_PARAM, status);
+
+    status = get_register_value_rate(ctx, 0, &pll_settings, NULL);
+
+    TEST_ASSERT_EQUAL(FWK_E_PARAM, status);
+}
+
 int ccsm_test_main(void)
 {
     UNITY_BEGIN();
@@ -1423,6 +1444,8 @@ int ccsm_test_main(void)
     RUN_TEST(test_function_ccsm_power_state_change_on_pass);
 
     RUN_TEST(test_function_ccsm_clock_power_state_pending_change_pass);
+
+    RUN_TEST(test_function_get_register_value_rate_fail);
 
     return UNITY_END();
 }
