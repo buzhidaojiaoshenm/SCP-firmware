@@ -91,6 +91,16 @@ static struct mod_armv8r_mpu_region mem_regions[] = {
           PRLAR_NS_SECURE,
           MPU_ATTR_1,
           PRLAR_EN_ENABLED) },
+    { .prbar = PRBAR_VALUE(
+          SI0_RSE_SHARED_SRAM_BASE,
+          PRBAR_SH_OUTER_SHAREABLE,
+          PRBAR_AP_RW_EL2,
+          PRBAR_XN_NOT_PERMITTED),
+      .prlar = PRLAR_VALUE(
+          SI0_RSE_SHARED_SRAM_BASE + SI0_RSE_SHARED_SRAM_SIZE - 1,
+          PRLAR_NS_SECURE,
+          MPU_ATTR_0,
+          PRLAR_EN_ENABLED) },
 };
 
 const struct fwk_module_config config_armv8r_mpu = {

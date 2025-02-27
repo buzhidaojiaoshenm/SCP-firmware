@@ -141,4 +141,11 @@ static_assert(
 #define SI0_SCMI_PAYLOAD_S_A2P_BASE (SI0_SDS_SECURE_BASE + SI0_SDS_SECURE_SIZE)
 #define SI0_SCMI_PAYLOAD_SIZE       (128)
 
+/* Shared RSE<->SI shared SRAM ie. SI Local SRAM Banks group0 */
+#define SI0_RSE_SHARED_SRAM_BASE (0x40000000UL)
+#define SI0_RSE_SHARED_SRAM_SIZE (8 * FWK_MIB)
+
+/* SCMI Secure Payload Area */
+#define SI0_RSE_SCMI_PAYLOAD_BASE (SI0_RSE_SHARED_SRAM_BASE)
+
 #endif /* SI0_MMAP_H */
