@@ -31,6 +31,7 @@ list(APPEND SCP_MODULES
     "armv8r-mpu"
     "pl011"
     "gicx00"
+    "ni-710ae"
     "system-pll"
     "ros-clock"
     "clock"
