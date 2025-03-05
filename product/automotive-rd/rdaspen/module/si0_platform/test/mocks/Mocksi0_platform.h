@@ -24,42 +24,6 @@ void Mocksi0_platform_Verify(void);
 
 
 
-#define get_platform_transport_signal_api_IgnoreAndReturn(cmock_retval) get_platform_transport_signal_api_CMockIgnoreAndReturn(__LINE__, cmock_retval)
-void get_platform_transport_signal_api_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, const void* cmock_to_return);
-#define get_platform_transport_signal_api_StopIgnore() get_platform_transport_signal_api_CMockStopIgnore()
-void get_platform_transport_signal_api_CMockStopIgnore(void);
-#define get_platform_transport_signal_api_ExpectAndReturn(cmock_retval) get_platform_transport_signal_api_CMockExpectAndReturn(__LINE__, cmock_retval)
-void get_platform_transport_signal_api_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, const void* cmock_to_return);
-typedef const void* (* CMOCK_get_platform_transport_signal_api_CALLBACK)(int cmock_num_calls);
-void get_platform_transport_signal_api_AddCallback(CMOCK_get_platform_transport_signal_api_CALLBACK Callback);
-void get_platform_transport_signal_api_Stub(CMOCK_get_platform_transport_signal_api_CALLBACK Callback);
-#define get_platform_transport_signal_api_StubWithCallback get_platform_transport_signal_api_Stub
-#define notify_rse_and_wait_for_response_IgnoreAndReturn(cmock_retval) notify_rse_and_wait_for_response_CMockIgnoreAndReturn(__LINE__, cmock_retval)
-void notify_rse_and_wait_for_response_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return);
-#define notify_rse_and_wait_for_response_StopIgnore() notify_rse_and_wait_for_response_CMockStopIgnore()
-void notify_rse_and_wait_for_response_CMockStopIgnore(void);
-#define notify_rse_and_wait_for_response_ExpectAndReturn(cmock_retval) notify_rse_and_wait_for_response_CMockExpectAndReturn(__LINE__, cmock_retval)
-void notify_rse_and_wait_for_response_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return);
-typedef int (* CMOCK_notify_rse_and_wait_for_response_CALLBACK)(int cmock_num_calls);
-void notify_rse_and_wait_for_response_AddCallback(CMOCK_notify_rse_and_wait_for_response_CALLBACK Callback);
-void notify_rse_and_wait_for_response_Stub(CMOCK_notify_rse_and_wait_for_response_CALLBACK Callback);
-#define notify_rse_and_wait_for_response_StubWithCallback notify_rse_and_wait_for_response_Stub
-#define platform_rse_bind_IgnoreAndReturn(cmock_retval) platform_rse_bind_CMockIgnoreAndReturn(__LINE__, cmock_retval)
-void platform_rse_bind_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return);
-#define platform_rse_bind_StopIgnore() platform_rse_bind_CMockStopIgnore()
-void platform_rse_bind_CMockStopIgnore(void);
-#define platform_rse_bind_ExpectAnyArgsAndReturn(cmock_retval) platform_rse_bind_CMockExpectAnyArgsAndReturn(__LINE__, cmock_retval)
-void platform_rse_bind_CMockExpectAnyArgsAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return);
-#define platform_rse_bind_ExpectAndReturn(config, cmock_retval) platform_rse_bind_CMockExpectAndReturn(__LINE__, config, cmock_retval)
-void platform_rse_bind_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, const struct mod_si0_platform_config* config, int cmock_to_return);
-typedef int (* CMOCK_platform_rse_bind_CALLBACK)(const struct mod_si0_platform_config* config, int cmock_num_calls);
-void platform_rse_bind_AddCallback(CMOCK_platform_rse_bind_CALLBACK Callback);
-void platform_rse_bind_Stub(CMOCK_platform_rse_bind_CALLBACK Callback);
-#define platform_rse_bind_StubWithCallback platform_rse_bind_Stub
-#define platform_rse_bind_ExpectWithArrayAndReturn(config, config_Depth, cmock_retval) platform_rse_bind_CMockExpectWithArrayAndReturn(__LINE__, config, config_Depth, cmock_retval)
-void platform_rse_bind_CMockExpectWithArrayAndReturn(UNITY_LINE_TYPE cmock_line, const struct mod_si0_platform_config* config, int config_Depth, int cmock_to_return);
-#define platform_rse_bind_IgnoreArg_config() platform_rse_bind_CMockIgnoreArg_config(__LINE__)
-void platform_rse_bind_CMockIgnoreArg_config(UNITY_LINE_TYPE cmock_line);
 #define platform_power_mgmt_bind_IgnoreAndReturn(cmock_retval) platform_power_mgmt_bind_CMockIgnoreAndReturn(__LINE__, cmock_retval)
 void platform_power_mgmt_bind_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return);
 #define platform_power_mgmt_bind_StopIgnore() platform_power_mgmt_bind_CMockStopIgnore()
@@ -70,16 +34,6 @@ typedef int (* CMOCK_platform_power_mgmt_bind_CALLBACK)(int cmock_num_calls);
 void platform_power_mgmt_bind_AddCallback(CMOCK_platform_power_mgmt_bind_CALLBACK Callback);
 void platform_power_mgmt_bind_Stub(CMOCK_platform_power_mgmt_bind_CALLBACK Callback);
 #define platform_power_mgmt_bind_StubWithCallback platform_power_mgmt_bind_Stub
-#define init_ap_IgnoreAndReturn(cmock_retval) init_ap_CMockIgnoreAndReturn(__LINE__, cmock_retval)
-void init_ap_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return);
-#define init_ap_StopIgnore() init_ap_CMockStopIgnore()
-void init_ap_CMockStopIgnore(void);
-#define init_ap_ExpectAndReturn(cmock_retval) init_ap_CMockExpectAndReturn(__LINE__, cmock_retval)
-void init_ap_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return);
-typedef int (* CMOCK_init_ap_CALLBACK)(int cmock_num_calls);
-void init_ap_AddCallback(CMOCK_init_ap_CALLBACK Callback);
-void init_ap_Stub(CMOCK_init_ap_CALLBACK Callback);
-#define init_ap_StubWithCallback init_ap_Stub
 #define get_platform_system_power_driver_api_IgnoreAndReturn(cmock_retval) get_platform_system_power_driver_api_CMockIgnoreAndReturn(__LINE__, cmock_retval)
 void get_platform_system_power_driver_api_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, const void* cmock_to_return);
 #define get_platform_system_power_driver_api_StopIgnore() get_platform_system_power_driver_api_CMockStopIgnore()

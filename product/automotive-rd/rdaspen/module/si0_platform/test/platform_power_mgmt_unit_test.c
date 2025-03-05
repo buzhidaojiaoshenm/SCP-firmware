@@ -18,24 +18,8 @@
 
 #include "config_si0_platform.h"
 
-int set_state_status;
-
-static int set_state(
-    fwk_id_t core_idx,
-    bool response_requested,
-    unsigned int state)
-{
-    return set_state_status;
-}
-
-static struct mod_pd_restricted_api pd_api = {
-    .set_state = set_state,
-};
-
 void setUp(void)
 {
-    pd_restricted_api = &pd_api;
-    set_state_status = FWK_SUCCESS;
 }
 
 void tearDown(void)
@@ -75,43 +59,12 @@ void test_platform_power_mgmt_bind_fail(void)
     TEST_ASSERT_EQUAL(status, FWK_E_DATA);
 }
 
-/*!
- * \brief platform_power_mgmt unit test: init_ap(),
- *
- *  \details Test successful call to init_ap
- */
-void test_init_ap_success(void)
-{
-    int status;
-
-    status = init_ap();
-
-    TEST_ASSERT_EQUAL(status, FWK_SUCCESS);
-}
-
-/*!
- * \brief platform_power_mgmt unit test: init_ap(),
- *
- *  \details Test failure in call to init_ap
- */
-void test_init_ap_fail(void)
-{
-    int status;
-
-    set_state_status = FWK_E_BUSY;
-    status = init_ap();
-
-    TEST_ASSERT_EQUAL(status, FWK_E_BUSY);
-}
-
 int platform_power_mgmt_test_main(void)
 {
     UNITY_BEGIN();
 
     RUN_TEST(test_platform_power_mgmt_bind_success);
     RUN_TEST(test_platform_power_mgmt_bind_fail);
-    RUN_TEST(test_init_ap_success);
-    RUN_TEST(test_init_ap_fail);
 
     return UNITY_END();
 }

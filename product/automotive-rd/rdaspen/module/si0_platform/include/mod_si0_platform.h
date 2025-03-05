@@ -30,8 +30,6 @@
  * \brief Indices of the interfaces exposed by the module.
  */
 enum mod_si0_platform_api_idx {
-    /*! Interface for Transport module */
-    MOD_SI0_PLATFORM_API_IDX_TRANSPORT_SIGNAL,
     /*! API index for the powerdown interface of SCMI module */
     MOD_SI0_PLATFORM_API_IDX_SCMI_POWER_DOWN,
     /*! API index for the driver interface of the SYSTEM POWER module */
@@ -59,23 +57,6 @@ static const fwk_id_t mod_si0_platform_notification_subsys_init =
     FWK_ID_NOTIFICATION_INIT(
         FWK_MODULE_IDX_SI0_PLATFORM,
         MOD_SI0_PLATFORM_NOTIFICATION_IDX_SUBSYS_INITIALIZED);
-
-/*!
- * \brief SCP platform configuration data.
- */
-struct mod_si0_platform_config {
-    /*! Timer identifier */
-    fwk_id_t timer_id;
-
-    /*! Transport channel identifier */
-    fwk_id_t transport_id;
-
-    /*!
-     * Maximum amount of time, in microseconds, to wait for the RSE handshake
-     * event.
-     */
-    uint32_t rse_sync_wait_us;
-};
 
 /*!
  * @}

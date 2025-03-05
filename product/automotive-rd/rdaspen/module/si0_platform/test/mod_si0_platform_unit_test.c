@@ -39,29 +39,9 @@ void test_si0_platform_mod_init_success(void)
 {
     int status;
 
-    fwk_id_type_is_valid_IgnoreAndReturn(true);
-
-    status = si0_platform_mod_init(
-        fwk_module_id_si0_platform, 0, &platform_config_data);
+    status = si0_platform_mod_init(fwk_module_id_si0_platform, 0, 0);
 
     TEST_ASSERT_EQUAL(status, FWK_SUCCESS);
-}
-
-/*!
- * \brief SI0 Platform unit test: si0_platform_mod_init(),
- *
- *  \details Test failure in initialization of si0_platform module
- */
-void test_si0_platform_mod_init_fail(void)
-{
-    int status;
-
-    fwk_id_type_is_valid_IgnoreAndReturn(false);
-
-    status = si0_platform_mod_init(
-        fwk_module_id_si0_platform, 0, &platform_config_data);
-
-    TEST_ASSERT_EQUAL(status, FWK_E_DATA);
 }
 
 /*!
@@ -73,7 +53,6 @@ void test_si0_platform_bind_success(void)
 {
     int status;
 
-    platform_rse_bind_ExpectAndReturn(&platform_config_data, FWK_SUCCESS);
     platform_power_mgmt_bind_ExpectAndReturn(FWK_SUCCESS);
 
     status = si0_platform_bind(fwk_module_id_si0_platform, 0);
@@ -90,7 +69,7 @@ void test_si0_platform_bind_fail(void)
 {
     int status;
 
-    platform_rse_bind_ExpectAndReturn(&platform_config_data, FWK_E_DATA);
+    platform_power_mgmt_bind_ExpectAndReturn(FWK_E_DATA);
 
     status = si0_platform_bind(fwk_module_id_si0_platform, 0);
 
@@ -110,9 +89,7 @@ void test_si0_platform_mod_start_success(void)
     event.source_id = fwk_module_id_si0_platform;
     unsigned int count = 0U;
 
-    notify_rse_and_wait_for_response_ExpectAndReturn(FWK_SUCCESS);
     fwk_notification_notify_ExpectAndReturn(&event, &count, FWK_SUCCESS);
-    init_ap_ExpectAndReturn(FWK_SUCCESS);
 
     status = si0_platform_start(fwk_module_id_si0_platform);
     TEST_ASSERT_EQUAL(status, FWK_SUCCESS);
@@ -123,28 +100,15 @@ void test_si0_platform_mod_start_success(void)
  *
  *  \details Test failure starting the si0_platform module
  */
-void test_si0_platform_mod_start_fail_rse(void)
+void test_si0_platform_mod_start_fail_notification(void)
 {
     int status;
+    struct fwk_event event = { 0 };
+    event.id = mod_si0_platform_notification_subsys_init;
+    event.source_id = fwk_module_id_si0_platform;
+    unsigned int count = 0U;
 
-    notify_rse_and_wait_for_response_ExpectAndReturn(FWK_E_BUSY);
-
-    status = si0_platform_start(fwk_module_id_si0_platform);
-    TEST_ASSERT_EQUAL(status, FWK_E_PANIC);
-}
-
-/*!
- * \brief SI0 Platform unit test: si0_platform_start(),
- *
- *  \details Test failure starting the si0_platform module
- */
-void test_si0_platform_mod_start_fail_power_mgmt(void)
-{
-    int status;
-
-    notify_rse_and_wait_for_response_ExpectAndReturn(FWK_SUCCESS);
-    fwk_notification_notify_IgnoreAndReturn(FWK_SUCCESS);
-    init_ap_ExpectAndReturn(FWK_E_BUSY);
+    fwk_notification_notify_ExpectAndReturn(&event, &count, FWK_E_DATA);
 
     status = si0_platform_start(fwk_module_id_si0_platform);
     TEST_ASSERT_EQUAL(status, FWK_E_PANIC);
@@ -155,12 +119,10 @@ int si0_platform_test_main(void)
     UNITY_BEGIN();
 
     RUN_TEST(test_si0_platform_mod_init_success);
-    RUN_TEST(test_si0_platform_mod_init_fail);
     RUN_TEST(test_si0_platform_bind_success);
     RUN_TEST(test_si0_platform_bind_fail);
     RUN_TEST(test_si0_platform_mod_start_success);
-    RUN_TEST(test_si0_platform_mod_start_fail_rse);
-    RUN_TEST(test_si0_platform_mod_start_fail_power_mgmt);
+    RUN_TEST(test_si0_platform_mod_start_fail_notification);
 
     return UNITY_END();
 }

@@ -12,7 +12,6 @@
 
 #include <internal/si0_platform.h>
 
-#include <mod_power_domain.h>
 #include <mod_scmi.h>
 #include <mod_scmi_std.h>
 #include <mod_system_power.h>
@@ -25,9 +24,6 @@
 
 /*! SCMI protocol API */
 static const struct mod_scmi_from_protocol_req_api *scmi_protocol_req_api;
-
-/* Module 'power_domain' restricted API pointer */
-static struct mod_pd_restricted_api *pd_restricted_api;
 
 /*
  * SCMI module -> SI0 platform module interface
@@ -106,32 +102,6 @@ int platform_power_mgmt_bind(void)
         FWK_ID_MODULE(FWK_MODULE_IDX_SCMI),
         FWK_ID_API(FWK_MODULE_IDX_SCMI, MOD_SCMI_API_IDX_PROTOCOL_REQ),
         &scmi_protocol_req_api);
-    if (status != FWK_SUCCESS) {
-        return status;
-    }
 
-    return fwk_module_bind(
-        fwk_module_id_power_domain,
-        mod_pd_api_id_restricted,
-        &pd_restricted_api);
-}
-
-int init_ap(void)
-{
-    bool resp_requested;
-    uint32_t pd_state;
-    fwk_id_t pd_id;
-
-    fwk_assert(pd_restricted_api != NULL);
-
-    pd_id = FWK_ID_ELEMENT(FWK_MODULE_IDX_POWER_DOMAIN, 0);
-
-    /* Notification event at the end of request processing is not required */
-    resp_requested = false;
-
-    /* Composite Power Domain state to be set for the AP */
-    pd_state = MOD_PD_COMPOSITE_STATE(
-        MOD_PD_LEVEL_2, 0, MOD_PD_STATE_ON, MOD_PD_STATE_ON, MOD_PD_STATE_ON);
-
-    return pd_restricted_api->set_state(pd_id, resp_requested, pd_state);
+    return status;
 }

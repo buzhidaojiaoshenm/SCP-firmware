@@ -5,41 +5,9 @@
 #include "cmock.h"
 #include "Mocksi0_platform.h"
 
-static const char* CMockString_config = "config";
 static const char* CMockString_get_platform_scmi_power_down_api = "get_platform_scmi_power_down_api";
 static const char* CMockString_get_platform_system_power_driver_api = "get_platform_system_power_driver_api";
-static const char* CMockString_get_platform_transport_signal_api = "get_platform_transport_signal_api";
-static const char* CMockString_init_ap = "init_ap";
-static const char* CMockString_notify_rse_and_wait_for_response = "notify_rse_and_wait_for_response";
 static const char* CMockString_platform_power_mgmt_bind = "platform_power_mgmt_bind";
-static const char* CMockString_platform_rse_bind = "platform_rse_bind";
-
-typedef struct _CMOCK_get_platform_transport_signal_api_CALL_INSTANCE
-{
-  UNITY_LINE_TYPE LineNumber;
-  char ExpectAnyArgsBool;
-  const void* ReturnVal;
-
-} CMOCK_get_platform_transport_signal_api_CALL_INSTANCE;
-
-typedef struct _CMOCK_notify_rse_and_wait_for_response_CALL_INSTANCE
-{
-  UNITY_LINE_TYPE LineNumber;
-  char ExpectAnyArgsBool;
-  int ReturnVal;
-
-} CMOCK_notify_rse_and_wait_for_response_CALL_INSTANCE;
-
-typedef struct _CMOCK_platform_rse_bind_CALL_INSTANCE
-{
-  UNITY_LINE_TYPE LineNumber;
-  char ExpectAnyArgsBool;
-  int ReturnVal;
-  const struct mod_si0_platform_config* Expected_config;
-  int Expected_config_Depth;
-  char IgnoreArg_config;
-
-} CMOCK_platform_rse_bind_CALL_INSTANCE;
 
 typedef struct _CMOCK_platform_power_mgmt_bind_CALL_INSTANCE
 {
@@ -48,14 +16,6 @@ typedef struct _CMOCK_platform_power_mgmt_bind_CALL_INSTANCE
   int ReturnVal;
 
 } CMOCK_platform_power_mgmt_bind_CALL_INSTANCE;
-
-typedef struct _CMOCK_init_ap_CALL_INSTANCE
-{
-  UNITY_LINE_TYPE LineNumber;
-  char ExpectAnyArgsBool;
-  int ReturnVal;
-
-} CMOCK_init_ap_CALL_INSTANCE;
 
 typedef struct _CMOCK_get_platform_system_power_driver_api_CALL_INSTANCE
 {
@@ -75,36 +35,12 @@ typedef struct _CMOCK_get_platform_scmi_power_down_api_CALL_INSTANCE
 
 static struct Mocksi0_platformInstance
 {
-  char get_platform_transport_signal_api_IgnoreBool;
-  const void* get_platform_transport_signal_api_FinalReturn;
-  char get_platform_transport_signal_api_CallbackBool;
-  CMOCK_get_platform_transport_signal_api_CALLBACK get_platform_transport_signal_api_CallbackFunctionPointer;
-  int get_platform_transport_signal_api_CallbackCalls;
-  CMOCK_MEM_INDEX_TYPE get_platform_transport_signal_api_CallInstance;
-  char notify_rse_and_wait_for_response_IgnoreBool;
-  int notify_rse_and_wait_for_response_FinalReturn;
-  char notify_rse_and_wait_for_response_CallbackBool;
-  CMOCK_notify_rse_and_wait_for_response_CALLBACK notify_rse_and_wait_for_response_CallbackFunctionPointer;
-  int notify_rse_and_wait_for_response_CallbackCalls;
-  CMOCK_MEM_INDEX_TYPE notify_rse_and_wait_for_response_CallInstance;
-  char platform_rse_bind_IgnoreBool;
-  int platform_rse_bind_FinalReturn;
-  char platform_rse_bind_CallbackBool;
-  CMOCK_platform_rse_bind_CALLBACK platform_rse_bind_CallbackFunctionPointer;
-  int platform_rse_bind_CallbackCalls;
-  CMOCK_MEM_INDEX_TYPE platform_rse_bind_CallInstance;
   char platform_power_mgmt_bind_IgnoreBool;
   int platform_power_mgmt_bind_FinalReturn;
   char platform_power_mgmt_bind_CallbackBool;
   CMOCK_platform_power_mgmt_bind_CALLBACK platform_power_mgmt_bind_CallbackFunctionPointer;
   int platform_power_mgmt_bind_CallbackCalls;
   CMOCK_MEM_INDEX_TYPE platform_power_mgmt_bind_CallInstance;
-  char init_ap_IgnoreBool;
-  int init_ap_FinalReturn;
-  char init_ap_CallbackBool;
-  CMOCK_init_ap_CALLBACK init_ap_CallbackFunctionPointer;
-  int init_ap_CallbackCalls;
-  CMOCK_MEM_INDEX_TYPE init_ap_CallInstance;
   char get_platform_system_power_driver_api_IgnoreBool;
   const void* get_platform_system_power_driver_api_FinalReturn;
   char get_platform_system_power_driver_api_CallbackBool;
@@ -125,45 +61,6 @@ void Mocksi0_platform_Verify(void)
 {
   UNITY_LINE_TYPE cmock_line = TEST_LINE_NUM;
   CMOCK_MEM_INDEX_TYPE call_instance;
-  call_instance = Mock.get_platform_transport_signal_api_CallInstance;
-  if (Mock.get_platform_transport_signal_api_IgnoreBool)
-    call_instance = CMOCK_GUTS_NONE;
-  if (CMOCK_GUTS_NONE != call_instance)
-  {
-    UNITY_SET_DETAIL(CMockString_get_platform_transport_signal_api);
-    UNITY_TEST_FAIL(cmock_line, CMockStringCalledLess);
-  }
-  if (Mock.get_platform_transport_signal_api_CallbackFunctionPointer != NULL)
-  {
-    call_instance = CMOCK_GUTS_NONE;
-    (void)call_instance;
-  }
-  call_instance = Mock.notify_rse_and_wait_for_response_CallInstance;
-  if (Mock.notify_rse_and_wait_for_response_IgnoreBool)
-    call_instance = CMOCK_GUTS_NONE;
-  if (CMOCK_GUTS_NONE != call_instance)
-  {
-    UNITY_SET_DETAIL(CMockString_notify_rse_and_wait_for_response);
-    UNITY_TEST_FAIL(cmock_line, CMockStringCalledLess);
-  }
-  if (Mock.notify_rse_and_wait_for_response_CallbackFunctionPointer != NULL)
-  {
-    call_instance = CMOCK_GUTS_NONE;
-    (void)call_instance;
-  }
-  call_instance = Mock.platform_rse_bind_CallInstance;
-  if (Mock.platform_rse_bind_IgnoreBool)
-    call_instance = CMOCK_GUTS_NONE;
-  if (CMOCK_GUTS_NONE != call_instance)
-  {
-    UNITY_SET_DETAIL(CMockString_platform_rse_bind);
-    UNITY_TEST_FAIL(cmock_line, CMockStringCalledLess);
-  }
-  if (Mock.platform_rse_bind_CallbackFunctionPointer != NULL)
-  {
-    call_instance = CMOCK_GUTS_NONE;
-    (void)call_instance;
-  }
   call_instance = Mock.platform_power_mgmt_bind_CallInstance;
   if (Mock.platform_power_mgmt_bind_IgnoreBool)
     call_instance = CMOCK_GUTS_NONE;
@@ -173,19 +70,6 @@ void Mocksi0_platform_Verify(void)
     UNITY_TEST_FAIL(cmock_line, CMockStringCalledLess);
   }
   if (Mock.platform_power_mgmt_bind_CallbackFunctionPointer != NULL)
-  {
-    call_instance = CMOCK_GUTS_NONE;
-    (void)call_instance;
-  }
-  call_instance = Mock.init_ap_CallInstance;
-  if (Mock.init_ap_IgnoreBool)
-    call_instance = CMOCK_GUTS_NONE;
-  if (CMOCK_GUTS_NONE != call_instance)
-  {
-    UNITY_SET_DETAIL(CMockString_init_ap);
-    UNITY_TEST_FAIL(cmock_line, CMockStringCalledLess);
-  }
-  if (Mock.init_ap_CallbackFunctionPointer != NULL)
   {
     call_instance = CMOCK_GUTS_NONE;
     (void)call_instance;
@@ -227,301 +111,6 @@ void Mocksi0_platform_Destroy(void)
 {
   CMock_Guts_MemFreeAll();
   memset(&Mock, 0, sizeof(Mock));
-}
-
-const void* get_platform_transport_signal_api(void)
-{
-  UNITY_LINE_TYPE cmock_line = TEST_LINE_NUM;
-  CMOCK_get_platform_transport_signal_api_CALL_INSTANCE* cmock_call_instance;
-  UNITY_SET_DETAIL(CMockString_get_platform_transport_signal_api);
-  cmock_call_instance = (CMOCK_get_platform_transport_signal_api_CALL_INSTANCE*)CMock_Guts_GetAddressFor(Mock.get_platform_transport_signal_api_CallInstance);
-  Mock.get_platform_transport_signal_api_CallInstance = CMock_Guts_MemNext(Mock.get_platform_transport_signal_api_CallInstance);
-  if (Mock.get_platform_transport_signal_api_IgnoreBool)
-  {
-    UNITY_CLR_DETAILS();
-    if (cmock_call_instance == NULL)
-      return Mock.get_platform_transport_signal_api_FinalReturn;
-    Mock.get_platform_transport_signal_api_FinalReturn = cmock_call_instance->ReturnVal;
-    return cmock_call_instance->ReturnVal;
-  }
-  if (!Mock.get_platform_transport_signal_api_CallbackBool &&
-      Mock.get_platform_transport_signal_api_CallbackFunctionPointer != NULL)
-  {
-    const void* cmock_cb_ret = Mock.get_platform_transport_signal_api_CallbackFunctionPointer(Mock.get_platform_transport_signal_api_CallbackCalls++);
-    UNITY_CLR_DETAILS();
-    return cmock_cb_ret;
-  }
-  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringCalledMore);
-  cmock_line = cmock_call_instance->LineNumber;
-  if (Mock.get_platform_transport_signal_api_CallbackFunctionPointer != NULL)
-  {
-    cmock_call_instance->ReturnVal = Mock.get_platform_transport_signal_api_CallbackFunctionPointer(Mock.get_platform_transport_signal_api_CallbackCalls++);
-  }
-  UNITY_CLR_DETAILS();
-  return cmock_call_instance->ReturnVal;
-}
-
-void get_platform_transport_signal_api_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, const void* cmock_to_return)
-{
-  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_get_platform_transport_signal_api_CALL_INSTANCE));
-  CMOCK_get_platform_transport_signal_api_CALL_INSTANCE* cmock_call_instance = (CMOCK_get_platform_transport_signal_api_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
-  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringOutOfMemory);
-  memset(cmock_call_instance, 0, sizeof(*cmock_call_instance));
-  Mock.get_platform_transport_signal_api_CallInstance = CMock_Guts_MemChain(Mock.get_platform_transport_signal_api_CallInstance, cmock_guts_index);
-  Mock.get_platform_transport_signal_api_IgnoreBool = (char)0;
-  cmock_call_instance->LineNumber = cmock_line;
-  cmock_call_instance->ExpectAnyArgsBool = (char)0;
-  cmock_call_instance->ReturnVal = cmock_to_return;
-  Mock.get_platform_transport_signal_api_IgnoreBool = (char)1;
-}
-
-void get_platform_transport_signal_api_CMockStopIgnore(void)
-{
-  if(Mock.get_platform_transport_signal_api_IgnoreBool)
-    Mock.get_platform_transport_signal_api_CallInstance = CMock_Guts_MemNext(Mock.get_platform_transport_signal_api_CallInstance);
-  Mock.get_platform_transport_signal_api_IgnoreBool = (char)0;
-}
-
-void get_platform_transport_signal_api_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, const void* cmock_to_return)
-{
-  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_get_platform_transport_signal_api_CALL_INSTANCE));
-  CMOCK_get_platform_transport_signal_api_CALL_INSTANCE* cmock_call_instance = (CMOCK_get_platform_transport_signal_api_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
-  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringOutOfMemory);
-  memset(cmock_call_instance, 0, sizeof(*cmock_call_instance));
-  Mock.get_platform_transport_signal_api_CallInstance = CMock_Guts_MemChain(Mock.get_platform_transport_signal_api_CallInstance, cmock_guts_index);
-  Mock.get_platform_transport_signal_api_IgnoreBool = (char)0;
-  cmock_call_instance->LineNumber = cmock_line;
-  cmock_call_instance->ExpectAnyArgsBool = (char)0;
-  cmock_call_instance->ReturnVal = cmock_to_return;
-}
-
-void get_platform_transport_signal_api_AddCallback(CMOCK_get_platform_transport_signal_api_CALLBACK Callback)
-{
-  Mock.get_platform_transport_signal_api_IgnoreBool = (char)0;
-  Mock.get_platform_transport_signal_api_CallbackBool = (char)1;
-  Mock.get_platform_transport_signal_api_CallbackFunctionPointer = Callback;
-}
-
-void get_platform_transport_signal_api_Stub(CMOCK_get_platform_transport_signal_api_CALLBACK Callback)
-{
-  Mock.get_platform_transport_signal_api_IgnoreBool = (char)0;
-  Mock.get_platform_transport_signal_api_CallbackBool = (char)0;
-  Mock.get_platform_transport_signal_api_CallbackFunctionPointer = Callback;
-}
-
-int notify_rse_and_wait_for_response(void)
-{
-  UNITY_LINE_TYPE cmock_line = TEST_LINE_NUM;
-  CMOCK_notify_rse_and_wait_for_response_CALL_INSTANCE* cmock_call_instance;
-  UNITY_SET_DETAIL(CMockString_notify_rse_and_wait_for_response);
-  cmock_call_instance = (CMOCK_notify_rse_and_wait_for_response_CALL_INSTANCE*)CMock_Guts_GetAddressFor(Mock.notify_rse_and_wait_for_response_CallInstance);
-  Mock.notify_rse_and_wait_for_response_CallInstance = CMock_Guts_MemNext(Mock.notify_rse_and_wait_for_response_CallInstance);
-  if (Mock.notify_rse_and_wait_for_response_IgnoreBool)
-  {
-    UNITY_CLR_DETAILS();
-    if (cmock_call_instance == NULL)
-      return Mock.notify_rse_and_wait_for_response_FinalReturn;
-    Mock.notify_rse_and_wait_for_response_FinalReturn = cmock_call_instance->ReturnVal;
-    return cmock_call_instance->ReturnVal;
-  }
-  if (!Mock.notify_rse_and_wait_for_response_CallbackBool &&
-      Mock.notify_rse_and_wait_for_response_CallbackFunctionPointer != NULL)
-  {
-    int cmock_cb_ret = Mock.notify_rse_and_wait_for_response_CallbackFunctionPointer(Mock.notify_rse_and_wait_for_response_CallbackCalls++);
-    UNITY_CLR_DETAILS();
-    return cmock_cb_ret;
-  }
-  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringCalledMore);
-  cmock_line = cmock_call_instance->LineNumber;
-  if (Mock.notify_rse_and_wait_for_response_CallbackFunctionPointer != NULL)
-  {
-    cmock_call_instance->ReturnVal = Mock.notify_rse_and_wait_for_response_CallbackFunctionPointer(Mock.notify_rse_and_wait_for_response_CallbackCalls++);
-  }
-  UNITY_CLR_DETAILS();
-  return cmock_call_instance->ReturnVal;
-}
-
-void notify_rse_and_wait_for_response_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return)
-{
-  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_notify_rse_and_wait_for_response_CALL_INSTANCE));
-  CMOCK_notify_rse_and_wait_for_response_CALL_INSTANCE* cmock_call_instance = (CMOCK_notify_rse_and_wait_for_response_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
-  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringOutOfMemory);
-  memset(cmock_call_instance, 0, sizeof(*cmock_call_instance));
-  Mock.notify_rse_and_wait_for_response_CallInstance = CMock_Guts_MemChain(Mock.notify_rse_and_wait_for_response_CallInstance, cmock_guts_index);
-  Mock.notify_rse_and_wait_for_response_IgnoreBool = (char)0;
-  cmock_call_instance->LineNumber = cmock_line;
-  cmock_call_instance->ExpectAnyArgsBool = (char)0;
-  cmock_call_instance->ReturnVal = cmock_to_return;
-  Mock.notify_rse_and_wait_for_response_IgnoreBool = (char)1;
-}
-
-void notify_rse_and_wait_for_response_CMockStopIgnore(void)
-{
-  if(Mock.notify_rse_and_wait_for_response_IgnoreBool)
-    Mock.notify_rse_and_wait_for_response_CallInstance = CMock_Guts_MemNext(Mock.notify_rse_and_wait_for_response_CallInstance);
-  Mock.notify_rse_and_wait_for_response_IgnoreBool = (char)0;
-}
-
-void notify_rse_and_wait_for_response_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return)
-{
-  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_notify_rse_and_wait_for_response_CALL_INSTANCE));
-  CMOCK_notify_rse_and_wait_for_response_CALL_INSTANCE* cmock_call_instance = (CMOCK_notify_rse_and_wait_for_response_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
-  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringOutOfMemory);
-  memset(cmock_call_instance, 0, sizeof(*cmock_call_instance));
-  Mock.notify_rse_and_wait_for_response_CallInstance = CMock_Guts_MemChain(Mock.notify_rse_and_wait_for_response_CallInstance, cmock_guts_index);
-  Mock.notify_rse_and_wait_for_response_IgnoreBool = (char)0;
-  cmock_call_instance->LineNumber = cmock_line;
-  cmock_call_instance->ExpectAnyArgsBool = (char)0;
-  cmock_call_instance->ReturnVal = cmock_to_return;
-}
-
-void notify_rse_and_wait_for_response_AddCallback(CMOCK_notify_rse_and_wait_for_response_CALLBACK Callback)
-{
-  Mock.notify_rse_and_wait_for_response_IgnoreBool = (char)0;
-  Mock.notify_rse_and_wait_for_response_CallbackBool = (char)1;
-  Mock.notify_rse_and_wait_for_response_CallbackFunctionPointer = Callback;
-}
-
-void notify_rse_and_wait_for_response_Stub(CMOCK_notify_rse_and_wait_for_response_CALLBACK Callback)
-{
-  Mock.notify_rse_and_wait_for_response_IgnoreBool = (char)0;
-  Mock.notify_rse_and_wait_for_response_CallbackBool = (char)0;
-  Mock.notify_rse_and_wait_for_response_CallbackFunctionPointer = Callback;
-}
-
-int platform_rse_bind(const struct mod_si0_platform_config* config)
-{
-  UNITY_LINE_TYPE cmock_line = TEST_LINE_NUM;
-  CMOCK_platform_rse_bind_CALL_INSTANCE* cmock_call_instance;
-  UNITY_SET_DETAIL(CMockString_platform_rse_bind);
-  cmock_call_instance = (CMOCK_platform_rse_bind_CALL_INSTANCE*)CMock_Guts_GetAddressFor(Mock.platform_rse_bind_CallInstance);
-  Mock.platform_rse_bind_CallInstance = CMock_Guts_MemNext(Mock.platform_rse_bind_CallInstance);
-  if (Mock.platform_rse_bind_IgnoreBool)
-  {
-    UNITY_CLR_DETAILS();
-    if (cmock_call_instance == NULL)
-      return Mock.platform_rse_bind_FinalReturn;
-    Mock.platform_rse_bind_FinalReturn = cmock_call_instance->ReturnVal;
-    return cmock_call_instance->ReturnVal;
-  }
-  if (!Mock.platform_rse_bind_CallbackBool &&
-      Mock.platform_rse_bind_CallbackFunctionPointer != NULL)
-  {
-    int cmock_cb_ret = Mock.platform_rse_bind_CallbackFunctionPointer(config, Mock.platform_rse_bind_CallbackCalls++);
-    UNITY_CLR_DETAILS();
-    return cmock_cb_ret;
-  }
-  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringCalledMore);
-  cmock_line = cmock_call_instance->LineNumber;
-  if (!cmock_call_instance->ExpectAnyArgsBool)
-  {
-  if (!cmock_call_instance->IgnoreArg_config)
-  {
-    UNITY_SET_DETAILS(CMockString_platform_rse_bind,CMockString_config);
-    if (cmock_call_instance->Expected_config == NULL)
-      { UNITY_TEST_ASSERT_NULL(config, cmock_line, CMockStringExpNULL); }
-    else
-      { UNITY_TEST_ASSERT_EQUAL_MEMORY_ARRAY((void*)(cmock_call_instance->Expected_config), (void*)(config), sizeof(const struct mod_si0_platform_config), cmock_call_instance->Expected_config_Depth, cmock_line, CMockStringMismatch); }
-  }
-  }
-  if (Mock.platform_rse_bind_CallbackFunctionPointer != NULL)
-  {
-    cmock_call_instance->ReturnVal = Mock.platform_rse_bind_CallbackFunctionPointer(config, Mock.platform_rse_bind_CallbackCalls++);
-  }
-  UNITY_CLR_DETAILS();
-  return cmock_call_instance->ReturnVal;
-}
-
-void CMockExpectParameters_platform_rse_bind(CMOCK_platform_rse_bind_CALL_INSTANCE* cmock_call_instance, const struct mod_si0_platform_config* config, int config_Depth);
-void CMockExpectParameters_platform_rse_bind(CMOCK_platform_rse_bind_CALL_INSTANCE* cmock_call_instance, const struct mod_si0_platform_config* config, int config_Depth)
-{
-  cmock_call_instance->Expected_config = config;
-  cmock_call_instance->Expected_config_Depth = config_Depth;
-  cmock_call_instance->IgnoreArg_config = 0;
-}
-
-void platform_rse_bind_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return)
-{
-  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_platform_rse_bind_CALL_INSTANCE));
-  CMOCK_platform_rse_bind_CALL_INSTANCE* cmock_call_instance = (CMOCK_platform_rse_bind_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
-  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringOutOfMemory);
-  memset(cmock_call_instance, 0, sizeof(*cmock_call_instance));
-  Mock.platform_rse_bind_CallInstance = CMock_Guts_MemChain(Mock.platform_rse_bind_CallInstance, cmock_guts_index);
-  Mock.platform_rse_bind_IgnoreBool = (char)0;
-  cmock_call_instance->LineNumber = cmock_line;
-  cmock_call_instance->ExpectAnyArgsBool = (char)0;
-  cmock_call_instance->ReturnVal = cmock_to_return;
-  Mock.platform_rse_bind_IgnoreBool = (char)1;
-}
-
-void platform_rse_bind_CMockStopIgnore(void)
-{
-  if(Mock.platform_rse_bind_IgnoreBool)
-    Mock.platform_rse_bind_CallInstance = CMock_Guts_MemNext(Mock.platform_rse_bind_CallInstance);
-  Mock.platform_rse_bind_IgnoreBool = (char)0;
-}
-
-void platform_rse_bind_CMockExpectAnyArgsAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return)
-{
-  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_platform_rse_bind_CALL_INSTANCE));
-  CMOCK_platform_rse_bind_CALL_INSTANCE* cmock_call_instance = (CMOCK_platform_rse_bind_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
-  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringOutOfMemory);
-  memset(cmock_call_instance, 0, sizeof(*cmock_call_instance));
-  Mock.platform_rse_bind_CallInstance = CMock_Guts_MemChain(Mock.platform_rse_bind_CallInstance, cmock_guts_index);
-  Mock.platform_rse_bind_IgnoreBool = (char)0;
-  cmock_call_instance->LineNumber = cmock_line;
-  cmock_call_instance->ExpectAnyArgsBool = (char)0;
-  cmock_call_instance->ReturnVal = cmock_to_return;
-  cmock_call_instance->ExpectAnyArgsBool = (char)1;
-}
-
-void platform_rse_bind_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, const struct mod_si0_platform_config* config, int cmock_to_return)
-{
-  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_platform_rse_bind_CALL_INSTANCE));
-  CMOCK_platform_rse_bind_CALL_INSTANCE* cmock_call_instance = (CMOCK_platform_rse_bind_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
-  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringOutOfMemory);
-  memset(cmock_call_instance, 0, sizeof(*cmock_call_instance));
-  Mock.platform_rse_bind_CallInstance = CMock_Guts_MemChain(Mock.platform_rse_bind_CallInstance, cmock_guts_index);
-  Mock.platform_rse_bind_IgnoreBool = (char)0;
-  cmock_call_instance->LineNumber = cmock_line;
-  cmock_call_instance->ExpectAnyArgsBool = (char)0;
-  CMockExpectParameters_platform_rse_bind(cmock_call_instance, config, 1);
-  cmock_call_instance->ReturnVal = cmock_to_return;
-}
-
-void platform_rse_bind_AddCallback(CMOCK_platform_rse_bind_CALLBACK Callback)
-{
-  Mock.platform_rse_bind_IgnoreBool = (char)0;
-  Mock.platform_rse_bind_CallbackBool = (char)1;
-  Mock.platform_rse_bind_CallbackFunctionPointer = Callback;
-}
-
-void platform_rse_bind_Stub(CMOCK_platform_rse_bind_CALLBACK Callback)
-{
-  Mock.platform_rse_bind_IgnoreBool = (char)0;
-  Mock.platform_rse_bind_CallbackBool = (char)0;
-  Mock.platform_rse_bind_CallbackFunctionPointer = Callback;
-}
-
-void platform_rse_bind_CMockExpectWithArrayAndReturn(UNITY_LINE_TYPE cmock_line, const struct mod_si0_platform_config* config, int config_Depth, int cmock_to_return)
-{
-  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_platform_rse_bind_CALL_INSTANCE));
-  CMOCK_platform_rse_bind_CALL_INSTANCE* cmock_call_instance = (CMOCK_platform_rse_bind_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
-  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringOutOfMemory);
-  memset(cmock_call_instance, 0, sizeof(*cmock_call_instance));
-  Mock.platform_rse_bind_CallInstance = CMock_Guts_MemChain(Mock.platform_rse_bind_CallInstance, cmock_guts_index);
-  Mock.platform_rse_bind_IgnoreBool = (char)0;
-  cmock_call_instance->LineNumber = cmock_line;
-  cmock_call_instance->ExpectAnyArgsBool = (char)0;
-  CMockExpectParameters_platform_rse_bind(cmock_call_instance, config, config_Depth);
-  cmock_call_instance->ReturnVal = cmock_to_return;
-}
-
-void platform_rse_bind_CMockIgnoreArg_config(UNITY_LINE_TYPE cmock_line)
-{
-  CMOCK_platform_rse_bind_CALL_INSTANCE* cmock_call_instance = (CMOCK_platform_rse_bind_CALL_INSTANCE*)CMock_Guts_GetAddressFor(CMock_Guts_MemEndOfChain(Mock.platform_rse_bind_CallInstance));
-  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringIgnPreExp);
-  cmock_call_instance->IgnoreArg_config = 1;
 }
 
 int platform_power_mgmt_bind(void)
@@ -602,86 +191,6 @@ void platform_power_mgmt_bind_Stub(CMOCK_platform_power_mgmt_bind_CALLBACK Callb
   Mock.platform_power_mgmt_bind_IgnoreBool = (char)0;
   Mock.platform_power_mgmt_bind_CallbackBool = (char)0;
   Mock.platform_power_mgmt_bind_CallbackFunctionPointer = Callback;
-}
-
-int init_ap(void)
-{
-  UNITY_LINE_TYPE cmock_line = TEST_LINE_NUM;
-  CMOCK_init_ap_CALL_INSTANCE* cmock_call_instance;
-  UNITY_SET_DETAIL(CMockString_init_ap);
-  cmock_call_instance = (CMOCK_init_ap_CALL_INSTANCE*)CMock_Guts_GetAddressFor(Mock.init_ap_CallInstance);
-  Mock.init_ap_CallInstance = CMock_Guts_MemNext(Mock.init_ap_CallInstance);
-  if (Mock.init_ap_IgnoreBool)
-  {
-    UNITY_CLR_DETAILS();
-    if (cmock_call_instance == NULL)
-      return Mock.init_ap_FinalReturn;
-    Mock.init_ap_FinalReturn = cmock_call_instance->ReturnVal;
-    return cmock_call_instance->ReturnVal;
-  }
-  if (!Mock.init_ap_CallbackBool &&
-      Mock.init_ap_CallbackFunctionPointer != NULL)
-  {
-    int cmock_cb_ret = Mock.init_ap_CallbackFunctionPointer(Mock.init_ap_CallbackCalls++);
-    UNITY_CLR_DETAILS();
-    return cmock_cb_ret;
-  }
-  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringCalledMore);
-  cmock_line = cmock_call_instance->LineNumber;
-  if (Mock.init_ap_CallbackFunctionPointer != NULL)
-  {
-    cmock_call_instance->ReturnVal = Mock.init_ap_CallbackFunctionPointer(Mock.init_ap_CallbackCalls++);
-  }
-  UNITY_CLR_DETAILS();
-  return cmock_call_instance->ReturnVal;
-}
-
-void init_ap_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return)
-{
-  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_init_ap_CALL_INSTANCE));
-  CMOCK_init_ap_CALL_INSTANCE* cmock_call_instance = (CMOCK_init_ap_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
-  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringOutOfMemory);
-  memset(cmock_call_instance, 0, sizeof(*cmock_call_instance));
-  Mock.init_ap_CallInstance = CMock_Guts_MemChain(Mock.init_ap_CallInstance, cmock_guts_index);
-  Mock.init_ap_IgnoreBool = (char)0;
-  cmock_call_instance->LineNumber = cmock_line;
-  cmock_call_instance->ExpectAnyArgsBool = (char)0;
-  cmock_call_instance->ReturnVal = cmock_to_return;
-  Mock.init_ap_IgnoreBool = (char)1;
-}
-
-void init_ap_CMockStopIgnore(void)
-{
-  if(Mock.init_ap_IgnoreBool)
-    Mock.init_ap_CallInstance = CMock_Guts_MemNext(Mock.init_ap_CallInstance);
-  Mock.init_ap_IgnoreBool = (char)0;
-}
-
-void init_ap_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return)
-{
-  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_init_ap_CALL_INSTANCE));
-  CMOCK_init_ap_CALL_INSTANCE* cmock_call_instance = (CMOCK_init_ap_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
-  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringOutOfMemory);
-  memset(cmock_call_instance, 0, sizeof(*cmock_call_instance));
-  Mock.init_ap_CallInstance = CMock_Guts_MemChain(Mock.init_ap_CallInstance, cmock_guts_index);
-  Mock.init_ap_IgnoreBool = (char)0;
-  cmock_call_instance->LineNumber = cmock_line;
-  cmock_call_instance->ExpectAnyArgsBool = (char)0;
-  cmock_call_instance->ReturnVal = cmock_to_return;
-}
-
-void init_ap_AddCallback(CMOCK_init_ap_CALLBACK Callback)
-{
-  Mock.init_ap_IgnoreBool = (char)0;
-  Mock.init_ap_CallbackBool = (char)1;
-  Mock.init_ap_CallbackFunctionPointer = Callback;
-}
-
-void init_ap_Stub(CMOCK_init_ap_CALLBACK Callback)
-{
-  Mock.init_ap_IgnoreBool = (char)0;
-  Mock.init_ap_CallbackBool = (char)0;
-  Mock.init_ap_CallbackFunctionPointer = Callback;
 }
 
 const void* get_platform_system_power_driver_api(void)
