@@ -24,7 +24,8 @@ set(SCP_ENABLE_SCMI_NOTIFICATIONS TRUE)
 
 list(PREPEND SCP_MODULE_PATHS
      "${CMAKE_CURRENT_LIST_DIR}/../module/si0_platform"
-     "${CMAKE_CURRENT_LIST_DIR}/../module/ros_clock")
+     "${CMAKE_CURRENT_LIST_DIR}/../module/ros_clock"
+     "${CMAKE_CURRENT_LIST_DIR}/../module/cluster_control")
 
 list(APPEND SCP_MODULES
     "armv8r-mpu"
@@ -49,5 +50,6 @@ list(APPEND SCP_MODULES
     "sds"
     "scmi-power-domain"
     "scmi-system-power"
+    "cluster-control"
     "si0-platform"
 )

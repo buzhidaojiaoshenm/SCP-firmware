@@ -13,6 +13,7 @@ target_include_directories(rdaspen-si0-bl2 PUBLIC
 
 target_sources(rdaspen-si0-bl2 PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/config_armv8r_mpu.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/config_cluster_control.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/config_cmn_cyprus.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/config_gicx00.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/config_mhu3.c"
