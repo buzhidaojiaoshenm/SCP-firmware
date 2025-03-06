@@ -683,6 +683,83 @@ void utest_mod_distributor_calculate_power_attributes_max_power(void)
         power_distributor_ctx.domain[TEST_DOMAIN_GPU].node.data.power_demand);
 }
 
+/* Macro to initialize a leaf domain node */
+#define INIT_LEAF_NODE(demand, limit) \
+    { \
+        .node = { \
+            .children_idx_table = NULL, \
+            .children_count = 0, \
+            .data = { .power_limit = (limit), \
+                      .power_demand = (demand), \
+                      .power_budget = 0 } \
+        } \
+    }
+void utest_mod_distributor_domain_power_distribute(void)
+{
+    size_t test_vec_size = 8;
+    uint32_t parent_budget[] = {
+        90, 150, 160, 150, 150, 150, 140, 140,
+    };
+    uint32_t children_demand[8][4] = {
+        { 30, 10, 10, 40 }, { 60, 40, 30, 20 }, { 50, 30, 20, 50 },
+        { 60, 40, 30, 20 }, { 40, 40, 40, 40 }, { 50, 20, 60, 30 },
+        { 50, 30, 20, 50 }, { 50, 30, 30, 40 },
+    };
+    uint32_t children_limit[8][4] = {
+        { 20, 40, 40, 30 }, { 50, 25, 35, 45 }, { 45, 35, 25, 55 },
+        { 50, 30, 25, 45 }, { 50, 50, 50, 50 }, { 10, 60, 60, 50 },
+        { 45, 35, 25, 55 }, { 40, 30, 20, 50 },
+    };
+    uint32_t expected_children_budget[8][4] = {
+        { 20, 20, 20, 30 }, { 50, 25, 35, 40 }, { 45, 35, 25, 55 },
+        { 50, 30, 25, 45 }, { 38, 38, 37, 37 }, { 10, 35, 60, 45 },
+        { 45, 30, 20, 45 }, { 40, 30, 20, 50 },
+    };
+
+    size_t soc_children[] = { TEST_DOMAIN_CPU,
+                              TEST_DOMAIN_CPU_BIG,
+                              TEST_DOMAIN_CPU_LITTLE,
+                              TEST_DOMAIN_GPU };
+
+    for (size_t t = 0; t < test_vec_size; t++) {
+        struct mod_power_distributor_domain_ctx
+            test_domains[TEST_DOMAIN_COUNT] = {
+                [TEST_DOMAIN_SOC] = { .node = { .children_idx_table =
+                                                    soc_children,
+                                                .children_count =
+                                                    FWK_ARRAY_SIZE(
+                                                        soc_children),
+                                                .data = { .power_budget =
+                                                              parent_budget
+                                                                  [t] } } },
+                [TEST_DOMAIN_CPU] =
+                    INIT_LEAF_NODE(children_demand[t][0], children_limit[t][0]),
+                [TEST_DOMAIN_CPU_BIG] =
+                    INIT_LEAF_NODE(children_demand[t][1], children_limit[t][1]),
+                [TEST_DOMAIN_CPU_LITTLE] =
+                    INIT_LEAF_NODE(children_demand[t][2], children_limit[t][2]),
+                [TEST_DOMAIN_GPU] =
+                    INIT_LEAF_NODE(children_demand[t][3], children_limit[t][3]),
+            };
+
+        power_distributor_ctx.domain = test_domains;
+
+        (void)domain_power_distribute(
+            &power_distributor_ctx.domain[TEST_DOMAIN_SOC]);
+
+        for (size_t i = 0; i < FWK_ARRAY_SIZE(soc_children); i++) {
+            size_t idx = soc_children[i];
+            char message[50];
+            sprintf(message, "TestVec[%ld] in domain %ld", t, i);
+            TEST_ASSERT_EQUAL_MESSAGE(
+                expected_children_budget[t][i],
+                power_distributor_ctx.domain[idx].node.data.power_budget,
+                message);
+        }
+    }
+}
+#undef INIT_LEAF_NODE
+
 void tearDown(void)
 {
     Mockmod_power_distributor_extra_Verify();
@@ -711,6 +788,7 @@ int power_distributor_test_main(void)
     RUN_TEST(utest_construct_tree_traverse_order_table_no_root);
     RUN_TEST(utest_mod_distributor_calculate_power_attributes);
     RUN_TEST(utest_mod_distributor_calculate_power_attributes_max_power);
+    RUN_TEST(utest_mod_distributor_domain_power_distribute);
 
     return UNITY_END();
 }

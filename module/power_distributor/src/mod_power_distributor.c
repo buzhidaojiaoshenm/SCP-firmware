@@ -65,6 +65,9 @@ struct interface_power_management_api power_management_api = {
     .set_power_limit = set_power_limit,
 };
 
+typedef int (*calculate_deficit)(
+    struct mod_power_distributor_domain_ctx *child_ctx);
+
 static inline struct mod_power_distributor_domain_ctx *get_domain_ctx(
     size_t idx)
 {
@@ -244,6 +247,115 @@ static void calculate_power_attributes(void)
                 calculate_domain_demand(domain_ctx);
         }
     }
+}
+
+static int calculate_base_allocation_deficit(
+    struct mod_power_distributor_domain_ctx *child_ctx)
+{
+    return FWK_MIN(
+               child_ctx->node.data.power_demand,
+               child_ctx->node.data.power_limit) -
+        child_ctx->node.data.power_budget;
+}
+
+static int calculate_extra_allocation_deficit(
+    struct mod_power_distributor_domain_ctx *child_ctx)
+{
+    return child_ctx->node.data.power_limit - child_ctx->node.data.power_budget;
+}
+
+static size_t count_eligible_children(
+    struct mod_power_distributor_domain_ctx *domain_ctx,
+    calculate_deficit calc_deficit)
+{
+    size_t eligible_count = 0u;
+    uint32_t deficit;
+    size_t i;
+
+    for (i = 0u; i < domain_ctx->node.children_count; i++) {
+        uint32_t child_idx = domain_ctx->node.children_idx_table[i];
+        struct mod_power_distributor_domain_ctx *child_ctx =
+            get_domain_ctx(child_idx);
+
+        deficit = calc_deficit(child_ctx);
+
+        if (deficit > 0u) {
+            eligible_count++;
+        }
+    }
+    return eligible_count;
+}
+
+static void allocate_power_waterfill(
+    struct mod_power_distributor_domain_ctx *domain_ctx,
+    uint32_t *remaining_budget,
+    calculate_deficit calc_deficit,
+    size_t eligible_count)
+{
+    uint32_t even_share;
+    uint32_t deficit;
+    size_t i;
+
+    even_share = (*remaining_budget > eligible_count) ?
+        (*remaining_budget / eligible_count) :
+        1u;
+
+    /* Allocate power to each eligible child */
+    for (i = 0u; i < domain_ctx->node.children_count; i++) {
+        if (*remaining_budget == 0u) {
+            break;
+        }
+
+        uint32_t child_idx = domain_ctx->node.children_idx_table[i];
+        struct mod_power_distributor_domain_ctx *child_ctx =
+            get_domain_ctx(child_idx);
+
+        deficit = calc_deficit(child_ctx);
+
+        if (deficit == 0u) {
+            continue;
+        }
+
+        uint32_t power_grant = FWK_MIN(deficit, even_share);
+        child_ctx->node.data.power_budget += power_grant;
+        *remaining_budget -= power_grant;
+    }
+}
+
+static void distribute_power(
+    struct mod_power_distributor_domain_ctx *domain_ctx,
+    uint32_t *remaining_budget,
+    calculate_deficit calc_deficit)
+{
+    size_t eligible_count;
+
+    while (*remaining_budget != 0u) {
+        /* Count eligible children for this phase */
+        eligible_count = count_eligible_children(domain_ctx, calc_deficit);
+
+        if (eligible_count == 0u) {
+            break;
+        }
+
+        allocate_power_waterfill(
+            domain_ctx, remaining_budget, calc_deficit, eligible_count);
+    }
+}
+
+static int domain_power_distribute(
+    struct mod_power_distributor_domain_ctx *domain_ctx)
+{
+    uint32_t remaining_budget = domain_ctx->node.data.power_budget;
+
+    /* Phase 1: Base allocation */
+    distribute_power(
+        domain_ctx, &remaining_budget, &calculate_base_allocation_deficit);
+
+    /* Phase 2: Extra allocation */
+    distribute_power(
+        domain_ctx, &remaining_budget, &calculate_extra_allocation_deficit);
+
+    return (remaining_budget > 0u) ? FWK_E_DATA : FWK_SUCCESS;
 }
 
 static int set_budgets()
