@@ -294,6 +294,11 @@ int arch_interrupt_get_current(unsigned int *interrupt)
 
     *interrupt = current_iar;
 
+    /* Not an interrupt */
+    if (*interrupt == INTERRUPT_ID_INVALID) {
+        return FWK_E_STATE;
+    }
+
     return FWK_SUCCESS;
 }
 
