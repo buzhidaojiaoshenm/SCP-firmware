@@ -7,7 +7,7 @@
 
 
 .pull-mr:
-  image: ${CI_REGISTRY_IMAGE}/ci-base:${DOCKER_IMAGE_TAG}
+  image: ${CONTAINER_REGISTRY_PATH}/ci-base:${DOCKER_IMAGE_TAG}
   variables:
     GIT_STRATEGY: clone
     GIT_CHECKOUT: "false"

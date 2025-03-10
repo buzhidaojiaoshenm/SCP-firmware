@@ -6,7 +6,7 @@
 #
 
 .merge-report:
-  image: ${CI_REGISTRY_IMAGE}/ci-base:${DOCKER_IMAGE_TAG}
+  image: ${CONTAINER_REGISTRY_PATH}/ci-base:${DOCKER_IMAGE_TAG}
   before_script:
     - rm -rf artifacts/coverage_reports/merge_report
     - mkdir -p artifacts/coverage_reports/merge_report

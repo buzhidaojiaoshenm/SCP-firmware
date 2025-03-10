@@ -6,7 +6,7 @@
 #
 
 .blackduck-scan:
-  image: ${CI_REGISTRY_IMAGE}/blackduck-scanner-amd64:${DOCKER_IMAGE_TAG}
+  image: ${CONTAINER_REGISTRY_PATH}/blackduck-scanner-amd64:${DOCKER_IMAGE_TAG}
   tags:
     - amd64
   variables:

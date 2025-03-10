@@ -6,6 +6,6 @@
 #
 
 .banned-api:
-  image: ${CI_REGISTRY_IMAGE}/ci-base:${DOCKER_IMAGE_TAG}
+  image: ${CONTAINER_REGISTRY_PATH}/ci-base:${DOCKER_IMAGE_TAG}
   script:
     - python3 tools/check_api.py

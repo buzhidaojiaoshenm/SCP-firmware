@@ -6,7 +6,7 @@
 #
 
 .platform-test:
-  image: ${CI_REGISTRY_IMAGE}/plat-test-amd64:${DOCKER_IMAGE_TAG}
+  image: ${CONTAINER_REGISTRY_PATH}/plat-test-amd64:${DOCKER_IMAGE_TAG}
   tags:
     - amd64
   variables:
