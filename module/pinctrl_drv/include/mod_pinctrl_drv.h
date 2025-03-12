@@ -75,6 +75,9 @@ enum mod_pinctrl_drv_api_idx {
     MOD_PINCTRL_DRV_API_COUNT
 };
 
+/*!
+ * \brief Pin control DRV API.
+ */
 struct mod_pinctrl_drv_api {
     /*!
      * \brief Get pin function.

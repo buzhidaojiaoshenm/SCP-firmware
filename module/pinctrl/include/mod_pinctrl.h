@@ -26,7 +26,12 @@
  * \defgroup GroupModulePinctrl pinctrl
  * \{
  */
+
+/*!
+ * \brief Represents that no function is selected for the pin control module
+ */
 #define NO_FUNCTION_SELECTED_ID UINT32_MAX
+
 /*!
  * \brief Selector to differentiate between pin, group or function.
  */
@@ -188,6 +193,9 @@ enum mod_pinctrl_api_idx {
     MOD_PINCTRL_API_IDX_COUNT
 };
 
+/*!
+ * \brief Pin control API.
+ */
 struct mod_pinctrl_api {
     /*!
      * \brief Get attributes of pin, group or function.
