@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2017-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2017-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -117,22 +117,22 @@ struct mod_dvfs_domain_config {
  * \brief Request for SET_OPP.
  */
 struct mod_dvfs_request {
-    /* New operating point data for the request */
+    /*! New operating point data for the request */
     struct mod_dvfs_opp new_opp;
 
-    /* Context-specific value */
+    /*! Context-specific value */
     uintptr_t cookie;
 
-    /* Response expected for this request */
+    /*! Response expected for this request */
     bool response_required;
 
-    /* Retry the request on failure */
+    /*! Retry the request on failure */
     bool retry_request;
 
-    /* This request requires the event source_id to be set */
+    /*! This request requires the event source_id to be set */
     bool set_source_id;
 
-    /* Retry count */
+    /*! Retry count */
     uint8_t num_retries;
 };
 
@@ -140,45 +140,48 @@ struct mod_dvfs_request {
  * \brief Domain context.
  */
 struct mod_dvfs_domain_ctx {
-    /* Context Domain ID */
+    /*! Context Domain ID */
     fwk_id_t domain_id;
 
-    /* Bound ID of requester to this domain */
+    /*! Bound ID of requester to this domain */
     fwk_id_t bound_id;
 
-    /* Domain configuration */
+    /*! Domain configuration */
     const struct mod_dvfs_domain_config *config;
 
+    /*!
+     * \brief Struct of APIs.
+     */
     struct {
-        /* Power supply API */
+        /*! Power supply API */
         const struct mod_psu_device_api *psu;
 
-        /* Clock API */
+        /*! Clock API */
         const struct mod_clock_api *clock;
 
-        /* Alarm API for pending requests */
+        /*! Alarm API for pending requests */
         const struct mod_timer_alarm_api *alarm_api;
     } apis;
 
-    /* Number of operating points */
+    /*! Number of operating points */
     size_t opp_count;
 
-    /* Current operating point */
+    /*! Current operating point */
     struct mod_dvfs_opp current_opp;
 
-    /* Current request details */
+    /*! Current request details */
     struct mod_dvfs_request request;
 
-    /* State */
+    /*! State */
     enum mod_dvfs_domain_state state;
 
-    /* Cookie for deferred request response */
+    /*! Cookie for deferred request response */
     uint32_t cookie;
 
-    /* Pending request details */
+    /*! Pending request details */
     struct mod_dvfs_request pending_request;
 
-    /* SET_OPP Request is pending for this domain */
+    /*! SET_OPP Request is pending for this domain */
     bool request_pending;
 };
 
