@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2021-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2021-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -102,6 +102,8 @@ FWK_LEAF FWK_NOTHROW void fwk_str_strncpy(
  * \param[in] buffer_size Size of a buffer to copy to
  * \param[in] offset Offset of copy within destination buffer
  * \param[in] data_size number of bytes to copy
+ * \return    True if the copy is within the bounds of the destination buffer,
+ *            false otherwise
  */
 FWK_LEAF FWK_NOTHROW bool fwk_str_is_in_boundry(
     size_t buffer_size,
