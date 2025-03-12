@@ -32,6 +32,7 @@
  * \brief Finish trace of an event.
  *
  * \param[in] ID Event ID.
+ * \param[in] MSG Event message.
  * \return Status code representing the result of the operation.
  */
 #define FWK_TRACE_FINISH(ID, MSG) \
@@ -44,9 +45,21 @@
  */
 #define FWK_TRACE_CALC_OVERHEAD() fwk_trace_calc_overhead()
 
+/*!
+ * \brief Cycle / timestamp count type.
+ */
 typedef uint64_t fwk_trace_count_t;
+/*!
+ * \brief Event ID type.
+ */
 typedef uint32_t fwk_trace_id_t;
+/*!
+ * \brief Macro alias for the format specifier for event ID.
+ */
 #define PRItraceid    PRIu32
+/*!
+ * \brief Macro alias for the format specifier for event trace count.
+ */
 #define PRItracecount PRIu64
 
 /*!
