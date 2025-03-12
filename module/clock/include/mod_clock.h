@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2017-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2017-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -626,6 +626,9 @@ struct mod_clock_resp_params {
     union mod_clock_resp_values value;
 };
 
+/*!
+ * \brief Clock notification parameters.
+ */
 struct mod_clock_notification_params {
     /*! ID of the entity who requested the operation */
     unsigned int requester_id;
