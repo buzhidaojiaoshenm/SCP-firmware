@@ -112,6 +112,9 @@ struct mod_perf_controller_power_model_api {
         uint32_t *power_limit);
 };
 
+/*!
+ * \brief Performance controller domain configuration.
+ */
 struct mod_perf_controller_domain_config {
     /*! Module or element identifier of the performance driver. */
     fwk_id_t performance_driver_id;
