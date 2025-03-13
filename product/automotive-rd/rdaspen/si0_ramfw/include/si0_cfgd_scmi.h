@@ -23,6 +23,9 @@ enum si0_scmi_agent_idx {
 enum si0_cfgd_mod_scmi_element_idx {
     SI0_CFGD_MOD_SCMI_EIDX_RSE,
     SI0_CFGD_MOD_SCMI_EIDX_PSCI,
+#ifdef BUILD_HAS_SCMI_NOTIFICATIONS
+    SI0_CFGD_MOD_SCMI_EIDX_RSE_P2A, /* SCP to RSE notification */
+#endif
     SI0_CFGD_MOD_SCMI_EIDX_COUNT,
 };
 

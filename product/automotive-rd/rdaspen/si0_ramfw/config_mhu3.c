@@ -26,8 +26,13 @@
 
 /* SI0<-->RSE Secure MHUv3 Doorbell channel configuration */
 struct mod_mhu3_channel_config si02rse_s_dbch_config[] = {
-    /* PBX CH 0, FLAG 1, MBX CH 0, FLAG 1 for SCMI*/
+    /* PBX CH 0, FLAG 0, MBX CH 0, FLAG 0 not used */
+    /* PBX CH 0, FLAG 1, MBX CH 0, FLAG 1 for RSE A2P SCP */
     [0] = MOD_MHU3_INIT_DBCH(0, 1, 0, 1),
+#ifdef BUILD_HAS_SCMI_NOTIFICATIONS
+    /* PBX CH 0, FLAG 2, MBX CH 0, FLAG 2 for SCP P2A RSE */
+    [1] = MOD_MHU3_INIT_DBCH(0, 2, 0, 2),
+#endif
 };
 
 /* SI0<->AP Secure MHUv3 doorbell channel configuration */

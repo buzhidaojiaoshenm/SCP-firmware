@@ -34,7 +34,13 @@ static const struct fwk_element service_table[SI0_CFGD_MOD_SCMI_EIDX_COUNT + 1] 
                 FWK_MODULE_IDX_TRANSPORT,
                 MOD_TRANSPORT_NOTIFICATION_IDX_INITIALIZED),
             .scmi_agent_id = SI0_SCMI_AGENT_IDX_RSE,
+#ifdef BUILD_HAS_SCMI_NOTIFICATIONS
+            .scmi_p2a_id = FWK_ID_ELEMENT_INIT(
+                FWK_MODULE_IDX_SCMI,
+                SI0_CFGD_MOD_SCMI_EIDX_RSE_P2A),
+#else
             .scmi_p2a_id = FWK_ID_NONE_INIT,
+#endif
         }),
     },
     [SI0_CFGD_MOD_SCMI_EIDX_PSCI] = {
@@ -51,8 +57,25 @@ static const struct fwk_element service_table[SI0_CFGD_MOD_SCMI_EIDX_COUNT + 1] 
                 MOD_TRANSPORT_NOTIFICATION_IDX_INITIALIZED),
             .scmi_agent_id = SI0_SCMI_AGENT_IDX_PSCI,
             .scmi_p2a_id = FWK_ID_NONE_INIT,
+
         }),
     },
+#ifdef BUILD_HAS_SCMI_NOTIFICATIONS
+    [SI0_CFGD_MOD_SCMI_EIDX_RSE_P2A] = {
+        .name = "SCMI_SERVICE_2_RSE_P2A",
+        .data = &((struct mod_scmi_service_config) {
+            .transport_id = FWK_ID_ELEMENT_INIT(
+                FWK_MODULE_IDX_TRANSPORT,
+                SI0_CFGD_MOD_TRANSPORT_EIDX_SCMI_RSE_P2A),
+            .transport_api_id = FWK_ID_API_INIT(
+                FWK_MODULE_IDX_TRANSPORT,
+                MOD_TRANSPORT_API_IDX_SCMI_TO_TRANSPORT),
+            .transport_notification_init_id = FWK_ID_NONE_INIT,
+            .scmi_agent_id = SI0_SCMI_AGENT_IDX_RSE,
+            .scmi_p2a_id = FWK_ID_NONE_INIT,
+        }),
+    },
+#endif
     [SI0_CFGD_MOD_SCMI_EIDX_COUNT] = { 0 }
 };
 

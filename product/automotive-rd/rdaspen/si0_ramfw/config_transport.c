@@ -85,6 +85,29 @@ static const struct fwk_element element_table[]  = {
                 },
         }),
     },
+#ifdef BUILD_HAS_SCMI_NOTIFICATIONS
+    [SI0_CFGD_MOD_TRANSPORT_EIDX_SCMI_RSE_P2A] = {
+        .name = "SI0_RSE_SCMI_TRANSPORT_P2A",
+        .data = &((
+            struct mod_transport_channel_config) {
+                .transport_type = MOD_TRANSPORT_CHANNEL_TRANSPORT_TYPE_OUT_BAND,
+                .policies = TRANSPORT_CH_SEC_MBX_INIT,
+                .channel_type = MOD_TRANSPORT_CHANNEL_TYPE_COMPLETER,
+                .out_band_mailbox_address =
+                    (uintptr_t) SI0_RSE_SCMI_P2A_PAYLOAD_BASE,
+                .out_band_mailbox_size = SI0_SCMI_PAYLOAD_SIZE,
+                .driver_id =
+                    FWK_ID_SUB_ELEMENT_INIT(
+                        FWK_MODULE_IDX_MHU3,
+                        SI0_CFGD_MOD_MHU3_EIDX_SI0_RSE,
+                        1),
+                .driver_api_id =
+                    FWK_ID_API_INIT(
+                        FWK_MODULE_IDX_MHU3,
+                        MOD_MHU3_API_IDX_TRANSPORT_DRIVER),
+        }),
+    },
+#endif
     [SI0_CFGD_MOD_TRANSPORT_EIDX_COUNT] = { 0 },
 };
 

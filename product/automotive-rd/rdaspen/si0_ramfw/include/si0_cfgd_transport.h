@@ -16,6 +16,9 @@
 enum scp_cfgd_mod_transport_element_idx {
     SI0_CFGD_MOD_TRANSPORT_EIDX_SCMI_RSE,
     SI0_CFGD_MOD_TRANSPORT_EIDX_PSCI,
+#ifdef BUILD_HAS_SCMI_NOTIFICATIONS
+    SI0_CFGD_MOD_TRANSPORT_EIDX_SCMI_RSE_P2A, /* SCP to RSE notification */
+#endif
     SI0_CFGD_MOD_TRANSPORT_EIDX_COUNT,
 };
 

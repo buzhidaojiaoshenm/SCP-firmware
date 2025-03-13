@@ -145,7 +145,16 @@ static_assert(
 #define SI0_RSE_SHARED_SRAM_BASE (0x40000000UL)
 #define SI0_RSE_SHARED_SRAM_SIZE (8 * FWK_MIB)
 
-/* SCMI Secure Payload Area */
+/*
+ * In RD-Aspen SCP firmware is running on SI CL0 whereas RSE is the commponent
+ * running TF-M firmware.
+ */
+/* RSE <> SCP a2p SCMI Secure Payload Area, it is for SCMI request/response */
 #define SI0_RSE_SCMI_PAYLOAD_BASE (SI0_RSE_SHARED_SRAM_BASE)
+#ifdef BUILD_HAS_SCMI_NOTIFICATIONS
+/* SCP -> RSE p2a SCMI Secure Payload Area, it is for SCMI notification */
+#    define SI0_RSE_SCMI_P2A_PAYLOAD_BASE \
+        (SI0_RSE_SCMI_PAYLOAD_BASE + SI0_SCMI_PAYLOAD_SIZE)
+#endif
 
 #endif /* SI0_MMAP_H */
