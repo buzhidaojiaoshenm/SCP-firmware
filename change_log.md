@@ -108,14 +108,19 @@ Resolved issues
     - transport: Fix possible buffer overrun issue.
     - scmi_clock: Fix clock indexing in device table and extended name handler.
     - sds: Fix indentation for get_structure_info.
-    - transport: Handle SCMI payload size error.
     - noc_s3: Fix FWK_LOG_ERR format specifier type, Use PRIu32 for format
         specifier.
-    - scmi: Handle unsupported SCMI message.
 
 - Platforms:
     - tc3: Fix mpmm_v2 configuration.
     - rdn2: Fix typo while enabling cli for mcp.
+
+Resolved security issues
+------------------------
+
+- Modules:
+    - transport: Handle SCMI payload size error. CVE-2024-9413.
+    - scmi: Handle unsupported SCMI message. CVE-2024-11863 and CVE-2024-11864.
 
 SCP-firmware - version 2.15
 ============================
