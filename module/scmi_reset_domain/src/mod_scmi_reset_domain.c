@@ -503,6 +503,7 @@ static void scmi_reset_issued_notify(uint32_t domain_id,
     scmi_rd_ctx.scmi_notification_api->scmi_notification_notify(
         MOD_SCMI_PROTOCOL_ID_RESET_DOMAIN,
         MOD_SCMI_RESET_NOTIFY,
+        domain_id,
         MOD_SCMI_RESET_ISSUED,
         &reset_issued,
         sizeof(reset_issued));

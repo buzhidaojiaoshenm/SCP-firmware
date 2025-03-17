@@ -802,6 +802,7 @@ void utest_pcapping_protocol_process_cap_pai_notify_event_success(void)
     scmi_notification_notify_ExpectWithArrayAndReturn(
         MOD_SCMI_PROTOCOL_ID_POWER_CAPPING,
         MOD_SCMI_POWER_CAPPING_CAP_NOTIFY,
+        payload.domain_id,
         SCMI_POWER_CAPPING_CAP_CHANGED,
         &payload,
         sizeof(payload),
@@ -841,6 +842,7 @@ void utest_pcapping_protocol_process_measurements_notify_event_success(void)
     scmi_notification_notify_ExpectWithArrayAndReturn(
         MOD_SCMI_PROTOCOL_ID_POWER_CAPPING,
         MOD_SCMI_POWER_CAPPING_MEASUREMENTS_NOTIFY,
+        payload.domain_id,
         SCMI_POWER_CAPPING_MEASUREMENTS_CHANGED,
         &payload,
         sizeof(payload),

@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2015-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2015-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -532,6 +532,7 @@ struct mod_scmi_notification_api {
      *
      * \param protocol_id Identifier of the protocol.
      * \param operation_id Identifier of the operation.
+     * \param resource_id Identifier of the resource.
      * \param scmi_response_message_id SCMI message identifier that is sent as
      *     as a part of the notification.
      * \param payload_p2a Notification message payload from platform to
@@ -545,6 +546,7 @@ struct mod_scmi_notification_api {
     int (*scmi_notification_notify)(
         unsigned int protocol_id,
         unsigned int operation_id,
+        unsigned int resource_id,
         unsigned int scmi_response_message_id,
         void *payload_p2a,
         size_t payload_size);

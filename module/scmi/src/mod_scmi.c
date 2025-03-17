@@ -750,11 +750,12 @@ static int scmi_notification_remove_subscriber(
 static int scmi_notification_notify(
     unsigned int protocol_id,
     unsigned int operation_id,
+    unsigned int resource_id,
     unsigned int scmi_response_id,
     void *payload_p2a,
     size_t payload_size)
 {
-    unsigned int i, j;
+    unsigned int i;
     unsigned int operation_idx;
     fwk_id_t service_id;
     unsigned int service_id_idx;
@@ -762,7 +763,11 @@ static int scmi_notification_notify(
     struct scmi_notification_subscribers *subscribers =
         notification_subscribers(protocol_id);
 
-    fwk_assert(operation_id < MOD_SCMI_PROTOCOL_MAX_OPERATION_ID);
+    if (!fwk_expect(
+            resource_id < subscribers->element_count &&
+            operation_id < MOD_SCMI_PROTOCOL_MAX_OPERATION_ID)) {
+        return FWK_E_DATA;
+    }
     operation_idx = subscribers->operation_id_to_idx[operation_id];
 
     /*
@@ -775,26 +780,24 @@ static int scmi_notification_notify(
         return FWK_SUCCESS;
     }
 
-    for (i = 0; i < subscribers->element_count; i++) {
-        /* Skip agent 0, platform agent */
-        for (j = 1; j < subscribers->agent_count; j++) {
-            service_id_idx = (unsigned int)scmi_notification_service_idx(
-                j,
-                i,
-                operation_idx,
-                subscribers->agent_count,
-                subscribers->element_count);
+    /* Skip agent 0, platform agent */
+    for (i = 1; i < subscribers->agent_count; i++) {
+        service_id_idx = (unsigned int)scmi_notification_service_idx(
+            i,
+            resource_id,
+            operation_idx,
+            subscribers->agent_count,
+            subscribers->element_count);
 
-            service_id = subscribers->agent_service_ids[service_id_idx];
+        service_id = subscribers->agent_service_ids[service_id_idx];
 
-            if (!fwk_id_is_equal(service_id, FWK_ID_NONE)) {
-                scmi_notify(
-                    service_id,
-                    (int)protocol_id,
-                    (int)scmi_response_id,
-                    payload_p2a,
-                    payload_size);
-            }
+        if (!fwk_id_is_equal(service_id, FWK_ID_NONE)) {
+            scmi_notify(
+                service_id,
+                (int)protocol_id,
+                (int)scmi_response_id,
+                payload_p2a,
+                payload_size);
         }
     }
 

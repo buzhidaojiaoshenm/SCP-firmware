@@ -520,6 +520,7 @@ static void scmi_pd_power_state_notify(
     status = scmi_pd_ctx.scmi_notification_api->scmi_notification_notify(
         MOD_SCMI_PROTOCOL_ID_POWER_DOMAIN,
         command_id,
+        message.domain_id,
         notification_message_id,
         &message,
         sizeof(message));

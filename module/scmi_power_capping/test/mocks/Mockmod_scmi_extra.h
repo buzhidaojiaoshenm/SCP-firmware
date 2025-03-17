@@ -152,14 +152,14 @@ void scmi_notification_notify_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, i
 void scmi_notification_notify_CMockStopIgnore(void);
 #define scmi_notification_notify_ExpectAnyArgsAndReturn(cmock_retval) scmi_notification_notify_CMockExpectAnyArgsAndReturn(__LINE__, cmock_retval)
 void scmi_notification_notify_CMockExpectAnyArgsAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return);
-#define scmi_notification_notify_ExpectAndReturn(protocol_id, operation_id, scmi_response_message_id, payload_p2a, payload_size, cmock_retval) scmi_notification_notify_CMockExpectAndReturn(__LINE__, protocol_id, operation_id, scmi_response_message_id, payload_p2a, payload_size, cmock_retval)
-void scmi_notification_notify_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, unsigned int protocol_id, unsigned int operation_id, unsigned int scmi_response_message_id, void* payload_p2a, size_t payload_size, int cmock_to_return);
-typedef int (* CMOCK_scmi_notification_notify_CALLBACK)(unsigned int protocol_id, unsigned int operation_id, unsigned int scmi_response_message_id, void* payload_p2a, size_t payload_size, int cmock_num_calls);
+#define scmi_notification_notify_ExpectAndReturn(protocol_id, operation_id, domain_id, scmi_response_message_id, payload_p2a, payload_size, cmock_retval) scmi_notification_notify_CMockExpectAndReturn(__LINE__, protocol_id, operation_id, domain_id, scmi_response_message_id, payload_p2a, payload_size, cmock_retval)
+void scmi_notification_notify_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, unsigned int protocol_id, unsigned int operation_id, unsigned int domain_id, unsigned int scmi_response_message_id, void* payload_p2a, size_t payload_size, int cmock_to_return);
+typedef int (* CMOCK_scmi_notification_notify_CALLBACK)(unsigned int protocol_id, unsigned int operation_id, unsigned int domain_id, unsigned int scmi_response_message_id, void* payload_p2a, size_t payload_size, int cmock_num_calls);
 void scmi_notification_notify_AddCallback(CMOCK_scmi_notification_notify_CALLBACK Callback);
 void scmi_notification_notify_Stub(CMOCK_scmi_notification_notify_CALLBACK Callback);
 #define scmi_notification_notify_StubWithCallback scmi_notification_notify_Stub
-#define scmi_notification_notify_ExpectWithArrayAndReturn(protocol_id, operation_id, scmi_response_message_id, payload_p2a, payload_p2a_Depth, payload_size, cmock_retval) scmi_notification_notify_CMockExpectWithArrayAndReturn(__LINE__, protocol_id, operation_id, scmi_response_message_id, payload_p2a, payload_p2a_Depth, payload_size, cmock_retval)
-void scmi_notification_notify_CMockExpectWithArrayAndReturn(UNITY_LINE_TYPE cmock_line, unsigned int protocol_id, unsigned int operation_id, unsigned int scmi_response_message_id, void* payload_p2a, int payload_p2a_Depth, size_t payload_size, int cmock_to_return);
+#define scmi_notification_notify_ExpectWithArrayAndReturn(protocol_id, operation_id, domain_id, scmi_response_message_id, payload_p2a, payload_p2a_Depth, payload_size, cmock_retval) scmi_notification_notify_CMockExpectWithArrayAndReturn(__LINE__, protocol_id, operation_id, domain_id, scmi_response_message_id, payload_p2a, payload_p2a_Depth, payload_size, cmock_retval)
+void scmi_notification_notify_CMockExpectWithArrayAndReturn(UNITY_LINE_TYPE cmock_line, unsigned int protocol_id, unsigned int operation_id, unsigned int domain_id, unsigned int scmi_response_message_id, void* payload_p2a, int payload_p2a_Depth, size_t payload_size, int cmock_to_return);
 #define scmi_notification_notify_ReturnThruPtr_payload_p2a(payload_p2a) scmi_notification_notify_CMockReturnMemThruPtr_payload_p2a(__LINE__, payload_p2a, sizeof(void))
 #define scmi_notification_notify_ReturnArrayThruPtr_payload_p2a(payload_p2a, cmock_len) scmi_notification_notify_CMockReturnMemThruPtr_payload_p2a(__LINE__, payload_p2a, cmock_len * sizeof(*payload_p2a))
 #define scmi_notification_notify_ReturnMemThruPtr_payload_p2a(payload_p2a, cmock_size) scmi_notification_notify_CMockReturnMemThruPtr_payload_p2a(__LINE__, payload_p2a, cmock_size)
@@ -168,6 +168,8 @@ void scmi_notification_notify_CMockReturnMemThruPtr_payload_p2a(UNITY_LINE_TYPE 
 void scmi_notification_notify_CMockIgnoreArg_protocol_id(UNITY_LINE_TYPE cmock_line);
 #define scmi_notification_notify_IgnoreArg_operation_id() scmi_notification_notify_CMockIgnoreArg_operation_id(__LINE__)
 void scmi_notification_notify_CMockIgnoreArg_operation_id(UNITY_LINE_TYPE cmock_line);
+#define scmi_notification_notify_IgnoreArg_domain_id() scmi_notification_notify_CMockIgnoreArg_domain_id(__LINE__)
+void scmi_notification_notify_CMockIgnoreArg_domain_id(UNITY_LINE_TYPE cmock_line);
 #define scmi_notification_notify_IgnoreArg_scmi_response_message_id() scmi_notification_notify_CMockIgnoreArg_scmi_response_message_id(__LINE__)
 void scmi_notification_notify_CMockIgnoreArg_scmi_response_message_id(UNITY_LINE_TYPE cmock_line);
 #define scmi_notification_notify_IgnoreArg_payload_p2a() scmi_notification_notify_CMockIgnoreArg_payload_p2a(__LINE__)

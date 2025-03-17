@@ -866,6 +866,7 @@ int pcapping_protocol_process_cap_pai_notify_event(
         ->scmi_notification_notify(
             MOD_SCMI_PROTOCOL_ID_POWER_CAPPING,
             MOD_SCMI_POWER_CAPPING_CAP_NOTIFY,
+            event_params->domain_idx,
             SCMI_POWER_CAPPING_CAP_CHANGED,
             &scmi_notification_payload,
             sizeof(struct scmi_power_capping_cap_changed_p2a));
@@ -891,6 +892,7 @@ int pcapping_protocol_process_measurements_notify_event(
         ->scmi_notification_notify(
             MOD_SCMI_PROTOCOL_ID_POWER_CAPPING,
             MOD_SCMI_POWER_CAPPING_MEASUREMENTS_NOTIFY,
+            event_params->domain_idx,
             SCMI_POWER_CAPPING_MEASUREMENTS_CHANGED,
             &payload,
             sizeof(struct scmi_power_capping_measurements_changed_p2a));

@@ -2030,6 +2030,7 @@ static void scmi_clock_rate_change_notify(
     status = scmi_clock_ctx.scmi_notification_api->scmi_notification_notify(
         MOD_SCMI_PROTOCOL_ID_CLOCK,
         command_id,
+        scmi_clock_idx,
         notification_message_id,
         &message,
         sizeof(message));

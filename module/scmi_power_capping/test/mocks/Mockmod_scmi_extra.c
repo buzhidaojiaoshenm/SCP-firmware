@@ -9,6 +9,7 @@ static const char* CMockString_agent_count = "agent_count";
 static const char* CMockString_agent_id = "agent_id";
 static const char* CMockString_agent_idx = "agent_idx";
 static const char* CMockString_command_count = "command_count";
+static const char* CMockString_domain_id = "domain_id";
 static const char* CMockString_element_count = "element_count";
 static const char* CMockString_element_idx = "element_idx";
 static const char* CMockString_get_agent_count = "get_agent_count";
@@ -132,6 +133,7 @@ typedef struct _CMOCK_scmi_notification_notify_CALL_INSTANCE
   int ReturnVal;
   unsigned int Expected_protocol_id;
   unsigned int Expected_operation_id;
+  unsigned int Expected_domain_id;
   unsigned int Expected_scmi_response_message_id;
   void* Expected_payload_p2a;
   size_t Expected_payload_size;
@@ -141,6 +143,7 @@ typedef struct _CMOCK_scmi_notification_notify_CALL_INSTANCE
   size_t ReturnThruPtr_payload_p2a_Size;
   char IgnoreArg_protocol_id;
   char IgnoreArg_operation_id;
+  char IgnoreArg_domain_id;
   char IgnoreArg_scmi_response_message_id;
   char IgnoreArg_payload_p2a;
   char IgnoreArg_payload_size;
@@ -1309,7 +1312,7 @@ void scmi_notification_remove_subscriber_CMockIgnoreArg_operation_id(UNITY_LINE_
   cmock_call_instance->IgnoreArg_operation_id = 1;
 }
 
-int scmi_notification_notify(unsigned int protocol_id, unsigned int operation_id, unsigned int scmi_response_message_id, void* payload_p2a, size_t payload_size)
+int scmi_notification_notify(unsigned int protocol_id, unsigned int operation_id, unsigned int domain_id, unsigned int scmi_response_message_id, void* payload_p2a, size_t payload_size)
 {
   UNITY_LINE_TYPE cmock_line = TEST_LINE_NUM;
   CMOCK_scmi_notification_notify_CALL_INSTANCE* cmock_call_instance;
@@ -1327,7 +1330,7 @@ int scmi_notification_notify(unsigned int protocol_id, unsigned int operation_id
   if (!Mock.scmi_notification_notify_CallbackBool &&
       Mock.scmi_notification_notify_CallbackFunctionPointer != NULL)
   {
-    int cmock_cb_ret = Mock.scmi_notification_notify_CallbackFunctionPointer(protocol_id, operation_id, scmi_response_message_id, payload_p2a, payload_size, Mock.scmi_notification_notify_CallbackCalls++);
+    int cmock_cb_ret = Mock.scmi_notification_notify_CallbackFunctionPointer(protocol_id, operation_id, domain_id, scmi_response_message_id, payload_p2a, payload_size, Mock.scmi_notification_notify_CallbackCalls++);
     UNITY_CLR_DETAILS();
     return cmock_cb_ret;
   }
@@ -1344,6 +1347,11 @@ int scmi_notification_notify(unsigned int protocol_id, unsigned int operation_id
   {
     UNITY_SET_DETAILS(CMockString_scmi_notification_notify,CMockString_operation_id);
     UNITY_TEST_ASSERT_EQUAL_HEX32(cmock_call_instance->Expected_operation_id, operation_id, cmock_line, CMockStringMismatch);
+  }
+  if (!cmock_call_instance->IgnoreArg_domain_id)
+  {
+    UNITY_SET_DETAILS(CMockString_scmi_notification_notify,CMockString_domain_id);
+    UNITY_TEST_ASSERT_EQUAL_HEX32(cmock_call_instance->Expected_domain_id, domain_id, cmock_line, CMockStringMismatch);
   }
   if (!cmock_call_instance->IgnoreArg_scmi_response_message_id)
   {
@@ -1366,7 +1374,7 @@ int scmi_notification_notify(unsigned int protocol_id, unsigned int operation_id
   }
   if (Mock.scmi_notification_notify_CallbackFunctionPointer != NULL)
   {
-    cmock_call_instance->ReturnVal = Mock.scmi_notification_notify_CallbackFunctionPointer(protocol_id, operation_id, scmi_response_message_id, payload_p2a, payload_size, Mock.scmi_notification_notify_CallbackCalls++);
+    cmock_call_instance->ReturnVal = Mock.scmi_notification_notify_CallbackFunctionPointer(protocol_id, operation_id, domain_id, scmi_response_message_id, payload_p2a, payload_size, Mock.scmi_notification_notify_CallbackCalls++);
   }
   if (cmock_call_instance->ReturnThruPtr_payload_p2a_Used)
   {
@@ -1378,13 +1386,15 @@ int scmi_notification_notify(unsigned int protocol_id, unsigned int operation_id
   return cmock_call_instance->ReturnVal;
 }
 
-void CMockExpectParameters_scmi_notification_notify(CMOCK_scmi_notification_notify_CALL_INSTANCE* cmock_call_instance, unsigned int protocol_id, unsigned int operation_id, unsigned int scmi_response_message_id, void* payload_p2a, int payload_p2a_Depth, size_t payload_size);
-void CMockExpectParameters_scmi_notification_notify(CMOCK_scmi_notification_notify_CALL_INSTANCE* cmock_call_instance, unsigned int protocol_id, unsigned int operation_id, unsigned int scmi_response_message_id, void* payload_p2a, int payload_p2a_Depth, size_t payload_size)
+void CMockExpectParameters_scmi_notification_notify(CMOCK_scmi_notification_notify_CALL_INSTANCE* cmock_call_instance, unsigned int protocol_id, unsigned int operation_id, unsigned int domain_id, unsigned int scmi_response_message_id, void* payload_p2a, int payload_p2a_Depth, size_t payload_size);
+void CMockExpectParameters_scmi_notification_notify(CMOCK_scmi_notification_notify_CALL_INSTANCE* cmock_call_instance, unsigned int protocol_id, unsigned int operation_id, unsigned int domain_id, unsigned int scmi_response_message_id, void* payload_p2a, int payload_p2a_Depth, size_t payload_size)
 {
   cmock_call_instance->Expected_protocol_id = protocol_id;
   cmock_call_instance->IgnoreArg_protocol_id = 0;
   cmock_call_instance->Expected_operation_id = operation_id;
   cmock_call_instance->IgnoreArg_operation_id = 0;
+  cmock_call_instance->Expected_domain_id = domain_id;
+  cmock_call_instance->IgnoreArg_domain_id = 0;
   cmock_call_instance->Expected_scmi_response_message_id = scmi_response_message_id;
   cmock_call_instance->IgnoreArg_scmi_response_message_id = 0;
   cmock_call_instance->Expected_payload_p2a = payload_p2a;
@@ -1431,7 +1441,7 @@ void scmi_notification_notify_CMockExpectAnyArgsAndReturn(UNITY_LINE_TYPE cmock_
   cmock_call_instance->ExpectAnyArgsBool = (char)1;
 }
 
-void scmi_notification_notify_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, unsigned int protocol_id, unsigned int operation_id, unsigned int scmi_response_message_id, void* payload_p2a, size_t payload_size, int cmock_to_return)
+void scmi_notification_notify_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, unsigned int protocol_id, unsigned int operation_id, unsigned int domain_id, unsigned int scmi_response_message_id, void* payload_p2a, size_t payload_size, int cmock_to_return)
 {
   CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_scmi_notification_notify_CALL_INSTANCE));
   CMOCK_scmi_notification_notify_CALL_INSTANCE* cmock_call_instance = (CMOCK_scmi_notification_notify_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
@@ -1441,7 +1451,7 @@ void scmi_notification_notify_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, u
   Mock.scmi_notification_notify_IgnoreBool = (char)0;
   cmock_call_instance->LineNumber = cmock_line;
   cmock_call_instance->ExpectAnyArgsBool = (char)0;
-  CMockExpectParameters_scmi_notification_notify(cmock_call_instance, protocol_id, operation_id, scmi_response_message_id, payload_p2a, payload_size, payload_size);
+  CMockExpectParameters_scmi_notification_notify(cmock_call_instance, protocol_id, operation_id, domain_id, scmi_response_message_id, payload_p2a, payload_size, payload_size);
   cmock_call_instance->ReturnVal = cmock_to_return;
 }
 
@@ -1459,7 +1469,7 @@ void scmi_notification_notify_Stub(CMOCK_scmi_notification_notify_CALLBACK Callb
   Mock.scmi_notification_notify_CallbackFunctionPointer = Callback;
 }
 
-void scmi_notification_notify_CMockExpectWithArrayAndReturn(UNITY_LINE_TYPE cmock_line, unsigned int protocol_id, unsigned int operation_id, unsigned int scmi_response_message_id, void* payload_p2a, int payload_p2a_Depth, size_t payload_size, int cmock_to_return)
+void scmi_notification_notify_CMockExpectWithArrayAndReturn(UNITY_LINE_TYPE cmock_line, unsigned int protocol_id, unsigned int operation_id, unsigned int domain_id, unsigned int scmi_response_message_id, void* payload_p2a, int payload_p2a_Depth, size_t payload_size, int cmock_to_return)
 {
   CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_scmi_notification_notify_CALL_INSTANCE));
   CMOCK_scmi_notification_notify_CALL_INSTANCE* cmock_call_instance = (CMOCK_scmi_notification_notify_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
@@ -1469,7 +1479,7 @@ void scmi_notification_notify_CMockExpectWithArrayAndReturn(UNITY_LINE_TYPE cmoc
   Mock.scmi_notification_notify_IgnoreBool = (char)0;
   cmock_call_instance->LineNumber = cmock_line;
   cmock_call_instance->ExpectAnyArgsBool = (char)0;
-  CMockExpectParameters_scmi_notification_notify(cmock_call_instance, protocol_id, operation_id, scmi_response_message_id, payload_p2a, payload_p2a_Depth, payload_size);
+  CMockExpectParameters_scmi_notification_notify(cmock_call_instance, protocol_id, operation_id, domain_id, scmi_response_message_id, payload_p2a, payload_p2a_Depth, payload_size);
   cmock_call_instance->ReturnVal = cmock_to_return;
 }
 
@@ -1494,6 +1504,13 @@ void scmi_notification_notify_CMockIgnoreArg_operation_id(UNITY_LINE_TYPE cmock_
   CMOCK_scmi_notification_notify_CALL_INSTANCE* cmock_call_instance = (CMOCK_scmi_notification_notify_CALL_INSTANCE*)CMock_Guts_GetAddressFor(CMock_Guts_MemEndOfChain(Mock.scmi_notification_notify_CallInstance));
   UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringIgnPreExp);
   cmock_call_instance->IgnoreArg_operation_id = 1;
+}
+
+void scmi_notification_notify_CMockIgnoreArg_domain_id(UNITY_LINE_TYPE cmock_line)
+{
+  CMOCK_scmi_notification_notify_CALL_INSTANCE* cmock_call_instance = (CMOCK_scmi_notification_notify_CALL_INSTANCE*)CMock_Guts_GetAddressFor(CMock_Guts_MemEndOfChain(Mock.scmi_notification_notify_CallInstance));
+  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringIgnPreExp);
+  cmock_call_instance->IgnoreArg_domain_id = 1;
 }
 
 void scmi_notification_notify_CMockIgnoreArg_scmi_response_message_id(UNITY_LINE_TYPE cmock_line)

@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2022-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2022-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -312,6 +312,7 @@ int scmi_notification_remove_subscriber(
 int scmi_notification_notify(
     unsigned int protocol_id,
     unsigned int operation_id,
+    unsigned int resource_id,
     unsigned int scmi_response_message_id,
     void *payload_p2a,
     size_t payload_size);

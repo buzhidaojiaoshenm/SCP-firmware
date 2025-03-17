@@ -1458,6 +1458,7 @@ void test_clock_rate_change_requested_notify_handler_remove_subscriber(void)
 int scmi_notification_notify_rate_changed_callback(
     unsigned int protocol_id,
     unsigned int operation_id,
+    unsigned int resource_id,
     unsigned int scmi_response_id,
     void *payload_p2a,
     size_t payload_size,
@@ -1468,6 +1469,7 @@ int scmi_notification_notify_rate_changed_callback(
 
     TEST_ASSERT_EQUAL(MOD_SCMI_PROTOCOL_ID_CLOCK, protocol_id);
     TEST_ASSERT_EQUAL(MOD_SCMI_CLOCK_RATE_NOTIFY, operation_id);
+    TEST_ASSERT_EQUAL(SCMI_CLOCK_OSPM1_IDX0, resource_id);
     TEST_ASSERT_EQUAL(SCMI_CLOCK_RATE_CHANGED, scmi_response_id);
 
     TEST_ASSERT_EQUAL(FAKE_SCMI_AGENT_IDX_OSPM1, message->agent_id);
@@ -1510,6 +1512,7 @@ void test_mod_scmi_clock_process_notification_rate_changed(void)
 int scmi_notification_notify_rate_change_requested_callback(
     unsigned int protocol_id,
     unsigned int operation_id,
+    unsigned int resource_id,
     unsigned int scmi_response_id,
     void *payload_p2a,
     size_t payload_size,
@@ -1521,6 +1524,7 @@ int scmi_notification_notify_rate_change_requested_callback(
     TEST_ASSERT_EQUAL(MOD_SCMI_PROTOCOL_ID_CLOCK, protocol_id);
     TEST_ASSERT_EQUAL(MOD_SCMI_CLOCK_RATE_CHANGE_REQUESTED_NOTIFY,
         operation_id);
+    TEST_ASSERT_EQUAL(SCMI_CLOCK_OSPM1_IDX0, resource_id);
     TEST_ASSERT_EQUAL(SCMI_CLOCK_RATE_CHANGE_REQUESTED, scmi_response_id);
 
     TEST_ASSERT_EQUAL(FAKE_SCMI_AGENT_IDX_OSPM1, message->agent_id);

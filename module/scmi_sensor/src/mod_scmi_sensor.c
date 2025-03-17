@@ -983,6 +983,7 @@ static void scmi_sensor_notify_trip_point(
     status = scmi_sensor_ctx.scmi_notification_api->scmi_notification_notify(
         MOD_SCMI_PROTOCOL_ID_SENSOR,
         MOD_SCMI_SENSOR_TRIP_POINT_NOTIFY,
+        trip_point_event.sensor_id,
         SCMI_SENSOR_TRIP_POINT_EVENT,
         &trip_point_event,
         sizeof(trip_point_event));

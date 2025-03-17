@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2023-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2023-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -1066,6 +1066,7 @@ void perf_prot_ops_notify_level(
     status = perf_prot_ctx.scmi_notification_api->scmi_notification_notify(
         MOD_SCMI_PROTOCOL_ID_PERF,
         MOD_SCMI_PERF_NOTIFY_LEVEL,
+        domain_idx,
         SCMI_PERF_LEVEL_CHANGED,
         &level_changed,
         sizeof(level_changed));
@@ -1090,6 +1091,7 @@ void perf_prot_ops_notify_limits(
     status = perf_prot_ctx.scmi_notification_api->scmi_notification_notify(
         MOD_SCMI_PROTOCOL_ID_PERF,
         MOD_SCMI_PERF_NOTIFY_LIMITS,
+        domain_idx,
         SCMI_PERF_LIMITS_CHANGED,
         &limits_changed,
         sizeof(limits_changed));
