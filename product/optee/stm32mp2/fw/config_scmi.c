@@ -7,6 +7,7 @@
 
 #include <scmi_agents.h>
 
+#include <mod_clock.h>
 #include <mod_optee_mbx.h>
 #include <mod_scmi.h>
 
@@ -19,8 +20,14 @@
 
 #include <arch_main.h>
 
+#ifdef CFG_SCPFW_MOD_OPTEE_CLOCK
+#    include <mod_optee_clock.h>
+#endif
 #ifdef CFG_SCPFW_MOD_MSG_SMT
 #    include <mod_msg_smt.h>
+#endif
+#ifdef CFG_SCPFW_MOD_SCMI_CLOCK
+#    include <mod_scmi_clock.h>
 #endif
 
 #include <kernel/panic.h>
@@ -43,6 +50,23 @@ static struct mod_msg_smt_channel_config *msg_smt_data;
 #endif
 static struct fwk_element *optee_mbx_elt;
 static struct mod_optee_mbx_channel_config *optee_mbx_data;
+
+#ifdef CFG_SCPFW_MOD_SCMI_CLOCK
+/* SCMI clock generic */
+static struct mod_scmi_clock_agent *scmi_clk_agent_tbl;
+static struct mod_scmi_clock_agent_config *scmi_clk_agent_cfg;
+#endif
+
+#ifdef CFG_SCPFW_MOD_CLOCK
+/*
+ * Clocks and optee/clock, same number/indices.
+ * Elements and configuration data.
+ */
+static struct fwk_element *optee_clock_elt;
+static struct mod_optee_clock_config *optee_clock_cfg;
+static struct fwk_element *clock_elt;
+static struct mod_clock_dev_config *clock_data;
+#endif
 
 /* Config data for scmi module */
 static const struct fwk_element *get_scmi_service_table(fwk_id_t module_id)
@@ -78,12 +102,49 @@ struct fwk_module_config config_msg_smt = {
 };
 #endif
 
+/* Config data for scmi_clock, clock and optee_clock modules */
+#ifdef CFG_SCPFW_MOD_SCMI_CLOCK
+struct fwk_module_config config_scmi_clock = {
+    .data = &((struct mod_scmi_clock_config){
+        .agent_table = NULL, /* Allocated during initialization */
+        .agent_count = 0, /* Set during initialization */
+    }),
+};
+#endif
+
+#ifdef CFG_SCPFW_MOD_CLOCK
+static const struct fwk_element *clock_get_element_table(fwk_id_t module_id)
+{
+    fwk_assert(fwk_id_get_module_idx(module_id) == FWK_MODULE_IDX_CLOCK);
+    return (const struct fwk_element *)clock_elt;
+}
+
+struct fwk_module_config config_clock = {
+    .elements = FWK_MODULE_DYNAMIC_ELEMENTS(clock_get_element_table),
+};
+
+static const struct fwk_element *optee_clock_get_element_table(
+    fwk_id_t module_id)
+{
+    fwk_assert(fwk_id_get_module_idx(module_id) == FWK_MODULE_IDX_OPTEE_CLOCK);
+    return (const struct fwk_element *)optee_clock_elt;
+}
+
+struct fwk_module_config config_optee_clock = {
+    .elements = FWK_MODULE_DYNAMIC_ELEMENTS(optee_clock_get_element_table),
+};
+#endif
+
 /*
  * Indices state when applying agents configuration
  * @channel_count: Number of channels (mailbox/shmem links) used
+ * @clock_index: Current index for clock and optee/clock (same indices)
+ * @clock_count: Number of clocks (also number of optee/clocks)
  */
 struct scpfw_resource_counter {
     size_t channel_count;
+    size_t clock_index;
+    size_t clock_count;
 } scpfw_resource_counter;
 
 /*
@@ -97,7 +158,19 @@ static void count_resources(struct scpfw_config *cfg)
         struct scpfw_agent_config *agent_cfg = cfg->agent_config + i;
 
         scpfw_resource_counter.channel_count += agent_cfg->channel_count;
+
+        for (size_t j = 0; j < agent_cfg->channel_count; j++) {
+            struct scpfw_channel_config *channel_cfg =
+                agent_cfg->channel_config + j;
+
+            /* Clocks for scmi_clock */
+            scpfw_resource_counter.clock_count += channel_cfg->clock_count;
+        }
     }
+
+#ifndef CFG_SCPFW_MOD_CLOCK
+    fwk_assert(!scpfw_resource_counter.clock_count);
+#endif
 }
 
 /*
@@ -106,6 +179,7 @@ static void count_resources(struct scpfw_config *cfg)
  */
 static void allocate_global_resources(struct scpfw_config *cfg)
 {
+    struct mod_scmi_clock_config *scmi_clock_config __maybe_unused;
     size_t __maybe_unused scmi_agent_count;
 
     /*
@@ -113,6 +187,30 @@ static void allocate_global_resources(struct scpfw_config *cfg)
      * that is the reserved platform/server agent.
      */
     scmi_agent_count = cfg->agent_count + 1;
+
+#ifdef CFG_SCPFW_MOD_SCMI_CLOCK
+    /* SCMI clock domains resources */
+    scmi_clk_agent_tbl =
+        fwk_mm_calloc(scmi_agent_count, sizeof(*scmi_clk_agent_tbl));
+    scmi_clk_agent_cfg =
+        fwk_mm_calloc(scmi_agent_count, sizeof(*scmi_clk_agent_cfg));
+    scmi_clock_config = (void *)config_scmi_clock.data;
+    scmi_clock_config->agent_table = scmi_clk_agent_tbl;
+    scmi_clock_config->agent_count = scmi_agent_count;
+#endif
+
+#ifdef CFG_SCPFW_MOD_CLOCK
+    /* Clock domains resources */
+    optee_clock_cfg = fwk_mm_calloc(
+        scpfw_resource_counter.clock_count, sizeof(*optee_clock_cfg));
+    optee_clock_elt = fwk_mm_calloc(
+        scpfw_resource_counter.clock_count + 1, sizeof(*optee_clock_elt));
+
+    clock_data =
+        fwk_mm_calloc(scpfw_resource_counter.clock_count, sizeof(*clock_data));
+    clock_elt = fwk_mm_calloc(
+        scpfw_resource_counter.clock_count + 1, sizeof(*clock_elt));
+#endif
 }
 
 enum mailbox_type {
@@ -243,6 +341,68 @@ static void set_resources(struct scpfw_config *cfg)
 
         if (agent_index != agent_cfg->agent_id) {
             panic("scpfw config expects agent ID is agent index");
+        }
+
+        for (size_t j = 0; j < agent_cfg->channel_count; j++) {
+            struct scpfw_channel_config *channel_cfg =
+                agent_cfg->channel_config + j;
+
+#ifdef CFG_SCPFW_MOD_SCMI_CLOCK
+            /*
+             * Add first SCMI clock. We will add later the clocks used for DVFS
+             */
+            if (channel_cfg->clock_count) {
+                size_t clock_index = scpfw_resource_counter.clock_index;
+                struct mod_scmi_clock_device *dev = NULL;
+
+                /* Set SCMI clocks array for the SCMI agent */
+                dev = fwk_mm_calloc(
+                    channel_cfg->clock_count,
+                    sizeof(struct mod_scmi_clock_device));
+
+                fwk_assert(!scmi_clk_agent_tbl[agent_index].agent_config);
+                scmi_clk_agent_cfg[agent_index] =
+                    (struct mod_scmi_clock_agent_config){
+                        .device_count = channel_cfg->clock_count,
+                        .device_table = dev,
+                    };
+                scmi_clk_agent_tbl[agent_index].agent_config =
+                    scmi_clk_agent_cfg + agent_index;
+
+                /* Set clock and optee/clock elements and config data */
+                for (size_t k = 0; k < channel_cfg->clock_count; k++) {
+                    struct scmi_clock *clock_cfg = channel_cfg->clock + k;
+                    struct mod_clock_dev_config cdata = {
+                        .driver_id = (fwk_id_t)FWK_ID_ELEMENT_INIT(
+                            FWK_MODULE_IDX_OPTEE_CLOCK, clock_index),
+                        .api_id = (fwk_id_t)FWK_ID_API_INIT(
+                            FWK_MODULE_IDX_OPTEE_CLOCK, 0),
+                        .pd_source_id = FWK_ID_NONE,
+                    };
+
+                    dev[k].element_id = (fwk_id_t)FWK_ID_ELEMENT_INIT(
+                        FWK_MODULE_IDX_CLOCK, clock_index);
+
+                    optee_clock_cfg[clock_index].clk = clock_cfg->clk;
+                    optee_clock_cfg[clock_index].default_enabled =
+                        clock_cfg->enabled;
+
+                    optee_clock_elt[clock_index].name = clock_cfg->name;
+                    optee_clock_elt[clock_index].data =
+                        (void *)(optee_clock_cfg + clock_index);
+
+                    memcpy(clock_data + clock_index, &cdata, sizeof(cdata));
+
+                    clock_elt[clock_index].name = clock_cfg->name;
+                    clock_elt[clock_index].data =
+                        (void *)(clock_data + clock_index);
+
+                    clock_index++;
+                }
+
+                scpfw_resource_counter.clock_index = clock_index;
+            }
+#endif
         }
     }
 }
