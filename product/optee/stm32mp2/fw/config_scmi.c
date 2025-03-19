@@ -23,11 +23,20 @@
 #ifdef CFG_SCPFW_MOD_OPTEE_CLOCK
 #    include <mod_optee_clock.h>
 #endif
+#ifdef CFG_SCPFW_MOD_OPTEE_RESET
+#    include <mod_optee_reset.h>
+#endif
 #ifdef CFG_SCPFW_MOD_MSG_SMT
 #    include <mod_msg_smt.h>
 #endif
+#ifdef CFG_SCPFW_MOD_RESET_DOMAIN
+#    include <mod_reset_domain.h>
+#endif
 #ifdef CFG_SCPFW_MOD_SCMI_CLOCK
 #    include <mod_scmi_clock.h>
+#endif
+#ifdef CFG_SCPFW_MOD_SCMI_RESET_DOMAIN
+#    include <mod_scmi_reset_domain.h>
 #endif
 
 #include <kernel/panic.h>
@@ -66,6 +75,15 @@ static struct fwk_element *optee_clock_elt;
 static struct mod_optee_clock_config *optee_clock_cfg;
 static struct fwk_element *clock_elt;
 static struct mod_clock_dev_config *clock_data;
+#endif
+
+#ifdef CFG_SCPFW_MOD_RESET_DOMAIN
+/* SCMI reset domains and optee reset controller */
+static struct mod_scmi_reset_domain_agent *scmi_reset_agent_tbl;
+static struct fwk_element *optee_reset_elt;
+static struct mod_optee_reset_dev_config *optee_reset_data;
+static struct fwk_element *reset_elt;
+static struct mod_reset_domain_dev_config *reset_data;
 #endif
 
 /* Config data for scmi module */
@@ -135,16 +153,51 @@ struct fwk_module_config config_optee_clock = {
 };
 #endif
 
+/* Config data for scmi_reset_domain, reset_domain and optee_reset modules */
+#ifdef CFG_SCPFW_MOD_RESET_DOMAIN
+struct fwk_module_config config_scmi_reset_domain = {
+    .data = &((struct mod_scmi_reset_domain_config){
+        .agent_table = NULL, /* Allocated during initialization */
+        .agent_count = 0, /* Set during initialization */
+    }),
+};
+
+static const struct fwk_element *reset_get_element_table(fwk_id_t module_id)
+{
+    fwk_assert(fwk_id_get_module_idx(module_id) == FWK_MODULE_IDX_RESET_DOMAIN);
+    return (const struct fwk_element *)reset_elt;
+}
+
+struct fwk_module_config config_reset_domain = {
+    .elements = FWK_MODULE_DYNAMIC_ELEMENTS(reset_get_element_table),
+};
+
+static const struct fwk_element *optee_reset_get_element_table(
+    fwk_id_t module_id)
+{
+    fwk_assert(fwk_id_get_module_idx(module_id) == FWK_MODULE_IDX_OPTEE_RESET);
+    return (const struct fwk_element *)optee_reset_elt;
+}
+
+struct fwk_module_config config_optee_reset = {
+    .elements = FWK_MODULE_DYNAMIC_ELEMENTS(optee_reset_get_element_table),
+};
+#endif
+
 /*
  * Indices state when applying agents configuration
  * @channel_count: Number of channels (mailbox/shmem links) used
  * @clock_index: Current index for clock and optee/clock (same indices)
  * @clock_count: Number of clocks (also number of optee/clocks)
+ * @reset_index: Current index for reset controller and optee/reset
+ * @reset_count: Number of reset controller (optee/reset) instances
  */
 struct scpfw_resource_counter {
     size_t channel_count;
     size_t clock_index;
     size_t clock_count;
+    size_t reset_index;
+    size_t reset_count;
 } scpfw_resource_counter;
 
 /*
@@ -165,11 +218,16 @@ static void count_resources(struct scpfw_config *cfg)
 
             /* Clocks for scmi_clock */
             scpfw_resource_counter.clock_count += channel_cfg->clock_count;
+            /* Reset for scmi_reset only */
+            scpfw_resource_counter.reset_count += channel_cfg->reset_count;
         }
     }
 
 #ifndef CFG_SCPFW_MOD_CLOCK
     fwk_assert(!scpfw_resource_counter.clock_count);
+#endif
+#ifndef CFG_SCPFW_MOD_RESET_DOMAIN
+    fwk_assert(!scpfw_resource_counter.reset_count);
 #endif
 }
 
@@ -179,6 +237,7 @@ static void count_resources(struct scpfw_config *cfg)
  */
 static void allocate_global_resources(struct scpfw_config *cfg)
 {
+    struct mod_scmi_reset_domain_config *scmi_reset_config __maybe_unused;
     struct mod_scmi_clock_config *scmi_clock_config __maybe_unused;
     size_t __maybe_unused scmi_agent_count;
 
@@ -210,6 +269,25 @@ static void allocate_global_resources(struct scpfw_config *cfg)
         fwk_mm_calloc(scpfw_resource_counter.clock_count, sizeof(*clock_data));
     clock_elt = fwk_mm_calloc(
         scpfw_resource_counter.clock_count + 1, sizeof(*clock_elt));
+#endif
+
+#ifdef CFG_SCPFW_MOD_RESET_DOMAIN
+    /* SCMI reset domains resources */
+    scmi_reset_agent_tbl =
+        fwk_mm_calloc(scmi_agent_count, sizeof(*scmi_reset_agent_tbl));
+    scmi_reset_config = (void *)config_scmi_reset_domain.data;
+    scmi_reset_config->agent_table = scmi_reset_agent_tbl;
+    scmi_reset_config->agent_count = scmi_agent_count;
+
+    optee_reset_data = fwk_mm_calloc(
+        scpfw_resource_counter.reset_count, sizeof(*optee_reset_data));
+    optee_reset_elt = fwk_mm_calloc(
+        scpfw_resource_counter.reset_count + 1, sizeof(*optee_reset_elt));
+
+    reset_data =
+        fwk_mm_calloc(scpfw_resource_counter.reset_count, sizeof(*reset_data));
+    reset_elt = fwk_mm_calloc(
+        scpfw_resource_counter.reset_count + 1, sizeof(*reset_elt));
 #endif
 }
 
@@ -401,6 +479,54 @@ static void set_resources(struct scpfw_config *cfg)
                 }
 
                 scpfw_resource_counter.clock_index = clock_index;
+            }
+#endif
+
+#ifdef CFG_SCPFW_MOD_RESET_DOMAIN
+            if (channel_cfg->reset_count) {
+                struct mod_scmi_reset_domain_device *dev = NULL;
+                size_t reset_index = scpfw_resource_counter.reset_index;
+
+                /* Set SCMI reset domains array for the SCMI agent */
+                dev = fwk_mm_calloc(channel_cfg->reset_count, sizeof(*dev));
+
+                fwk_assert(!scmi_reset_agent_tbl[agent_index].device_table);
+                scmi_reset_agent_tbl[agent_index].agent_domain_count =
+                    channel_cfg->reset_count;
+                scmi_reset_agent_tbl[agent_index].device_table = dev;
+
+                /* Set reset_domain and optee/reset elements and config data */
+                for (size_t k = 0; k < channel_cfg->reset_count; k++) {
+                    struct scmi_reset *reset_cfg = channel_cfg->reset + k;
+
+                    dev[k].element_id = (fwk_id_t)FWK_ID_ELEMENT_INIT(
+                        FWK_MODULE_IDX_RESET_DOMAIN, reset_index);
+
+                    optee_reset_data[reset_index].rstctrl = reset_cfg->rstctrl;
+
+                    optee_reset_elt[reset_index].name = reset_cfg->name;
+                    optee_reset_elt[reset_index].data =
+                        (void *)(optee_reset_data + reset_index);
+
+                    reset_data[reset_index] =
+                        (struct mod_reset_domain_dev_config){
+                            .driver_id = (fwk_id_t)FWK_ID_ELEMENT_INIT(
+                                FWK_MODULE_IDX_OPTEE_RESET, reset_index),
+                            .driver_api_id = (fwk_id_t)FWK_ID_API_INIT(
+                                FWK_MODULE_IDX_OPTEE_RESET, 0),
+                            .modes = MOD_RESET_DOMAIN_AUTO_RESET |
+                                MOD_RESET_DOMAIN_MODE_EXPLICIT_ASSERT |
+                                MOD_RESET_DOMAIN_MODE_EXPLICIT_DEASSERT,
+                        };
+
+                    reset_elt[reset_index].name = reset_cfg->name;
+                    reset_elt[reset_index].data =
+                        (void *)(reset_data + reset_index);
+
+                    reset_index++;
+                }
+
+                scpfw_resource_counter.reset_index = reset_index;
             }
 #endif
         }
