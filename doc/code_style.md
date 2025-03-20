@@ -42,7 +42,7 @@ example:
 struct some_reg {
              uint8_t   RESERVED0[0x820 - 0x818];
      FWK_RW  uint32_t  REGISTER0;
-     FWK_RW  uint32_t  REGIRTER1;
+     FWK_RW  uint32_t  REGISTER1;
 };
 ```
 
@@ -55,7 +55,7 @@ definitions may be preceded and followed by the following special comments:
 struct some_reg {
              uint8_t   RESERVED0[0x820 - 0x818];
      FWK_RW  uint32_t  REGISTER0;
-     FWK_RW  uint32_t  REGIRTER1;
+     FWK_RW  uint32_t  REGISTER1;
 };
 // clang-format on
 ```
