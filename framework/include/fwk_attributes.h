@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2020-2021, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2020-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -177,6 +177,7 @@
 #    define FWK_ALLOC_ALIGN(ALIGN_POS)
 #endif
 
+#if defined(DOXYGEN)
 /*!
  * \def FWK_WEAK
  *
@@ -184,11 +185,13 @@
  *
  * \details Applies weak linkage to the item.
  *
- * \see https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#index-weak-function-attribute
- * \see https://gcc.gnu.org/onlinedocs/gcc/Common-Variable-Attributes.html#index-weak-variable-attribute
+ * \see
+ * https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#index-weak-function-attribute
+ * \see
+ * https://gcc.gnu.org/onlinedocs/gcc/Common-Variable-Attributes.html#index-weak-variable-attribute
  */
-
-#if FWK_HAS_GNU_ATTRIBUTE(__weak__)
+#    define FWK_WEAK
+#elif FWK_HAS_GNU_ATTRIBUTE(__weak__)
 #    define FWK_WEAK __attribute__((__weak__))
 #endif
 
@@ -213,6 +216,7 @@
 #    define FWK_PRINTF(STR_POS, VA_POS)
 #endif
 
+#if defined(DOXYGEN)
 /*!
  * \def FWK_CONSTRUCTOR
  *
@@ -223,11 +227,12 @@
  *
  * \see https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#index-constructor-function-attribute
  */
-
-#if FWK_HAS_GNU_ATTRIBUTE(__constructor__)
+#    define FWK_CONSTRUCTOR
+#elif FWK_HAS_GNU_ATTRIBUTE(__constructor__)
 #    define FWK_CONSTRUCTOR __attribute__((__constructor__))
 #endif
 
+#if defined(DOXYGEN)
 /*!
  * \def FWK_PACKED
  *
@@ -235,14 +240,17 @@
  *
  * \details Packs the item that this attribute is attached to.
  *
- * \see https://gcc.gnu.org/onlinedocs/gcc/Common-Type-Attributes.html#index-aligned-type-attribute
- * \see https://gcc.gnu.org/onlinedocs/gcc/Common-Variable-Attributes.html#index-packed-variable-attribute
+ * \see
+ * https://gcc.gnu.org/onlinedocs/gcc/Common-Type-Attributes.html#index-aligned-type-attribute
+ * \see
+ * https://gcc.gnu.org/onlinedocs/gcc/Common-Variable-Attributes.html#index-packed-variable-attribute
  */
-
-#if FWK_HAS_GNU_ATTRIBUTE(__packed__)
+#    define FWK_PACKED
+#elif FWK_HAS_GNU_ATTRIBUTE(__packed__)
 #    define FWK_PACKED __attribute__((__packed__))
 #endif
 
+#if defined(DOXYGEN)
 /*!
  * \def FWK_SECTION
  *
@@ -253,12 +261,15 @@
  *
  * \param[in] SECTION String literal representing the name of the section.
  *
- * \see https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#index-section-function-attribute
- * \see https://gcc.gnu.org/onlinedocs/gcc/Common-Variable-Attributes.html#index-section-variable-attribute
- * \see https://gcc.gnu.org/onlinedocs/gcc/Common-Type-Attributes.html#index-packed-type-attribute
+ * \see
+ * https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#index-section-function-attribute
+ * \see
+ * https://gcc.gnu.org/onlinedocs/gcc/Common-Variable-Attributes.html#index-section-variable-attribute
+ * \see
+ * https://gcc.gnu.org/onlinedocs/gcc/Common-Type-Attributes.html#index-packed-type-attribute
  */
-
-#if FWK_HAS_GNU_ATTRIBUTE(__section__)
+#    define FWK_SECTION
+#elif FWK_HAS_GNU_ATTRIBUTE(__section__)
 #    define FWK_SECTION(SECTION) __attribute__((__section__(SECTION)))
 #endif
 
