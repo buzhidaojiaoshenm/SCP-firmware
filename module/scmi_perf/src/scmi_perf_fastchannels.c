@@ -36,8 +36,6 @@ struct mod_scmi_perf_fc_ctx {
     struct mod_scmi_perf_private_api_perf_stub *api_fch_stub;
     const struct mod_timer_alarm_api *fc_alarm_api;
 
-    uint32_t fast_channels_rate_limit;
-
     volatile uint32_t pending_req_count;
     /*
      * For a timer based fast channel interrupt type we must register
@@ -298,7 +296,8 @@ int perf_fch_describe_fast_channels(
     }
 
     return_values.attributes = 0; /* Doorbell not supported */
-    return_values.rate_limit = perf_fch_ctx.fast_channels_rate_limit;
+    return_values.rate_limit =
+        perf_fch_ctx.perf_ctx->config->fast_channels_rate_limit;
     return_values.chan_addr_low =
         (uint32_t)(fch_ctx->fch_address.target_view_address & ~0UL);
     return_values.chan_addr_high =

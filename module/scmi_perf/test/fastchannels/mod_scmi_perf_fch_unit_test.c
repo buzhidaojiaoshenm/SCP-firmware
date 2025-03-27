@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2022-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2022-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -68,7 +68,6 @@ void setUp(void)
     scmi_perf_ctx.domain_count = scmi_perf_ctx.config->perf_doms_count;
 
     perf_fch_ctx.perf_ctx = &scmi_perf_ctx;
-    perf_fch_ctx.fast_channels_rate_limit = SCMI_PERF_FC_MIN_RATE_LIMIT;
 
     to_protocol_api = &scmi_perf_mod_scmi_to_protocol_api;
     perf_prot_ctx.scmi_perf_ctx = &scmi_perf_ctx;
@@ -521,7 +520,7 @@ void utest_perf_fch_init_success(void)
     int status;
 
     struct mod_scmi_perf_config config = {
-        .fast_channels_rate_limit = SCMI_PERF_FC_MIN_RATE_LIMIT / 2,
+        .fast_channels_rate_limit = SCMI_PERF_FC_MIN_RATE_LIMIT,
     };
     perf_fch_ctx.perf_ctx->config = &config;
 
@@ -531,7 +530,8 @@ void utest_perf_fch_init_success(void)
     TEST_ASSERT_EQUAL(&scmi_perf_ctx, perf_fch_ctx.perf_ctx);
     TEST_ASSERT_EQUAL(&api, perf_fch_ctx.api_fch_stub);
     TEST_ASSERT_EQUAL(
-        SCMI_PERF_FC_MIN_RATE_LIMIT, perf_fch_ctx.fast_channels_rate_limit);
+        SCMI_PERF_FC_MIN_RATE_LIMIT,
+        perf_fch_ctx.perf_ctx->config->fast_channels_rate_limit);
 }
 
 int scmi_perf_fch_test_main(void)

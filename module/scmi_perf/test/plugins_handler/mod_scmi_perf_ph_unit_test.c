@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2022-2023, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2022-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -133,7 +133,6 @@ void setUp(void)
     scmi_perf_ctx.domain_count = scmi_perf_ctx.config->perf_doms_count;
 
     perf_fch_ctx.perf_ctx = &scmi_perf_ctx;
-    perf_fch_ctx.fast_channels_rate_limit = SCMI_PERF_FC_MIN_RATE_LIMIT;
 
     perf_config.plugins_count = FWK_ARRAY_SIZE(plugins_table);
 
