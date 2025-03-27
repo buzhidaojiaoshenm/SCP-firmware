@@ -47,7 +47,7 @@
       echo "SUCCESS: No merge commits in range."
 
 .check-commit-msg:
-  image: ${CI_REGISTRY_IMAGE}/ci-base:${DOCKER_IMAGE_TAG}
+  image: ${CONTAINER_REGISTRY_PATH}/ci-base:${DOCKER_IMAGE_TAG}
   script:
     - python3 tools/check_commit_msg.py -c \
       ${CI_MERGE_REQUEST_DIFF_BASE_SHA:-$(git merge-base HEAD origin/main)}
