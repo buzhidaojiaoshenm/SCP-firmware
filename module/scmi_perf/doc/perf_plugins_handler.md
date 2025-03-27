@@ -220,18 +220,6 @@ level/limits can be shared with the remaining plugins.
 
 ## Configuration Example 1 (plugin with physical/DVFS domains view)
 
-    static const struct mod_scmi_perf_domain_config domains[] = {
-        [DVFS_DOMAIN_0] = {
-            .fast_channels_addr_scp = (uint64_t[]) { ... },
-            .fast_channels_addr_ap = (uint64_t[]) { ... },
-        },
-        ...
-        [DVFS_DOMAIN_n] = {
-            .fast_channels_addr_scp = (uint64_t[]) { ... },
-            .fast_channels_addr_ap = (uint64_t[]) { ... },
-        },
-    };
-
     static const struct mod_scmi_plugin_config plugins_table[] = {
         [0] = {
             .id = FWK_ID_MODULE_INIT(FWK_MODULE_IDX_<PLUGIN>),
@@ -252,15 +240,11 @@ level/limits can be shared with the remaining plugins.
 
     static const struct mod_scmi_perf_domain_config domains[] = {
         [SCMI_PERF_DOMAIN_0] = {
-            .fast_channels_addr_scp = (uint64_t[]) { ... },
-            .fast_channels_addr_ap = (uint64_t[]) { ... },
             .phy_group_id =
                 FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_DVFS, DVFS_ELEMENT_IDX_0),
         },
         ...
         [SCMI_PERF_DOMAIN_1] = {
-            .fast_channels_addr_scp = (uint64_t[]) { ... },
-            .fast_channels_addr_ap = (uint64_t[]) { ... },
             .phy_group_id =
                 FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_DVFS, DVFS_ELEMENT_IDX_0),
         },
@@ -287,15 +271,11 @@ Note that a plugin in this case can choose either logical or physical view.
 
     static const struct mod_scmi_perf_domain_config domains[] = {
         [SCMI_PERF_DOMAIN_0] = {
-            .fast_channels_addr_scp = (uint64_t[]) { ... },
-            .fast_channels_addr_ap = (uint64_t[]) { ... },
             .phy_group_id =
                 FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_DVFS, DVFS_ELEMENT_IDX_0),
         },
         ...
         [SCMI_PERF_DOMAIN_1] = {
-            .fast_channels_addr_scp = (uint64_t[]) { ... },
-            .fast_channels_addr_ap = (uint64_t[]) { ... },
             .phy_group_id =
                 FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_DVFS, DVFS_ELEMENT_IDX_0),
         },
@@ -305,13 +285,6 @@ This example is for cases when only the logical domains aggregation policy is
 required.
 
 ## Configuration Example 4 (2 plugins with physical domain view)
-
-    static const struct mod_scmi_perf_domain_config domains[] = {
-        [DVFS_DOMAIN_0] = {
-            .fast_channels_addr_scp = (uint64_t[]) { ... },
-            .fast_channels_addr_ap = (uint64_t[]) { ... },
-        },
-    };
 
     static const struct mod_scmi_plugin_config plugins_table[] = {
         [0] = {
@@ -333,15 +306,6 @@ required.
     };
 
 ## Configuration Example 5 (3 plugins with different domain view)
-
-    static const struct mod_scmi_perf_domain_config domains[] = {
-        [DVFS_DOMAIN_0] = {
-            .fast_channels_addr_scp = (uint64_t[]) { ... },
-            .fast_channels_addr_ap = (uint64_t[]) { ... },
-        },
-        ...
-        [DVFS_DOMAIN_n] = { ... },
-    };
 
     static const struct mod_scmi_plugin_config plugins_table[] = {
         [0] = {
