@@ -275,11 +275,12 @@ static int protocol_message_attributes_handler(
 /*!
  * \brief Retrieves the agent identifier associated with a given service.
  *
- * @param[in] service_id The SCMI service identifier.
- * @param[out] agent_id Pointer to store the retrieved agent ID.
+ * \param[in] service_id The SCMI service identifier.
+ * \param[out] agent_id Pointer to store the retrieved agent ID.
  *
- * @return FWK_SUCCESS The operation was successful.
- * @return FWK_E_PARAM Invalid agent ID or service ID.
+ * \retval ::FWK_SUCCESS The operation was successful.
+ * \retval ::FWK_E_PARAM Invalid agent ID or service ID.
+ * \return One of the standard framework error codes.
  */
 static int get_agent_id(fwk_id_t service_id, unsigned int *agent_id)
 {
@@ -305,11 +306,12 @@ static int get_agent_id(fwk_id_t service_id, unsigned int *agent_id)
  * \brief Retrieves the agent entry from the agent table based on the service
  *   ID.
  *
- * @param[in] service_id The SCMI service identifier.
- * @param[out] agent Pointer to store the retrieved agent entry.
+ * \param[in] service_id The SCMI service identifier.
+ * \param[out] agent Pointer to store the retrieved agent entry.
  *
- * @return FWK_SUCCESS The operation was successful.
- * @return FWK_E_PARAM Invalid service ID or agent entry.
+ * \retval ::FWK_SUCCESS The operation was successful.
+ * \retval ::FWK_E_PARAM Invalid service ID or agent entry.
+ * \return One of the standard framework error codes.
  */
 static int get_agent_entry(
     fwk_id_t service_id,
@@ -338,13 +340,14 @@ static int get_agent_entry(
  * This function defines the default policy behavior for handling telemetry
  * requests. It sets the policy status to execute the message handler.
  *
- * @param[out] policy_status The policy status to be executed.
- * @param[out] mode Pointer to store the telemetry mode (optional).
- * @param[out] other_params Pointer to store any other param (optional).
- * @param[in] agent_id The agent ID requesting the reset.
- * @param[in] domain_id The domain ID for which the reset is requested.
+ * \param[out] policy_status The policy status to be executed.
+ * \param[out] mode Pointer to store the telemetry mode (optional).
+ * \param[out] other_params Pointer to store any other param (optional).
+ * \param[in] agent_id The agent ID requesting the reset.
+ * \param[in] domain_id The domain ID for which the reset is requested.
  *
- * @return FWK_SUCCESS The operation was successful.
+ * \retval ::FWK_SUCCESS The operation was successful.
+ * \retval ::FWK_E_PARAM Invalid policy_status param.
  */
 FWK_WEAK int scmi_telemetry_reset_request_policy(
     enum mod_scmi_telemetry_policy_status *policy_status,
@@ -369,17 +372,18 @@ FWK_WEAK int scmi_telemetry_reset_request_policy(
  * This function calculates how many objects can be included in a single SCMI
  * telemetry response payload, given the maximum payload size.
  *
- * @param[in] service_id SCMI service identifier.
- * @param[in] header_size Size of the response header.
- * @param[in] object_size Size of each individual object.
- * @param[in, out] remain_count Pointer to the remaining number of objects.
+ * \param[in] service_id SCMI service identifier.
+ * \param[in] header_size Size of the response header.
+ * \param[in] object_size Size of each individual object.
+ * \param[in, out] remain_count Pointer to the remaining number of objects.
  *      Updated to reflect the number of objects left after processing.
- * @param[out] total_count Pointer to store the computed number of objects
+ * \param[out] total_count Pointer to store the computed number of objects
  *      that can be included in the response payload.
  *
- * @return FWK_SUCCESS If the operation is successful.
- * @return FWK_E_RANGE If there are no remaining objects to process.
- * @return FWK_E_SIZE If the payload size is too small to fit any objects.
+ * \retval ::FWK_SUCCESS If the operation is successful.
+ * \retval ::FWK_E_RANGE If there are no remaining objects to process.
+ * \retval ::FWK_E_SIZE If the payload size is too small to fit any objects.
+ * \retval ::FWK_E_PARAM If an invalid parameter is provided.
  */
 static int max_objects_in_payload(
     fwk_id_t service_id,
@@ -446,12 +450,12 @@ static int max_objects_in_payload(
  * in the telemetry system. It ensures correct indexing, payload handling, and
  * response formatting.
  *
- * @param[in] service_id The SCMI service identifier.
- * @param[in] payload Pointer to the request payload containing the index.
+ * \param[in] service_id The SCMI service identifier.
+ * \param[in] payload Pointer to the request payload containing the index.
  *
- * @return FWK_SUCCESS The operation was successful.
- * @return SCMI_OUT_OF_RANGE If the requested index is out of range.
- * @return FWK_E_PARAM If an invalid parameter is provided.
+ * \retval ::FWK_SUCCESS The operation was successful.
+ * \retval ::FWK_E_PARAM If an invalid parameter is provided.
+ * \return One of the standard framework error codes.
  */
 static int scmi_telemetry_list_shmti_handler(
     fwk_id_t service_id,
@@ -555,12 +559,12 @@ exit:
  * Data Events (DEs). It ensures proper indexing, payload handling, and response
  * formatting.
  *
- * @param[in] service_id The SCMI service identifier.
- * @param[in] payload Pointer to the request payload containing the index.
+ * \param[in] service_id The SCMI service identifier.
+ * \param[in] payload Pointer to the request payload containing the index.
  *
- * @return FWK_SUCCESS The operation was successful.
- * @return SCMI_OUT_OF_RANGE If the requested index is out of range.
- * @return FWK_E_PARAM If an invalid parameter is provided.
+ * \retval ::FWK_SUCCESS The operation was successful.
+ * \retval ::FWK_E_PARAM If an invalid parameter is provided.
+ * \return One of the standard framework error codes.
  */
 static int scmi_telemetry_de_description_handler(
     fwk_id_t service_id,
@@ -672,8 +676,8 @@ exit:
  * \param[in] exponent Exponent value (base-10), typically negative (e.g., -3).
  *     This determines the resolution of the interval.
  *
- * \retval Encoded interval value combining seconds and exponent.
- * \retval 0 If the seconds value exceeds the allowed bit field range.
+ * \return Encoded interval value combining seconds and exponent.
+ * \return 0 If the seconds value exceeds the allowed bit field range.
  */
 static uint32_t encode_interval(uint32_t seconds_base, int8_t exponent)
 {
@@ -706,12 +710,12 @@ static uint32_t encode_interval(uint32_t seconds_base, int8_t exponent)
  * intervals for telemetry data refresh. It ensures correct indexing, payload
  * handling, and response formatting.
  *
- * @param[in] service_id The SCMI service identifier.
- * @param[in] payload Pointer to the request payload containing the index.
+ * \param[in] service_id The SCMI service identifier.
+ * \param[in] payload Pointer to the request payload containing the index.
  *
- * @return FWK_SUCCESS The operation was successful.
- * @return SCMI_OUT_OF_RANGE If the requested index is out of range.
- * @return FWK_E_PARAM If an invalid parameter is provided.
+ * \retval ::FWK_SUCCESS The operation was successful.
+ * \retval ::FWK_E_PARAM If an invalid parameter is provided.
+ * \return One of the standard framework error codes.
  */
 static int scmi_telemetry_list_update_intervals_handler(
     fwk_id_t service_id,
@@ -832,13 +836,13 @@ exit:
  * (DE). It ensures proper validation of the DE ID and flags, applies the
  * required configuration, and formats the response accordingly.
  *
- * @param[in] service_id The SCMI service identifier.
- * @param[in] payload Pointer to the request payload containing DE
- * configuration.
+ * \param[in] service_id The SCMI service identifier.
+ * \param[in] payload Pointer to the request payload containing DE
+ *     configuration.
  *
- * @return FWK_SUCCESS The operation was successful.
- * @return SCMI_INVALID_PARAMETERS If invalid flags or DE ID are provided.
- * @return FWK_E_PARAM If an invalid parameter is detected.
+ * \retval ::FWK_SUCCESS The operation was successful.
+ * \retval ::FWK_E_PARAM If an invalid parameter is detected.
+ * \return One of the standard framework error codes.
  */
 static int scmi_telemetry_de_configure_handler(
     fwk_id_t service_id,
@@ -931,12 +935,12 @@ exit:
  * This function processes a request to fetch the list of currently enabled DEs.
  * It ensures proper indexing, payload handling, and response formatting.
  *
- * @param[in] service_id The SCMI service identifier.
- * @param[in] payload Pointer to the request payload containing the index.
+ * \param[in] service_id The SCMI service identifier.
+ * \param[in] payload Pointer to the request payload containing the index.
  *
- * @return FWK_SUCCESS The operation was successful.
- * @return SCMI_OUT_OF_RANGE If the requested index is out of range.
- * @return FWK_E_PARAM If an invalid parameter is provided.
+ * \retval ::FWK_SUCCESS The operation was successful.
+ * \retval ::FWK_E_PARAM If an invalid parameter is provided.
+ * \return One of the standard framework error codes.
  */
 static int scmi_telemetry_de_enabled_list_handler(
     fwk_id_t service_id,
@@ -1002,7 +1006,6 @@ static int scmi_telemetry_de_enabled_list_handler(
         }
         de_enabled_value[0] = de_status.de_id;
         de_enabled_value[1] = de_status.de_ts_mode;
-
         status = scmi_telemetry_ctx.scmi_api->write_payload(
             service_id,
             payload_size,
@@ -1048,9 +1051,9 @@ exit:
  * `MOD_TELEMETRY_INTERVAL_EXPONENT` macro and then incremented by 7 to
  * account for the `sec * 10^7` conversion.
  *
- * @param[in] sampling_rate The raw sampling rate value from SCMI.
+ * \param[in] sampling_rate The raw sampling rate value from SCMI.
  *
- * @return The computed multiplier for converting seconds.
+ * \return The computed multiplier for converting seconds.
  */
 static uint64_t get_sec_multiplier(uint32_t sampling_rate)
 {
@@ -1084,9 +1087,9 @@ static uint64_t get_sec_multiplier(uint32_t sampling_rate)
  * This function extracts the base seconds component and computes the
  * milliseconds equivalent using a multiplier derived from the exponent.
  *
- * @param[in] sampling_rate The raw sampling rate value from SCMI.
+ * \param[in] sampling_rate The raw sampling rate value from SCMI.
  *
- * @return The sampling rate in milliseconds.
+ * \return The sampling rate in milliseconds.
  */
 uint64_t convert_sampling_rate_to_msecs(uint32_t sampling_rate)
 {
@@ -1113,13 +1116,12 @@ uint64_t convert_sampling_rate_to_msecs(uint32_t sampling_rate)
  * This function processes a request to enable or disable telemetry,
  * sets the sampling rate, and validates the configuration mode.
  *
- * @param[in] service_id The SCMI service identifier.
- * @param[in] payload Pointer to the request payload containing configuration
+ * \param[in] service_id The SCMI service identifier.
+ * \param[in] payload Pointer to the request payload containing configuration
  * parameters.
  *
- * @return FWK_SUCCESS The operation was successful.
- * @return SCMI_INVALID_PARAMETERS If an invalid control mode is provided.
- * @return SCMI_PROTOCOL_ERROR If enabling/disabling telemetry fails.
+ * \retval ::FWK_SUCCESS The operation was successful.
+ * \return One of the standard framework error codes.
  */
 static int scmi_telemetry_config_set_handler(
     fwk_id_t service_id,
@@ -1207,10 +1209,11 @@ exit:
  * configuration. It returns the current telemetry enable state and the active
  * sampling rate.
  *
- * @param[in] service_id The SCMI service identifier.
- * @param[in] payload Pointer to the request payload (unused in this function).
+ * \param[in] service_id The SCMI service identifier.
+ * \param[in] payload Pointer to the request payload (unused in this function).
  *
- * @return FWK_SUCCESS The operation was successful.
+ * \retval ::FWK_SUCCESS The operation was successful.
+ * \return One of the standard framework error codes.
  */
 static int scmi_telemetry_config_get_handler(
     fwk_id_t service_id,
@@ -1242,10 +1245,10 @@ static int scmi_telemetry_config_get_handler(
  * This function is currently not supported and returns `FWK_E_SUPPORT`
  * indicating that version negotiation is not implemented.
  *
- * @param[in] service_id The SCMI service identifier.
- * @param[in] payload Pointer to the request payload (unused).
+ * \param[in] service_id The SCMI service identifier.
+ * \param[in] payload Pointer to the request payload (unused).
  *
- * @return FWK_E_SUPPORT Protocol version negotiation is not supported.
+ * \retval ::FWK_E_SUPPORT Protocol version negotiation is not supported.
  */
 static int negotiate_protocol_version_handler(
     fwk_id_t service_id,
@@ -1262,12 +1265,12 @@ static int negotiate_protocol_version_handler(
  * permissions before it is processed. It currently returns `FWK_E_SUPPORT`
  * indicating that the permission check is not implemented.
  *
- * @param[in] service_id The SCMI service identifier.
- * @param[in] payload Pointer to the request payload.
- * @param[in] payload_size Size of the request payload.
- * @param[in] message_id The SCMI message identifier.
+ * \param[in] service_id The SCMI service identifier.
+ * \param[in] payload Pointer to the request payload.
+ * \param[in] payload_size Size of the request payload.
+ * \param[in] message_id The SCMI message identifier.
  *
- * @return FWK_E_SUPPORT Resource permission checks are not supported.
+ * \retval ::FWK_E_SUPPORT Resource permission checks are not supported.
  */
 static int scmi_telemetry_permissions_handler(
     fwk_id_t service_id,
@@ -1284,10 +1287,10 @@ static int scmi_telemetry_permissions_handler(
  *
  * This function returns the protocol ID associated with SCMI telemetry.
  *
- * @param[in] protocol_id The framework identifier for the protocol.
- * @param[out] scmi_protocol_id Pointer to store the SCMI protocol ID.
+ * \param[in] protocol_id The framework identifier for the protocol.
+ * \param[out] scmi_protocol_id Pointer to store the SCMI protocol ID.
  *
- * @return FWK_SUCCESS Operation completed successfully.
+ * \retval ::FWK_SUCCESS Operation completed successfully.
  */
 static int scmi_telemetry_get_scmi_protocol_id(
     fwk_id_t protocol_id,
@@ -1305,15 +1308,14 @@ static int scmi_telemetry_get_scmi_protocol_id(
  * to their respective handlers based on the message ID. It also ensures that
  * any required resource permissions are checked.
  *
- * @param[in] protocol_id The framework identifier for the SCMI protocol.
- * @param[in] service_id The SCMI service identifier.
- * @param[in] payload Pointer to the request payload.
- * @param[in] payload_size Size of the request payload.
- * @param[in] message_id The SCMI message identifier.
+ * \param[in] protocol_id The framework identifier for the SCMI protocol.
+ * \param[in] service_id The SCMI service identifier.
+ * \param[in] payload Pointer to the request payload.
+ * \param[in] payload_size Size of the request payload.
+ * \param[in] message_id The SCMI message identifier.
  *
- * @return FWK_SUCCESS Operation completed successfully.
- * @return SCMI_DENIED If the message is denied due to permission restrictions.
- * @return SCMI_NOT_SUPPORTED If the message ID is not supported.
+ * \retval ::FWK_SUCCESS Operation completed successfully.
+ * \return One of the standard framework error codes.
  */
 static int scmi_telemetry_message_handler(
     fwk_id_t protocol_id,
@@ -1380,13 +1382,14 @@ static struct mod_scmi_to_protocol_api
  * configuration data. It ensures that the configuration and agent table are
  * valid.
  *
- * @param[in] module_id The module identifier.
- * @param[in] element_count Number of elements in the module (unused).
- * @param[in] data Pointer to the module configuration.
+ * \param[in] module_id The module identifier.
+ * \param[in] element_count Number of elements in the module (unused).
+ * \param[in] data Pointer to the module configuration.
  *
- * @return FWK_SUCCESS Initialization was successful.
- * @return FWK_E_PARAM If the configuration data is NULL or the agent table is
- * NULL.
+ * \retval ::FWK_SUCCESS Initialization was successful.
+ * \retval ::FWK_E_PARAM If the configuration data is NULL or the agent table is
+ *     NULL.
+ * \return One of the standard framework error codes.
  */
 static int scmi_telemetry_init(
     fwk_id_t module_id,
@@ -1417,7 +1420,7 @@ static int scmi_telemetry_init(
  * This function is currently not implemented and triggers an assertion failure
  * when called.
  *
- * @return No return, function triggers an assertion failure.
+ * \return No return, function triggers an assertion failure.
  */
 static int scmi_telemetry_init_notifications(void)
 {
@@ -1431,11 +1434,12 @@ static int scmi_telemetry_init_notifications(void)
  * This function binds the SCMI protocol API and, if enabled, binds
  * the SCMI notification API and telemetry API.
  *
- * @param[in] id The module identifier.
- * @param[in] round The binding round (ensures dependencies are bound in order).
+ * \param[in] id The module identifier.
+ * \param[in] round The binding round (ensures dependencies are bound in order).
  *
- * @return FWK_SUCCESS The binding was successful.
- * @return FWK_E_PANIC If any of the required bindings fail.
+ * \retval ::FWK_SUCCESS The binding was successful.
+ * \retval ::FWK_E_PANIC If any of the required bindings fail.
+ * \return One of the standard framework error codes.
  */
 static int scmi_telemetry_bind(fwk_id_t id, unsigned int round)
 {
@@ -1482,13 +1486,14 @@ static int scmi_telemetry_bind(fwk_id_t id, unsigned int round)
  *
  * This function handles bind requests for the SCMI telemetry protocol API.
  *
- * @param[in] source_id The identifier of the module requesting the API.
- * @param[in] target_id The identifier of the module providing the API.
- * @param[in] api_id The API identifier.
- * @param[out] api Pointer to the requested API.
+ * \param[in] source_id The identifier of the module requesting the API.
+ * \param[in] target_id The identifier of the module providing the API.
+ * \param[in] api_id The API identifier.
+ * \param[out] api Pointer to the requested API.
  *
- * @return FWK_SUCCESS If the requested API is provided successfully.
- * @return FWK_E_ACCESS If the requested API is not available.
+ * \retval ::FWK_SUCCESS If the requested API is provided successfully.
+ * \retval ::FWK_E_ACCESS If the requested API is not available.
+ * \return One of the standard framework error codes.
  */
 static int scmi_telemetry_process_bind_request(
     fwk_id_t source_id,
@@ -1517,10 +1522,10 @@ static int scmi_telemetry_process_bind_request(
  *
  * This function is a stub for handling telemetry notifications.
  *
- * @param[in] event The received event.
- * @param[out] resp_event The response event (if needed).
+ * \param[in] event The received event.
+ * \param[out] resp_event The response event (if needed).
  *
- * @return FWK_SUCCESS The function always returns success.
+ * \retval ::FWK_SUCCESS The function always returns success.
  */
 static int scmi_telemetry_process_notification(
     const struct fwk_event *event,

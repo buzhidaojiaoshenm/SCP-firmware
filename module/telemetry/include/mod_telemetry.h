@@ -31,6 +31,8 @@
  * \brief Defines the maximum telemetry sources and data event limits.
  */
 #define MOD_TELEMETRY_MAX_TELEMETRY_SOURCES 16
+
+/*! Maximum Data Events per telemetry source */
 #define MOD_TELEMETRY_MAX_DE_PER_SOURCE     256
 
 /*!
@@ -72,8 +74,6 @@
 
 /*!
  * \brief SHMTI (Shared-memory based telemetry interfaces) descriptor.
- *
- *
  */
 struct mod_telemetry_shmti_desc {
     /*! SHMTI ID. */
@@ -104,12 +104,17 @@ struct mod_telemetry_shmti_info {
 struct mod_telemetry_de_desc {
     /*! DE ID. */
     uint32_t de_id;
-    /*! Attributes. */
+    /*! Attribute 1, Refer SCMI specification for details  */
     uint32_t attributes_1;
+    /*! Attribute 2. Refer SCMI specification for details */
     uint32_t attributes_2;
+    /*! Attribute 3, Reserved must be zero */
     uint32_t attributes_3;
+    /*! Attribute 4, Lower 32 bits of the FastChannel address. */
     uint32_t attributes_4;
+    /*! Attribute 5, Higher 32 bits of the FastChannel address. */
     uint32_t attributes_5;
+    /*! Attribute 6, Size of the FastChannel is bytes. */
     uint32_t attributes_6;
 };
 
@@ -203,23 +208,31 @@ enum mod_telemetry_update_interval_formats {
  * \brief The exponent length within a word.
  */
 struct mod_telemetry_update_interval_exponent {
+    /*! Exponent field width */
     int32_t value : 5;
 };
 
+/*! Number of bits for exponent field in a 32 bit interval value */
 #define MOD_TELEMETRY_INTERVAL_NUM_EXPONENT_BITS (5U)
+/*! Number of bits for second field in a 32 bit interval value */
 #define MOD_TELEMETRY_INTERVAL_NUM_SECONDS_BITS  (15U)
+/*! Bit position of second field in 32 bit value */
 #define MOD_TELEMETRY_INTERVAL_SECONDS_POS       (5U)
 
+/*! Bitmask for exponent field */
 #define MOD_TELEMETRY_INTERVAL_NUM_EXPONENT_MASK \
     ((1UL << MOD_TELEMETRY_INTERVAL_NUM_EXPONENT_BITS) - 1)
 
+/*! Bitmask for second field */
 #define MOD_TELEMETRY_INTERVAL_NUM_SECONDS_MASK \
     (((1UL << MOD_TELEMETRY_INTERVAL_NUM_SECONDS_BITS) - 1) \
      << MOD_TELEMETRY_INTERVAL_SECONDS_POS)
 
+/*! Extract exponent field */
 #define MOD_TELEMETRY_INTERVAL_EXPONENT(rate_value) \
     ((rate_value) & (uint32_t)MOD_TELEMETRY_INTERVAL_NUM_EXPONENT_MASK)
 
+/*! Extract second field */
 #define MOD_TELEMETRY_INTERVAL_SECONDS(rate_value) \
     (((rate_value) & (uint32_t)MOD_TELEMETRY_INTERVAL_NUM_SECONDS_MASK) >> \
      MOD_TELEMETRY_INTERVAL_SECONDS_POS)
@@ -345,10 +358,11 @@ struct mod_telemetry_shmti_api {
     /*!
      * \brief Allocate a pool of Data Events (DEs) with individual timestamps.
      *
-     * @param[in] num_de Number of Data Events.
-     * @param[in,out] de_pool Pointer to the DE pool structure to be populated.
+     * \param[in] num_de Number of Data Events.
+     * \param[in,out] de_pool Pointer to the DE pool structure to be populated.
      *
-     * @return Status code.
+     * \retval ::FWK_SUCCESS The operation was successful.
+     * \return One of the standard framework error codes.
      */
     int (*allocate_ts_de_pool_shmti)(
         uint32_t num_de,
@@ -357,10 +371,11 @@ struct mod_telemetry_shmti_api {
      * \brief Allocate a pool of Data Events (DEs) without individual
      *    timestamps.
      *
-     * @param[in] num_de Number of Data Events.
-     * @param[in,out] de_pool Pointer to the DE pool structure to be populated.
+     * \param[in] num_de Number of Data Events.
+     * \param[in,out] de_pool Pointer to the DE pool structure to be populated.
      *
-     * @return Status code.
+     * \retval ::FWK_SUCCESS The operation was successful.
+     * \return One of the standard framework error codes.
      */
     int (*allocate_non_ts_de_pool_shmti)(
         uint32_t num_de,
@@ -368,28 +383,31 @@ struct mod_telemetry_shmti_api {
     /*!
      * \brief Allocate memory for a single Data Event (non-timestamped).
      *
-     * @param[in,out] shmti_id Pointer to store the SHMTI identifier.
-     * @param[in,out] addr Pointer to store the allocated memory address.
+     * \param[in,out] shmti_id Pointer to store the SHMTI identifier.
+     * \param[in,out] addr Pointer to store the allocated memory address.
      *
-     * @return Status code.
+     * \retval ::FWK_SUCCESS The operation was successful.
+     * \return One of the standard framework error codes.
      */
     int (*allocate_de_non_ts)(uint32_t *shmti_id, uintptr_t *addr);
     /*!
      * \brief Allocate memory for a single Data Event that requires a timestamp.
      *
-     * @param[in,out] shmti_id Pointer to store the SHMTI identifier.
-     * @param[in,out] addr Pointer to store the allocated memory address.
+     * \param[in,out] shmti_id Pointer to store the SHMTI identifier.
+     * \param[in,out] addr Pointer to store the allocated memory address.
      *
-     * @return Status code.
+     * \retval ::FWK_SUCCESS The operation was successful.
+     * \return One of the standard framework error codes.
      */
     int (*allocate_de_ts)(uint32_t *shmti_id, uintptr_t *addr);
     /*!
      * \brief Allocate a block of Data Events (DEs) sharing a common timestamp.
      *
-     * @param[in] num_de Number of Data Events.
-     * @param[in,out] de_pool Pointer to the DE pool structure to be populated.
+     * \param[in] num_de Number of Data Events.
+     * \param[in,out] de_pool Pointer to the DE pool structure to be populated.
      *
-     * @return Status code.
+     * \retval ::FWK_SUCCESS The operation was successful.
+     * \return One of the standard framework error codes.
      */
     int (*allocate_block_ts_shmti)(
         uint32_t num_de,
@@ -397,19 +415,21 @@ struct mod_telemetry_shmti_api {
     /*!
      * \brief Free a DE pool.
      *
-     * @param[in] de_pool Pointer to the DE pool structure.
+     * \param[in] de_pool Pointer to the DE pool structure.
      *
-     * @return Status code.
+     * \retval ::FWK_SUCCESS The operation was successful.
+     * \return One of the standard framework error codes.
      */
     int (*free_de_pool)(struct mod_telemetry_de_pool *de_pool);
     /*!
      * \brief Free a single Data Event.
      *
-     * @param[in] shmti_id SHMTI identifier.
-     * @param[in] addr Memory address of the Data Event.
-     * @param[in] de_size size of the allocated Data Event.
+     * \param[in] shmti_id SHMTI identifier.
+     * \param[in] addr Memory address of the Data Event.
+     * \param[in] de_size size of the allocated Data Event.
      *
-     * @return Status code.
+     * \retval ::FWK_SUCCESS The operation was successful.
+     * \return One of the standard framework error codes..
      */
     int (*free_de)(uint32_t shmti_id, uintptr_t addr, size_t de_size);
 };
@@ -453,44 +473,49 @@ struct mod_telemetry_driver_api {
     /*!
      * \brief Get the list of registered Data Events (DEs).
      *
-     * @param[out] num_de Pointer to store the number of DEs.
-     * @param[out] de_list Pointer to store the DE list.
+     * \param[out] num_de Pointer to store the number of DEs.
+     * \param[out] de_list Pointer to store the DE list.
      *
-     * @return FWK_SUCCESS or error code.
+     * \retval ::FWK_SUCCESS The operation was successful.
+     * \return One of the standard framework error codes.
      */
     int (*get_de_list)(uint32_t *num_de, struct mod_telemetry_de **de_list);
 
     /*!
      * \brief Disable a specific Data Event (DE).
      *
-     * @param[in] de_index Index of the DE to disable.
+     * \param[in] de_index Index of the DE to disable.
      *
-     * @return FWK_SUCCESS or error code.
+     * \retval ::FWK_SUCCESS The operation was successful.
+     * \return One of the standard framework error codes.
      */
     int (*disable_de)(uint32_t de_index);
 
     /*!
      * \brief Disable all Data Events (DEs).
      *
-     * @return FWK_SUCCESS or error code.
+     * \retval ::FWK_SUCCESS The operation was successful.
+     * \return One of the standard framework error codes.
      */
     int (*disable_de_all)(void);
 
     /*!
      * \brief Enable a Data Event (DE) without an individual timestamp.
      *
-     * @param[in] de_index Index of the DE to enable.
+     * \param[in] de_index Index of the DE to enable.
      *
-     * @return FWK_SUCCESS or error code.
+     * \retval ::FWK_SUCCESS The operation was successful.
+     * \return One of the standard framework error codes.
      */
     int (*enable_de_non_ts)(uint32_t de_index);
 
     /*!
      * \brief Enable a Data Event (DE) with an individual timestamp.
      *
-     * @param[in] de_index Index of the DE to enable.
+     * \param[in] de_index Index of the DE to enable.
      *
-     * @return FWK_SUCCESS or error code.
+     * \retval ::FWK_SUCCESS The operation was successful.
+     * \return One of the standard framework error codes.
      */
     int (*enable_de_ts)(uint32_t de_index);
 
@@ -513,19 +538,21 @@ struct mod_telemetry_protocol_support_api {
     /*!
      * \brief Get the number of Shared Memory Telemetry Instances (SHMTI).
      *
-     * @param[out] num_shmti Pointer to store the number of SHMTI instances.
+     * \param[out] num_shmti Pointer to store the number of SHMTI instances.
      *
-     * @return FWK_SUCCESS or error code.
+     * \retval ::FWK_SUCCESS The operation was successful.
+     * \return One of the standard framework error codes.
      */
     int (*get_num_shmti)(uint32_t *num_shmti);
 
     /*!
      * \brief Get details of a specific SHMTI.
      *
-     * @param[in] shmti_index Index of the SHMTI.
-     * @param[out] shmti_desc Pointer to store the SHMTI descriptor.
+     * \param[in] shmti_index Index of the SHMTI.
+     * \param[out] shmti_desc Pointer to store the SHMTI descriptor.
      *
-     * @return FWK_SUCCESS or error code.
+     * \retval ::FWK_SUCCESS The operation was successful.
+     * \return One of the standard framework error codes.
      */
     int (*get_shmti)(
         uint32_t shmti_index,
@@ -534,29 +561,32 @@ struct mod_telemetry_protocol_support_api {
     /*!
      * \brief Get the total number of registered Data Events (DEs).
      *
-     * @param[out] num_de Pointer to store the number of DEs.
+     * \param[out] num_de Pointer to store the number of DEs.
      *
-     * @return FWK_SUCCESS or error code.
+     * \retval ::FWK_SUCCESS The operation was successful.
+     * \return One of the standard framework error codes.
      */
     int (*get_num_de)(uint32_t *num_de);
 
     /*!
      * \brief Retrieve details of a specific Data Event (DE).
      *
-     * @param[in] de_index Index of the DE.
-     * @param[out] de_desc Pointer to store the DE descriptor.
+     * \param[in] de_index Index of the DE.
+     * \param[out] de_desc Pointer to store the DE descriptor.
      *
-     * @return FWK_SUCCESS or error code.
+     * \retval ::FWK_SUCCESS The operation was successful.
+     * \return One of the standard framework error codes.
      */
     int (*get_de)(uint32_t de_index, struct mod_telemetry_de_desc *de_desc);
 
     /*!
      * \brief Get information about supported update intervals.
      *
-     * @param[out] num_intervals Pointer to store the number of intervals.
-     * @param[out] interval_format Pointer to store the interval format type.
+     * \param[out] num_intervals Pointer to store the number of intervals.
+     * \param[out] interval_format Pointer to store the interval format type.
      *
-     * @return FWK_SUCCESS or error code.
+     * \retval ::FWK_SUCCESS The operation was successful.
+     * \return One of the standard framework error codes.
      */
     int (*get_update_intervals_info)(
         uint32_t *num_intervals,
@@ -565,10 +595,11 @@ struct mod_telemetry_protocol_support_api {
     /*!
      * \brief Get a specific telemetry update interval.
      *
-     * @param[in] interval_index Index of the interval.
-     * @param[out] sampling_rate Pointer to store the sampling rate in ms.
+     * \param[in] interval_index Index of the interval.
+     * \param[out] sampling_rate Pointer to store the sampling rate in ms.
      *
-     * @return FWK_SUCCESS or error code.
+     * \retval ::FWK_SUCCESS The operation was successful.
+     * \return One of the standard framework error codes.
      */
     int (
         *get_update_interval)(uint32_t interval_index, uint32_t *sampling_rate);
@@ -576,19 +607,21 @@ struct mod_telemetry_protocol_support_api {
     /*!
      * \brief Get the number of currently enabled Data Events (DEs).
      *
-     * @param[out] num_de_enabled Pointer to store the number of enabled DEs.
+     * \param[out] num_de_enabled Pointer to store the number of enabled DEs.
      *
-     * @return FWK_SUCCESS or error code.
+     * \retval ::FWK_SUCCESS The operation was successful.
+     * \return One of the standard framework error codes.
      */
     int (*get_num_de_enabled)(uint32_t *num_de_enabled);
 
     /*!
      * \brief Get the status of an enabled Data Event (DE).
      *
-     * @param[in] index Index of the enabled DE.
-     * @param[out] de_status Pointer to store the DE status.
+     * \param[in] index Index of the enabled DE.
+     * \param[out] de_status Pointer to store the DE status.
      *
-     * @return FWK_SUCCESS or error code.
+     * \retval ::FWK_SUCCESS The operation was successful.
+     * \return One of the standard framework error codes.
      */
     int (*get_de_enabled)(
         uint32_t index,
@@ -597,57 +630,64 @@ struct mod_telemetry_protocol_support_api {
     /*!
      * \brief Disable all Data Events (DEs).
      *
-     * @return FWK_SUCCESS or error code.
+     * \retval ::FWK_SUCCESS The operation was successful.
+     * \return One of the standard framework error codes.
      */
     int (*disable_all_de)(void);
 
     /*!
      * \brief Disable a specific Data Event (DE).
      *
-     * @param[in] de_id ID of the DE to disable.
+     * \param[in] de_id ID of the DE to disable.
      *
-     * @return FWK_SUCCESS or error code.
+     * \retval ::FWK_SUCCESS The operation was successful.
+     * \return One of the standard framework error codes.
      */
     int (*disable_de)(uint32_t de_id);
 
     /*!
      * \brief Enable a Data Event (DE) without an individual timestamp.
      *
-     * @param[in] de_id ID of the DE to enable.
+     * \param[in] de_id ID of the DE to enable.
      *
-     * @return FWK_SUCCESS or error code.
+     * \retval ::FWK_SUCCESS The operation was successful.
+     * \return One of the standard framework error codes.
      */
     int (*enable_de_non_ts)(uint32_t de_id);
 
     /*!
      * \brief Enable a Data Event (DE) with an individual timestamp.
      *
-     * @param[in] de_id ID of the DE to enable.
+     * \param[in] de_id ID of the DE to enable.
      *
-     * @return FWK_SUCCESS or error code.
+     * \retval ::FWK_SUCCESS The operation was successful.
+     * \return One of the standard framework error codes.
      */
     int (*enable_de_ts)(uint32_t de_id);
 
     /*!
      * \brief Disable telemetry functionality.
      *
-     * @return FWK_SUCCESS or error code.
+     * \retval ::FWK_SUCCESS The operation was successful.
+     * \return One of the standard framework error codes.
      */
     int (*telemetry_disable)(void);
 
     /*!
      * \brief Enable telemetry functionality.
      *
-     * @return FWK_SUCCESS or error code.
+     * \retval ::FWK_SUCCESS The operation was successful.
+     * \return One of the standard framework error codes.
      */
     int (*telemetry_enable)(void);
 
     /*!
      * \brief Set the telemetry data sampling rate.
      *
-     * @param[in] sampling_rate Sampling rate in milliseconds.
+     * \param[in] sampling_rate Sampling rate in milliseconds.
      *
-     * @return FWK_SUCCESS or error code.
+     * \retval ::FWK_SUCCESS The operation was successful.
+     * \return One of the standard framework error codes.
      */
     int (*set_sampling_rate)(uint32_t sampling_rate);
 };

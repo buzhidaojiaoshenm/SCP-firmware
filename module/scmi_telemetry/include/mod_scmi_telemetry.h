@@ -130,8 +130,8 @@ enum mod_scmi_telemetry_policy_status {
  * \param[in] agent_id  Identifier of the requesting SCMI agent.
  * \param[in] device_id  Identifier of the telemetry device.
  *
- * \retval FWK_SUCCESS  Operation succeeded.
- * \return Other FWK_* error codes.
+ * \retval ::FWK_SUCCESS Operation succeeded.
+ * \return One of the standard framework error codes.
  */
 int scmi_telemetry_telemetry_request_policy(
     enum mod_scmi_telemetry_policy_status *policy_status,
