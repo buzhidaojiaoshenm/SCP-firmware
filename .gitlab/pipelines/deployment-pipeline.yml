@@ -90,6 +90,15 @@ check-commit-msg:
     - pull-mr
   allow_failure: true
 
+check-code-security:
+  extends:
+    - .check-code-security
+  stage: code-quality
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: manual
+      allow_failure: true
+
 banned-api:
   extends:
     - .banned-api
