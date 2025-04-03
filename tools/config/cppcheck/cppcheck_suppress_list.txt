@@ -36,7 +36,7 @@ preprocessorErrorDirective:*arch/arm/common/src/arch_mm.c:16
 preprocessorErrorDirective:*arch/arm/armv8-a/src/arch_mm.c:17
 
 // Cppcheck is not able to parse returned boolean values inside if conditions
-internalAstError:*framework/src/fwk_core.c:313
+internalAstError:*framework/src/fwk_core.c:317
 
 // Suppress CMSIS errors
 *:*/CMSIS*/*

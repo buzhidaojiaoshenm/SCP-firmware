@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2015-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2015-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -290,6 +290,10 @@ static bool process_isr(void)
 int __fwk_init(size_t event_count)
 {
     struct fwk_event *event_table, *event;
+
+    if (event_count == 0) {
+        return FWK_E_INIT;
+    }
 
     event_table = fwk_mm_calloc(event_count, sizeof(struct fwk_event));
 

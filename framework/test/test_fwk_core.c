@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2015-2022, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2015-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -148,11 +148,17 @@ static void test_case_teardown(void)
 static void test___fwk_init(void)
 {
     int result;
-    size_t event_count = 2;
+    size_t event_count;
 
     fwk_mm_calloc_return_val = true;
 
+    /* Try to initialise with 0 events. */
+    event_count = 0;
+    result = __fwk_init(event_count);
+    assert(result == FWK_E_INIT);
+
     /* Insert 2 events in the list */
+    event_count = 2;
     result = __fwk_init(event_count);
     assert(result == FWK_SUCCESS);
     assert(
