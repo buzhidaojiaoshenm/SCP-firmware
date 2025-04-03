@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2020-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2020-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -42,6 +42,10 @@ static int create_core_cluster_pd_element_table(
     unsigned int core_element_counter = 0;
     unsigned int core_idx;
     unsigned int cluster_idx;
+
+    if (cluster_count == 0) {
+        return FWK_E_PARAM;
+    }
     unsigned int cores_per_clusters = core_count / cluster_count;
     int status;
 
