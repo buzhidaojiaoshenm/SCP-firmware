@@ -18,7 +18,7 @@
 #include <fwk_module.h>
 #include <fwk_module_idx.h>
 
-#define RDASPEN_AP_RVBAR             0x42000
+#define RDASPEN_AP_RVBAR             0x82000
 #define CLUSTER_CONTROL_REGION_COUNT NUMBER_OF_CLUSTERS
 
 #define CLUSTER_CONTROL_REGION_ADDR(cluster_idx) \
