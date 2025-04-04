@@ -118,7 +118,7 @@ struct mod_scmi_clock_agent_config {
      * \brief The number of \c mod_scmi_clock_device structures in the table
      *      pointed to by \c device_table.
      */
-    uint8_t device_count;
+    uint8_t agent_device_count;
 };
 
 /*!
@@ -141,15 +141,6 @@ struct mod_scmi_clock_agent {
 struct mod_scmi_clock_config {
     /*! Maximum supported number of pending, asynchronous clock rate changes */
     uint8_t max_pending_transactions;
-
-    /*!
-     * \brief Pointer to the table of agent descriptors, used to provide
-     *      per-agent views of clocks in the system.
-     */
-    const struct mod_scmi_clock_agent *agent_table;
-
-    /*! Number of agents in ::mod_scmi_clock_config::agent_table */
-    size_t agent_count;
 };
 
 /*!

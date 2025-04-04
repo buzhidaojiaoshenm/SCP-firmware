@@ -75,23 +75,23 @@ static const struct mod_scmi_notification_api scmi_notification_api = {
 
 void assert_ospm0_clock_state_meets_expectations(void)
 {
-    TEST_ASSERT_EQUAL_INT8_ARRAY(
+    TEST_ASSERT_EQUAL_UINT8_ARRAY(
         ospm0_state_table_expected,
-        scmi_clock_ctx.agent_table[FAKE_SCMI_AGENT_IDX_OSPM0].state_table,
+        scmi_clock_ctx.agent_table[FAKE_SCMI_AGENT_IDX_OSPM0]->state_table,
         SCMI_CLOCK_OSPM0_COUNT);
 }
 
 void assert_ospm1_clock_state_meets_expectations(void)
 {
-    TEST_ASSERT_EQUAL_INT8_ARRAY(
+    TEST_ASSERT_EQUAL_UINT8_ARRAY(
         ospm1_state_table_expected,
-        scmi_clock_ctx.agent_table[FAKE_SCMI_AGENT_IDX_OSPM1].state_table,
+        scmi_clock_ctx.agent_table[FAKE_SCMI_AGENT_IDX_OSPM1]->state_table,
         SCMI_CLOCK_OSPM1_COUNT);
 }
 
 void assert_ref_count_meets_expectations(void)
 {
-    TEST_ASSERT_EQUAL_INT8_ARRAY(
+    TEST_ASSERT_EQUAL_UINT8_ARRAY(
         dev_clock_ref_count_table_expected,
         dev_clock_ref_count_table,
         CLOCK_DEV_IDX_COUNT);
@@ -102,7 +102,7 @@ void setup_agent_state_table(
     unsigned int scmi_clock_idx,
     enum mod_clock_state state)
 {
-    scmi_clock_ctx.agent_table[agent_id].state_table[scmi_clock_idx] = (unsigned int)state;
+    scmi_clock_ctx.agent_table[agent_id]->state_table[scmi_clock_idx] = (unsigned int)state;
 }
 
 void setup_ref_count_table(
@@ -136,14 +136,18 @@ void setup_expected_ref_count_table(
 
 void setUp(void)
 {
-    scmi_clock_ctx.config = config_scmi_clock.data;
-    scmi_clock_ctx.max_pending_transactions = scmi_clock_ctx.config->max_pending_transactions;
-    scmi_clock_ctx.agent_table = (struct mod_scmi_clock_agent *)scmi_clock_ctx.config->agent_table;
+    struct mod_scmi_clock_config *data = (struct mod_scmi_clock_config *)config_scmi_clock.data;
+    scmi_clock_ctx.max_pending_transactions = data->max_pending_transactions;
 
-    scmi_clock_ctx.clock_devices = CLOCK_DEV_IDX_COUNT;
+    scmi_clock_ctx.phy_device_count = CLOCK_DEV_IDX_COUNT;
+    scmi_clock_ctx.agent_count = FAKE_SCMI_AGENT_IDX_COUNT;
 
-    scmi_clock_ctx.agent_table[FAKE_SCMI_AGENT_IDX_OSPM0].state_table = ospm0_state_table;
-    scmi_clock_ctx.agent_table[FAKE_SCMI_AGENT_IDX_OSPM1].state_table = ospm1_state_table;
+    scmi_clock_ctx.agent_table = (struct mod_scmi_clock_agent **)&agent_table;
+    scmi_clock_ctx.agent_table[PLATFORM] = NULL;
+    scmi_clock_ctx.agent_table[FAKE_SCMI_AGENT_IDX_PSCI] = NULL;
+    scmi_clock_ctx.agent_table[FAKE_SCMI_AGENT_IDX_OSPM0] = &agent_table[2];
+    scmi_clock_ctx.agent_table[FAKE_SCMI_AGENT_IDX_OSPM1] = &agent_table[3];
+
 
     /* Allocate a table of clock operations */
     scmi_clock_ctx.clock_ops = clock_ops_table;
@@ -151,7 +155,7 @@ void setUp(void)
            CLOCK_DEV_IDX_COUNT * sizeof(struct clock_operations));
 
     /* Initialize table */
-    for (unsigned int i = 0; i < (unsigned int)scmi_clock_ctx.clock_devices; i++) {
+    for (unsigned int i = 0; i < (unsigned int)scmi_clock_ctx.phy_device_count; i++) {
         scmi_clock_ctx.clock_ops[i].service_id = FWK_ID_NONE;
     }
 
@@ -355,7 +359,7 @@ void test_clock_ref_count_allocate(void)
     scmi_clock_ctx.dev_clock_ref_count_table = NULL;
 
     fwk_mm_calloc_ExpectAndReturn(
-            (unsigned int)scmi_clock_ctx.clock_devices,
+            (unsigned int)scmi_clock_ctx.phy_device_count,
             sizeof(*scmi_clock_ctx.dev_clock_ref_count_table),
             dev_clock_ref_count_table_return);
 
@@ -364,68 +368,6 @@ void test_clock_ref_count_allocate(void)
     TEST_ASSERT_EQUAL_PTR(
         dev_clock_ref_count_table_return,
         scmi_clock_ctx.dev_clock_ref_count_table);
-}
-
-void test_clock_devices_init(void)
-{
-    /* Make sure that the tables are cleared before running tests. */
-    memset(dev_clock_ref_count_table, 0, CLOCK_DEV_IDX_COUNT);
-    memset(ospm0_state_table, 1, SCMI_CLOCK_OSPM0_COUNT * sizeof(uint8_t));
-    memset(ospm1_state_table, 1, SCMI_CLOCK_OSPM1_COUNT * sizeof(uint8_t));
-
-    /* OSPM0 */
-    for (unsigned int i = 0; i < CLOCK_DEV_IDX_COUNT; i++) {
-        fwk_id_get_element_idx_ExpectAndReturn(
-            FWK_ID_ELEMENT(FWK_MODULE_IDX_CLOCK, i),
-            i);
-    }
-    /* OSPM1 */
-    fwk_id_get_element_idx_ExpectAndReturn(
-            FWK_ID_ELEMENT(FWK_MODULE_IDX_CLOCK, CLOCK_DEV_IDX_FAKE3),
-            CLOCK_DEV_IDX_FAKE3);
-
-    clock_devices_init();
-    TEST_ASSERT_EQUAL_INT8_ARRAY(
-        ospm0_state_table_default,
-        scmi_clock_ctx.agent_table[FAKE_SCMI_AGENT_IDX_OSPM0].state_table,
-        SCMI_CLOCK_OSPM0_COUNT);
-    TEST_ASSERT_EQUAL_INT8_ARRAY(
-        ospm1_state_table_default,
-        scmi_clock_ctx.agent_table[FAKE_SCMI_AGENT_IDX_OSPM1].state_table,
-        SCMI_CLOCK_OSPM1_COUNT);
-    TEST_ASSERT_EQUAL_INT8_ARRAY(
-        dev_clock_ref_count_table_default,
-        dev_clock_ref_count_table,
-        CLOCK_DEV_IDX_COUNT);
-}
-
-void test_clock_agent_table_allocate(void)
-{
-    uint8_t *osmp0_state_table_return = (uint8_t *)0xAAAAAAAA;
-    uint8_t *osmp1_state_table_return = (uint8_t *)0xBB;
-
-    scmi_clock_ctx.agent_table[FAKE_SCMI_AGENT_IDX_OSPM0].state_table = NULL;
-    scmi_clock_ctx.agent_table[FAKE_SCMI_AGENT_IDX_OSPM1].state_table = NULL;
-
-    fwk_mm_calloc_ExpectAndReturn(
-            (uint8_t)scmi_clock_ctx.agent_table[FAKE_SCMI_AGENT_IDX_OSPM0].agent_config->device_count,
-            sizeof(uint8_t),
-            osmp0_state_table_return);
-
-    fwk_mm_calloc_ExpectAndReturn(
-            (uint8_t)scmi_clock_ctx.agent_table[FAKE_SCMI_AGENT_IDX_OSPM1].agent_config->device_count,
-            sizeof(uint8_t),
-            osmp1_state_table_return);
-
-    clock_agent_table_allocate();
-
-    TEST_ASSERT_EQUAL_PTR(
-        osmp0_state_table_return,
-        scmi_clock_ctx.agent_table[FAKE_SCMI_AGENT_IDX_OSPM0].state_table);
-
-    TEST_ASSERT_EQUAL_PTR(
-        osmp1_state_table_return,
-        scmi_clock_ctx.agent_table[FAKE_SCMI_AGENT_IDX_OSPM1].state_table);
 }
 
 void test_mod_scmi_clock_request_state_check_no_change_running(void)
@@ -977,7 +919,7 @@ int protocol_attributes_handler_respond_callback(
     TEST_ASSERT_EQUAL((int32_t)SCMI_SUCCESS, return_values->status);
     TEST_ASSERT_EQUAL(
         SCMI_CLOCK_PROTOCOL_ATTRIBUTES(scmi_clock_ctx.max_pending_transactions,
-                                       scmi_clock_ctx.clock_devices),
+                                       SCMI_CLOCK_OSPM1_COUNT),
         return_values->attributes);
 
     return FWK_SUCCESS;
@@ -989,7 +931,6 @@ void test_mod_scmi_clock_protocol_attributes_handler(void)
     uint32_t agent_id = FAKE_SCMI_AGENT_IDX_OSPM1;
     fwk_id_t service_id =
         FWK_ID_ELEMENT_INIT(FAKE_MODULE_IDX, agent_id);
-    scmi_clock_ctx.clock_devices = SCMI_CLOCK_OSPM1_COUNT;
 
     uint32_t payload = 0;
 
@@ -1009,47 +950,6 @@ void test_mod_scmi_clock_protocol_attributes_handler(void)
         MOD_SCMI_PROTOCOL_ATTRIBUTES);
 
     TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
-}
-
-int protocol_attributes_handler_respond_callback_invalid_agent_id(
-    fwk_id_t service_id,
-    const void *payload,
-    size_t size,
-    int NumCalls)
-{
-    struct scmi_protocol_attributes_p2a *return_values;
-    return_values = (struct scmi_protocol_attributes_p2a *)payload;
-
-    TEST_ASSERT_EQUAL((int32_t)SCMI_GENERIC_ERROR, return_values->status);
-
-    return FWK_SUCCESS;
-}
-
-void test_mod_scmi_clock_protocol_attributes_handler_invalid_agent_id(void)
-{
-    int status;
-    uint32_t agent_id = FAKE_SCMI_AGENT_IDX_COUNT;
-    fwk_id_t service_id =
-        FWK_ID_ELEMENT_INIT(FAKE_MODULE_IDX, agent_id);
-
-    uint32_t payload = 0;
-
-    mod_scmi_from_protocol_api_get_agent_id_ExpectAnyArgsAndReturn(
-        FWK_SUCCESS);
-    mod_scmi_from_protocol_api_get_agent_id_ReturnThruPtr_agent_id(&agent_id);
-    mod_scmi_from_protocol_api_scmi_frame_validation_ExpectAnyArgsAndReturn(
-        SCMI_SUCCESS);
-    mod_scmi_from_protocol_api_respond_Stub(
-        protocol_attributes_handler_respond_callback_invalid_agent_id);
-
-    status = scmi_clock_message_handler(
-        (fwk_id_t)MOD_SCMI_PROTOCOL_ID_CLOCK,
-        service_id,
-        (const uint32_t *)&payload,
-        payload_size_table[MOD_SCMI_PROTOCOL_ATTRIBUTES],
-        MOD_SCMI_PROTOCOL_ATTRIBUTES);
-
-    TEST_ASSERT_EQUAL(FWK_E_PARAM, status);
 }
 
 int protocol_message_attributes_handler_respond_callback_notify_rate(
@@ -1329,37 +1229,6 @@ int rate_notify_invalid_param_callback(
     TEST_ASSERT_EQUAL((int32_t)SCMI_NOT_FOUND, return_values->status);
 
     return FWK_SUCCESS;
-}
-
-void test_clock_rate_changed_notify_handler_invalid_agent_id(void)
-{
-    int status;
-    unsigned int agent_id = FAKE_SCMI_AGENT_IDX_COUNT;
-    fwk_id_t service_id =
-        FWK_ID_ELEMENT_INIT(FAKE_MODULE_IDX, agent_id);
-
-    struct scmi_clock_rate_notify_a2p payload = {
-        .clock_id = SCMI_CLOCK_OSPM0_IDX1,
-        .notify_enable = true,
-    };
-
-    mod_scmi_from_protocol_api_get_agent_id_ExpectAnyArgsAndReturn(
-        FWK_SUCCESS);
-    mod_scmi_from_protocol_api_get_agent_id_ReturnThruPtr_agent_id(&agent_id);
-
-    mod_scmi_from_protocol_api_scmi_frame_validation_ExpectAnyArgsAndReturn(
-        FWK_SUCCESS);
-
-    mod_scmi_from_protocol_api_respond_Stub(rate_notify_invalid_param_callback);
-
-    status = scmi_clock_message_handler(
-        (fwk_id_t)MOD_SCMI_PROTOCOL_ID_CLOCK,
-        service_id,
-        (const uint32_t *)&payload,
-        payload_size_table[MOD_SCMI_CLOCK_RATE_NOTIFY],
-        MOD_SCMI_CLOCK_RATE_NOTIFY);
-
-    TEST_ASSERT_EQUAL(FWK_E_PARAM, status);
 }
 
 void test_clock_rate_changed_notify_handler_invalid_clock_id(void)
@@ -1744,13 +1613,13 @@ void test_mod_scmi_clock_start()
         FWK_SUCCESS);
 
     mod_scmi_from_protocol_api_get_agent_count_ExpectAndReturn(
-        (unsigned int *) &scmi_clock_ctx.config->agent_count,
+        (unsigned int *) &scmi_clock_ctx.agent_count,
         FWK_SUCCESS);
 
     scmi_notification_init_ExpectAndReturn(
         MOD_SCMI_PROTOCOL_ID_CLOCK,
-        scmi_clock_ctx.config->agent_count,
-        scmi_clock_ctx.clock_devices,
+        scmi_clock_ctx.agent_count,
+        scmi_clock_ctx.phy_device_count,
         MOD_SCMI_CLOCK_NOTIFICATION_COUNT,
         FWK_SUCCESS);
 
@@ -1765,6 +1634,7 @@ void test_mod_scmi_clock_bind(void)
     fwk_id_t mod_scmi_clock_id = FWK_ID_MODULE_INIT(FWK_MODULE_IDX_SCMI_CLOCK);
     fwk_id_t mod_scmi_id = FWK_ID_MODULE(FWK_MODULE_IDX_SCMI);
     fwk_id_t mod_clock_id = FWK_ID_MODULE(FWK_MODULE_IDX_CLOCK);
+    fwk_id_is_type_ExpectAnyArgsAndReturn(false);
 
     fwk_id_t mod_scmi_api_protocol =
         FWK_ID_API(FWK_MODULE_IDX_SCMI,
@@ -1849,8 +1719,6 @@ int scmi_test_main(void)
             test_set_rate_with_invalid_payload_size_expect_SCMI_PROTOCOL_ERROR);
 
         RUN_TEST(test_clock_ref_count_allocate);
-        RUN_TEST(test_clock_devices_init);
-        RUN_TEST(test_clock_agent_table_allocate);
         RUN_TEST(test_mod_scmi_clock_request_state_check_no_change_running);
         RUN_TEST(test_mod_scmi_clock_request_state_check_no_change_stopped);
         RUN_TEST(test_mod_scmi_clock_request_state_check_ref_count_0_running);
@@ -1871,8 +1739,6 @@ int scmi_test_main(void)
         RUN_TEST(test_mod_scmi_clock_protocol_version_handler);
         RUN_TEST(test_mod_scmi_clock_protocol_attributes_handler);
         RUN_TEST(
-            test_mod_scmi_clock_protocol_attributes_handler_invalid_agent_id);
-        RUN_TEST(
             test_protocol_message_attributes_handler_notify_rate);
         RUN_TEST(
             test_protocol_message_attributes_handler_notify_rate_requested);
@@ -1881,7 +1747,6 @@ int scmi_test_main(void)
         RUN_TEST(test_scmi_clock_name_get_handler_success);
         RUN_TEST(test_scmi_clock_name_get_handler_extended_name_not_supported);
 #ifdef BUILD_HAS_SCMI_NOTIFICATIONS
-        RUN_TEST(test_clock_rate_changed_notify_handler_invalid_agent_id);
         RUN_TEST(test_clock_rate_changed_notify_handler_invalid_clock_id);
         RUN_TEST(test_clock_rate_changed_notify_handler_add_subscriber);
         RUN_TEST(test_clock_rate_changed_notify_handler_remove_subscriber);

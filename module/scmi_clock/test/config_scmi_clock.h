@@ -13,8 +13,10 @@
 #include <fwk_module_idx.h>
 
 #define FAKE_MODULE_IDX 0x5
+#define MAX_PENDING_TRANSACTION 100
 
 enum fake_scmi_agent {
+    PLATFORM = 0,
     FAKE_SCMI_AGENT_IDX_PSCI = 1,
     FAKE_SCMI_AGENT_IDX_OSPM0,
     FAKE_SCMI_AGENT_IDX_OSPM1,
@@ -84,73 +86,88 @@ static const uint8_t dev_clock_ref_count_table_default[CLOCK_DEV_IDX_COUNT] = {
     2,
 };
 
-static const struct mod_scmi_clock_device agent_device_table_ospm0
-    [SCMI_CLOCK_OSPM0_COUNT] = {
-    [SCMI_CLOCK_OSPM0_IDX0] = {
-        /* FAKE0 */
-        .element_id =
+static struct clock_operations clock_ops_table[CLOCK_DEV_IDX_COUNT];
+
+static const struct mod_scmi_clock_device clock_dev_fake0 = {
+    .element_id =
             FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_CLOCK, CLOCK_DEV_IDX_FAKE0),
-        .starts_enabled = true,
-    },
-    [SCMI_CLOCK_OSPM0_IDX1] = {
-        /* FAKE1 */
-        .element_id =
+    .starts_enabled = true,
+};
+
+static const struct mod_scmi_clock_device clock_dev_fake1 = {
+    .element_id =
             FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_CLOCK, CLOCK_DEV_IDX_FAKE1),
-        .starts_enabled = true,
-        .supports_extended_name = true,
+    .starts_enabled = true,
+    .supports_extended_name = true,
 #ifdef BUILD_HAS_SCMI_NOTIFICATIONS
-        .notify_changed_rate = true,
-        .notify_requested_rate = true,
+    .notify_changed_rate = true,
+    .notify_requested_rate = true,
 #endif
-    },
-    [SCMI_CLOCK_OSPM0_IDX2] = {
-        /* FAKE2 */
-        .element_id =
+};
+
+static const struct mod_scmi_clock_device clock_dev_fake2 = {
+    .element_id =
             FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_CLOCK, CLOCK_DEV_IDX_FAKE2),
-        .starts_enabled = true,
-    },
-    [SCMI_CLOCK_OSPM0_IDX3] = {
-        /* FAKE3 */
-        .element_id =
-            FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_CLOCK, CLOCK_DEV_IDX_FAKE3),
-        .starts_enabled = true,
-    },
+    .starts_enabled = true,
 };
 
-static const struct mod_scmi_clock_device agent_device_table_ospm1
-    [SCMI_CLOCK_OSPM1_COUNT] = {
-    [SCMI_CLOCK_OSPM1_IDX0] = {
-        /* FAKE3 */
-        .element_id =
+static const struct mod_scmi_clock_device clock_dev_fake3 = {
+    .element_id =
             FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_CLOCK, CLOCK_DEV_IDX_FAKE3),
-        .starts_enabled = true,
-        .supports_extended_name = true,
-    },
+    .starts_enabled = true,
+    .supports_extended_name = true,
 };
 
-static struct mod_scmi_clock_agent agent_table
-        [FAKE_SCMI_AGENT_IDX_COUNT] = {
-    [FAKE_SCMI_AGENT_IDX_PSCI] = { 0 /* No access */ },
+static const struct mod_scmi_clock_device ospm0_device_table[SCMI_CLOCK_OSPM0_COUNT] = {
+    [SCMI_CLOCK_OSPM0_IDX0] = clock_dev_fake0,
+    [SCMI_CLOCK_OSPM0_IDX1] = clock_dev_fake1,
+    [SCMI_CLOCK_OSPM0_IDX2] = clock_dev_fake2,
+    [SCMI_CLOCK_OSPM0_IDX3] = clock_dev_fake3,
+};
+
+static const struct mod_scmi_clock_device ospm1_device_table[SCMI_CLOCK_OSPM1_COUNT] = {
+    [SCMI_CLOCK_OSPM1_IDX0] = clock_dev_fake3,
+};
+
+static const struct mod_scmi_clock_agent_config ospm0_config = {
+    .device_table = ospm0_device_table,
+    .agent_device_count = FWK_ARRAY_SIZE(ospm0_device_table),
+};
+
+static const struct mod_scmi_clock_agent_config ospm1_config = {
+    .device_table = ospm1_device_table,
+    .agent_device_count = FWK_ARRAY_SIZE(ospm1_device_table),
+};
+
+static const struct fwk_element element_table[FAKE_SCMI_AGENT_IDX_COUNT] = {
+    [PLATFORM] = {
+        .data = &(const struct mod_scmi_clock_agent_config){ 0 },
+    },
+    [FAKE_SCMI_AGENT_IDX_PSCI] = {
+        .data = &(const struct mod_scmi_clock_agent_config){ 0 },
+    },
     [FAKE_SCMI_AGENT_IDX_OSPM0] = {
-        .agent_config = &((struct mod_scmi_clock_agent_config){
-            .device_table = agent_device_table_ospm0,
-            .device_count = FWK_ARRAY_SIZE(agent_device_table_ospm0),
-        }),
+        .data = &ospm0_config,
     },
     [FAKE_SCMI_AGENT_IDX_OSPM1] = {
-        .agent_config = &((struct mod_scmi_clock_agent_config){
-            .device_table = agent_device_table_ospm1,
-            .device_count = FWK_ARRAY_SIZE(agent_device_table_ospm1),
-        }),
+        .data = &ospm1_config,
     },
 };
 
 struct fwk_module_config config_scmi_clock = {
+    .elements = FWK_MODULE_STATIC_ELEMENTS_PTR(element_table),
     .data = &((struct mod_scmi_clock_config) {
-        .max_pending_transactions = 0,
-        .agent_table = agent_table,
-        .agent_count = FWK_ARRAY_SIZE(agent_table),
+        .max_pending_transactions = MAX_PENDING_TRANSACTION,
     }),
 };
 
-static struct clock_operations clock_ops_table[CLOCK_DEV_IDX_COUNT];
+static struct mod_scmi_clock_agent agent_table[FAKE_SCMI_AGENT_IDX_COUNT] = {
+    [FAKE_SCMI_AGENT_IDX_OSPM0] = {
+        .agent_config = &ospm0_config,
+        .state_table = ospm0_state_table_default,
+    },
+    [FAKE_SCMI_AGENT_IDX_OSPM1] = {
+        .agent_config = &ospm1_config,
+        .state_table = ospm1_state_table_default,
+    },
+};

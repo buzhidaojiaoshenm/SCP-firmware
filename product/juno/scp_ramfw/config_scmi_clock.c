@@ -54,22 +54,35 @@ static const struct mod_scmi_clock_device agent_device_table_ospm[] = {
     },
 };
 
-static const struct
-    mod_scmi_clock_agent agent_table[JUNO_SCMI_AGENT_IDX_COUNT] = {
-    [0] = { 0 /* Platform */},
-    [JUNO_SCMI_AGENT_IDX_PSCI] = { 0 /* No Access */ },
-    [JUNO_SCMI_AGENT_IDX_OSPM] = {
-        .agent_config = &((struct mod_scmi_clock_agent_config){
-            .device_table = agent_device_table_ospm,
-            .device_count = FWK_ARRAY_SIZE(agent_device_table_ospm),
-        }),
-    },
+static const struct mod_scmi_clock_agent_config ospm_config = {
+    .device_table = agent_device_table_ospm,
+    .agent_device_count = FWK_ARRAY_SIZE(agent_device_table_ospm),
 };
 
+static const struct fwk_element element_table[] = {
+    [0] = {
+        .name = "",
+        .data = &(const struct mod_scmi_clock_agent_config){ 0 },
+     },
+    [JUNO_SCMI_AGENT_IDX_PSCI] = {
+        .name = "",
+        .data = &(const struct mod_scmi_clock_agent_config){ 0 },
+     },
+    [JUNO_SCMI_AGENT_IDX_OSPM] = {
+        .name = "ospm",
+        .data = &ospm_config,
+    },
+    [JUNO_SCMI_AGENT_IDX_COUNT] = { 0 },
+};
+
+static const struct fwk_element *get_element_table(fwk_id_t module_id)
+{
+    return element_table;
+}
+
 struct fwk_module_config config_scmi_clock = {
-    .data = &((struct mod_scmi_clock_config) {
+    .elements = FWK_MODULE_DYNAMIC_ELEMENTS(get_element_table),
+    .data = &((struct mod_scmi_clock_config){
         .max_pending_transactions = 0,
-        .agent_table = agent_table,
-        .agent_count = FWK_ARRAY_SIZE(agent_table),
     }),
 };

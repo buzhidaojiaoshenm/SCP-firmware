@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2022-2024, Linaro Limited and Contributors. All rights
+ * Copyright (c) 2022-2025, Linaro Limited and Contributors. All rights
  * reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
@@ -133,19 +133,33 @@ static struct mod_scmi_clock_device scmi_clock_device[] = {
     [CK_SCMI_USART1] = SCMI_CLOCK_ELT_ID(CLK_IDX_SCMI_USART1),
 };
 
-/* Agents and clocks references */
-static const struct mod_scmi_clock_agent clk_agent_tbl[SCMI_AGENT_ID_COUNT] = {
-    [SCMI_AGENT_ID_NSEC0] = {
-        .device_table = (void *)scmi_clock_device,
-        .device_count = FWK_ARRAY_SIZE(scmi_clock_device),
-    },
+static const struct mod_scmi_clock_agent_config nsec0_config = {
+    .device_table = scmi_clock_device,
+    .agent_device_count = FWK_ARRAY_SIZE(scmi_clock_device),
 };
+
+static const struct fwk_element element_table[] = {
+    [SCMI_AGENT_ID_RSV] = {
+        .name = "",
+        .data = &(const struct mod_scmi_clock_agent_config){ 0 },
+    },
+    [SCMI_AGENT_ID_NSEC0] = {
+        .name = "nsec0",
+        .data = &nsec0_config,
+    },
+    [SCMI_AGENT_ID_COUNT] = { 0 },
+};
+
+static const struct fwk_element *get_element_table(fwk_id_t module_id)
+{
+    return element_table;
+}
 
 /* Exported configuration data for module SCMI_CLOCK */
 struct fwk_module_config config_scmi_clock = {
+    .elements = FWK_MODULE_DYNAMIC_ELEMENTS(get_element_table),
     .data = &((struct mod_scmi_clock_config){
-        .agent_table = clk_agent_tbl,
-        .agent_count = FWK_ARRAY_SIZE(clk_agent_tbl),
+        .max_pending_transactions = 0,
     }),
 };
 
