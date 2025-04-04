@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2023, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2023-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -8,10 +8,14 @@
  *     Utility functions for accessing MXP node.
  */
 
+#include <internal/cmn_cyprus_discovery_setup.h>
 #include <internal/cmn_cyprus_mxp_reg.h>
 #include <internal/cmn_cyprus_reg.h>
 
+#include <fwk_assert.h>
+
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 
 /* MXP Port Connect Info */
@@ -37,6 +41,9 @@ struct cmn_cyprus_node_cfg_reg *mxp_get_child_node(
     unsigned int offset;
     struct cmn_cyprus_node_cfg_reg *child_node;
 
+    fwk_assert(mxp != NULL);
+    fwk_assert(child_index < cmn_cyprus_get_child_count(mxp->CHILD_INFO));
+
     offset = (mxp->CHILD_POINTER[child_index] & CHILD_POINTER_OFFSET);
 
     child_node = (struct cmn_cyprus_node_cfg_reg *)(periphbase + offset);
@@ -48,6 +55,9 @@ bool mxp_is_child_external(
     struct cmn_cyprus_mxp_reg *mxp,
     unsigned int child_index)
 {
+    fwk_assert(mxp != NULL);
+    fwk_assert(child_index < cmn_cyprus_get_child_count(mxp->CHILD_INFO));
+
     /* Read External Child Node indicator, bit[31] */
     return (
         (mxp->CHILD_POINTER[child_index] & (1U << CHILD_POINTER_EXT_BIT_POS)) >

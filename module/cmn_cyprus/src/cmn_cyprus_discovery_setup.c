@@ -827,6 +827,10 @@ static int cmn_cyprus_init_node_info(struct cmn_cyprus_mxp_reg *mxp)
             break;
 
         case NODE_TYPE_RN_SAM:
+            if (rnsam_entry >= shared_ctx->rnsam_count) {
+                FWK_LOG_ERR("Invalid rnsam_entry for RN_SAM: %u", rnsam_entry);
+                return FWK_E_RANGE;
+            }
             /* Save the node pointer in the RNSAM table */
             shared_ctx->rnsam_table[rnsam_entry] =
                 (struct cmn_cyprus_rnsam_reg *)node;
@@ -835,6 +839,10 @@ static int cmn_cyprus_init_node_info(struct cmn_cyprus_mxp_reg *mxp)
             break;
 
         case NODE_TYPE_CCRA:
+            if (ldid >= shared_ctx->ccg_ra_reg_count) {
+                FWK_LOG_ERR("Invalid LDID for CCRA: %u", ldid);
+                return FWK_E_RANGE;
+            }
             shared_ctx->ccg_ra_info_table[ldid].node_id =
                 node_info_get_id(node->NODE_INFO);
             shared_ctx->ccg_ra_info_table[ldid].ccg_ra =
@@ -842,6 +850,10 @@ static int cmn_cyprus_init_node_info(struct cmn_cyprus_mxp_reg *mxp)
             break;
 
         case NODE_TYPE_CCHA:
+            if (ldid >= shared_ctx->ccg_ha_reg_count) {
+                FWK_LOG_ERR("Invalid LDID for CCHA: %u", ldid);
+                return FWK_E_RANGE;
+            }
             shared_ctx->ccg_ha_info_table[ldid].node_id =
                 node_info_get_id(node->NODE_INFO);
             shared_ctx->ccg_ha_info_table[ldid].ccg_ha =
@@ -849,6 +861,10 @@ static int cmn_cyprus_init_node_info(struct cmn_cyprus_mxp_reg *mxp)
             break;
 
         case NODE_TYPE_CCLA:
+            if (ldid >= shared_ctx->ccla_reg_count) {
+                FWK_LOG_ERR("Invalid LDID for CCLA: %u", ldid);
+                return FWK_E_RANGE;
+            }
             shared_ctx->ccla_info_table[ldid].node_id =
                 node_info_get_id(node->NODE_INFO);
             shared_ctx->ccla_info_table[ldid].ccla =

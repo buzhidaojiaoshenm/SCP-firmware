@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2023, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2023-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -9,8 +9,12 @@
  */
 
 #include <internal/cmn_cyprus_cfg_reg.h>
+#include <internal/cmn_cyprus_discovery_setup.h>
 #include <internal/cmn_cyprus_reg.h>
 
+#include <fwk_assert.h>
+
+#include <stddef.h>
 #include <stdint.h>
 
 /* Peripheral ID Revision Numbers */
@@ -31,6 +35,9 @@ struct cmn_cyprus_node_cfg_reg *cfgm_get_child_node(
     uintptr_t periphbase;
     unsigned int offset;
     struct cmn_cyprus_node_cfg_reg *child_node;
+
+    fwk_assert(cfgm != NULL);
+    fwk_assert(child_index < cmn_cyprus_get_child_count(cfgm->CHILD_INFO));
 
     offset = (cfgm->CHILD_POINTER[child_index] & CHILD_POINTER_OFFSET);
     /*
