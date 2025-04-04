@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2023-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2023-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -204,7 +204,7 @@ static const char *get_cmn_cyprus_revision_name(
 }
 #endif
 
-static inline unsigned int get_child_count(FWK_R uint64_t child_info)
+unsigned int cmn_cyprus_get_child_count(FWK_R uint64_t child_info)
 {
     return (child_info & CHILD_INFO_COUNT);
 }
@@ -536,7 +536,7 @@ static int discover_mxp_nodes(struct cmn_cyprus_mxp_reg *mxp)
     struct cmn_cyprus_node_cfg_reg *node;
 
     /* Get number of children connected to the cross point */
-    node_count = get_child_count(mxp->CHILD_INFO);
+    node_count = cmn_cyprus_get_child_count(mxp->CHILD_INFO);
 
 #if FWK_LOG_LEVEL <= FWK_LOG_LEVEL_INFO
     print_node_info(mxp);
@@ -589,7 +589,7 @@ static int discover_mesh_topology(void)
         MOD_NAME "Rootnode Base address: %p", (void *)shared_ctx->cfgm);
 
     /* Get number of cross points in the mesh */
-    mxp_count = get_child_count(shared_ctx->cfgm->CHILD_INFO);
+    mxp_count = cmn_cyprus_get_child_count(shared_ctx->cfgm->CHILD_INFO);
 
     /* Traverse cross points */
     for (mxp_idx = 0; mxp_idx < mxp_count; mxp_idx++) {
@@ -796,7 +796,7 @@ static int cmn_cyprus_init_node_info(struct cmn_cyprus_mxp_reg *mxp)
     config = shared_ctx->config;
 
     /* Get the number of children connected to the cross point */
-    node_count = get_child_count(mxp->CHILD_INFO);
+    node_count = cmn_cyprus_get_child_count(mxp->CHILD_INFO);
 
     status = FWK_SUCCESS;
 
@@ -880,7 +880,7 @@ static int cmn_cyprus_init_ctx(void)
     rnsam_entry = 0;
 
     /* Get number of cross points in the mesh */
-    mxp_count = get_child_count(shared_ctx->cfgm->CHILD_INFO);
+    mxp_count = cmn_cyprus_get_child_count(shared_ctx->cfgm->CHILD_INFO);
 
     /* Traverse cross points */
     for (mxp_idx = 0; mxp_idx < mxp_count; mxp_idx++) {
