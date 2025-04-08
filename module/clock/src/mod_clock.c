@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2017-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2017-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -300,7 +300,7 @@ static int clock_set_rate(
          */
         else if (status == FWK_PENDING) {
             status = create_async_request_set_rate(ctx, clock_id, requester_id);
-            if (status != FWK_SUCCESS || status != FWK_PENDING) {
+            if (status != FWK_PENDING) {
                 FWK_LOG_DEBUG("[CLOCK] %s @%d", __func__, __LINE__);
             }
         }
