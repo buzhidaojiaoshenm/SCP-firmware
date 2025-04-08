@@ -574,7 +574,7 @@ bool arch_interrupt_is_interrupt_context(void)
     return true;
 }
 
-int arch_interrupt_init()
+int arch_interrupt_init(void)
 {
     /*
      * Allocate and initialize a table for the callback functions and their

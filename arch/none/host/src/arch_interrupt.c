@@ -94,7 +94,7 @@ bool arch_interrupt_is_interrupt_context(void)
     return false;
 }
 
-int arch_interrupt_init()
+int arch_interrupt_init(void)
 {
     return FWK_SUCCESS;
 }

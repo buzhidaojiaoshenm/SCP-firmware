@@ -16,7 +16,7 @@
 
 #include <arch_interrupt.h>
 
-int fwk_arch_interrupt_init()
+int fwk_arch_interrupt_init(void)
 {
     return arch_interrupt_init();
 }

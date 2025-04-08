@@ -282,7 +282,7 @@ bool arch_interrupt_is_interrupt_context(void)
     return current_iar != INTERRUPT_ID_INVALID;
 }
 
-int arch_interrupt_init()
+int arch_interrupt_init(void)
 {
     return FWK_SUCCESS;
 }

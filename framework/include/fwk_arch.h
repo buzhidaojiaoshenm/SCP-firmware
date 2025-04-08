@@ -203,7 +203,7 @@ bool arch_interrupt_is_interrupt_context(void);
  * \retval ::FWK_E_PARAM One or more parameters were invalid.
  * \retval ::FWK_E_PANIC Unrecoverable initialization error.
  */
-int fwk_arch_init();
+int fwk_arch_init(void);
 
 /*!
  * \brief Stop the framework library.

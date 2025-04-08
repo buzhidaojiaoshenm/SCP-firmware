@@ -82,7 +82,7 @@ inline static unsigned int fwk_interrupt_global_disable(void)
     return arch_interrupts_disable();
 }
 
-int fwk_arch_interrupt_init();
+int fwk_arch_interrupt_init(void);
 /*!
  * \brief Test whether an interrupt is enabled.
  *

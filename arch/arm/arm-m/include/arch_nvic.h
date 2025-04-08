@@ -20,6 +20,6 @@
  *
  * \return Status code representing the result of the operation.
  */
-int arch_interrupt_init();
+int arch_interrupt_init(void);
 
 #endif /* ARCH_NVIC_H */

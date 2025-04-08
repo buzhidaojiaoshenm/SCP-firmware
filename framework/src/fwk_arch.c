@@ -29,7 +29,7 @@
 
 #include <string.h>
 
-int fwk_arch_init()
+int fwk_arch_init(void)
 {
     int status;
 

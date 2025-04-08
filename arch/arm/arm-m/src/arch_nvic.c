@@ -245,7 +245,7 @@ void arch_interrupt_irq_invalid(void)
 }
 
 #ifndef ARMV6M
-int arch_interrupt_init()
+int arch_interrupt_init(void)
 {
     uint32_t ictr_intlinesnum;
     uint32_t align_entries;
@@ -327,7 +327,7 @@ int arch_interrupt_init()
 }
 #else
 
-int arch_interrupt_init()
+int arch_interrupt_init(void)
 {
     uint32_t ictr_intlinesnum;
     uint32_t irq;
