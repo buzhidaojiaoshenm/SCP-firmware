@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2023-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2023-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -178,7 +178,9 @@ int get_highest_level_from_composite_state(
                 break;
             }
         }
-        level--;
+        if (level > 0) {
+            level--;
+        }
     }
 
     return (int)level;
