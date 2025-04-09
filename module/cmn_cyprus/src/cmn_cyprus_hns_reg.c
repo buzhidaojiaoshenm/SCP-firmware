@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2023-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2023-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -576,7 +576,7 @@ void hns_set_lcn_htg_cpag_id(
              LCN_HTG_CPAG_PER_HNF_POS);
 
         hns->LCN_HASHED_TARGET_GRP_CPAG_PERHNF_REG[register_idx] |=
-            (cpag_id << bit_pos);
+            ((uint64_t)cpag_id << bit_pos);
     }
 }
 
