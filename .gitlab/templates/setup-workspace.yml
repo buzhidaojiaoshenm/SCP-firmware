@@ -24,8 +24,8 @@
       git checkout FETCH_HEAD
       git submodule update --init --recursive --depth 1
 
-      git fetch origin main
-      CI_MERGE_REQUEST_DIFF_BASE_SHA=$(git merge-base FETCH_HEAD origin/main)
+      git fetch $PUBLIC_REPO_URL main:refs/remotes/public/main
+      CI_MERGE_REQUEST_DIFF_BASE_SHA=$(git merge-base FETCH_HEAD public/main)
 
       # Save ENV variables
       mkdir -p .env
