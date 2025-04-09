@@ -937,11 +937,13 @@ static int scmi_bind(fwk_id_t id, unsigned int round)
 
         status = fwk_module_bind(protocol->id,
             FWK_ID_API(fwk_id_get_module_idx(protocol->id), 0), &protocol_api);
+
         if (status != FWK_SUCCESS) {
             return status;
         }
 
-        if ((protocol_api->get_scmi_protocol_id == NULL) ||
+        if ((protocol_api == NULL) ||
+            (protocol_api->get_scmi_protocol_id == NULL) ||
             (protocol_api->message_handler == NULL)) {
             return FWK_E_DATA;
         }
