@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2023-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2023-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -1086,7 +1086,8 @@ int rnsam_set_cpag_port_type(
         (((cpag_id % CPA_CTRL_CPAG_PER_GROUP) * CPA_CTRL_NUM_CXG_PAG_WIDTH) +
          CPA_CTRL_PORT_TYPE_POS);
 
-    rnsam->CML_PORT_AGGR_CTRL_REG[register_idx] |= (port_type << bit_pos);
+    rnsam->CML_PORT_AGGR_CTRL_REG[register_idx] |= ((uint64_t)port_type
+                                                    << bit_pos);
 
     return FWK_SUCCESS;
 }
@@ -1140,7 +1141,8 @@ int rnsam_configure_cpag_base_index(
     rnsam->CML_CPAG_BASE_INDX_GRP[register_idx] &=
         ~(CPAG_BASE_INDX_MASK << bit_pos);
 
-    rnsam->CML_CPAG_BASE_INDX_GRP[register_idx] |= (cpag_base_idx << bit_pos);
+    rnsam->CML_CPAG_BASE_INDX_GRP[register_idx] |= ((uint64_t)cpag_base_idx
+                                                    << bit_pos);
 
     return FWK_SUCCESS;
 }
