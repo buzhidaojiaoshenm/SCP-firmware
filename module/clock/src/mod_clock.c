@@ -235,7 +235,7 @@ static int clock_set_rate(
     enum mod_clock_round_mode round_mode,
     unsigned int requester_id)
 {
-    int status = FWK_SUCCESS;
+    int status;
     struct clock_dev_ctx *ctx;
 #ifdef BUILD_HAS_NOTIFICATION
     uint64_t actual_rate;
@@ -278,9 +278,6 @@ static int clock_set_rate(
         clock_id,
         rate,
         mod_clock_notification_id_rate_change_requested);
-    if (status != FWK_SUCCESS) {
-        return status;
-    }
 #    endif
     status = ctx->api->set_rate(ctx->config->driver_id, rate, round_mode);
 #    ifdef BUILD_HAS_NOTIFICATION
