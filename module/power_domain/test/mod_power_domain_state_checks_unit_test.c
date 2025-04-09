@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2024-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -371,6 +371,29 @@ void test_get_highest_level_from_comp_state_no_cs_support(void)
     TEST_ASSERT_EQUAL(0, level);
 }
 
+void test_get_highest_level_from_comp_state_zero(void)
+{
+    struct pd_ctx *pd = &mod_pd_ctx_temp.pd_ctx_table[PD_IDX_CLUS0CORE0];
+    uint32_t composite_state;
+    int level;
+
+    pd->cs_support = true;
+    pd->composite_state_levels_mask = 0;
+    pd->composite_state_mask_table = core_composite_state_mask_table_UT;
+    pd->composite_state_mask_table_size = 1;
+
+    /* Force the valid_state_mask to NOT include the first state's bit */
+    pd->valid_state_mask = MOD_PD_STATE_ON_MASK;
+
+    /* Ensure there is a composite state with an invalid state at level 0 */
+    composite_state =
+        MOD_PD_COMPOSITE_STATE(MOD_PD_LEVEL_0, 0, 0, 0, MOD_PD_STATE_OFF);
+
+    level = get_highest_level_from_composite_state(pd, composite_state);
+
+    TEST_ASSERT_EQUAL(0, level);
+}
+
 void test_is_valid_comp_state_true(void)
 {
     struct pd_ctx *pd = &mod_pd_ctx_temp.pd_ctx_table[PD_IDX_CLUS0CORE0];
@@ -606,6 +629,7 @@ int power_domain_state_checks_test_main(void)
     RUN_TEST(test_get_level_state_from_comp_state_off);
     RUN_TEST(test_get_highest_level_from_comp_state);
     RUN_TEST(test_get_highest_level_from_comp_state_no_cs_support);
+    RUN_TEST(test_get_highest_level_from_comp_state_zero);
     RUN_TEST(test_is_valid_comp_state_true);
     RUN_TEST(test_is_valid_comp_state_no_cs_support);
     RUN_TEST(test_is_valid_comp_state_too_high_level);
