@@ -477,9 +477,10 @@ static void scmi_notify(fwk_id_t id, int protocol_id, int message_id,
     }
 
     ctx = &scmi_ctx.service_ctx_table[fwk_id_get_element_idx(id)];
-    if (ctx == NULL) {
+    if ((ctx == NULL) || (ctx->config == NULL)) {
         return;
     }
+
     /* ctx is the original A2P service channel */
     if (fwk_id_is_equal(ctx->config->scmi_p2a_id, FWK_ID_NONE)) {
         return;
@@ -535,8 +536,7 @@ int scmi_send_message(
     const struct mod_scmi_to_transport_api *transport_api;
     const struct scmi_service_ctx *ctx;
     ctx = &scmi_ctx.service_ctx_table[fwk_id_get_element_idx(service_id)];
-
-    if (ctx == NULL) {
+    if ((ctx == NULL) || (ctx->transport_api == NULL)) {
         return FWK_E_DATA;
     }
 
