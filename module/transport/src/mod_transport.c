@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2022-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2022-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -240,11 +240,22 @@ static int transport_respond(
 
     fwk_assert(transport_type != MOD_TRANSPORT_CHANNEL_TRANSPORT_TYPE_NONE);
 
+    if (channel_ctx->max_payload_size < size) {
+        fwk_unexpected();
+        return FWK_E_PARAM;
+    }
+
 #if defined(BUILD_HAS_OUTBAND_MSG_SUPPORT)
     if (transport_type == MOD_TRANSPORT_CHANNEL_TRANSPORT_TYPE_OUT_BAND) {
         /* Use shared mailbox for out-band messages */
         buffer = ((struct mod_transport_buffer *)
                       channel_ctx->config->out_band_mailbox_address);
+
+        if (buffer == NULL) {
+            FWK_LOG_ERR(
+                "%s ERROR: NULL buffer in \"%s()\"", MOD_NAME, __func__);
+            return FWK_E_PANIC;
+        }
 
         /* Copy the header and other fields from the write buffer */
         fwk_str_memcpy(
@@ -259,22 +270,28 @@ static int transport_respond(
             (payload == NULL ? channel_ctx->out->payload : payload),
             size);
     }
-#else
-#    if defined(BUILD_HAS_INBAND_MSG_SUPPORT)
+#endif
+#if defined(BUILD_HAS_INBAND_MSG_SUPPORT)
     if (transport_type == MOD_TRANSPORT_CHANNEL_TRANSPORT_TYPE_IN_BAND) {
         /* Use internal write buffer for in-band messages */
         buffer = channel_ctx->out;
+
+        if (buffer == NULL) {
+            FWK_LOG_ERR(
+                "%s ERROR: NULL buffer in \"%s()\"", MOD_NAME, __func__);
+            return FWK_E_PANIC;
+        }
 
         /* Copy the payload from the payload parameter */
         if (payload != NULL) {
             fwk_str_memcpy(buffer->payload, payload, size);
         }
     }
-#    endif
 #endif
 
     if (buffer == NULL) {
-        FWK_LOG_ERR("%s ERROR: NULL buffer in \"%s()\"", MOD_NAME, __func__);
+        FWK_LOG_ERR(
+            "%s ERROR: Invalid transport_type in \"%s()\"", MOD_NAME, __func__);
         return FWK_E_PANIC;
     }
 
@@ -310,7 +327,6 @@ static int transport_respond(
         status = channel_ctx->driver_api->trigger_event(
             channel_ctx->config->driver_id);
     }
-
     return status;
 }
 
@@ -335,11 +351,23 @@ static int transport_transmit(
 
     fwk_assert(transport_type != MOD_TRANSPORT_CHANNEL_TRANSPORT_TYPE_NONE);
 
+    if (channel_ctx->max_payload_size < size) {
+        fwk_unexpected();
+        return FWK_E_PARAM;
+    }
+
 #if defined(BUILD_HAS_OUTBAND_MSG_SUPPORT)
     if (transport_type == MOD_TRANSPORT_CHANNEL_TRANSPORT_TYPE_OUT_BAND) {
         /* Use shared mailbox for out-band messages */
         buffer = ((struct mod_transport_buffer *)
                       channel_ctx->config->out_band_mailbox_address);
+        if (buffer == NULL) {
+            FWK_LOG_ERR(
+                "%s ERROR: NULL buffer in \"%s()\"", MOD_NAME, __func__);
+            fwk_unexpected();
+            return FWK_E_PANIC;
+        }
+
         /*
          * If the agent/platform has not yet read the previous message we
          * abandon this transmission. We don't want to poll on the BUSY/FREE
@@ -350,11 +378,6 @@ static int transport_transmit(
             (uint32_t)0) {
             return FWK_E_BUSY;
         }
-    } else {
-#    if !defined(BUILD_HAS_INBAND_MSG_SUPPORT)
-        FWK_LOG_ERR("%s ERROR. IN-BAND MESSAGES NOT SUPPORTED!", MOD_NAME);
-        return FWK_E_SUPPORT;
-#    endif
     }
 #endif
 
@@ -362,19 +385,23 @@ static int transport_transmit(
     if (transport_type == MOD_TRANSPORT_CHANNEL_TRANSPORT_TYPE_IN_BAND) {
         /* Use internal write buffer for in-band messages */
         buffer = channel_ctx->out;
+        if (buffer == NULL) {
+            FWK_LOG_ERR(
+                "%s ERROR: NULL buffer in \"%s()\"", MOD_NAME, __func__);
+            fwk_unexpected();
+            return FWK_E_PANIC;
+        }
+
         /* reserved fields must be set to zero */
         buffer->reserved0 = 0;
         buffer->reserved1 = 0;
-    } else {
-#    if !defined(BUILD_HAS_OUTBAND_MSG_SUPPORT)
-        FWK_LOG_ERR("%s ERROR. OUT-BAND MESSAGES NOT SUPPORTED!", MOD_NAME);
-        return FWK_E_SUPPORT;
-#    endif
     }
 #endif
 
     if (buffer == NULL) {
-        FWK_LOG_ERR("%s ERROR: NULL buffer in \"%s()\"", MOD_NAME, __func__);
+        FWK_LOG_ERR(
+            "%s ERROR: Invalid transport_type in \"%s()\"", MOD_NAME, __func__);
+        fwk_unexpected();
         return FWK_E_PANIC;
     }
 
