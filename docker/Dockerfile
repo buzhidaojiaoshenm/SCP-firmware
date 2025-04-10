@@ -5,32 +5,41 @@
 # SPDX-License-Identifier: BSD-3-Clause
 #
 
-FROM ubuntu:20.04@sha256:9fa30fcef427e5e88c76bc41ad37b7cc573e1d79cecb23035e413c4be6e476ab AS common
+FROM ubuntu:22.04@sha256:d80997daaa3811b175119350d84305e1ec9129e1799bba0bd1e3120da3ff52c3 AS common
 
-ARG ARM_NONE_EABI_VERSION="10.3-2021.10"
+ARG ARM_NONE_EABI_VERSION="13.3.rel1"
 ARG AARCH64_NONE_ELF_VERSION="13.3.rel1"
+ARG ARM_NONE_LINUX_GNUEABI_VERSION="10.3-2021.07"
+ARG LCOV_VERSION="v1.16"
 ARG CMAKE_VERSION="3.25.2"
 ARG LLVM_VERSION="19.1.5"
 ARG CPPCHECK_VERSION="2.8"
-ARG DOXYGEN_VERSION="1.8.13"
+ARG DOXYGEN_VERSION="1.13.2"
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN apt-get update && \
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt-get update && \
     apt-get dist-upgrade -y && \
     apt-get install -y --no-install-recommends \
+        bzip2 \
+        cpanminus \
         gcc \
+        flex \
+        bison \
         g++ \
         git \
         make \
         ninja-build \
+        perl \
         python-is-python3 \
         python3 \
         python3-pip \
         software-properties-common \
         wget \
         xz-utils && \
-    python3 -m pip install --upgrade pip
+    python3 -m pip install --no-cache-dir --upgrade pip
 
 ENV DEBIAN_FRONTEND=
 
@@ -41,8 +50,6 @@ COPY docker/installer-scripts/install-gcc-arm-none-eabi.sh \
 RUN bash /tmp/install-gcc-arm-none-eabi.sh /opt/arm-none-eabi \
     "${ARM_NONE_EABI_VERSION}"
 
-
-
 # Install GCC aarch64-none-elf
 FROM common AS aarch64-none-elf
 COPY docker/installer-scripts/install-gcc-aarch64-none-elf.sh \
@@ -50,6 +57,19 @@ COPY docker/installer-scripts/install-gcc-aarch64-none-elf.sh \
 RUN bash /tmp/install-gcc-aarch64-none-elf.sh /opt/aarch64-none-elf \
     "${AARCH64_NONE_ELF_VERSION}";
 
+# Install GCC arm-none-linux-gnueabihf
+FROM common AS arm-none-linux-gnueabihf
+COPY container-files/installer-scripts/install-gcc-arm-none-linux-gnueabihf.sh \
+    /tmp
+RUN bash /tmp/install-gcc-arm-none-linux-gnueabihf.sh \
+    /opt/arm-none-linux-gnueabihf \
+    "${ARM_NONE_LINUX_GNUEABI_VERSION}";
+
+# Install LCOV #
+FROM common AS lcov
+COPY container-files/installer-scripts/install-lcov.sh /tmp
+RUN bash /tmp/install-lcov.sh /opt/lcov "${LCOV_VERSION}";
+ENV PATH="${PATH}:/opt/lcov/bin"
 
 # Install CMake, it needs to be installed before LLVM and cppcheck
 FROM common AS cmake
@@ -120,7 +140,7 @@ RUN PIP_ROOT_USER_ACTION=ignore \
 ENTRYPOINT ["sh"]
 
 
-FROM ci as user
+FROM ci AS user
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -134,7 +154,7 @@ COPY "docker/rootfs/usr/local/bin/init" "/usr/local/bin/init"
 RUN chmod +x /usr/local/bin/init
 
 
-FROM user as dev
+FROM user AS dev
 
 VOLUME /scp-firmware
 WORKDIR /scp-firmware

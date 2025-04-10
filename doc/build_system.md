@@ -465,8 +465,6 @@ This Dockerfile has four variants:
 
 - `ci`: A continuous integration variant, which provides the tooling required
   for automating builds and quality assurance processes.
-- `jenkins`: A Jenkins-specific continuous integration variant, which includes
-  additional steps required to use it from Jenkins.
 - `dev`: A development variant, which includes additional tools for developers
   accessing the container directly.
 
