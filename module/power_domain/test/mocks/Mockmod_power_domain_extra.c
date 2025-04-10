@@ -252,7 +252,7 @@ typedef struct _CMOCK_get_highest_level_from_composite_state_CALL_INSTANCE
 {
   UNITY_LINE_TYPE LineNumber;
   char ExpectAnyArgsBool;
-  int ReturnVal;
+  unsigned int ReturnVal;
   const struct pd_ctx* Expected_pd;
   uint32_t Expected_composite_state;
   int Expected_pd_Depth;
@@ -470,7 +470,7 @@ static struct Mockmod_power_domain_extraInstance
   int get_level_state_from_composite_state_CallbackCalls;
   CMOCK_MEM_INDEX_TYPE get_level_state_from_composite_state_CallInstance;
   char get_highest_level_from_composite_state_IgnoreBool;
-  int get_highest_level_from_composite_state_FinalReturn;
+  unsigned int get_highest_level_from_composite_state_FinalReturn;
   char get_highest_level_from_composite_state_CallbackBool;
   CMOCK_get_highest_level_from_composite_state_CALLBACK get_highest_level_from_composite_state_CallbackFunctionPointer;
   int get_highest_level_from_composite_state_CallbackCalls;
@@ -3102,7 +3102,7 @@ void get_level_state_from_composite_state_CMockIgnoreArg_level(UNITY_LINE_TYPE c
   cmock_call_instance->IgnoreArg_level = 1;
 }
 
-int get_highest_level_from_composite_state(const struct pd_ctx* pd, uint32_t composite_state)
+unsigned int get_highest_level_from_composite_state(const struct pd_ctx* pd, uint32_t composite_state)
 {
   UNITY_LINE_TYPE cmock_line = TEST_LINE_NUM;
   CMOCK_get_highest_level_from_composite_state_CALL_INSTANCE* cmock_call_instance;
@@ -3120,7 +3120,7 @@ int get_highest_level_from_composite_state(const struct pd_ctx* pd, uint32_t com
   if (!Mock.get_highest_level_from_composite_state_CallbackBool &&
       Mock.get_highest_level_from_composite_state_CallbackFunctionPointer != NULL)
   {
-    int cmock_cb_ret = Mock.get_highest_level_from_composite_state_CallbackFunctionPointer(pd, composite_state, Mock.get_highest_level_from_composite_state_CallbackCalls++);
+    unsigned int cmock_cb_ret = Mock.get_highest_level_from_composite_state_CallbackFunctionPointer(pd, composite_state, Mock.get_highest_level_from_composite_state_CallbackCalls++);
     UNITY_CLR_DETAILS();
     return cmock_cb_ret;
   }
@@ -3160,7 +3160,7 @@ void CMockExpectParameters_get_highest_level_from_composite_state(CMOCK_get_high
   cmock_call_instance->IgnoreArg_composite_state = 0;
 }
 
-void get_highest_level_from_composite_state_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return)
+void get_highest_level_from_composite_state_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, unsigned int cmock_to_return)
 {
   CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_get_highest_level_from_composite_state_CALL_INSTANCE));
   CMOCK_get_highest_level_from_composite_state_CALL_INSTANCE* cmock_call_instance = (CMOCK_get_highest_level_from_composite_state_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
@@ -3181,7 +3181,7 @@ void get_highest_level_from_composite_state_CMockStopIgnore(void)
   Mock.get_highest_level_from_composite_state_IgnoreBool = (char)0;
 }
 
-void get_highest_level_from_composite_state_CMockExpectAnyArgsAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return)
+void get_highest_level_from_composite_state_CMockExpectAnyArgsAndReturn(UNITY_LINE_TYPE cmock_line, unsigned int cmock_to_return)
 {
   CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_get_highest_level_from_composite_state_CALL_INSTANCE));
   CMOCK_get_highest_level_from_composite_state_CALL_INSTANCE* cmock_call_instance = (CMOCK_get_highest_level_from_composite_state_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
@@ -3195,7 +3195,7 @@ void get_highest_level_from_composite_state_CMockExpectAnyArgsAndReturn(UNITY_LI
   cmock_call_instance->ExpectAnyArgsBool = (char)1;
 }
 
-void get_highest_level_from_composite_state_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, const struct pd_ctx* pd, uint32_t composite_state, int cmock_to_return)
+void get_highest_level_from_composite_state_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, const struct pd_ctx* pd, uint32_t composite_state, unsigned int cmock_to_return)
 {
   CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_get_highest_level_from_composite_state_CALL_INSTANCE));
   CMOCK_get_highest_level_from_composite_state_CALL_INSTANCE* cmock_call_instance = (CMOCK_get_highest_level_from_composite_state_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
@@ -3223,7 +3223,7 @@ void get_highest_level_from_composite_state_Stub(CMOCK_get_highest_level_from_co
   Mock.get_highest_level_from_composite_state_CallbackFunctionPointer = Callback;
 }
 
-void get_highest_level_from_composite_state_CMockExpectWithArrayAndReturn(UNITY_LINE_TYPE cmock_line, const struct pd_ctx* pd, int pd_Depth, uint32_t composite_state, int cmock_to_return)
+void get_highest_level_from_composite_state_CMockExpectWithArrayAndReturn(UNITY_LINE_TYPE cmock_line, const struct pd_ctx* pd, int pd_Depth, uint32_t composite_state, unsigned int cmock_to_return)
 {
   CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_get_highest_level_from_composite_state_CALL_INSTANCE));
   CMOCK_get_highest_level_from_composite_state_CALL_INSTANCE* cmock_call_instance = (CMOCK_get_highest_level_from_composite_state_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);

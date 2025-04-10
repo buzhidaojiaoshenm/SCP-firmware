@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2023-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2023-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -415,7 +415,7 @@ unsigned int get_level_state_from_composite_state(
  *
  * \return The highest level.
  */
-int get_highest_level_from_composite_state(
+unsigned int get_highest_level_from_composite_state(
     const struct pd_ctx *pd,
     uint32_t composite_state);
 

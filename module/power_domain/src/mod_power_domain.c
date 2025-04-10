@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2015-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2015-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -231,7 +231,7 @@ static void process_set_state_request(
      * than the highest power level.
      */
     lowest_level = 0;
-    highest_level = (unsigned int)get_highest_level_from_composite_state(
+    highest_level = get_highest_level_from_composite_state(
         lowest_pd, composite_state);
     nb_pds = highest_level + 1U;
 

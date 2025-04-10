@@ -350,7 +350,7 @@ void test_get_highest_level_from_comp_state(void)
     struct pd_ctx *pd = &mod_pd_ctx_temp.pd_ctx_table[PD_IDX_CLUS0CORE0];
     uint32_t composite_state = MOD_PD_COMPOSITE_STATE(
         MOD_PD_LEVEL_2, 0, MOD_PD_STATE_ON, MOD_PD_STATE_OFF, MOD_PD_STATE_OFF);
-    int level;
+    unsigned int level;
     pd->cs_support = true;
 
     level = get_highest_level_from_composite_state(pd, composite_state);
@@ -363,7 +363,7 @@ void test_get_highest_level_from_comp_state_no_cs_support(void)
     struct pd_ctx *pd = &mod_pd_ctx_temp.pd_ctx_table[PD_IDX_CLUS0CORE0];
     uint32_t composite_state = MOD_PD_COMPOSITE_STATE(
         MOD_PD_LEVEL_2, 0, MOD_PD_STATE_ON, MOD_PD_STATE_OFF, MOD_PD_STATE_OFF);
-    int level;
+    unsigned int level;
     pd->cs_support = false;
 
     level = get_highest_level_from_composite_state(pd, composite_state);
@@ -375,7 +375,7 @@ void test_get_highest_level_from_comp_state_zero(void)
 {
     struct pd_ctx *pd = &mod_pd_ctx_temp.pd_ctx_table[PD_IDX_CLUS0CORE0];
     uint32_t composite_state;
-    int level;
+    unsigned int level;
 
     pd->cs_support = true;
     pd->composite_state_levels_mask = 0;

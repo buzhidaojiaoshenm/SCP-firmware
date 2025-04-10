@@ -150,7 +150,7 @@ unsigned int get_level_state_from_composite_state(
     return (composite_state & mask) >> shift;
 }
 
-int get_highest_level_from_composite_state(
+unsigned int get_highest_level_from_composite_state(
     const struct pd_ctx *pd,
     uint32_t composite_state)
 {
@@ -183,7 +183,7 @@ int get_highest_level_from_composite_state(
         }
     }
 
-    return (int)level;
+    return level;
 }
 
 bool is_valid_composite_state(
@@ -249,7 +249,7 @@ bool is_upwards_transition_propagation(
     const struct pd_ctx *lowest_pd,
     uint32_t composite_state)
 {
-    int highest_level, level;
+    unsigned int highest_level, level;
     const struct pd_ctx *pd;
     unsigned int state;
     const uint32_t *state_mask_table;
