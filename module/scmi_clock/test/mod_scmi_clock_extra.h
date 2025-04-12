@@ -290,29 +290,3 @@ int mod_res_permissions_api_agent_reset_config(uint32_t agent_id, uint32_t flags
  * \return One of the standard framework error codes.
  */
 int mod_clock_api_get_state(fwk_id_t clock_id, enum mod_clock_state *state);
-
-int scmi_notification_init(
-    unsigned int protocol_id,
-    unsigned int agent_count,
-    unsigned int element_count,
-    unsigned int operation_count);
-
-int scmi_notification_add_subscriber(
-    unsigned int protocol_id,
-    unsigned int element_idx,
-    unsigned int operation_id,
-    fwk_id_t service_id);
-
-int scmi_notification_remove_subscriber(
-    unsigned int protocol_id,
-    unsigned int agent_idx,
-    unsigned int element_idx,
-    unsigned int operation_id);
-
-int scmi_notification_notify(
-    unsigned int protocol_id,
-    unsigned int operation_id,
-    unsigned int resource_id,
-    unsigned int scmi_response_message_id,
-    void *payload_p2a,
-    size_t payload_size);

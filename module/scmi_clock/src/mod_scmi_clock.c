@@ -34,8 +34,6 @@
 #    include <mod_resource_perms.h>
 #endif
 
-#define MOD_SCMI_CLOCK_NOTIFICATION_COUNT 2
-
 struct clock_operations {
     /*
      * Service identifier currently requesting operation from this clock.
@@ -93,8 +91,8 @@ struct mod_scmi_clock_ctx {
 
 #ifdef BUILD_HAS_SCMI_NOTIFICATIONS
 
-    /* SCMI notification API */
-    const struct mod_scmi_notification_api *scmi_notification_api;
+    /* SCMI notification subscriber table */
+    fwk_id_t ***notification_table;
 #endif
 };
 
@@ -391,6 +389,125 @@ static void clock_ref_count_allocate(void)
         scmi_clock_ctx.phy_device_count,
         sizeof(*scmi_clock_ctx.dev_clock_ref_count_table));
 }
+
+#ifdef BUILD_HAS_SCMI_NOTIFICATIONS
+static enum scmi_clock_notification_id get_scmi_notification_id(
+    enum scmi_clock_command_id scmi_command_id)
+{
+    enum scmi_clock_notification_id notification_id =
+        SCMI_CLOCK_NOTIFICATION_COUNT;
+
+    switch (scmi_command_id) {
+    case MOD_SCMI_CLOCK_RATE_NOTIFY: {
+        notification_id = SCMI_CLOCK_RATE_CHANGED;
+        break;
+    }
+
+    case MOD_SCMI_CLOCK_RATE_CHANGE_REQUESTED_NOTIFY: {
+        notification_id = SCMI_CLOCK_RATE_CHANGE_REQUESTED;
+        break;
+    }
+
+    default:
+        break;
+    }
+
+    return notification_id;
+}
+
+static void scmi_notification_init(void)
+{
+    unsigned int operation_count = SCMI_CLOCK_NOTIFICATION_COUNT;
+    unsigned int resource_count = scmi_clock_ctx.phy_device_count;
+    unsigned int subscriber_count = scmi_clock_ctx.agent_count;
+
+    /* Allocate the top-level operation array */
+    scmi_clock_ctx.notification_table =
+        fwk_mm_calloc(operation_count, sizeof(fwk_id_t **));
+
+    for (unsigned int op = 0; op < operation_count; op++) {
+        /* Allocate the resource array for each operation */
+        scmi_clock_ctx.notification_table[op] =
+            fwk_mm_calloc(resource_count, sizeof(fwk_id_t *));
+
+        for (unsigned int res = 0; res < resource_count; res++) {
+            /* Allocate the subscriber array for each resource */
+            scmi_clock_ctx.notification_table[op][res] =
+                fwk_mm_calloc(subscriber_count, sizeof(fwk_id_t));
+
+            for (unsigned int sub = 0; sub < subscriber_count; sub++) {
+                scmi_clock_ctx.notification_table[op][res][sub] = FWK_ID_NONE;
+            }
+        }
+    }
+}
+
+static int scmi_notification_update_subscriber(
+    unsigned int operation_idx,
+    unsigned int resource_idx,
+    unsigned int subscriber_idx,
+    fwk_id_t service_id)
+{
+    if (!fwk_expect(operation_idx < SCMI_CLOCK_NOTIFICATION_COUNT) ||
+        !fwk_expect(resource_idx < scmi_clock_ctx.phy_device_count) ||
+        !fwk_expect(subscriber_idx < scmi_clock_ctx.agent_count)) {
+        return FWK_E_DATA;
+    }
+
+    scmi_clock_ctx
+        .notification_table[operation_idx][resource_idx][subscriber_idx] =
+        service_id;
+
+    return FWK_SUCCESS;
+}
+
+static int scmi_notification_notify(
+    enum scmi_clock_notification_id operation_idx,
+    unsigned int requester_idx,
+    unsigned int resource_idx,
+    uint64_t data)
+{
+    int status;
+    unsigned int scmi_clock_idx;
+
+    /* Skip subscriber_idx = 0 as it is the platform. */
+    for (unsigned int subscriber_idx = 1;
+         subscriber_idx < scmi_clock_ctx.agent_count;
+         subscriber_idx++) {
+        fwk_id_t service_id =
+            scmi_clock_ctx.notification_table[operation_idx][resource_idx]
+                                             [subscriber_idx];
+
+        if (fwk_id_is_equal(service_id, FWK_ID_NONE)) {
+            continue;
+        }
+
+        status = find_agent_scmi_clock_idx(
+            subscriber_idx, resource_idx, &scmi_clock_idx);
+        if (!fwk_expect(status == FWK_SUCCESS)) {
+            return status;
+        }
+
+        struct scmi_clock_rate_notification_message_p2a message = {
+            .agent_id = requester_idx,
+            .clock_id = scmi_clock_idx,
+            .rate = {
+                [0] = (uint32_t)data,
+                [1] = (uint32_t)(data >> 32),
+            },
+        };
+
+        scmi_clock_ctx.scmi_api->notify(
+            service_id,
+            (int)MOD_SCMI_PROTOCOL_ID_CLOCK,
+            (int)operation_idx,
+            (const void *)&message,
+            sizeof(message));
+    }
+
+    return FWK_SUCCESS;
+}
+#endif
 
 /*
  * Helper for clock operations
@@ -1549,21 +1666,21 @@ static int scmi_clock_rate_notify_handler(
     }
 #    endif
 
-    if (parameters->notify_enable) {
-        status = scmi_clock_ctx.scmi_notification_api
-                     ->scmi_notification_add_subscriber(
-                         MOD_SCMI_PROTOCOL_ID_CLOCK,
-                         parameters->clock_id,
-                         command_id,
-                         service_id);
-    } else {
-        status = scmi_clock_ctx.scmi_notification_api
-                     ->scmi_notification_remove_subscriber(
-                         MOD_SCMI_PROTOCOL_ID_CLOCK,
-                         agent_id,
-                         parameters->clock_id,
-                         command_id);
+    unsigned int phy_dev_idx = fwk_id_get_element_idx(clock_device->element_id);
+    unsigned int notification_id = get_scmi_notification_id(command_id);
+    if (notification_id == SCMI_CLOCK_NOTIFICATION_COUNT) {
+        status = FWK_E_PARAM;
+        goto exit;
     }
+
+    if (parameters->notify_enable) {
+        status = scmi_notification_update_subscriber(
+            notification_id, phy_dev_idx, agent_id, service_id);
+    } else {
+        status = scmi_notification_update_subscriber(
+            notification_id, phy_dev_idx, agent_id, FWK_ID_NONE);
+    }
+
     if (status != FWK_SUCCESS) {
         goto exit;
     }
@@ -1685,6 +1802,9 @@ static int scmi_clock_init(fwk_id_t module_id, unsigned int element_count,
     /* Allocate memory to device reference count */
     clock_ref_count_allocate();
 
+#ifdef BUILD_HAS_SCMI_NOTIFICATIONS
+    scmi_notification_init();
+#endif
     return FWK_SUCCESS;
 }
 
@@ -1730,35 +1850,8 @@ static int scmi_clock_element_init(
         scmi_clock_ref_count_table_update(
             fwk_id_get_element_idx(clock_id), MOD_CLOCK_STATE_RUNNING);
     }
-
     return FWK_SUCCESS;
 }
-
-#ifdef BUILD_HAS_SCMI_NOTIFICATIONS
-static int scmi_init_notifications(unsigned int clock_devices)
-{
-    int status;
-
-    status = scmi_clock_ctx.scmi_api->get_agent_count(
-        (unsigned int *)&scmi_clock_ctx.agent_count);
-    if (status != FWK_SUCCESS) {
-        return status;
-    }
-    fwk_assert(scmi_clock_ctx.agent_count != 0u);
-
-    status = scmi_clock_ctx.scmi_notification_api->scmi_notification_init(
-        MOD_SCMI_PROTOCOL_ID_CLOCK,
-        scmi_clock_ctx.agent_count,
-        clock_devices,
-        MOD_SCMI_CLOCK_NOTIFICATION_COUNT);
-
-    if (status != FWK_SUCCESS) {
-        return status;
-    }
-
-    return FWK_SUCCESS;
-}
-#endif
 
 static int scmi_clock_start(fwk_id_t id)
 {
@@ -1779,9 +1872,6 @@ static int scmi_clock_start(fwk_id_t id)
     if (status != FWK_SUCCESS) {
         return status;
     }
-
-    status =
-        scmi_init_notifications((unsigned int)scmi_clock_ctx.phy_device_count);
 #endif
     return status;
 }
@@ -1811,16 +1901,6 @@ static int scmi_clock_bind(fwk_id_t id, unsigned int round)
         FWK_ID_MODULE(FWK_MODULE_IDX_RESOURCE_PERMS),
         FWK_ID_API(FWK_MODULE_IDX_RESOURCE_PERMS, MOD_RES_PERM_RESOURCE_PERMS),
         &scmi_clock_ctx.res_perms_api);
-    if (status != FWK_SUCCESS) {
-        return status;
-    }
-#endif
-
-#ifdef BUILD_HAS_SCMI_NOTIFICATIONS
-    status = fwk_module_bind(
-        FWK_ID_MODULE(FWK_MODULE_IDX_SCMI),
-        FWK_ID_API(FWK_MODULE_IDX_SCMI, MOD_SCMI_API_IDX_NOTIFICATION),
-        &scmi_clock_ctx.scmi_notification_api);
     if (status != FWK_SUCCESS) {
         return status;
     }
@@ -2010,81 +2090,35 @@ static int scmi_clock_process_event(const struct fwk_event *event,
 }
 
 #ifdef BUILD_HAS_SCMI_NOTIFICATIONS
-
-static void scmi_clock_rate_change_notify(
-    enum scmi_clock_command_id command_id,
-    enum scmi_clock_notification_id notification_message_id,
-    unsigned int agent_id,
-    unsigned int scmi_clock_idx,
-    uint64_t clock_rate)
-{
-    int status;
-
-    struct scmi_clock_rate_notification_message_p2a message;
-
-    message.agent_id = agent_id;
-    message.clock_id = scmi_clock_idx;
-    message.rate[0] = (uint32_t)clock_rate;
-    message.rate[1] = (uint32_t)(clock_rate >> 32);
-
-    status = scmi_clock_ctx.scmi_notification_api->scmi_notification_notify(
-        MOD_SCMI_PROTOCOL_ID_CLOCK,
-        command_id,
-        scmi_clock_idx,
-        notification_message_id,
-        &message,
-        sizeof(message));
-    if (status != FWK_SUCCESS) {
-        FWK_LOG_DEBUG("[SCMI-clk] %s @%d", __func__, __LINE__);
-    }
-}
-
 static int scmi_clock_process_notification(
     const struct fwk_event *notification_event,
     struct fwk_event *resp_event)
 {
-    int status;
-    unsigned int notification_idx, agent_id, scmi_clock_idx;
-    enum scmi_clock_command_id command_id;
-    enum scmi_clock_notification_id message_id;
+    unsigned int notification_idx;
+    enum scmi_clock_notification_id notification_id;
     struct mod_clock_notification_params *notification_params =
         ((struct mod_clock_notification_params *)notification_event->params);
 
-    agent_id = notification_params->requester_id;
     notification_idx = fwk_id_get_notification_idx(notification_event->id);
 
     switch (notification_idx) {
     case (unsigned int)MOD_CLOCK_NOTIFICATION_IDX_RATE_CHANGED:
-        command_id = MOD_SCMI_CLOCK_RATE_NOTIFY;
-        message_id = SCMI_CLOCK_RATE_CHANGED;
+        notification_id = SCMI_CLOCK_RATE_CHANGED;
         break;
 
     case (unsigned int)MOD_CLOCK_NOTIFICATION_IDX_RATE_CHANGE_REQUESTED:
-        command_id = MOD_SCMI_CLOCK_RATE_CHANGE_REQUESTED_NOTIFY;
-        message_id = SCMI_CLOCK_RATE_CHANGE_REQUESTED;
+        notification_id = SCMI_CLOCK_RATE_CHANGE_REQUESTED;
         break;
 
     default:
         return FWK_E_PARAM;
     }
 
-    status = find_agent_scmi_clock_idx(
-        agent_id,
+    return scmi_notification_notify(
+        notification_id,
+        notification_params->requester_id,
         fwk_id_get_element_idx(notification_params->clock_id),
-        &scmi_clock_idx);
-
-    if (status != FWK_SUCCESS) {
-        return status;
-    }
-
-    scmi_clock_rate_change_notify(
-        command_id,
-        message_id,
-        agent_id,
-        scmi_clock_idx,
         notification_params->rate);
-
-    return FWK_SUCCESS;
 }
 #endif
 

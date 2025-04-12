@@ -199,6 +199,7 @@ enum mod_scmi_clock_policy_commit {
 enum scmi_clock_notification_id {
     SCMI_CLOCK_RATE_CHANGED = 0x000,
     SCMI_CLOCK_RATE_CHANGE_REQUESTED = 0x001,
+    SCMI_CLOCK_NOTIFICATION_COUNT,
 };
 
 /*!

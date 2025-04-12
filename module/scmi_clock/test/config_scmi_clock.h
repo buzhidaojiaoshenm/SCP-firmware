@@ -88,6 +88,63 @@ static const uint8_t dev_clock_ref_count_table_default[CLOCK_DEV_IDX_COUNT] = {
 
 static struct clock_operations clock_ops_table[CLOCK_DEV_IDX_COUNT];
 
+#ifdef BUILD_HAS_SCMI_NOTIFICATIONS
+#define INIT_SUBSCRIBERS(SUBSCRIBER_COUNT, VALUE) \
+    { [0 ... (FAKE_SCMI_AGENT_IDX_COUNT - 1)] = VALUE }
+
+#define INIT_RESOURCES(RESOURCE_COUNT, SUBSCRIBER_COUNT, VALUE) \
+    { [0 ... (RESOURCE_COUNT - 1)] = INIT_SUBSCRIBERS(SUBSCRIBER_COUNT, VALUE) }
+
+#define INIT_TABLE(OPERATION_COUNT, RESOURCE_COUNT, SUBSCRIBER_COUNT, VALUE) \
+    { [0 ... (OPERATION_COUNT -1)] = INIT_RESOURCES(RESOURCE_COUNT, SUBSCRIBER_COUNT, VALUE) }
+
+// static fwk_id_t subscriber_table_default[SCMI_CLOCK_NOTIFICATION_COUNT][CLOCK_DEV_IDX_COUNT][FAKE_SCMI_AGENT_IDX_COUNT] =
+//     INIT_TABLE(SCMI_CLOCK_NOTIFICATION_COUNT, CLOCK_DEV_IDX_COUNT, FAKE_SCMI_AGENT_IDX_COUNT, FWK_ID_NONE);
+
+// static fwk_id_t subscriber_table[SCMI_CLOCK_NOTIFICATION_COUNT][CLOCK_DEV_IDX_COUNT][FAKE_SCMI_AGENT_IDX_COUNT] =
+//     INIT_TABLE(SCMI_CLOCK_NOTIFICATION_COUNT, CLOCK_DEV_IDX_COUNT, FAKE_SCMI_AGENT_IDX_COUNT, FWK_ID_NONE);
+
+static fwk_id_t subscriber_table_default[FAKE_SCMI_AGENT_IDX_COUNT] = {
+    FWK_ID_NONE,
+    FWK_ID_NONE,
+    FWK_ID_NONE,
+    FWK_ID_NONE
+};
+
+static fwk_id_t *resource_table_default[CLOCK_DEV_IDX_COUNT] = {
+    [0] = subscriber_table_default,
+    [1] = subscriber_table_default,
+    [2] = subscriber_table_default,
+    [3] = subscriber_table_default,
+};
+
+static fwk_id_t **operation_table_default[SCMI_CLOCK_NOTIFICATION_COUNT] =
+{
+    [0] = resource_table_default,
+    [1] = resource_table_default,
+};
+
+static fwk_id_t subscriber_table[FAKE_SCMI_AGENT_IDX_COUNT] = {
+    FWK_ID_NONE,
+    FWK_ID_NONE,
+    FWK_ID_NONE,
+    FWK_ID_NONE
+};
+
+static fwk_id_t *resource_table[CLOCK_DEV_IDX_COUNT] = {
+    [0] = subscriber_table,
+    [1] = subscriber_table,
+    [2] = subscriber_table,
+    [3] = subscriber_table,
+};
+
+static fwk_id_t **operation_table[SCMI_CLOCK_NOTIFICATION_COUNT] =
+{
+    [0] = resource_table,
+    [1] = resource_table,
+};
+#endif
+
 static const struct mod_scmi_clock_device clock_dev_fake0 = {
     .element_id =
             FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_CLOCK, CLOCK_DEV_IDX_FAKE0),
@@ -162,8 +219,8 @@ struct fwk_module_config config_scmi_clock = {
 };
 
 static struct mod_scmi_clock_agent ospm0_table = {
-        .agent_config = &ospm0_config,
-        .state_table = ospm0_state_table_default,
+    .agent_config = &ospm0_config,
+    .state_table = ospm0_state_table_default,
 };
 
 static struct mod_scmi_clock_agent ospm1_table = {
