@@ -1728,37 +1728,35 @@ void test_scmi_clock_element_init(void)
 void test_find_agent_scmi_clock_idx(void)
 {
     int status;
-    fwk_id_t clock_id = FWK_ID_ELEMENT_INIT(FAKE_MODULE_IDX, CLOCK_DEV_IDX_FAKE3);
     unsigned int scmi_clock_idx;
 
     fwk_id_get_element_idx_Stub(get_element_idx_callback);
 
     /* agent id is 0, i.e. platform*/
-    status = find_agent_scmi_clock_idx(0, clock_id, &scmi_clock_idx);
+    status = find_agent_scmi_clock_idx(0, CLOCK_DEV_IDX_FAKE3, &scmi_clock_idx);
 
     TEST_ASSERT_EQUAL(status, FWK_E_DATA);
 
     /* agent id is FAKE_SCMI_AGENT_IDX_PSCI */
-    status = find_agent_scmi_clock_idx(FAKE_SCMI_AGENT_IDX_PSCI, clock_id, &scmi_clock_idx);
+    status = find_agent_scmi_clock_idx(FAKE_SCMI_AGENT_IDX_PSCI, CLOCK_DEV_IDX_FAKE3, &scmi_clock_idx);
 
     TEST_ASSERT_EQUAL(status, FWK_E_DATA);
 
     /* agent id is FAKE_SCMI_AGENT_IDX_OSPM0 */
-    status = find_agent_scmi_clock_idx(FAKE_SCMI_AGENT_IDX_OSPM0, clock_id, &scmi_clock_idx);
+    status = find_agent_scmi_clock_idx(FAKE_SCMI_AGENT_IDX_OSPM0, CLOCK_DEV_IDX_FAKE3, &scmi_clock_idx);
 
     TEST_ASSERT_EQUAL(status, FWK_SUCCESS);
     TEST_ASSERT_EQUAL(scmi_clock_idx, SCMI_CLOCK_OSPM0_IDX3);
 
     /* agent id is FAKE_SCMI_AGENT_IDX_OSPM1 */
-    status = find_agent_scmi_clock_idx(FAKE_SCMI_AGENT_IDX_OSPM1, clock_id, &scmi_clock_idx);
+    status = find_agent_scmi_clock_idx(FAKE_SCMI_AGENT_IDX_OSPM1, CLOCK_DEV_IDX_FAKE3, &scmi_clock_idx);
 
     TEST_ASSERT_EQUAL(status, FWK_SUCCESS);
     TEST_ASSERT_EQUAL(scmi_clock_idx, SCMI_CLOCK_OSPM1_IDX0);
 
     /* agent id is FAKE_SCMI_AGENT_IDX_OSPM1 but the clock is not accessible by
     the agent */
-    clock_id = FWK_ID_ELEMENT(FAKE_MODULE_IDX, CLOCK_DEV_IDX_FAKE0);
-    status = find_agent_scmi_clock_idx(FAKE_SCMI_AGENT_IDX_OSPM1, clock_id, &scmi_clock_idx);
+    status = find_agent_scmi_clock_idx(FAKE_SCMI_AGENT_IDX_OSPM1, CLOCK_DEV_IDX_FAKE0, &scmi_clock_idx);
 
     TEST_ASSERT_EQUAL(status, FWK_E_DATA);
 }
