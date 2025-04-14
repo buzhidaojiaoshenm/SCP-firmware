@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2018-2023, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2018-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -959,12 +959,17 @@ static int dmc_bing_post_init(void)
     int status;
     int i;
     int j;
-    int count;
+    size_t count;
     fwk_id_t id;
 
-    count =
-        fwk_module_get_element_count(FWK_ID_MODULE(FWK_MODULE_IDX_DMC_BING));
-    for (i = 0; i < count; i++) {
+    status = fwk_module_get_element_count(
+        FWK_ID_MODULE(FWK_MODULE_IDX_DMC_BING), &count);
+
+    if (status != FWK_SUCCESS) {
+        return status;
+    }
+
+    for (i = 0; i < (int)count; i++) {
         id = FWK_ID_ELEMENT(FWK_MODULE_IDX_DMC_BING, i);
 
         FWK_LOG_INFO("[DDR] Verifying PHY status for DMC %d...", i);
@@ -975,7 +980,7 @@ static int dmc_bing_post_init(void)
         FWK_LOG_INFO("[DDR] Done");
     }
 
-    for (i = 0; i < count; i++) {
+    for (i = 0; i < (int)count; i++) {
         id = FWK_ID_ELEMENT(FWK_MODULE_IDX_DMC_BING, i);
         for (j = 1; j <= ddr_info.number_of_ranks; j++) {
             morello_phy_obs_regs(id, j, &ddr_info);

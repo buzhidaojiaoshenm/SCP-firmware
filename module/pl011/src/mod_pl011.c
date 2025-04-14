@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2017-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2017-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -64,35 +64,44 @@ static void mod_pl011_enable(fwk_id_t id);
 
 static int init_element_ctx_table(void)
 {
-    size_t element_count;
+    size_t elem_count = 0;
+    int status;
 
-    element_count = (size_t)fwk_module_get_element_count(fwk_module_id_pl011);
-    if (element_count == 0) {
+    status = fwk_module_get_element_count(fwk_module_id_pl011, &elem_count);
+    if (status != FWK_SUCCESS) {
+        return status;
+    }
+
+    if (elem_count == 0) {
         return FWK_E_RANGE;
     }
 
     pl011_ctx.elements =
-        fwk_mm_alloc(element_count, sizeof(pl011_ctx.elements[0]));
+        fwk_mm_alloc(elem_count, sizeof(pl011_ctx.elements[0]));
 
     pl011_ctx.elements_allocated = true;
 
-    for (size_t i = 0; i < element_count; i++) {
+    for (size_t i = 0; i < elem_count; i++) {
         pl011_ctx.elements[i].stream_id =
             FWK_ID_NONE; /* Ensure it is set to none as soon as set up*/
     }
 
-    return FWK_SUCCESS;
+    return status;
 }
 
 static int mod_pl011_init_ctx(void)
 {
-    size_t element_count;
+    size_t element_count = 0;
     struct mod_pl011_element_ctx *ctx;
     int status;
 
     fwk_assert(!pl011_ctx.initialized);
 
-    element_count = (size_t)fwk_module_get_element_count(fwk_module_id_pl011);
+    status = fwk_module_get_element_count(fwk_module_id_pl011, &element_count);
+    if (status != FWK_SUCCESS) {
+        return status;
+    }
+
     if (element_count == 0) {
         return FWK_E_RANGE;
     }

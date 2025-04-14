@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2015-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2015-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -363,7 +363,8 @@ static struct mod_scmi_perf_private_api_perf_stub api_perf_stub = {
 static int scmi_perf_init(fwk_id_t module_id, unsigned int element_count,
                           const void *data)
 {
-    int dvfs_doms_count;
+    int status_code;
+    size_t dvfs_doms_count;
     const struct mod_scmi_perf_config *config =
         (const struct mod_scmi_perf_config *)data;
 
@@ -376,9 +377,14 @@ static int scmi_perf_init(fwk_id_t module_id, unsigned int element_count,
         return FWK_E_PARAM;
     }
 
-    dvfs_doms_count =
-        fwk_module_get_element_count(FWK_ID_MODULE(FWK_MODULE_IDX_DVFS));
-    if (dvfs_doms_count <= 0) {
+    status_code = fwk_module_get_element_count(
+        FWK_ID_MODULE(FWK_MODULE_IDX_DVFS), &dvfs_doms_count);
+
+    if (status_code != FWK_SUCCESS) {
+        return status_code;
+    }
+
+    if (dvfs_doms_count == 0) {
         return FWK_E_SUPPORT;
     }
 

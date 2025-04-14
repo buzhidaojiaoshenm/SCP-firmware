@@ -513,12 +513,16 @@ bool fwk_module_is_valid_notification_id(fwk_id_t id);
 /*!
  * \brief Get the number of elements within a module.
  *
- * \param module_id Identifier of the module.
+ * \param module_id             Identifier of the module.
+ * \param mod_elem_count        Address of the variable that will store the
+ * module element count.
  *
  * \retval ::FWK_E_PARAM The identifier of the module is invalid.
- * \return Number of module elements.
+ * \retval ::FWK_E_DATA The address of the module element count is invalid.
+ * \return The Status of the Request and Module Element count in case of
+ * successful Request.
  */
-int fwk_module_get_element_count(fwk_id_t module_id);
+int fwk_module_get_element_count(fwk_id_t module_id, size_t *mod_elem_count);
 
 /*!
  * \brief Get the number of sub-elements within an element.

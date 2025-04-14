@@ -737,7 +737,7 @@ static int scmi_sys_power_init_notifications(void)
 static int scmi_sys_power_bind(fwk_id_t id, unsigned int round)
 {
     int status;
-    int pd_count;
+    size_t pd_count = 0;
 
     if (round != 0) {
         return FWK_SUCCESS;
@@ -759,8 +759,13 @@ static int scmi_sys_power_bind(fwk_id_t id, unsigned int round)
         return status;
     }
 
-    pd_count = fwk_module_get_element_count(fwk_module_id_power_domain);
-    if (pd_count <= 0) {
+    status =
+        fwk_module_get_element_count(fwk_module_id_power_domain, &pd_count);
+    if (status != FWK_SUCCESS) {
+        return status;
+    }
+
+    if (pd_count == 0) {
         return FWK_E_SUPPORT;
     }
 

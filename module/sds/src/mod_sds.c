@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2017-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2017-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -506,7 +506,7 @@ static int init_sds(void)
     const struct mod_sds_config *config;
     int status;
     int element_idx;
-    int element_count;
+    size_t element_count;
     const struct mod_sds_structure_desc *struct_desc;
     unsigned int region_idx;
     const struct mod_sds_region_desc *region_config;
@@ -533,8 +533,12 @@ static int init_sds(void)
         }
     }
 
-    element_count = fwk_module_get_element_count(fwk_module_id_sds);
-    for (element_idx = 0; element_idx < element_count; ++element_idx) {
+    status = fwk_module_get_element_count(fwk_module_id_sds, &element_count);
+    if (status != FWK_SUCCESS) {
+        return status;
+    }
+
+    for (element_idx = 0; element_idx < (int)element_count; ++element_idx) {
         struct_desc = fwk_module_get_data(fwk_id_build_element_id(
             fwk_module_id_sds, (unsigned int)element_idx));
 

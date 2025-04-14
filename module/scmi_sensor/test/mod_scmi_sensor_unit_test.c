@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -96,9 +96,10 @@ void utest_scmi_sensor_init_nz_elem_cnt(void)
 void utest_scmi_sensor_init_zero_sensor_cnt(void)
 {
     int status;
+    size_t dummy_count = 0;
 
-    fwk_module_get_element_count_ExpectAndReturn(
-        FWK_ID_MODULE(FWK_MODULE_IDX_SENSOR), 0);
+    fwk_module_get_element_count_ExpectAnyArgsAndReturn(FWK_SUCCESS);
+    fwk_module_get_element_count_ReturnThruPtr_mod_elem_count(&dummy_count);
 
     status = scmi_sensor_init(fwk_module_id_scmi_sensor, 0, NULL);
 
@@ -115,12 +116,15 @@ void utest_scmi_sensor_init_success(void)
 
     fwk_id_t local_service_id = FWK_ID_NONE;
 
-    fwk_module_get_element_count_ExpectAndReturn(
-        FWK_ID_MODULE(FWK_MODULE_IDX_SENSOR), SCMI_SENSOR_ELEMENT_COUNT_SINGLE);
+    size_t dummy_count = SCMI_SENSOR_ELEMENT_COUNT_SINGLE;
+    fwk_module_get_element_count_ExpectAnyArgsAndReturn(FWK_SUCCESS);
+    fwk_module_get_element_count_ReturnThruPtr_mod_elem_count(&dummy_count);
+
     fwk_mm_calloc_ExpectAndReturn(
         SCMI_SENSOR_ELEMENT_COUNT_SINGLE,
         sizeof(struct mod_sensor_data),
         (void *)test_sensor_data);
+
     fwk_mm_calloc_ExpectAndReturn(
         SCMI_SENSOR_ELEMENT_COUNT_SINGLE,
         sizeof(struct sensor_operations),
@@ -148,13 +152,16 @@ void utest_scmi_sensor_init_success_cap_elem_count(void)
 
     fwk_id_t local_service_id = FWK_ID_NONE;
 
-    fwk_module_get_element_count_ExpectAndReturn(
-        FWK_ID_MODULE(FWK_MODULE_IDX_SENSOR),
-        SCMI_SENSOR_ELEMENT_COUNT_OVER_SIZE);
+    size_t dummy_count = SCMI_SENSOR_ELEMENT_COUNT_OVER_SIZE;
+
+    fwk_module_get_element_count_ExpectAnyArgsAndReturn(FWK_SUCCESS);
+    fwk_module_get_element_count_ReturnThruPtr_mod_elem_count(&dummy_count);
+
     fwk_mm_calloc_ExpectAndReturn(
         SCMI_SENSOR_ELEMENT_COUNT_OVER_SIZE,
         sizeof(struct mod_sensor_data),
         (void *)test_sensor_data);
+
     fwk_mm_calloc_ExpectAndReturn(
         SCMI_SENSOR_ELEMENT_COUNT_MAXIMUM,
         sizeof(struct sensor_operations),

@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2015-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2015-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -1130,6 +1130,8 @@ static struct mod_scmi_to_protocol_api scmi_pd_mod_scmi_to_protocol_api = {
 static int scmi_pd_init(fwk_id_t module_id, unsigned int element_count,
                         const void *data)
 {
+    int status;
+    size_t domain_count;
 #if defined(BUILD_HAS_MOD_DEBUG) || defined(BUILD_HAS_AGENT_LOGICAL_DOMAIN)
     struct mod_scmi_pd_config *config = (struct mod_scmi_pd_config *)data;
 #endif
@@ -1138,11 +1140,18 @@ static int scmi_pd_init(fwk_id_t module_id, unsigned int element_count,
         return FWK_E_SUPPORT;
     }
 
-    scmi_pd_ctx.domain_count =
-        (unsigned int)fwk_module_get_element_count(fwk_module_id_power_domain);
-    if (scmi_pd_ctx.domain_count <= 1) {
+    status =
+        fwk_module_get_element_count(fwk_module_id_power_domain, &domain_count);
+
+    if (status != FWK_SUCCESS) {
+        return status;
+    }
+
+    if (domain_count <= 1) {
         return FWK_E_SUPPORT;
     }
+
+    scmi_pd_ctx.domain_count = (unsigned int)domain_count;
 
     /* Do not expose SYSTEM domain (always the last one) to agents and ... */
     scmi_pd_ctx.domain_count--;

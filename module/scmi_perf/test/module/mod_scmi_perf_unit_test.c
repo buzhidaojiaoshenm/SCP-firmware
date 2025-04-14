@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2022-2023, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2022-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -72,9 +72,10 @@ void utest_scmi_perf_init_no_dvfs_domains(void)
 {
     int status;
     fwk_id_t module_id;
+    size_t dummy_count = 0;
 
-    fwk_module_get_element_count_ExpectAndReturn(
-        FWK_ID_MODULE(FWK_MODULE_IDX_DVFS), 0);
+    fwk_module_get_element_count_ExpectAnyArgsAndReturn(0);
+    fwk_module_get_element_count_ReturnThruPtr_mod_elem_count(&dummy_count);
 
     module_id = FWK_ID_MODULE(FWK_MODULE_IDX_SCMI_PERF);
     status = scmi_perf_init(module_id, 0, &perf_config);

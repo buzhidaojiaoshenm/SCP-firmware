@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2015-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2015-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -705,7 +705,8 @@ static struct mod_scmi_to_protocol_api scmi_voltd_mod_scmi_to_protocol_api = {
 static int scmi_voltd_init(fwk_id_t module_id, unsigned int element_count,
                            const void *data)
 {
-    int voltd_devices;
+    size_t voltd_devices;
+    int status;
     const struct mod_scmi_voltd_config *config =
         (const struct mod_scmi_voltd_config *)data;
 
@@ -715,11 +716,14 @@ static int scmi_voltd_init(fwk_id_t module_id, unsigned int element_count,
     scmi_voltd_ctx.config = config;
     scmi_voltd_ctx.agent_table = config->agent_table;
 
-    voltd_devices = fwk_module_get_element_count(fwk_module_id_voltage_domain);
-    if (voltd_devices == FWK_E_PARAM)
-        return FWK_E_PANIC;
+    status = fwk_module_get_element_count(
+        fwk_module_id_voltage_domain, &voltd_devices);
 
-    scmi_voltd_ctx.voltd_devices = voltd_devices;
+    if (status != FWK_SUCCESS) {
+        return status;
+    }
+
+    scmi_voltd_ctx.voltd_devices = (int)voltd_devices;
     scmi_voltd_ctx.voltd_ops = fwk_mm_calloc((unsigned int)voltd_devices,
                                              sizeof(struct voltd_operations));
 

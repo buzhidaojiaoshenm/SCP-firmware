@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2019-2023, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2019-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -871,13 +871,18 @@ static int dmc620_post_init(void)
     int status;
     int i;
     int j;
-    int count;
+    size_t count;
     fwk_id_t id;
     const struct mod_dmc620_element_config *element_config;
 
-    count = fwk_module_get_element_count(
-        FWK_ID_MODULE(FWK_MODULE_IDX_N1SDP_DMC620));
-    for (i = 0; i < count; i++) {
+    status = fwk_module_get_element_count(
+        FWK_ID_MODULE(FWK_MODULE_IDX_N1SDP_DMC620), &count);
+
+    if (status != FWK_SUCCESS) {
+        return status;
+    }
+
+    for (i = 0; i < (int)count; i++) {
         id = FWK_ID_ELEMENT(FWK_MODULE_IDX_N1SDP_DMC620, i);
         element_config = fwk_module_get_data(id);
 
@@ -889,7 +894,7 @@ static int dmc620_post_init(void)
         FWK_LOG_INFO("[DDR] Done");
     }
 
-    for (i = 0; i < count; i++) {
+    for (i = 0; i < (int)count; i++) {
         id = FWK_ID_ELEMENT(FWK_MODULE_IDX_N1SDP_DMC620, i);
         element_config = fwk_module_get_data(id);
         for (j = 1; j <= ddr_info.number_of_ranks; j++) {

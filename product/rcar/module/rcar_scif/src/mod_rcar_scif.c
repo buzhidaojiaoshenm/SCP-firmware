@@ -1,6 +1,6 @@
 /*
  * Renesas SCP/MCP Software
- * Copyright (c) 2020-2024, Renesas Electronics Corporation. All rights
+ * Copyright (c) 2020-2025, Renesas Electronics Corporation. All rights
  * reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
@@ -39,13 +39,21 @@ static const struct mod_rcar_scif_element_cfg *current_cfg;
 
 static int mod_rcar_scif_init_ctx(struct mod_rcar_scif_ctx *ctx)
 {
+    int status;
     size_t element_count;
 
     fwk_assert(!mod_rcar_scif_ctx.initialized);
 
-    element_count = fwk_module_get_element_count(fwk_module_id_rcar_scif);
-    if (element_count == 0)
+    status =
+        fwk_module_get_element_count(fwk_module_id_rcar_scif, &element_count);
+
+    if (status != FWK_SUCCESS) {
+        return status;
+    }
+
+    if (element_count == 0) {
         return FWK_SUCCESS;
+    }
 
     ctx->elements = fwk_mm_alloc(element_count, sizeof(ctx->elements[0]));
     if (!fwk_expect(ctx->elements != NULL))

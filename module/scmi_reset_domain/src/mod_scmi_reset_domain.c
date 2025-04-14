@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2019-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2019-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -638,7 +638,7 @@ static int scmi_reset_init_notifications(void)
 static int scmi_reset_bind(fwk_id_t id, unsigned int round)
 {
     int status;
-    int rst_dom_count;
+    size_t rst_dom_count;
 
     if (round == 1)
         return FWK_SUCCESS;
@@ -659,10 +659,12 @@ static int scmi_reset_bind(fwk_id_t id, unsigned int round)
         return status;
 #endif
 
-    rst_dom_count = fwk_module_get_element_count(
-        FWK_ID_MODULE(FWK_MODULE_IDX_RESET_DOMAIN));
+    status = fwk_module_get_element_count(
+        FWK_ID_MODULE(FWK_MODULE_IDX_RESET_DOMAIN), &rst_dom_count);
 
-    if (rst_dom_count <= 0) {
+    if (status != FWK_SUCCESS) {
+        return status;
+    } else if (rst_dom_count == 0) {
         return FWK_E_SUPPORT;
     } else {
         scmi_rd_ctx.plat_reset_domain_count = (uint8_t)rst_dom_count;

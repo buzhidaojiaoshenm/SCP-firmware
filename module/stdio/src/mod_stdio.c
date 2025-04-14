@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2017-2021, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2017-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -29,7 +29,14 @@ static struct {
 
 static int mod_stdio_init_ctx(void)
 {
-    size_t element_count = fwk_module_get_element_count(fwk_module_id_stdio);
+    int status;
+    size_t element_count;
+
+    status = fwk_module_get_element_count(fwk_module_id_stdio, &element_count);
+
+    if (status != FWK_SUCCESS) {
+        return status;
+    }
 
     mod_stdio_ctx.elements =
         fwk_mm_calloc(element_count, sizeof(*mod_stdio_ctx.elements));

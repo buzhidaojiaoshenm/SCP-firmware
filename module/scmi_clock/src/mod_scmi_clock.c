@@ -1725,7 +1725,8 @@ static struct mod_scmi_to_protocol_api scmi_clock_mod_scmi_to_protocol_api = {
 static int scmi_clock_init(fwk_id_t module_id, unsigned int element_count,
                            const void *data)
 {
-    int clock_devices;
+    size_t clock_devices;
+    int status;
     const struct mod_scmi_clock_config *config =
         (const struct mod_scmi_clock_config *)data;
 
@@ -1738,12 +1739,12 @@ static int scmi_clock_init(fwk_id_t module_id, unsigned int element_count,
     scmi_clock_ctx.agent_table =
         (struct mod_scmi_clock_agent *)config->agent_table;
 
-    clock_devices = fwk_module_get_element_count(fwk_module_id_clock);
-    if (clock_devices == FWK_E_PARAM) {
-        return FWK_E_PANIC;
+    status = fwk_module_get_element_count(fwk_module_id_clock, &clock_devices);
+    if (status != FWK_SUCCESS) {
+        return status;
     }
 
-    scmi_clock_ctx.clock_devices = clock_devices;
+    scmi_clock_ctx.clock_devices = (int)clock_devices;
 
     /* Allocate a table of clock operations */
     scmi_clock_ctx.clock_ops =

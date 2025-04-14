@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2021-2023, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2021-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -545,23 +545,29 @@ static void perf_plugins_alloc_tables(
 int perf_plugins_handler_init(const struct mod_scmi_perf_config *config)
 {
     const struct mod_scmi_perf_domain_config *domain;
-    int dvfs_doms_count;
+    size_t dvfs_doms_count;
+    int status;
     struct perf_plugins_dev_ctx *dev_ctx;
     unsigned int pgroup, ldom = 0;
     size_t all_doms_count;
     unsigned int phy_group;
     bool has_phy_group;
 
-    dvfs_doms_count =
-        fwk_module_get_element_count(FWK_ID_MODULE(FWK_MODULE_IDX_DVFS));
-    if (dvfs_doms_count <= 0) {
+    status = fwk_module_get_element_count(
+        FWK_ID_MODULE(FWK_MODULE_IDX_DVFS), &dvfs_doms_count);
+
+    if (status != FWK_SUCCESS) {
+        return status;
+    }
+
+    if (dvfs_doms_count == 0) {
         return FWK_E_SUPPORT;
     }
 
-    perf_plugins_ctx.dvfs_doms_count = (size_t)dvfs_doms_count;
+    perf_plugins_ctx.dvfs_doms_count = dvfs_doms_count;
 
-    perf_plugins_ctx.dev_ctx = fwk_mm_calloc(
-        (size_t)dvfs_doms_count, sizeof(struct perf_plugins_dev_ctx));
+    perf_plugins_ctx.dev_ctx =
+        fwk_mm_calloc(dvfs_doms_count, sizeof(struct perf_plugins_dev_ctx));
 
     /*
      * Iterate all over the SCMI performance domain table to build the number of

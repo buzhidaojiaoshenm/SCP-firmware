@@ -369,7 +369,11 @@ void utest_perf_eval_performance_new_limits_level_up(void)
 void utest_perf_plugins_handler_init_fail_no_dvfs_doms(void)
 {
     int status;
-    fwk_module_get_element_count_ExpectAnyArgsAndReturn(0);
+
+    size_t dummy_count = 0;
+
+    fwk_module_get_element_count_ExpectAnyArgsAndReturn(FWK_SUCCESS);
+    fwk_module_get_element_count_ReturnThruPtr_mod_elem_count(&dummy_count);
 
     status = perf_plugins_handler_init(config_scmi_perf.data);
     TEST_ASSERT_EQUAL(status, FWK_E_SUPPORT);
@@ -381,9 +385,12 @@ void utest_perf_plugins_handler_init_success(void)
     fwk_id_t dep_id_table[SCMI_PERF_ELEMENT_IDX_COUNT];
     int status;
 
-    memset(dev_ctx, 0, sizeof(*dev_ctx) * DVFS_ELEMENT_IDX_COUNT);
+    size_t dummy_count = DVFS_ELEMENT_IDX_COUNT;
 
-    fwk_module_get_element_count_ExpectAnyArgsAndReturn(DVFS_ELEMENT_IDX_COUNT);
+    fwk_module_get_element_count_ExpectAnyArgsAndReturn(FWK_SUCCESS);
+    fwk_module_get_element_count_ReturnThruPtr_mod_elem_count(&dummy_count);
+
+    memset(dev_ctx, 0, sizeof(*dev_ctx) * DVFS_ELEMENT_IDX_COUNT);
 
     fwk_mm_calloc_ExpectAndReturn(
         DVFS_ELEMENT_IDX_COUNT,

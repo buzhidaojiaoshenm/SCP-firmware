@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2015-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2015-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -716,13 +716,25 @@ bool fwk_module_is_valid_notification_id(fwk_id_t id)
 #endif
 }
 
-int fwk_module_get_element_count(fwk_id_t id)
+int fwk_module_get_element_count(fwk_id_t module_id, size_t *module_elem_count)
 {
-    if (fwk_module_is_valid_module_id(id)) {
-        return (int)fwk_module_get_ctx(id)->element_count;
+    int status_code = FWK_SUCCESS;
+
+    if (module_elem_count != NULL) {
+        if (fwk_module_is_valid_module_id(module_id)) {
+            /* Return the Module Element Count*/
+            *module_elem_count = fwk_module_get_ctx(module_id)->element_count;
+
+        } else {
+            /*Invalid Module ID. Return Error*/
+            status_code = FWK_E_PARAM;
+        }
     } else {
-        return FWK_E_PARAM;
+        /* Invalid Variable Address, Return a Different Error*/
+        status_code = FWK_E_DATA;
     }
+
+    return status_code;
 }
 
 int fwk_module_get_sub_element_count(fwk_id_t element_id)

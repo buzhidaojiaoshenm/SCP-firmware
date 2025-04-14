@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2015-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2015-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -1002,17 +1002,26 @@ static int scmi_sensor_init(fwk_id_t module_id,
                             unsigned int element_count,
                             const void *unused)
 {
+    int status;
+    size_t sensor_count;
     if (element_count != 0) {
         /* This module should not have any elements */
         fwk_unexpected();
         return FWK_E_SUPPORT;
     }
 
-    scmi_sensor_ctx.sensor_count = (unsigned int)fwk_module_get_element_count(
-        FWK_ID_MODULE(FWK_MODULE_IDX_SENSOR));
-    if (scmi_sensor_ctx.sensor_count == 0) {
+    status = fwk_module_get_element_count(
+        FWK_ID_MODULE(FWK_MODULE_IDX_SENSOR), &sensor_count);
+
+    if (status != FWK_SUCCESS) {
+        return status;
+    }
+
+    if (sensor_count == 0) {
         return FWK_E_SUPPORT;
     }
+
+    scmi_sensor_ctx.sensor_count = (unsigned int)sensor_count;
 
     scmi_sensor_ctx.sensor_values = fwk_mm_calloc(
         scmi_sensor_ctx.sensor_count, sizeof(struct mod_sensor_data));

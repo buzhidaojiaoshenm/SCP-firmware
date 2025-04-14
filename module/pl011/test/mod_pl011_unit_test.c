@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2023-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2023-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -20,7 +20,6 @@
 #include UNIT_TEST_SRC
 #include "config_pl011.h"
 
-struct fwk_io_stream stream;
 struct mod_pl011_element_cfg *cfg_ut;
 
 void setUp(void)
@@ -171,10 +170,13 @@ void test_mod_pl011_io_putch_fail_clocked(void)
 
 void test_mod_pl011_init_ctx(void)
 {
-    /* Clear module context to ensure it is properly initialized */
-    memset(&pl011_ctx, 0, sizeof(pl011_ctx));
+    size_t dummy_count = 1;
 
-    fwk_module_get_element_count_ExpectAnyArgsAndReturn(1);
+    fwk_module_get_element_count_ReturnThruPtr_mod_elem_count(&dummy_count);
+
+    fwk_module_get_element_count_ExpectAnyArgsAndReturn(FWK_SUCCESS);
+    fwk_module_get_element_count_ReturnThruPtr_mod_elem_count(&dummy_count);
+
     fwk_module_get_data_ExpectAnyArgsAndReturn(cfg_ut);
     fwk_id_is_equal_ExpectAnyArgsAndReturn(true);
 
@@ -188,11 +190,13 @@ void test_mod_pl011_init_ctx(void)
 void test_mod_pl011_init_ctx_open_requests(void)
 {
     fwk_id_t stream_id_ut = FWK_ID_ELEMENT(FWK_MODULE_IDX_PL011, 0);
+    size_t dummy_count = 1;
 
     /* Clear module context to ensure it is properly initialized */
     memset(&pl011_ctx, 0, sizeof(pl011_ctx));
 
-    fwk_module_get_element_count_ExpectAnyArgsAndReturn(1);
+    fwk_module_get_element_count_ExpectAnyArgsAndReturn(FWK_SUCCESS);
+    fwk_module_get_element_count_ReturnThruPtr_mod_elem_count(&dummy_count);
 
     pl011_ctx.elements_allocated = true;
     /*
@@ -201,7 +205,9 @@ void test_mod_pl011_init_ctx_open_requests(void)
      */
     init_element_ctx_table();
 
-    fwk_module_get_element_count_ExpectAnyArgsAndReturn(1);
+    fwk_module_get_element_count_ExpectAnyArgsAndReturn(FWK_SUCCESS);
+    fwk_module_get_element_count_ReturnThruPtr_mod_elem_count(&dummy_count);
+
     fwk_module_get_data_ExpectAnyArgsAndReturn(cfg_ut);
     fwk_id_is_equal_ExpectAndReturn(stream_id_ut, FWK_ID_NONE, false);
 
@@ -229,6 +235,7 @@ void test_mod_pl011_init(void)
 {
     int status;
     fwk_id_t module_id;
+    size_t dummy_count = 1;
 
     /* Clear module context to ensure it is properly initialized */
     memset(&pl011_ctx, 0, sizeof(pl011_ctx));
@@ -236,8 +243,12 @@ void test_mod_pl011_init(void)
     pl011_ctx.initialized = false;
 
     /* Set up the mock calls for the context initialisation */
-    fwk_module_get_element_count_ExpectAnyArgsAndReturn(1);
-    fwk_module_get_element_count_ExpectAnyArgsAndReturn(1);
+    fwk_module_get_element_count_ExpectAnyArgsAndReturn(FWK_SUCCESS);
+    fwk_module_get_element_count_ReturnThruPtr_mod_elem_count(&dummy_count);
+
+    fwk_module_get_element_count_ExpectAnyArgsAndReturn(FWK_SUCCESS);
+    fwk_module_get_element_count_ReturnThruPtr_mod_elem_count(&dummy_count);
+
     fwk_module_get_data_ExpectAnyArgsAndReturn(cfg_ut);
     fwk_id_is_equal_ExpectAnyArgsAndReturn(true);
 
@@ -280,7 +291,9 @@ void test_mod_pl011_io_open_busy(void)
     struct fwk_io_stream stream;
 
     fwk_id_is_type_ExpectAnyArgsAndReturn(true);
-    fwk_module_get_element_count_ExpectAnyArgsAndReturn(1);
+    size_t dummy_count = 1;
+    fwk_module_get_element_count_ExpectAnyArgsAndReturn(FWK_SUCCESS);
+    fwk_module_get_element_count_ReturnThruPtr_mod_elem_count(&dummy_count);
 
     pl011_ctx.elements_allocated = true;
     pl011_ctx.initialized = true;
@@ -297,7 +310,10 @@ void test_mod_pl011_io_open_not_initalised(void)
     struct fwk_io_stream stream;
 
     fwk_id_is_type_ExpectAnyArgsAndReturn(true);
-    fwk_module_get_element_count_ExpectAnyArgsAndReturn(1);
+
+    size_t dummy_count = 1;
+    fwk_module_get_element_count_ExpectAnyArgsAndReturn(FWK_SUCCESS);
+    fwk_module_get_element_count_ReturnThruPtr_mod_elem_count(&dummy_count);
 
     pl011_ctx.initialized = false;
 
@@ -362,7 +378,9 @@ void test_init_element_ctx_table_fail(void)
 {
     int status;
 
-    fwk_module_get_element_count_ExpectAnyArgsAndReturn(0);
+    size_t dummy_count = 0;
+    fwk_module_get_element_count_ExpectAnyArgsAndReturn(FWK_SUCCESS);
+    fwk_module_get_element_count_ReturnThruPtr_mod_elem_count(&dummy_count);
 
     status = init_element_ctx_table();
     TEST_ASSERT_EQUAL(status, FWK_E_RANGE);
@@ -372,7 +390,9 @@ void test_init_element_ctx_table(void)
 {
     int status;
 
-    fwk_module_get_element_count_ExpectAnyArgsAndReturn(1);
+    size_t dummy_count = 1;
+    fwk_module_get_element_count_ExpectAnyArgsAndReturn(FWK_SUCCESS);
+    fwk_module_get_element_count_ReturnThruPtr_mod_elem_count(&dummy_count);
 
     status = init_element_ctx_table();
     TEST_ASSERT_EQUAL(status, FWK_SUCCESS);
