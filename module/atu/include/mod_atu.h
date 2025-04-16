@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2023-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2023-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -61,60 +61,64 @@
      (AXNSE_VAL << ATU_ATUROBA_AXNSE_OFFSET))
 
 /*
- * Encode ATU region output bus attributes for accessing Root PAS
+ * Encode ATU region output bus attributes for accessing Root PAS.
+ * Set AxNSE to 1 and AxPROT1 to 0.
  */
 #define ATU_ENCODE_ATTRIBUTES_ROOT_PAS \
     (ATU_ENCODE_ATTRIBUTES( \
         MOD_ATU_ROBA_SET_1, \
+        MOD_ATU_ROBA_PASSTHROUGH, \
+        MOD_ATU_ROBA_PASSTHROUGH, \
+        MOD_ATU_ROBA_PASSTHROUGH, \
+        MOD_ATU_ROBA_PASSTHROUGH, \
+        MOD_ATU_ROBA_PASSTHROUGH, \
         MOD_ATU_ROBA_SET_0, \
-        MOD_ATU_ROBA_SET_0, \
-        MOD_ATU_ROBA_SET_0, \
-        MOD_ATU_ROBA_SET_0, \
-        MOD_ATU_ROBA_SET_0, \
-        MOD_ATU_ROBA_SET_0, \
-        MOD_ATU_ROBA_SET_0))
+        MOD_ATU_ROBA_PASSTHROUGH))
 
 /*
- * Encode ATU region output bus attributes for accessing Secure PAS
+ * Encode ATU region output bus attributes for accessing Secure PAS.
+ * Set AxNSE to 0 and AxPROT1 to 0.
  */
 #define ATU_ENCODE_ATTRIBUTES_SECURE_PAS \
     (ATU_ENCODE_ATTRIBUTES( \
         MOD_ATU_ROBA_SET_0, \
+        MOD_ATU_ROBA_PASSTHROUGH, \
+        MOD_ATU_ROBA_PASSTHROUGH, \
+        MOD_ATU_ROBA_PASSTHROUGH, \
+        MOD_ATU_ROBA_PASSTHROUGH, \
+        MOD_ATU_ROBA_PASSTHROUGH, \
         MOD_ATU_ROBA_SET_0, \
-        MOD_ATU_ROBA_SET_0, \
-        MOD_ATU_ROBA_SET_0, \
-        MOD_ATU_ROBA_SET_0, \
-        MOD_ATU_ROBA_SET_0, \
-        MOD_ATU_ROBA_SET_0, \
-        MOD_ATU_ROBA_SET_0))
+        MOD_ATU_ROBA_PASSTHROUGH))
 
 /*
- * Encode ATU region output bus attributes for accessing Non-Secure PAS
+ * Encode ATU region output bus attributes for accessing Non-Secure PAS.
+ * Set AxNSE to 0 and AxPROT1 to 1.
  */
 #define ATU_ENCODE_ATTRIBUTES_NON_SECURE_PAS \
     (ATU_ENCODE_ATTRIBUTES( \
         MOD_ATU_ROBA_SET_0, \
-        MOD_ATU_ROBA_SET_0, \
-        MOD_ATU_ROBA_SET_0, \
-        MOD_ATU_ROBA_SET_0, \
-        MOD_ATU_ROBA_SET_0, \
-        MOD_ATU_ROBA_SET_0, \
+        MOD_ATU_ROBA_PASSTHROUGH, \
+        MOD_ATU_ROBA_PASSTHROUGH, \
+        MOD_ATU_ROBA_PASSTHROUGH, \
+        MOD_ATU_ROBA_PASSTHROUGH, \
+        MOD_ATU_ROBA_PASSTHROUGH, \
         MOD_ATU_ROBA_SET_1, \
-        MOD_ATU_ROBA_SET_0))
+        MOD_ATU_ROBA_PASSTHROUGH))
 
 /*
- * Encode ATU region output bus attributes for accessing Realm PAS
+ * Encode ATU region output bus attributes for accessing Realm PAS.
+ * Set AxNSE to 1 and AxPROT1 to 1.
  */
 #define ATU_ENCODE_ATTRIBUTES_REALM_PAS \
     (ATU_ENCODE_ATTRIBUTES( \
         MOD_ATU_ROBA_SET_1, \
-        MOD_ATU_ROBA_SET_0, \
-        MOD_ATU_ROBA_SET_0, \
-        MOD_ATU_ROBA_SET_0, \
-        MOD_ATU_ROBA_SET_0, \
-        MOD_ATU_ROBA_SET_0, \
+        MOD_ATU_ROBA_PASSTHROUGH, \
+        MOD_ATU_ROBA_PASSTHROUGH, \
+        MOD_ATU_ROBA_PASSTHROUGH, \
+        MOD_ATU_ROBA_PASSTHROUGH, \
+        MOD_ATU_ROBA_PASSTHROUGH, \
         MOD_ATU_ROBA_SET_1, \
-        MOD_ATU_ROBA_SET_0))
+        MOD_ATU_ROBA_PASSTHROUGH))
 
 /*!
  * \addtogroup GroupModules Modules
