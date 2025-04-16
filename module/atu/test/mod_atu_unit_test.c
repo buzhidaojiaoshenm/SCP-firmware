@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2023-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2023-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -483,6 +483,57 @@ void test_atu_get_available_region_idx_fail(void)
     TEST_ASSERT_EQUAL(status, FWK_E_PARAM);
 }
 
+/*!
+ * \brief atu unit test: atu_add_region(), reconfigure the region attributes.
+ *
+ * \details Handle case in atu_add_region() where a region is mapped initially
+ *     with a set of attributes and then the region is removed and a new region
+ *     is mapped in the same index with a different set of attributes.
+ */
+void test_atu_remap_region_attributes(void)
+{
+    int status;
+    uint8_t region_idx;
+    struct atu_device_ctx *device_ctx;
+    struct __fwk_id_fmt mock_value;
+    fwk_id_t atu_device_id = FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_ATU, 0);
+
+    struct atu_region_map region = {
+        .region_owner_id = FWK_ID_MODULE_INIT(FWK_MODULE_IDX_ATU),
+        .log_addr_base = 0x90000000,
+        .phy_addr_base = 0x80000000,
+        .region_size = (1 * FWK_MIB),
+        .attributes = ATU_ENCODE_ATTRIBUTES_ROOT_PAS,
+    };
+
+    fwk_id_get_element_idx_ExpectAnyArgsAndReturn(0);
+    fwk_module_is_valid_entity_id_ExpectAnyArgsAndReturn(true);
+    fwk_id_is_equal_ExpectAnyArgsAndReturn(true);
+    __fwk_id_str_ExpectAnyArgsAndReturn(mock_value);
+
+    /* Map the address translation region */
+    status = atu_add_region(&region, atu_device_id, &region_idx);
+    TEST_ASSERT_EQUAL(status, FWK_SUCCESS);
+
+    __fwk_id_str_ExpectAnyArgsAndReturn(mock_value);
+
+    /* Remove the address translation region */
+    status = atu_remove_region(region_idx, atu_device_id, region.region_owner_id);
+    TEST_ASSERT_EQUAL(status, FWK_SUCCESS);
+
+    fwk_id_get_element_idx_ExpectAnyArgsAndReturn(0);
+    __fwk_id_str_ExpectAnyArgsAndReturn(mock_value);
+
+    /* Modify the attributes and map the region again */
+    region.attributes = ATU_ENCODE_ATTRIBUTES_NON_SECURE_PAS;
+    status = atu_add_region(&region, atu_device_id, &region_idx);
+    TEST_ASSERT_EQUAL(status, FWK_SUCCESS);
+
+    /* Validate the ATUROBA register */
+    device_ctx = &atu_ctx.device_ctx_table[0];
+    TEST_ASSERT_EQUAL(device_ctx->atu->ATUROBA[region_idx], ATU_ENCODE_ATTRIBUTES_NON_SECURE_PAS);
+}
+
 int atu_test_main(void)
 {
     UNITY_BEGIN();
@@ -503,6 +554,7 @@ int atu_test_main(void)
     RUN_TEST(test_atu_remove_region_permission_fail);
     RUN_TEST(test_atu_remove_region_success);
     RUN_TEST(test_atu_get_available_region_idx_fail);
+    RUN_TEST(test_atu_remap_region_attributes);
 
     return UNITY_END();
 }

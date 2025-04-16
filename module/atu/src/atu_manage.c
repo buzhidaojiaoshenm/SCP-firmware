@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2023, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2023-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -86,8 +86,13 @@ static int atu_add_region(
         return status;
     }
 
-    /* Configure the output bus attributes for the ATU region */
-    device_ctx->atu->ATUROBA[*region_idx] |=
+    /*
+     * Configure the output bus attributes for the ATU region.
+     *
+     * Note: The bits [31:16] are read-as-zero or write-ignored (RAZ/WI), so set
+     * the register value directly.
+     */
+    device_ctx->atu->ATUROBA[*region_idx] =
         (region->attributes & ATU_REGION_ROBA_MASK);
 
     return atu_map_region(region, *region_idx, device_ctx);
