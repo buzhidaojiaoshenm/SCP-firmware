@@ -416,7 +416,32 @@ static int scmi_sys_power_state_set_handler(fwk_id_t service_id,
         return_values.status = (int32_t)SCMI_GENERIC_ERROR;
         goto exit;
     }
+
     if (policy_status == MOD_SCMI_SYS_POWER_SKIP_MESSAGE_HANDLER) {
+#ifdef BUILD_HAS_SCMI_NOTIFICATIONS
+        scmi_sys_power_state_notify(service_id, mod_scmi_system_state, false);
+#endif
+        if (mod_scmi_system_state != SCMI_SYSTEM_STATE_SHUTDOWN) {
+            if (!scmi_sys_power_ctx.start_graceful_process) {
+                /* Starting the graceful request process */
+                scmi_sys_power_ctx.start_graceful_process = true;
+
+                if (scmi_sys_power_ctx.alarm_api != NULL) {
+                    status = scmi_sys_power_ctx.alarm_api->start(
+                        scmi_sys_power_ctx.config->alarm_id,
+                        scmi_sys_power_ctx.config->graceful_timeout,
+                        MOD_TIMER_ALARM_TYPE_ONCE,
+                        graceful_timer_callback,
+                        mod_scmi_system_state);
+                    if (status != FWK_SUCCESS) {
+                        FWK_LOG_DEBUG(
+                            "SCMI_SYS_POWER: %s @%d", __func__, __LINE__);
+                    }
+                } else {
+                    graceful_timer_callback(mod_scmi_system_state);
+                }
+            }
+        }
         return_values.status = (int32_t)SCMI_SUCCESS;
         goto exit;
     }
@@ -608,38 +633,10 @@ FWK_WEAK int scmi_sys_power_state_set_policy(
     fwk_id_t service_id,
     bool graceful)
 {
-    int status;
-
     *policy_status = MOD_SCMI_SYS_POWER_EXECUTE_MESSAGE_HANDLER;
 
     if (graceful) {
         *policy_status = MOD_SCMI_SYS_POWER_SKIP_MESSAGE_HANDLER;
-
-        if (!scmi_sys_power_ctx.start_graceful_process) {
-            /* Only shutdown command is enabled */
-            if (*state != SCMI_SYSTEM_STATE_SHUTDOWN) {
-                return FWK_SUCCESS;
-            }
-            /* Starting the graceful request process */
-            scmi_sys_power_ctx.start_graceful_process = true;
-#ifdef BUILD_HAS_SCMI_NOTIFICATIONS
-            scmi_sys_power_state_notify(service_id, *state, false);
-#endif
-
-            if (scmi_sys_power_ctx.alarm_api != NULL) {
-                status = scmi_sys_power_ctx.alarm_api->start(
-                    scmi_sys_power_ctx.config->alarm_id,
-                    scmi_sys_power_ctx.config->graceful_timeout,
-                    MOD_TIMER_ALARM_TYPE_ONCE,
-                    graceful_timer_callback,
-                    *state);
-                if (status != FWK_SUCCESS) {
-                    FWK_LOG_DEBUG("SCMI_SYS_POWER: %s @%d", __func__, __LINE__);
-                }
-            } else {
-                graceful_timer_callback(*state);
-            }
-        }
     }
 
     return FWK_SUCCESS;
