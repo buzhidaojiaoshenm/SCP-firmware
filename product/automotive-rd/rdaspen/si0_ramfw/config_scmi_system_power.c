@@ -14,6 +14,7 @@
 #include <mod_system_power.h>
 
 #include <fwk_id.h>
+#include <fwk_log.h>
 #include <fwk_module.h>
 #include <fwk_module_idx.h>
 
@@ -30,3 +31,21 @@ const struct fwk_module_config config_scmi_system_power = {
 #endif
     }),
 };
+
+int scmi_sys_power_state_set_policy(
+    enum mod_scmi_sys_power_policy_status *policy_status,
+    uint32_t *state,
+    fwk_id_t service_id,
+    bool graceful)
+{
+    if (graceful) {
+        *policy_status = MOD_SCMI_SYS_POWER_SKIP_MESSAGE_HANDLER;
+    } else {
+        *policy_status = MOD_SCMI_SYS_POWER_EXECUTE_MESSAGE_HANDLER;
+    }
+#ifdef BUILD_HAS_SCMI_NOTIFICATIONS
+    FWK_LOG_INFO(
+        "[SI0 PLATFORM][SCMI] Performing power state notification request");
+#endif
+    return FWK_SUCCESS;
+}
