@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Arm SCP/MCP Software
-# Copyright (c) 2015-2024, Arm Limited and Contributors. All rights reserved.
+# Copyright (c) 2015-2025, Arm Limited and Contributors. All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -165,6 +165,7 @@ def check_copyright(filename, pattern, analysis):
 def run(commit_hash=get_previous_commit()):
     print(banner('Checking the copyrights in the code...'))
 
+    commit_hash = commit_hash.strip()
     changed_files = get_changed_files(commit_hash)
     if changed_files == -1:
         return False

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Arm SCP/MCP Software
-# Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+# Copyright (c) 2024-2025, Arm Limited and Contributors. All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -28,6 +28,7 @@ DEFAULT_OUTPUT_FILE = 'code-style.patch'
 def run(output_file=DEFAULT_OUTPUT_FILE, commit_hash=get_previous_commit()):
     print(banner(f'Run coding style checks against {commit_hash[:8]}'))
 
+    commit_hash = commit_hash.strip()
     files = get_changed_files(commit_hash)
     if files == -1:
         return False

@@ -20,13 +20,15 @@
 .check-copyright:
   image: ${CONTAINER_REGISTRY_PATH}/ci-base:${DOCKER_IMAGE_TAG}
   script:
-    - python3 tools/check_copyright.py -c \
+    - |
+      python3 tools/check_copyright.py -c \
       "${CI_MERGE_REQUEST_DIFF_BASE_SHA:-$(git merge-base HEAD origin/main)}"
 
 .check-style:
   image: ${CONTAINER_REGISTRY_PATH}/ci-base:${DOCKER_IMAGE_TAG}
   script:
-    - python3 tools/check_style.py -c \
+    - |
+      python3 tools/check_style.py -c \
       "${CI_MERGE_REQUEST_DIFF_BASE_SHA:-$(git merge-base HEAD origin/main)}"
   artifacts:
     when: on_failure
@@ -49,7 +51,8 @@
 .check-commit-msg:
   image: ${CONTAINER_REGISTRY_PATH}/ci-base:${DOCKER_IMAGE_TAG}
   script:
-    - python3 tools/check_commit_msg.py -c \
+    - |
+      python3 tools/check_commit_msg.py -c \
       ${CI_MERGE_REQUEST_DIFF_BASE_SHA:-$(git merge-base HEAD origin/main)}
   artifacts:
     paths:
