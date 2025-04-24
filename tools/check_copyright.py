@@ -163,7 +163,7 @@ def check_copyright(filename, pattern, analysis):
 
 
 def run(commit_hash=get_previous_commit()):
-    print(banner('Checking the copyrights in the code...'))
+    print(banner(f'Checking the code copyrights against {commit_hash[:8]}'))
 
     commit_hash = commit_hash.strip()
     changed_files = get_changed_files(commit_hash)

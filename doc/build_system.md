@@ -534,12 +534,35 @@ __check_tabs.py__ from the project directory.
 $ ./tools/check_tabs.py
 ```
 
-The complete CI tests can be called in the following way
-(it runs the sanity checks and the unit tests):
+The complete CI tests can be called in the following way:
+
+  - Code quality checks (formatting, style, copyright, etc.)
+  - Unit tests (framework, modules, products)
+  - Build tests for all products
 
 ```sh
 $ ./tools/ci.py
 ```
+
+You can run a single CI stage using --stage:
+
+```sh
+# Run only code quality checks
+$ ./tools/ci.py --stage code-quality
+
+# Run only unit tests
+$ ./tools/ci.py --stage unit-testing
+
+# Run only product builds
+$ ./tools/ci.py --stage build
+```
+
+Additional Options:
+
+- --config-file    Path to the build config file
+                  (default: tools/config/check_build/default_products_build.yml)
+- --output-path    Where to store build logs (default: /tmp/scp/build)
+- --ignore-errors  Continue running even if errors are detected
 
 Definitions
 ===========
