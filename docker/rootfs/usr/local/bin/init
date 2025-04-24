@@ -7,24 +7,23 @@
 # SPDX-License-Identifier: BSD-3-Clause
 #
 
-if id vagrant > /dev/null 2>&1; then
-    user=vagrant
-elif id user > /dev/null 2>&1; then
+if id user > /dev/null 2>&1; then
     user=user
 fi
 
 if [ -z "${user}" ]; then
-    exec $@
+    echo "Warning: Non-root user 'user' not found. Running as root." >&2
+    exec "$@"
 else
     uid=$(stat -c "%u" ".")
     gid=$(stat -c "%g" ".")
 
-    usermod -u ${uid} ${user}
-    groupmod -g ${gid} ${user}
+    usermod -u "${uid}" "${user}"
+    groupmod -g "${gid}" "${user}"
 
     if [ $# -eq 0 ]; then
-        exec su ${user}
+        exec su "${user}"
     else
-        exec gosu ${user} $@
+        exec gosu "${user}" "$@"
     fi
 fi

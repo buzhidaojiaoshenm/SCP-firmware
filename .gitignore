@@ -54,8 +54,4 @@ cscope.*
 # Docker
 
 # General
-.vagrant/
 .bundle/
-
-### Vagrant Patch ###
-*.box

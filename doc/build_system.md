@@ -444,100 +444,6 @@ $ cmake "${SCP_SOURCE_DIR}" -B "${SCP_BUILD_DIR}" \
 Along with core CMake build system, also provided is a option to generate
 a build environment, please see details below.
 
-## Vagrant (recommended)
-\anchor vagrant
-
-> **NOTE**: If you're unfamiliar with Vagrant, we recommend you read the brief
-> introduction found [here][Vagrant].
-
-Vagrant is an open-source software product for building and maintaining portable
-virtual software development environments. The `SCP-firmware `project offers a
-Vagrant configuration based on the [Docker] provider, and so you will need to
-have them both installed:
-
-- Install [Docker](https://docs.docker.com/get-docker)
-- Install [Vagrant](https://www.vagrantup.com/downloads)
-
-> **NOTE**: Vagrant and Docker are generally both available through system
-> package managers:
->
-> - Ubuntu and other Debian-based Linux distributions:
->   https://docs.docker.com/engine/install/ubuntu/
-
- ```sh
- $ sudo apt install vagrant
- ```
-
-
-When using Vagrant, there are no additional prerequisites for the host system,
-as all build and quality assurance tools are packaged with the container.
-
-[Docker]: https://www.docker.com/why-docker
-[Vagrant]: https://www.vagrantup.com/intro
-
-### Interactive Development
-
-You can bring up an interactive development environment by simply running the
-following:
-
-```sh
-$ vagrant up
-Bringing machine 'default' up with 'docker' provider...
-==> default: Machine already provisioned. Run `vagrant provision` or use the
-`--provision`
-==> default: flag to force provisioning. Provisioners marked to run always will
-still run.
-```
-
-> **NOTE**: The Docker container image will be built the first time you run
-> this, which can take a while. Be patient - it won't happen again unless you
-> modify the Dockerfile.
-
-The project working directory will be mounted within the container as
-`/scp-firmware`.
-
-You can then connect to the embedded SSH server as the non-root user `user`
-with:
-
-```sh
-$ vagrant ssh
-```
-
-You will have access to `sudo` from within the container, and Vagrant will
-persist any changes to the container even if you halt it. If you need to rebuild
-the container for any reason, like if you have made changes to the Dockerfile,
-you can rebuild the development environment with:
-
-```sh
-$ vagrant reload
-```
-
-Do note, however, that reloading the development environment will rebuild it
-from scratch.
-
-### Running Commands
-
-If you simply wish to invoke a command from within the container, you may also
-use Vagrant's [`docker-run`] command, e.g.:
-
-```sh
-$ vagrant docker-run -- pwd
-==> default: Image is already built from the Dockerfile. `vagrant reload` to
-rebuild.
-==> default: Creating the container...
-    default:   Name: git_default_1601546529_1601546529
-    default:  Image: b7c4cbfc3534
-    default:    Cmd: pwd
-    default: Volume: /tmp/tmp.cGFeybHqFb:/vagrant
-    default:
-    default: Container is starting. Output will stream in below...
-    default:
-    default: /vagrant
-```
-
-[`docker-run`]:
-          https://www.vagrantup.com/docs/providers/docker/commands#docker-run
-
 ## Visual Studio Code Development Containers
 
 If you use Visual Studio Code, you may also work directly within a
@@ -563,12 +469,9 @@ This Dockerfile has four variants:
   additional steps required to use it from Jenkins.
 - `dev`: A development variant, which includes additional tools for developers
   accessing the container directly.
-- `vagrant`: A Vagrant variant, which includes an SSH server and a workspace
-  more familiar to Vagrant users.
 
-We *highly* recommend using [Vagrant](#vagrant) to manage your development
-environment, but in case you must do so directly through Docker, you can build
-the development container with the following:
+In case you want to manage your development environment directly through Docker,
+you can build the development container with the following:
 
 ```sh
 $ docker build -t scp-firmware --target=dev -f docker/Dockerfile .
