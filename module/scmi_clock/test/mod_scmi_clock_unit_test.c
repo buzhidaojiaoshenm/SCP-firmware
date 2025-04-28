@@ -242,14 +242,10 @@ void test_function_set_rate(void)
     mod_scmi_from_protocol_api_get_agent_id_ReturnThruPtr_agent_id(&agent_id);
 
     #if defined(BUILD_HAS_MOD_RESOURCE_PERMS)
-        mod_scmi_from_protocol_api_get_agent_id_ExpectAnyArgsAndReturn(FWK_SUCCESS);
         mod_res_permissions_api_agent_has_resource_permission_ExpectAnyArgsAndReturn(MOD_RES_PERMS_ACCESS_ALLOWED);
     #endif
 
     fwk_module_is_valid_element_id_ExpectAnyArgsAndReturn(true);
-
-    mod_scmi_from_protocol_api_get_agent_id_ExpectAnyArgsAndReturn(FWK_SUCCESS);
-    mod_scmi_from_protocol_api_get_agent_id_ReturnThruPtr_agent_id(&agent_id);
     mod_scmi_from_protocol_api_scmi_frame_validation_ExpectAnyArgsAndReturn(
             FWK_SUCCESS);
 
@@ -840,9 +836,6 @@ void test_mod_scmi_clock_attributes_handler_get_state(void)
     mod_scmi_from_protocol_api_get_agent_id_ExpectAnyArgsAndReturn(FWK_SUCCESS);
     mod_scmi_from_protocol_api_get_agent_id_ReturnThruPtr_agent_id(&agent_id);
 
-    mod_scmi_from_protocol_api_get_agent_id_ExpectAnyArgsAndReturn(FWK_SUCCESS);
-    mod_scmi_from_protocol_api_get_agent_id_ReturnThruPtr_agent_id(&agent_id);
-
     fwk_module_get_element_name_ExpectAnyArgsAndReturn("");
 
     mod_scmi_from_protocol_api_respond_Stub(
@@ -1142,9 +1135,6 @@ void test_scmi_clock_name_get_handler_success(void)
 
     fwk_module_is_valid_element_id_ExpectAnyArgsAndReturn(true);
 
-    mod_scmi_from_protocol_api_get_agent_id_ExpectAnyArgsAndReturn(FWK_SUCCESS);
-    mod_scmi_from_protocol_api_get_agent_id_ReturnThruPtr_agent_id(&agent_id);
-
     fwk_id_get_element_idx_ExpectAnyArgsAndReturn(CLOCK_DEV_IDX_FAKE1);
     fwk_id_is_equal_ExpectAnyArgsAndReturn(true);
 
@@ -1193,9 +1183,6 @@ void test_scmi_clock_name_get_handler_extended_name_not_supported(void)
     mod_scmi_from_protocol_api_get_agent_id_ReturnThruPtr_agent_id(&agent_id);
 
     fwk_module_is_valid_element_id_ExpectAnyArgsAndReturn(true);
-
-    mod_scmi_from_protocol_api_get_agent_id_ExpectAnyArgsAndReturn(FWK_SUCCESS);
-    mod_scmi_from_protocol_api_get_agent_id_ReturnThruPtr_agent_id(&agent_id);
 
     mod_scmi_from_protocol_api_respond_Stub(
         clock_has_extended_name_callback);
@@ -1292,9 +1279,6 @@ void test_clock_rate_changed_notify_handler_add_subscriber(void)
     mod_scmi_from_protocol_api_get_agent_id_ReturnThruPtr_agent_id(&agent_id);
 
     fwk_module_is_valid_element_id_ExpectAnyArgsAndReturn(true);
-    mod_scmi_from_protocol_api_get_agent_id_ExpectAnyArgsAndReturn(
-        FWK_SUCCESS);
-    mod_scmi_from_protocol_api_get_agent_id_ReturnThruPtr_agent_id(&agent_id);
 
     mod_scmi_from_protocol_api_scmi_frame_validation_ExpectAnyArgsAndReturn(
         FWK_SUCCESS);
@@ -1346,9 +1330,6 @@ void test_clock_rate_changed_notify_handler_remove_subscriber(void)
         FWK_SUCCESS);
     mod_scmi_from_protocol_api_get_agent_id_ReturnThruPtr_agent_id(&agent_id);
     fwk_module_is_valid_element_id_ExpectAnyArgsAndReturn(true);
-    mod_scmi_from_protocol_api_get_agent_id_ExpectAnyArgsAndReturn(
-        FWK_SUCCESS);
-    mod_scmi_from_protocol_api_get_agent_id_ReturnThruPtr_agent_id(&agent_id);
 
     mod_scmi_from_protocol_api_scmi_frame_validation_ExpectAnyArgsAndReturn(
         FWK_SUCCESS);
@@ -1404,10 +1385,6 @@ void test_clock_rate_change_requested_notify_handler_add_subscriber(void)
     mod_scmi_from_protocol_api_get_agent_id_ReturnThruPtr_agent_id(&agent_id);
     fwk_module_is_valid_element_id_ExpectAnyArgsAndReturn(true);
 
-    mod_scmi_from_protocol_api_get_agent_id_ExpectAnyArgsAndReturn(
-        FWK_SUCCESS);
-    mod_scmi_from_protocol_api_get_agent_id_ReturnThruPtr_agent_id(&agent_id);
-
     mod_scmi_from_protocol_api_scmi_frame_validation_ExpectAnyArgsAndReturn(
         FWK_SUCCESS);
 
@@ -1458,10 +1435,6 @@ void test_clock_rate_change_requested_notify_handler_remove_subscriber(void)
         FWK_SUCCESS);
     mod_scmi_from_protocol_api_get_agent_id_ReturnThruPtr_agent_id(&agent_id);
     fwk_module_is_valid_element_id_ExpectAnyArgsAndReturn(true);
-
-    mod_scmi_from_protocol_api_get_agent_id_ExpectAnyArgsAndReturn(
-        FWK_SUCCESS);
-    mod_scmi_from_protocol_api_get_agent_id_ReturnThruPtr_agent_id(&agent_id);
 
     mod_scmi_from_protocol_api_scmi_frame_validation_ExpectAnyArgsAndReturn(
         FWK_SUCCESS);
