@@ -1,3 +1,6 @@
+\ingroup GroupModules Modules
+\defgroup GroupPOWER_CAPPING Power Capping
+
 # Power Capping
 
 Copyright (c) 2025, Arm Limited and Contributors. All rights reserved.

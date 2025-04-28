@@ -21,7 +21,7 @@
  */
 
 /*!
- * \defgroup GroupPOWER_CAPPING power capping module
+ * \defgroup GroupPOWER_CAPPING Power Capping
  * \{
  */
 
