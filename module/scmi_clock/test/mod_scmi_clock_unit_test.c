@@ -141,13 +141,7 @@ void setUp(void)
 
     scmi_clock_ctx.phy_device_count = CLOCK_DEV_IDX_COUNT;
     scmi_clock_ctx.agent_count = FAKE_SCMI_AGENT_IDX_COUNT;
-
-    scmi_clock_ctx.agent_table = (struct mod_scmi_clock_agent **)&agent_table;
-    scmi_clock_ctx.agent_table[PLATFORM] = NULL;
-    scmi_clock_ctx.agent_table[FAKE_SCMI_AGENT_IDX_PSCI] = NULL;
-    scmi_clock_ctx.agent_table[FAKE_SCMI_AGENT_IDX_OSPM0] = &agent_table[2];
-    scmi_clock_ctx.agent_table[FAKE_SCMI_AGENT_IDX_OSPM1] = &agent_table[3];
-
+    scmi_clock_ctx.agent_table = agent_table;
 
     /* Allocate a table of clock operations */
     scmi_clock_ctx.clock_ops = clock_ops_table;
@@ -1669,6 +1663,91 @@ void test_mod_scmi_clock_bind(void)
 }
 #endif
 
+void test_scmi_clock_init(void)
+{
+    int status;
+    uint8_t *dev_clock_ref_count_table_return = (uint8_t *)0xAAAAAAAA;
+    size_t phy_device_count = CLOCK_DEV_IDX_COUNT;
+    fwk_id_t scmi_clock_module_id = FWK_ID_MODULE(FWK_MODULE_IDX_SCMI_CLOCK);
+
+    fwk_mm_calloc_ExpectAndReturn(FAKE_SCMI_AGENT_IDX_COUNT,
+                                  sizeof(struct mod_scmi_clock_agent *),
+                                  agent_table);
+
+    fwk_module_get_element_count_ExpectAnyArgsAndReturn(FWK_SUCCESS);
+    fwk_module_get_element_count_ReturnThruPtr_mod_elem_count(&phy_device_count);
+
+    fwk_mm_calloc_ExpectAndReturn(CLOCK_DEV_IDX_COUNT,
+                                  sizeof(struct clock_operations),
+                                  clock_ops_table);
+
+    fwk_mm_calloc_ExpectAndReturn(CLOCK_DEV_IDX_COUNT,
+                                  sizeof(uint8_t),
+                                  dev_clock_ref_count_table_return);
+
+    status = scmi_clock_init(scmi_clock_module_id, FAKE_SCMI_AGENT_IDX_COUNT, config_scmi_clock.data);
+
+    TEST_ASSERT_EQUAL(MAX_PENDING_TRANSACTION, scmi_clock_ctx.max_pending_transactions);
+    TEST_ASSERT_EQUAL(FAKE_SCMI_AGENT_IDX_COUNT, scmi_clock_ctx.agent_count);
+    TEST_ASSERT_EQUAL(CLOCK_DEV_IDX_COUNT, scmi_clock_ctx.phy_device_count);
+    TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
+}
+
+void test_scmi_clock_element_init(void)
+{
+    int status;
+
+    memset(dev_clock_ref_count_table, 0, CLOCK_DEV_IDX_COUNT);
+    memset(ospm0_state_table, 0, SCMI_CLOCK_OSPM0_COUNT * sizeof(uint8_t));
+    memset(ospm1_state_table, 0, SCMI_CLOCK_OSPM1_COUNT * sizeof(uint8_t));
+
+    fwk_id_get_element_idx_Stub(get_element_idx_callback);
+
+    fwk_mm_calloc_ExpectAndReturn(1,
+                                  sizeof(struct mod_scmi_clock_agent),
+                                  agent_table[FAKE_SCMI_AGENT_IDX_OSPM0]);
+    fwk_mm_calloc_ExpectAndReturn(SCMI_CLOCK_OSPM0_COUNT,
+                                  sizeof(uint8_t),
+                                  ospm0_state_table);
+
+    fwk_mm_calloc_ExpectAndReturn(1,
+                                  sizeof(struct mod_scmi_clock_agent),
+                                  agent_table[FAKE_SCMI_AGENT_IDX_OSPM1]);
+    fwk_mm_calloc_ExpectAndReturn(SCMI_CLOCK_OSPM1_COUNT,
+                                  sizeof(uint8_t),
+                                  ospm1_state_table);
+
+    for (unsigned int i = 0; i < FAKE_SCMI_AGENT_IDX_COUNT; i++) {
+        status = scmi_clock_element_init(FWK_ID_ELEMENT(FWK_MODULE_IDX_SCMI_CLOCK, i),
+                                     0,
+                                     element_table[i].data);
+        TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
+    }
+
+    TEST_ASSERT_EQUAL_PTR(
+        ospm0_state_table,
+        scmi_clock_ctx.agent_table[FAKE_SCMI_AGENT_IDX_OSPM0]->state_table);
+
+    TEST_ASSERT_EQUAL_PTR(
+        ospm1_state_table,
+        scmi_clock_ctx.agent_table[FAKE_SCMI_AGENT_IDX_OSPM1]->state_table);
+
+    TEST_ASSERT_EQUAL_UINT8_ARRAY(
+        ospm0_state_table_default,
+        scmi_clock_ctx.agent_table[FAKE_SCMI_AGENT_IDX_OSPM0]->state_table,
+        SCMI_CLOCK_OSPM0_COUNT);
+
+    TEST_ASSERT_EQUAL_UINT8_ARRAY(
+        ospm1_state_table_default,
+        scmi_clock_ctx.agent_table[FAKE_SCMI_AGENT_IDX_OSPM1]->state_table,
+        SCMI_CLOCK_OSPM1_COUNT);
+
+    TEST_ASSERT_EQUAL_UINT8_ARRAY(
+        dev_clock_ref_count_table_default,
+        dev_clock_ref_count_table,
+        CLOCK_DEV_IDX_COUNT);
+}
+
 void test_find_agent_scmi_clock_idx(void)
 {
     int status;
@@ -1710,6 +1789,8 @@ void test_find_agent_scmi_clock_idx(void)
 int scmi_test_main(void)
 {
     UNITY_BEGIN();
+        RUN_TEST(test_scmi_clock_init);
+        RUN_TEST(test_scmi_clock_element_init);
     #if defined(BUILD_HAS_MOD_RESOURCE_PERMS)
         RUN_TEST(test_function_set_rate);
     #else

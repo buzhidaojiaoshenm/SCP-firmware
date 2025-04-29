@@ -161,13 +161,19 @@ struct fwk_module_config config_scmi_clock = {
     }),
 };
 
-static struct mod_scmi_clock_agent agent_table[FAKE_SCMI_AGENT_IDX_COUNT] = {
-    [FAKE_SCMI_AGENT_IDX_OSPM0] = {
+static struct mod_scmi_clock_agent ospm0_table = {
         .agent_config = &ospm0_config,
         .state_table = ospm0_state_table_default,
-    },
-    [FAKE_SCMI_AGENT_IDX_OSPM1] = {
-        .agent_config = &ospm1_config,
-        .state_table = ospm1_state_table_default,
-    },
+};
+
+static struct mod_scmi_clock_agent ospm1_table = {
+    .agent_config = &ospm1_config,
+    .state_table = ospm1_state_table_default,
+};
+
+static struct mod_scmi_clock_agent *agent_table[FAKE_SCMI_AGENT_IDX_COUNT] = {
+    [PLATFORM] = NULL,
+    [FAKE_SCMI_AGENT_IDX_PSCI] = NULL,
+    [FAKE_SCMI_AGENT_IDX_OSPM0] = &ospm0_table,
+    [FAKE_SCMI_AGENT_IDX_OSPM1] = &ospm1_table,
 };
