@@ -10,6 +10,8 @@
 #include <mod_scmi.h>
 #include <mod_scmi_power_capping_req.h>
 
+#include <interface_power_management.h>
+
 #ifdef BUILD_HAS_MOD_TIMER
 #    include <mod_timer.h>
 #endif
@@ -325,6 +327,21 @@ static const struct mod_scmi_power_capping_req_api power_capping_req_api = {
     .set_power_cap = set_power_cap,
 };
 
+/* Power management API implementation */
+
+static int set_power_limit(fwk_id_t id, uint32_t power_limit)
+{
+    /* Disable Async responses */
+    const uint32_t flags = SCMI_POWER_CAPPPING_REQ_SET_FLAGS(0, 0);
+
+    return set_power_cap(id, power_limit, flags);
+}
+
+/* Power management API structure */
+struct interface_power_management_api power_management_api = {
+    .set_power_limit = set_power_limit,
+};
+
 /* Framework handler functions */
 static int scmi_power_capping_req_init(
     fwk_id_t module_id,
@@ -429,15 +446,29 @@ static int scmi_power_capping_req_process_bind_request(
     fwk_id_t api_id,
     const void **api)
 {
-    if (fwk_id_is_equal(api_id, mod_power_capping_req_scmi_api_id)) {
+    enum mod_power_capping_req_api_idx api_idx;
+
+    api_idx = (enum mod_power_capping_req_api_idx)fwk_id_get_api_idx(api_id);
+
+    switch (api_idx) {
+    case MOD_POW_CAP_REQ_API_IDX_SCMI_REQ:
         if (!fwk_id_is_equal(
                 fwk_id_build_module_id(requester_id), fwk_module_id_scmi)) {
             return FWK_E_ACCESS;
         }
+
         *api = &scmi_power_capping_req_scmi_to_protocol_api;
-    } else if (fwk_id_is_equal(api_id, mod_power_capping_req_api_id)) {
+        break;
+
+    case MOD_POW_CAP_REQ_API_IDX_REQ:
         *api = &power_capping_req_api;
-    } else {
+        break;
+
+    case MOD_POW_CAP_REQ_API_IDX_LIMITER_POWER_API:
+        *api = &power_management_api;
+        break;
+
+    default:
         return FWK_E_SUPPORT;
     }
 

@@ -18,6 +18,8 @@
 
 #include <mod_scmi.h>
 
+#include <interface_power_management.h>
+
 #include <fwk_element.h>
 #include <fwk_macros.h>
 
@@ -458,12 +460,10 @@ void test_scmi_power_capping_req_bind_req_success(void)
 {
     int status;
     fwk_id_t target_id;
-    struct mod_power_capping_req_api_id *api;
-    struct mod_scmi_to_protocol_api *scmi_api;
+    struct mod_power_capping_req_api_id *api = NULL;
 
     /* PCAP Req API */
-    fwk_id_is_equal_ExpectAnyArgsAndReturn(false);
-    fwk_id_is_equal_ExpectAnyArgsAndReturn(true);
+    fwk_id_get_api_idx_ExpectAnyArgsAndReturn(MOD_POW_CAP_REQ_API_IDX_REQ);
 
     status = scmi_power_capping_req_process_bind_request(
         fwk_module_id_scmi,
@@ -472,29 +472,45 @@ void test_scmi_power_capping_req_bind_req_success(void)
         (const void **)&api);
 
     TEST_ASSERT_EQUAL(status, FWK_SUCCESS);
-    TEST_ASSERT_NOT_NULL(api);
+    TEST_ASSERT_EQUAL(api, &power_capping_req_api);
 
     /* SCMI API */
-    fwk_id_is_equal_ExpectAnyArgsAndReturn(true);
+    fwk_id_get_api_idx_ExpectAnyArgsAndReturn(MOD_POW_CAP_REQ_API_IDX_SCMI_REQ);
     fwk_id_is_equal_ExpectAnyArgsAndReturn(true);
     fwk_id_build_module_id_ExpectAnyArgsAndReturn(fwk_module_id_scmi);
+    api = NULL;
 
     status = scmi_power_capping_req_process_bind_request(
         fwk_module_id_scmi,
         target_id,
-        mod_power_capping_req_scmi_api_id,
-        (const void **)&scmi_api);
+        mod_power_capping_req_api_id,
+        (const void **)&api);
+
     TEST_ASSERT_EQUAL(status, FWK_SUCCESS);
+    TEST_ASSERT_EQUAL(api, &scmi_power_capping_req_scmi_to_protocol_api);
+
+    /* Power Management API */
+    fwk_id_get_api_idx_ExpectAnyArgsAndReturn(
+        MOD_POW_CAP_REQ_API_IDX_LIMITER_POWER_API);
+    api = NULL;
+
+    status = scmi_power_capping_req_process_bind_request(
+        fwk_module_id_scmi,
+        target_id,
+        mod_power_capping_req_api_id,
+        (const void **)&api);
+
+    TEST_ASSERT_EQUAL(status, FWK_SUCCESS);
+    TEST_ASSERT_EQUAL(api, &power_management_api);
 }
 
 void test_scmi_power_capping_req_bind_req_error_missing_id(void)
 {
     int status;
     fwk_id_t target_id;
-    struct mod_power_capping_req_api_id *api;
+    struct mod_power_capping_req_api_id *api = NULL;
 
-    fwk_id_is_equal_ExpectAnyArgsAndReturn(false);
-    fwk_id_is_equal_ExpectAnyArgsAndReturn(false);
+    fwk_id_get_api_idx_ExpectAnyArgsAndReturn(MOD_POW_CAP_REQ_API_IDX_COUNT);
 
     status = scmi_power_capping_req_process_bind_request(
         fwk_module_id_scmi,
@@ -503,6 +519,7 @@ void test_scmi_power_capping_req_bind_req_error_missing_id(void)
         (const void **)&api);
 
     TEST_ASSERT_EQUAL(status, FWK_E_SUPPORT);
+    TEST_ASSERT_EQUAL(api, NULL);
 }
 
 void test_scmi_power_capping_req_bind_req_error_module_id(void)
@@ -510,9 +527,9 @@ void test_scmi_power_capping_req_bind_req_error_module_id(void)
     int status;
     fwk_id_t invalid_id = { .value = UINT32_MAX };
     fwk_id_t target_id;
-    struct mod_power_capping_req_api_id *api;
+    struct mod_power_capping_req_api_id *api = NULL;
 
-    fwk_id_is_equal_ExpectAnyArgsAndReturn(true);
+    fwk_id_get_api_idx_ExpectAnyArgsAndReturn(MOD_POW_CAP_REQ_API_IDX_SCMI_REQ);
     fwk_id_is_equal_ExpectAnyArgsAndReturn(false);
     fwk_id_build_module_id_ExpectAnyArgsAndReturn(invalid_id);
 
@@ -523,6 +540,7 @@ void test_scmi_power_capping_req_bind_req_error_module_id(void)
         (const void **)&api);
 
     TEST_ASSERT_EQUAL(status, FWK_E_ACCESS);
+    TEST_ASSERT_EQUAL(api, NULL);
 }
 
 int scmi_power_capping_req_test_main(void)

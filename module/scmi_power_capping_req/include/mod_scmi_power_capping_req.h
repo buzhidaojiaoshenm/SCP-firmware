@@ -24,6 +24,9 @@ enum mod_power_capping_req_api_idx {
     /*! API used to set the cap from another module */
     MOD_POW_CAP_REQ_API_IDX_REQ,
 
+    /*! Power Management API. */
+    MOD_POW_CAP_REQ_API_IDX_LIMITER_POWER_API,
+
     /*! Number of defined APIs */
     MOD_POW_CAP_REQ_API_IDX_COUNT,
 };
@@ -79,5 +82,10 @@ static const fwk_id_t mod_power_capping_req_api_id = FWK_ID_API_INIT(
 static const fwk_id_t mod_power_capping_req_scmi_api_id = FWK_ID_API_INIT(
     FWK_MODULE_IDX_SCMI_POWER_CAPPING_REQ,
     MOD_POW_CAP_REQ_API_IDX_SCMI_REQ);
+
+/*! Identifier of the Power Managment API */
+static const fwk_id_t mod_power_capping_req_power_mgmt_api_id = FWK_ID_API_INIT(
+    FWK_MODULE_IDX_SCMI_POWER_CAPPING_REQ,
+    MOD_POW_CAP_REQ_API_IDX_LIMITER_POWER_API);
 
 #endif /* MOD_SCMI_POWER_CAPPING_REQ_H */
