@@ -63,3 +63,6 @@
 
 - product: rd1ae
   product_group: automotive-rd
+
+- product: tc3
+  product_group: totalcompute

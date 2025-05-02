@@ -1,6 +1,6 @@
 #
 # Arm SCP/MCP Software
-# Copyright (c) 2023-2024, Arm Limited and Contributors. All rights reserved.
+# Copyright (c) 2023-2025, Arm Limited and Contributors. All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -9,7 +9,7 @@
 
 include_guard()
 
-set(CMAKE_SYSTEM_PROCESSOR "cortex-m85+nodsp")
+set(CMAKE_SYSTEM_ARCH "armv8.1-m.main")
 
 set(CMAKE_ASM_COMPILER_TARGET "arm-arm-none-eabi")
 set(CMAKE_C_COMPILER_TARGET "arm-arm-none-eabi")
