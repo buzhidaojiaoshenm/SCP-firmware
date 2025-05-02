@@ -272,6 +272,10 @@ int arch_interrupt_get_current(unsigned int *interrupt)
         return FWK_E_PARAM;
     }
 
+    if (current_iar >= INTERRUPT_ID_ISR_LIMIT) {
+        return FWK_E_STATE;
+    }
+
     *interrupt = current_iar;
 
     return FWK_SUCCESS;
