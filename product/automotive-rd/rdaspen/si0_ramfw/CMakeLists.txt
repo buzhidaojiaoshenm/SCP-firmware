@@ -37,3 +37,8 @@ target_sources(rdaspen-si0-bl2 PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/config_system_power.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/config_ni_710ae.c"
     )
+
+if(SCP_ENABLE_DEBUGGER)
+    target_compile_definitions(rdaspen-si0-bl2 PRIVATE BUILD_HAS_DEBUGGER)
+    target_sources(rdaspen-si0-bl2 PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/config_debugger_cli.c")
+endif()

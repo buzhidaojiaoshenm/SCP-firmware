@@ -59,7 +59,15 @@ static const struct fwk_element gtimer_dev_table[] = {
                 .syscnt_impdef_cfg = syscnt_impdef_cfg,
                 .syscnt_impdef_cfg_cnt = FWK_ARRAY_SIZE(syscnt_impdef_cfg),
             }) },
-    [1] = { 0 },
+    [1] = { .name = "SI0_TIMER",
+            .data = &((struct mod_gtimer_dev_config){
+                .hw_timer = SI0_TIMER_HW_TIMER,
+                .hw_counter = SI0_TIMER_HW_COUNTER,
+                .skip_cntcontrol_init = true,
+                .frequency = CLOCK_RATE_REFCLK,
+                .clock_id = FWK_ID_NONE_INIT,
+            }) },
+    [2] = { 0 },
 };
 
 const struct fwk_module_config config_gtimer = {

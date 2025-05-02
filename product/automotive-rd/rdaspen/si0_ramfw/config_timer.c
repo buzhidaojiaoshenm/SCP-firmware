@@ -29,7 +29,16 @@ static const struct fwk_element timer_dev_table[] = {
         .sub_element_count =
             SI0_CFGD_MOD_TIMER_ALARM_IDX_COUNT, /* Number of alarms */
     },
-    [1] = { 0 },
+    [1] = {
+        .name = "SI0_TIMER",
+        .data = &((struct mod_timer_dev_config) {
+            .id = FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_GTIMER, 1),
+            .timer_irq = CL0_SYSTEM_TIMER_IRQ,
+        }),
+        .sub_element_count =
+            SI0_CFGD_MOD_TIMER_SI0_TIMER_ALARM_IDX_COUNT, /* Number of alarms */
+    },
+    [2] = { 0 },
 };
 
 const struct fwk_module_config config_timer = {

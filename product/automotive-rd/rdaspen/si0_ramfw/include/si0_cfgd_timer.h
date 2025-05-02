@@ -21,4 +21,10 @@ enum si0_cfgd_mod_timer_alarm_idx {
     SI0_CFGD_MOD_TIMER_ALARM_IDX_COUNT,
 };
 
+/* Sub-element indexes (alarms) for SI0 timer device */
+enum si0_cfgd_mod_timer_si0_timer_alarm_idx {
+    SI0_CFGD_DEBUGGER_CLI_IDX,
+    SI0_CFGD_MOD_TIMER_SI0_TIMER_ALARM_IDX_COUNT,
+};
+
 #endif /* SI0_CFGD_TIMER_H */

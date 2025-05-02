@@ -54,3 +54,7 @@ list(APPEND SCP_MODULES
     "cluster-control"
     "si0-platform"
 )
+
+if(SCP_ENABLE_DEBUGGER)
+    list(APPEND SCP_MODULES "debugger-cli")
+endif()
