@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2020-2023, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2020-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -58,6 +58,7 @@
 
 #include <fwk_io.h>
 
+#include <inttypes.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -81,15 +82,15 @@ static int32_t dump_memory_f(int32_t argc, char **argv)
      * size parameters.
      */
     uint32_t j;
-    uint32_t addr = (uint32_t)(strtoul(argv[1], 0, 0) & 0xFFFFFFF8);
-    uint32_t size = (uint32_t)(strtoul(argv[2], 0, 0) & 0x000003F8);
+    uintptr_t addr = (uintptr_t)(strtoul(argv[1], 0, 0) & 0xFFFFFFF8);
+    size_t size = (size_t)(strtoul(argv[2], 0, 0) & 0x000003F8);
     uint32_t i = 0;
 
     /* Sanity check. */
     if (size == 0)
         return FWK_E_PARAM;
 
-    cli_printf(NONE, "Reading %d bytes from 0x%08x.\n", size, addr);
+    cli_printf(NONE, "Reading %zu bytes from 0x%" PRIxPTR ".\n", size, addr);
 
     /* Loop through all bytes. */
     for (i = 0; i < size; i = i + NUM_BYTES_PER_LINE) {
@@ -125,7 +126,7 @@ static int32_t dump_memory_f(int32_t argc, char **argv)
  * deviations for given iteration
  */
 #define MAX_CYCLE_BUFFER_SZ 256
-volatile uint32_t cycle_buffer[MAX_CYCLE_BUFFER_SZ] = { 0 };
+volatile uintptr_t cycle_buffer[MAX_CYCLE_BUFFER_SZ] = { 0 };
 
 static const char cycle_memory_call[] = "cyclemem";
 static const char cycle_memory_help[] =
@@ -135,10 +136,10 @@ static const char cycle_memory_help[] =
     "   Base address and size must be on 4 byte boundaries.\n";
 static int32_t cycle_memory_f(int32_t argc, char **argv)
 {
-    uint32_t addr = (uint32_t)(strtoul(argv[1], 0, 0) & 0xFFFFFFF8);
-    uint32_t size = (uint32_t)strtoul(argv[2], 0, 0);
+    uintptr_t addr = (uintptr_t)(strtoul(argv[1], 0, 0) & 0xFFFFFFF8);
+    size_t size = (size_t)strtoul(argv[2], 0, 0);
     uint32_t iterations = (uint32_t)strtoul(argv[3], 0, 0);
-    volatile uint32_t *tmp_address = (volatile uint32_t *)addr;
+    volatile uintptr_t *tmp_address = (volatile uintptr_t *)addr;
     uint32_t deviation_count = 0;
     uint32_t cycle_count, index = 0;
 
@@ -146,7 +147,7 @@ static int32_t cycle_memory_f(int32_t argc, char **argv)
     if ((size == 0) || (size > MAX_CYCLE_BUFFER_SZ))
         return FWK_E_PARAM;
 
-    memset((void *)cycle_buffer, 0, sizeof(uint32_t) * MAX_CYCLE_BUFFER_SZ);
+    memset((void *)cycle_buffer, 0, sizeof(uintptr_t) * MAX_CYCLE_BUFFER_SZ);
 
     cli_printf(
         NONE,
