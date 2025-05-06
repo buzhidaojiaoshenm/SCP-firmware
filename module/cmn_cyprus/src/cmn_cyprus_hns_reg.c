@@ -565,6 +565,7 @@ void hns_set_lcn_htg_cpag_id(
     unsigned int hns_idx_end;
     uint32_t register_idx;
     uint8_t bit_pos;
+    uint64_t cpag_id_wide = cpag_id;
 
     hns_idx_start = region_idx * hns_count;
     hns_idx_end = hns_idx_start + hns_count;
@@ -576,7 +577,7 @@ void hns_set_lcn_htg_cpag_id(
              LCN_HTG_CPAG_PER_HNF_POS);
 
         hns->LCN_HASHED_TARGET_GRP_CPAG_PERHNF_REG[register_idx] |=
-            ((uint64_t)cpag_id << bit_pos);
+            (cpag_id_wide << bit_pos);
     }
 }
 
