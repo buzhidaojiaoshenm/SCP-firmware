@@ -219,7 +219,7 @@ static uint64_t get_rnsam_non_hash_lsb_addr_mask(
 
     lsb_bit_pos = get_rnsam_non_hash_rcomp_lsb_bit_pos(rnsam);
 
-    return ((1 << lsb_bit_pos) - 1);
+    return (UINT64_C(0x1) << lsb_bit_pos) - 1;
 }
 
 static uint8_t get_rnsam_htg_rcomp_lsb_bit_pos(
@@ -557,7 +557,7 @@ uint64_t rnsam_get_htg_lsb_addr_mask(struct cmn_cyprus_rnsam_reg *rnsam)
 
     lsb_bit_pos = get_rnsam_htg_rcomp_lsb_bit_pos(rnsam);
 
-    return (1 << lsb_bit_pos) - 1;
+    return (UINT64_C(0x1) << lsb_bit_pos) - 1;
 }
 
 void rnsam_stall(struct cmn_cyprus_rnsam_reg *rnsam)
