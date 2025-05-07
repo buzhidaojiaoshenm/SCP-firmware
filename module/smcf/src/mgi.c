@@ -459,7 +459,7 @@ void mgi_interrupt_source_clear(
     struct smcf_mgi_reg *smcf_mgi,
     uint32_t interrupt_source_pos)
 {
-    smcf_mgi->IRQ_STAT &= ~(1 << interrupt_source_pos);
+    smcf_mgi->IRQ_STAT |= (1 << interrupt_source_pos);
 }
 
 /* Interrupt mask */
