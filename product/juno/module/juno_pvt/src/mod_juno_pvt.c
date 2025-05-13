@@ -496,7 +496,7 @@ static int juno_pvt_element_init(fwk_id_t element_id,
 static int juno_pvt_bind(fwk_id_t id, unsigned int round)
 {
     int status;
-    int sub_element_count;
+    size_t sub_element_count;
     struct pvt_dev_ctx *group_ctx;
     struct pvt_sub_dev_ctx *sensor_ctx;
 
@@ -508,9 +508,10 @@ static int juno_pvt_bind(fwk_id_t id, unsigned int round)
 
     group_ctx = &dev_ctx[fwk_id_get_element_idx(id)];
 
-    sub_element_count = fwk_module_get_sub_element_count(id);
-    if (sub_element_count < 0) {
-        return FWK_E_DATA;
+    status = fwk_module_get_sub_element_count(id, &sub_element_count);
+
+    if (status != FWK_SUCCESS) {
+        return status;
     }
 
     /*
@@ -570,7 +571,7 @@ static int pvt_start(fwk_id_t id)
 {
     int status;
     struct mod_juno_pvt_dev_config *sensor_cfg;
-    int sub_element_count;
+    size_t sub_element_count;
     struct pvt_dev_ctx *group_ctx;
     struct pvt_sub_dev_ctx *sensor_ctx;
     uint16_t calibration_a;
@@ -605,9 +606,10 @@ static int pvt_start(fwk_id_t id)
 
     group_ctx = &dev_ctx[fwk_id_get_element_idx(id)];
 
-    sub_element_count = fwk_module_get_sub_element_count(id);
-    if (sub_element_count < 0) {
-        return FWK_E_DATA;
+    status = fwk_module_get_sub_element_count(id, &sub_element_count);
+
+    if (status != FWK_SUCCESS) {
+        return status;
     }
 
     /*

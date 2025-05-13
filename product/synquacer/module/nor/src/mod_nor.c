@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2022, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -803,7 +803,8 @@ static int nor_element_init(
     const void *data)
 {
     struct nor_dev_ctx *ctx;
-    int driver_sub_element_count;
+    size_t driver_sub_element_count;
+    int status;
 
     if (data == NULL) {
         return FWK_E_PANIC;
@@ -821,10 +822,10 @@ static int nor_element_init(
     }
 
     /* get number of slave from driver module */
-    driver_sub_element_count =
-        fwk_module_get_sub_element_count(ctx->config->driver_id);
-    if (driver_sub_element_count == FWK_E_PARAM) {
-        return FWK_E_PARAM;
+    status = fwk_module_get_sub_element_count(
+        ctx->config->driver_id, &driver_sub_element_count);
+    if (status != FWK_SUCCESS) {
+        return status;
     }
     ctx->slave_num = (uint8_t)driver_sub_element_count;
 

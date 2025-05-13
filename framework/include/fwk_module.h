@@ -527,12 +527,18 @@ int fwk_module_get_element_count(fwk_id_t module_id, size_t *mod_elem_count);
 /*!
  * \brief Get the number of sub-elements within an element.
  *
- * \param element_id Identifier of the element.
+ * \param element_id                Identifier of the element.
+ * \param mod_sub_elem_cnt          Address of the variable that will store the
+ * module element count.
  *
  * \retval ::FWK_E_PARAM The identifier of the element is invalid.
- * \return Number of sub-elements.
+ * \retval ::FWK_E_DATA The address of the module sub element count is invalid.
+ * \return The Status of the Request and Module Sub Element count in case of
+ * successful Request.
  */
-int fwk_module_get_sub_element_count(fwk_id_t element_id);
+int fwk_module_get_sub_element_count(
+    fwk_id_t element_id,
+    size_t *mod_sub_elem_cnt);
 
 /*!
  * \brief Get the name of a element.

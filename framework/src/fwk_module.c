@@ -737,13 +737,27 @@ int fwk_module_get_element_count(fwk_id_t module_id, size_t *module_elem_count)
     return status_code;
 }
 
-int fwk_module_get_sub_element_count(fwk_id_t element_id)
+int fwk_module_get_sub_element_count(
+    fwk_id_t element_id,
+    size_t *mod_sub_elem_cnt)
 {
-    if (fwk_module_is_valid_element_id(element_id)) {
-        return (int)fwk_module_get_element_ctx(element_id)->sub_element_count;
+    int status_code = FWK_SUCCESS;
+
+    if (mod_sub_elem_cnt != NULL) {
+        if (fwk_module_is_valid_element_id(element_id)) {
+            /* Return the Module Sub Element Count*/
+            *mod_sub_elem_cnt =
+                fwk_module_get_element_ctx(element_id)->sub_element_count;
+
+        } else {
+            status_code = FWK_E_PARAM;
+        }
     } else {
-        return FWK_E_PARAM;
+        /* Invalid Variable Address, Return a Different Error*/
+        status_code = FWK_E_DATA;
     }
+
+    return status_code;
 }
 
 const char *fwk_module_get_element_name(fwk_id_t id)

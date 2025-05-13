@@ -8,7 +8,6 @@
 static const char* CMockString_adapter = "adapter";
 static const char* CMockString_api = "api";
 static const char* CMockString_api_id = "api_id";
-static const char* CMockString_element_id = "element_id";
 static const char* CMockString_fwk_module_adapter = "fwk_module_adapter";
 static const char* CMockString_fwk_module_bind = "fwk_module_bind";
 static const char* CMockString_fwk_module_get_data = "fwk_module_get_data";
@@ -25,6 +24,8 @@ static const char* CMockString_fwk_module_is_valid_notification_id = "fwk_module
 static const char* CMockString_fwk_module_is_valid_sub_element_id = "fwk_module_is_valid_sub_element_id";
 static const char* CMockString_id = "id";
 static const char* CMockString_mod_elem_count = "mod_elem_count";
+static const char* CMockString_mod_id = "mod_id";
+static const char* CMockString_mod_sub_elem_cnt = "mod_sub_elem_cnt";
 static const char* CMockString_module_id = "module_id";
 static const char* CMockString_target_id = "target_id";
 
@@ -119,8 +120,14 @@ typedef struct _CMOCK_fwk_module_get_sub_element_count_CALL_INSTANCE
   UNITY_LINE_TYPE LineNumber;
   char ExpectAnyArgsBool;
   int ReturnVal;
-  fwk_id_t Expected_element_id;
-  char IgnoreArg_element_id;
+  fwk_id_t Expected_mod_id;
+  size_t* Expected_mod_sub_elem_cnt;
+  int Expected_mod_sub_elem_cnt_Depth;
+  char ReturnThruPtr_mod_sub_elem_cnt_Used;
+  size_t* ReturnThruPtr_mod_sub_elem_cnt_Val;
+  size_t ReturnThruPtr_mod_sub_elem_cnt_Size;
+  char IgnoreArg_mod_id;
+  char IgnoreArg_mod_sub_elem_cnt;
 
 } CMOCK_fwk_module_get_sub_element_count_CALL_INSTANCE;
 
@@ -1462,7 +1469,7 @@ void fwk_module_get_element_count_CMockIgnoreArg_mod_elem_count(UNITY_LINE_TYPE 
   cmock_call_instance->IgnoreArg_mod_elem_count = 1;
 }
 
-int fwk_module_get_sub_element_count(fwk_id_t element_id)
+int fwk_module_get_sub_element_count(fwk_id_t mod_id, size_t* mod_sub_elem_cnt)
 {
   UNITY_LINE_TYPE cmock_line = TEST_LINE_NUM;
   CMOCK_fwk_module_get_sub_element_count_CALL_INSTANCE* cmock_call_instance;
@@ -1480,7 +1487,7 @@ int fwk_module_get_sub_element_count(fwk_id_t element_id)
   if (!Mock.fwk_module_get_sub_element_count_CallbackBool &&
       Mock.fwk_module_get_sub_element_count_CallbackFunctionPointer != NULL)
   {
-    int cmock_cb_ret = Mock.fwk_module_get_sub_element_count_CallbackFunctionPointer(element_id, Mock.fwk_module_get_sub_element_count_CallbackCalls++);
+    int cmock_cb_ret = Mock.fwk_module_get_sub_element_count_CallbackFunctionPointer(mod_id, mod_sub_elem_cnt, Mock.fwk_module_get_sub_element_count_CallbackCalls++);
     UNITY_CLR_DETAILS();
     return cmock_cb_ret;
   }
@@ -1488,26 +1495,44 @@ int fwk_module_get_sub_element_count(fwk_id_t element_id)
   cmock_line = cmock_call_instance->LineNumber;
   if (!cmock_call_instance->ExpectAnyArgsBool)
   {
-  if (!cmock_call_instance->IgnoreArg_element_id)
+  if (!cmock_call_instance->IgnoreArg_mod_id)
   {
-    UNITY_SET_DETAILS(CMockString_fwk_module_get_sub_element_count,CMockString_element_id);
-    UNITY_TEST_ASSERT_EQUAL_MEMORY((void*)(&cmock_call_instance->Expected_element_id), (void*)(&element_id), sizeof(fwk_id_t), cmock_line, CMockStringMismatch);
+    UNITY_SET_DETAILS(CMockString_fwk_module_get_sub_element_count,CMockString_mod_id);
+    UNITY_TEST_ASSERT_EQUAL_MEMORY((void*)(&cmock_call_instance->Expected_mod_id), (void*)(&mod_id), sizeof(fwk_id_t), cmock_line, CMockStringMismatch);
+  }
+  if (!cmock_call_instance->IgnoreArg_mod_sub_elem_cnt)
+  {
+    UNITY_SET_DETAILS(CMockString_fwk_module_get_sub_element_count,CMockString_mod_sub_elem_cnt);
+    if (cmock_call_instance->Expected_mod_sub_elem_cnt == NULL)
+      { UNITY_TEST_ASSERT_NULL(mod_sub_elem_cnt, cmock_line, CMockStringExpNULL); }
+    else
+      { UNITY_TEST_ASSERT_EQUAL_MEMORY_ARRAY((void*)(cmock_call_instance->Expected_mod_sub_elem_cnt), (void*)(mod_sub_elem_cnt), sizeof(size_t), cmock_call_instance->Expected_mod_sub_elem_cnt_Depth, cmock_line, CMockStringMismatch); }
   }
   }
   if (Mock.fwk_module_get_sub_element_count_CallbackFunctionPointer != NULL)
   {
-    cmock_call_instance->ReturnVal = Mock.fwk_module_get_sub_element_count_CallbackFunctionPointer(element_id, Mock.fwk_module_get_sub_element_count_CallbackCalls++);
+    cmock_call_instance->ReturnVal = Mock.fwk_module_get_sub_element_count_CallbackFunctionPointer(mod_id, mod_sub_elem_cnt, Mock.fwk_module_get_sub_element_count_CallbackCalls++);
+  }
+  if (cmock_call_instance->ReturnThruPtr_mod_sub_elem_cnt_Used)
+  {
+    UNITY_TEST_ASSERT_NOT_NULL(mod_sub_elem_cnt, cmock_line, CMockStringPtrIsNULL);
+    memcpy((void*)mod_sub_elem_cnt, (void*)cmock_call_instance->ReturnThruPtr_mod_sub_elem_cnt_Val,
+      cmock_call_instance->ReturnThruPtr_mod_sub_elem_cnt_Size);
   }
   UNITY_CLR_DETAILS();
   return cmock_call_instance->ReturnVal;
 }
 
-void CMockExpectParameters_fwk_module_get_sub_element_count(CMOCK_fwk_module_get_sub_element_count_CALL_INSTANCE* cmock_call_instance, fwk_id_t element_id);
-void CMockExpectParameters_fwk_module_get_sub_element_count(CMOCK_fwk_module_get_sub_element_count_CALL_INSTANCE* cmock_call_instance, fwk_id_t element_id)
+void CMockExpectParameters_fwk_module_get_sub_element_count(CMOCK_fwk_module_get_sub_element_count_CALL_INSTANCE* cmock_call_instance, fwk_id_t mod_id, size_t* mod_sub_elem_cnt, int mod_sub_elem_cnt_Depth);
+void CMockExpectParameters_fwk_module_get_sub_element_count(CMOCK_fwk_module_get_sub_element_count_CALL_INSTANCE* cmock_call_instance, fwk_id_t mod_id, size_t* mod_sub_elem_cnt, int mod_sub_elem_cnt_Depth)
 {
-  memcpy((void*)(&cmock_call_instance->Expected_element_id), (void*)(&element_id),
-         sizeof(fwk_id_t[sizeof(element_id) == sizeof(fwk_id_t) ? 1 : -1])); /* add fwk_id_t to :treat_as_array if this causes an error */
-  cmock_call_instance->IgnoreArg_element_id = 0;
+  memcpy((void*)(&cmock_call_instance->Expected_mod_id), (void*)(&mod_id),
+         sizeof(fwk_id_t[sizeof(mod_id) == sizeof(fwk_id_t) ? 1 : -1])); /* add fwk_id_t to :treat_as_array if this causes an error */
+  cmock_call_instance->IgnoreArg_mod_id = 0;
+  cmock_call_instance->Expected_mod_sub_elem_cnt = mod_sub_elem_cnt;
+  cmock_call_instance->Expected_mod_sub_elem_cnt_Depth = mod_sub_elem_cnt_Depth;
+  cmock_call_instance->IgnoreArg_mod_sub_elem_cnt = 0;
+  cmock_call_instance->ReturnThruPtr_mod_sub_elem_cnt_Used = 0;
 }
 
 void fwk_module_get_sub_element_count_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return)
@@ -1545,7 +1570,7 @@ void fwk_module_get_sub_element_count_CMockExpectAnyArgsAndReturn(UNITY_LINE_TYP
   cmock_call_instance->ExpectAnyArgsBool = (char)1;
 }
 
-void fwk_module_get_sub_element_count_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, fwk_id_t element_id, int cmock_to_return)
+void fwk_module_get_sub_element_count_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, fwk_id_t mod_id, size_t* mod_sub_elem_cnt, int cmock_to_return)
 {
   CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_fwk_module_get_sub_element_count_CALL_INSTANCE));
   CMOCK_fwk_module_get_sub_element_count_CALL_INSTANCE* cmock_call_instance = (CMOCK_fwk_module_get_sub_element_count_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
@@ -1555,7 +1580,7 @@ void fwk_module_get_sub_element_count_CMockExpectAndReturn(UNITY_LINE_TYPE cmock
   Mock.fwk_module_get_sub_element_count_IgnoreBool = (char)0;
   cmock_call_instance->LineNumber = cmock_line;
   cmock_call_instance->ExpectAnyArgsBool = (char)0;
-  CMockExpectParameters_fwk_module_get_sub_element_count(cmock_call_instance, element_id);
+  CMockExpectParameters_fwk_module_get_sub_element_count(cmock_call_instance, mod_id, mod_sub_elem_cnt, 1);
   cmock_call_instance->ReturnVal = cmock_to_return;
 }
 
@@ -1573,11 +1598,41 @@ void fwk_module_get_sub_element_count_Stub(CMOCK_fwk_module_get_sub_element_coun
   Mock.fwk_module_get_sub_element_count_CallbackFunctionPointer = Callback;
 }
 
-void fwk_module_get_sub_element_count_CMockIgnoreArg_element_id(UNITY_LINE_TYPE cmock_line)
+void fwk_module_get_sub_element_count_CMockExpectWithArrayAndReturn(UNITY_LINE_TYPE cmock_line, fwk_id_t mod_id, size_t* mod_sub_elem_cnt, int mod_sub_elem_cnt_Depth, int cmock_to_return)
+{
+  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_fwk_module_get_sub_element_count_CALL_INSTANCE));
+  CMOCK_fwk_module_get_sub_element_count_CALL_INSTANCE* cmock_call_instance = (CMOCK_fwk_module_get_sub_element_count_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
+  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringOutOfMemory);
+  memset(cmock_call_instance, 0, sizeof(*cmock_call_instance));
+  Mock.fwk_module_get_sub_element_count_CallInstance = CMock_Guts_MemChain(Mock.fwk_module_get_sub_element_count_CallInstance, cmock_guts_index);
+  Mock.fwk_module_get_sub_element_count_IgnoreBool = (char)0;
+  cmock_call_instance->LineNumber = cmock_line;
+  cmock_call_instance->ExpectAnyArgsBool = (char)0;
+  CMockExpectParameters_fwk_module_get_sub_element_count(cmock_call_instance, mod_id, mod_sub_elem_cnt, mod_sub_elem_cnt_Depth);
+  cmock_call_instance->ReturnVal = cmock_to_return;
+}
+
+void fwk_module_get_sub_element_count_CMockReturnMemThruPtr_mod_sub_elem_cnt(UNITY_LINE_TYPE cmock_line, size_t* mod_sub_elem_cnt, size_t cmock_size)
+{
+  CMOCK_fwk_module_get_sub_element_count_CALL_INSTANCE* cmock_call_instance = (CMOCK_fwk_module_get_sub_element_count_CALL_INSTANCE*)CMock_Guts_GetAddressFor(CMock_Guts_MemEndOfChain(Mock.fwk_module_get_sub_element_count_CallInstance));
+  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringPtrPreExp);
+  cmock_call_instance->ReturnThruPtr_mod_sub_elem_cnt_Used = 1;
+  cmock_call_instance->ReturnThruPtr_mod_sub_elem_cnt_Val = mod_sub_elem_cnt;
+  cmock_call_instance->ReturnThruPtr_mod_sub_elem_cnt_Size = cmock_size;
+}
+
+void fwk_module_get_sub_element_count_CMockIgnoreArg_mod_id(UNITY_LINE_TYPE cmock_line)
 {
   CMOCK_fwk_module_get_sub_element_count_CALL_INSTANCE* cmock_call_instance = (CMOCK_fwk_module_get_sub_element_count_CALL_INSTANCE*)CMock_Guts_GetAddressFor(CMock_Guts_MemEndOfChain(Mock.fwk_module_get_sub_element_count_CallInstance));
   UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringIgnPreExp);
-  cmock_call_instance->IgnoreArg_element_id = 1;
+  cmock_call_instance->IgnoreArg_mod_id = 1;
+}
+
+void fwk_module_get_sub_element_count_CMockIgnoreArg_mod_sub_elem_cnt(UNITY_LINE_TYPE cmock_line)
+{
+  CMOCK_fwk_module_get_sub_element_count_CALL_INSTANCE* cmock_call_instance = (CMOCK_fwk_module_get_sub_element_count_CALL_INSTANCE*)CMock_Guts_GetAddressFor(CMock_Guts_MemEndOfChain(Mock.fwk_module_get_sub_element_count_CallInstance));
+  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringIgnPreExp);
+  cmock_call_instance->IgnoreArg_mod_sub_elem_cnt = 1;
 }
 
 const char* fwk_module_get_element_name(fwk_id_t id)
