@@ -231,8 +231,8 @@ static void process_set_state_request(
      * than the highest power level.
      */
     lowest_level = 0;
-    highest_level = get_highest_level_from_composite_state(
-        lowest_pd, composite_state);
+    highest_level =
+        get_highest_level_from_composite_state(lowest_pd, composite_state);
     nb_pds = highest_level + 1U;
 
     status = FWK_SUCCESS;
@@ -428,6 +428,12 @@ static int complete_system_suspend(struct pd_ctx *target_pd)
 
     process_set_state_request(target_pd, &event, &resp_event);
 
+    for (struct pd_ctx *pd_node = target_pd; pd_node != NULL;
+         pd_node = pd_node->parent) {
+        pd_node->current_state = pd_node->requested_state;
+        pd_node->state_requested_to_driver = pd_node->requested_state;
+    }
+
     return resp_params->status;
 }
 
@@ -447,7 +453,12 @@ static void process_get_state_request(struct pd_ctx *pd, unsigned int *state)
     int table_size, cs_idx = 0;
 
     if (!pd->cs_support) {
-        *state = pd->current_state;
+        if (pd->config->pd_state_mapping_table != NULL) {
+            *state = pd->state_requested_to_driver;
+        } else {
+            *state = pd->current_state;
+            return;
+        }
     } else {
         state_mask_table = pd->composite_state_mask_table;
         table_size = (int)pd->composite_state_mask_table_size;
@@ -593,6 +604,8 @@ static void process_power_state_transition_report(
     const struct pd_power_state_transition_report *report_params)
 {
     unsigned int previous_state;
+    unsigned int driver_state = report_params->state;
+    unsigned int requested_state = pd->state_requested_to_driver;
 #ifdef BUILD_HAS_NOTIFICATION
     struct fwk_event notification_event = {
         .id = mod_pd_notification_id_power_state_transition,
@@ -613,17 +626,12 @@ static void process_power_state_transition_report(
 
     unsigned int new_state = report_params->state;
 
-    if (new_state == pd->driver_state) {
+    if (driver_state == pd->driver_state) {
         send_pd_set_state_delayed_response(pd, FWK_SUCCESS);
     }
 
     previous_state = pd->current_state;
-    /*
-     * This must be updated with the requested state,
-     * not the received state, to compensate for the
-     * possible state mapping that may have occured.
-     */
-    pd->current_state = pd->requested_state;
+    pd->current_state = driver_state;
 
 #ifdef BUILD_HAS_NOTIFICATION
     if (pd->power_state_transition_notification_ctx.pending_responses == 0 &&
@@ -692,7 +700,8 @@ static void process_power_state_transition_report(
 #endif
 
     /* Update the pd states to follow the new transition */
-    pd->requested_state = pd->state_requested_to_driver = pd->current_state;
+    pd->requested_state = requested_state;
+    pd->state_requested_to_driver = requested_state;
 
     if (is_deeper_state(new_state, previous_state)) {
         process_power_state_transition_report_deeper_state(pd);
@@ -1317,7 +1326,10 @@ static int pd_start(fwk_id_t id)
                 __LINE__);
 #endif
         } else {
-            pd->requested_state = pd->state_requested_to_driver = state;
+            pd->requested_state = state;
+            pd->state_requested_to_driver = state;
+            pd->current_state = state;
+            pd->driver_state = state;
 
             if (state == MOD_PD_STATE_OFF) {
                 continue;

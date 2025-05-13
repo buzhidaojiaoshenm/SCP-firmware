@@ -302,6 +302,10 @@ bool is_allowed_by_parent_and_children(struct pd_ctx *pd, unsigned int state)
 
 bool is_state_in_transition(struct pd_ctx *pd, unsigned int state)
 {
-    return pd->requested_state != state || pd->current_state != state ||
+    unsigned int driver_state = (pd->config->pd_state_mapping_table != NULL) ?
+        pd->config->pd_state_mapping_table[state] :
+        state;
+
+    return pd->requested_state != state || pd->current_state != driver_state ||
         pd->state_requested_to_driver != state;
 }
