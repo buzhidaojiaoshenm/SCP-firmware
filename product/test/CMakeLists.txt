@@ -120,6 +120,7 @@ list(APPEND UNIT_PRODUCT automotive-rd/rd1ae/module/safety_island_platform)
 list(APPEND UNIT_PRODUCT automotive-rd/rdaspen/module/cluster_control)
 list(APPEND UNIT_PRODUCT automotive-rd/rdaspen/module/si0_platform)
 list(APPEND UNIT_PRODUCT automotive-rd/rdaspen/module/ros_clock)
+list(APPEND UNIT_PRODUCT automotive-rd/module/ssu)
 
 list(LENGTH UNIT_PRODUCT UNIT_PRODUCT_MAX)
 
