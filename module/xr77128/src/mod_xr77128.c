@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2023-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2023-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -156,7 +156,9 @@ static struct xr77128_module_ctx module_ctx;
 /* Module helpers */
 static struct xr77128_dev_ctx *get_dev_ctx(fwk_id_t id)
 {
-    fwk_assert(fwk_module_is_valid_element_id(id));
+    fwk_assert(
+        fwk_module_is_valid_element_id(id) ||
+        fwk_module_is_valid_sub_element_id(id));
 
     return &(module_ctx.dev_ctx_table[fwk_id_get_element_idx(id)]);
 }
