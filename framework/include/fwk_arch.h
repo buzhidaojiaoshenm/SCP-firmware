@@ -196,9 +196,6 @@ bool arch_interrupt_is_interrupt_context(void);
 /*!
  * \brief Initialize the framework library.
  *
- * \param driver Pointer to an initialization driver used to perform the
- *      initialization.
- *
  * \retval ::FWK_SUCCESS Operation succeeded.
  * \retval ::FWK_E_PARAM One or more parameters were invalid.
  * \retval ::FWK_E_PANIC Unrecoverable initialization error.

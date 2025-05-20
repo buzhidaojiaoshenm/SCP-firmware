@@ -82,7 +82,14 @@ inline static unsigned int fwk_interrupt_global_disable(void)
     return arch_interrupts_disable();
 }
 
+/*!
+ * \brief Initialize the architecture interrupt management.
+ *
+ * \retval ::FWK_SUCCESS Operation succeeded.
+ * \retval ::FWK_E_PANIC The operation failed.
+ */
 int fwk_arch_interrupt_init(void);
+
 /*!
  * \brief Test whether an interrupt is enabled.
  *
