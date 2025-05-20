@@ -41,6 +41,7 @@
 #define MOD_SCMI_PLATFORM_PROTOCOL_ID_MIN 0x80
 /*! Maximum Protocol ID reserved for vendor or platform-specific extensions */
 #define MOD_SCMI_PLATFORM_PROTOCOL_ID_MAX MOD_SCMI_PROTOCOL_ID_MAX
+/*! Maximum dynamic payload size for an SCMI protocol. */
 #define MOD_SCMI_PROTOCOL_DAYNAMIC_PAYLOAD_SIZE SIZE_MAX
 
 /*!

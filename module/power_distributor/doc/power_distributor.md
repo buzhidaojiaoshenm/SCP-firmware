@@ -1,5 +1,5 @@
 \ingroup GroupModules Modules
-\defgroup GroupPowerDistributor Power Distributor service
+\defgroup GroupPowerDistributor Power Budget Distributor
 
 # Power Distributor
 
@@ -7,9 +7,9 @@ Copyright (c) 2025, Arm Limited and Contributors. All rights reserved.
 
 ## Overview
 
-The Power Distributor module in the Arm SCP/MCP firmware suite orchestrates the allocation of constrained power 
+The Power Distributor module in the Arm SCP/MCP firmware suite orchestrates the allocation of constrained power
 resources across a hierarchical structure of power domains. This hierarchy, defined through parent-child relationships,
-forms a directed tree. 
+forms a directed tree.
 The current default strategy guarantees equitable power distribution based on each domain's declared demand and
 power limit.
 It operates under principles of fairness, determinism, and system integrity in embedded power management scenarios.
@@ -29,7 +29,7 @@ and API-based inter-module communication. The core design components include:
 - **Hierarchical Tree Constructor**: Represents domain relationships using a directed tree structure for recursive propagation.
 - **Aggregate Attribute Evaluator**: Computes demand and limit values bottom-up through the tree's domains.
 - **Distribution Engine**: Performs top-down budget allocation using the selected strategy (Default strategy: a deterministic water-filling algorithm).
-- **Extensible API Surface**: Enables integration power controllers 
+- **Extensible API Surface**: Enables integration power controllers
                               through well-defined module interfaces.
 
 **System Architecture Diagram:**
@@ -56,7 +56,7 @@ flowchart LR
 
 ## Operation
 
-The data exchange and operational sequence follow a well-defined pipeline 
+The data exchange and operational sequence follow a well-defined pipeline
 between metrics analyzer, the power distributor, and controller modules:
 
 ```mermaid

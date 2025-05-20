@@ -142,4 +142,8 @@ int scmi_telemetry_telemetry_request_policy(
  * \}
  */
 
+/*!
+ * \}
+ */
+
 #endif /* MOD_SCMI_TELEMETRY_H */

@@ -131,7 +131,7 @@ struct mod_scmi_clock_agent {
     /*! Pointer to agent config */
     const struct mod_scmi_clock_agent_config *agent_config;
 
-    /* Pointer to a table of agent:clock_states */
+    /*! Pointer to a table of agent:clock_states */
     uint8_t *state_table;
 };
 
