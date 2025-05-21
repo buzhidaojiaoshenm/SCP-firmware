@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Arm SCP/MCP Software
-# Copyright (c) 2021-2024, Arm Limited and Contributors. All rights reserved.
+# Copyright (c) 2021-2025, Arm Limited and Contributors. All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -102,7 +102,10 @@ def main():
     out, err = r.communicate()
 
     if out:
-        print_msg("" + out.decode("utf-8", "ignore"), output=verbose)
+        out_string = "" + out.decode("utf-8", "ignore")
+        if "Couldn't find path given by -I" in out_string:
+            print_msg(out_string.strip() + " - run in verbose mode for more"
+                      " information.", output=True)
     if err:
         print_msg("" + err.decode("utf-8", "ignore"), output=True)
 
