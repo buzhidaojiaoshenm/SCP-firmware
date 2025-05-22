@@ -86,7 +86,7 @@ static int send_phase_event(struct phase_event_params *params)
     status = fwk_put_event(&phase_event);
     if (status != FWK_SUCCESS) {
         FWK_LOG_ERR(
-            MOD_NAME "%s@%" PRIu32 " status=%" PRIu32 ", phase_idx=%" PRIu32 "",
+            MOD_NAME "%s@%u status=%u, phase_idx=%u",
             __func__,
             __LINE__,
             status,
