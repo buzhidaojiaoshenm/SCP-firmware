@@ -18,6 +18,8 @@
 #include <fwk_module.h>
 #include <fwk_module_idx.h>
 
+#include <inttypes.h>
+
 #define MOD_NAME "[PWR_DISTRIBUTOR] "
 
 struct mod_power_distributor_data {
@@ -415,7 +417,7 @@ static inline int domains_power_distribute(void)
             fwk_id_t domain_id =
                 FWK_ID_ELEMENT(FWK_MODULE_IDX_POWER_DISTRIBUTOR, domain_idx);
             FWK_LOG_ERR(
-                MOD_NAME "Failed to distribute domain %s (index: %u)",
+                MOD_NAME "Failed to distribute domain %s (index: %" PRIu32 ")",
                 fwk_module_get_element_name(domain_id),
                 domain_idx);
             break;
