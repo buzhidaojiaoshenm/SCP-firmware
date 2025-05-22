@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2024-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -60,8 +60,18 @@ fiq_handler:
     stp x2, x3, [sp, #-16]!
     stp x0, x1, [sp, #-16]!
 
+    /* Save exception state on stack to support nested exceptions */
+    mrs x0, spsr_el2
+    mrs x1, elr_el2
+    stp x0, x1, [sp, #-16]!
+
 .extern irq_global
     bl irq_global
+
+    /* Restore exception state */
+    ldp x0, x1, [sp], #16
+    msr spsr_el2, x0
+    msr elr_el2, x1
 
     /* Restore registers from stack */
     ldp x0, x1, [sp], #16
