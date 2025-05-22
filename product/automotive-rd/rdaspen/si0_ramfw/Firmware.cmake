@@ -25,7 +25,9 @@ set(SCP_ENABLE_SCMI_NOTIFICATIONS TRUE)
 list(PREPEND SCP_MODULE_PATHS
      "${CMAKE_CURRENT_LIST_DIR}/../module/si0_platform"
      "${CMAKE_CURRENT_LIST_DIR}/../module/ros_clock"
-     "${CMAKE_CURRENT_LIST_DIR}/../module/cluster_control")
+     "${CMAKE_CURRENT_LIST_DIR}/../module/cluster_control"
+     "${CMAKE_CURRENT_LIST_DIR}/../../module/fmu"
+     "${CMAKE_CURRENT_LIST_DIR}/../../module/test_fmu")
 
 list(APPEND SCP_MODULES
     "armv8r-mpu"
@@ -46,6 +48,7 @@ list(APPEND SCP_MODULES
     "system-power"
     "power-domain"
     "cmn-cyprus"
+    "fmu"
     "apcontext"
     "scmi"
     "sds"
@@ -56,5 +59,7 @@ list(APPEND SCP_MODULES
 )
 
 if(SCP_ENABLE_DEBUGGER)
-    list(APPEND SCP_MODULES "debugger-cli")
+    list(APPEND SCP_MODULES "debugger-cli"
+        "integration-test"
+        "test-fmu")
 endif()

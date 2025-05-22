@@ -15,6 +15,7 @@ target_sources(rdaspen-si0-bl2 PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/config_armv8r_mpu.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/config_cluster_control.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/config_cmn_cyprus.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/config_fmu.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/config_gicx00.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/config_mhu3.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/config_si0_platform.c"
@@ -40,5 +41,6 @@ target_sources(rdaspen-si0-bl2 PRIVATE
 
 if(SCP_ENABLE_DEBUGGER)
     target_compile_definitions(rdaspen-si0-bl2 PRIVATE BUILD_HAS_DEBUGGER)
-    target_sources(rdaspen-si0-bl2 PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/config_debugger_cli.c")
+    target_sources(rdaspen-si0-bl2 PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/config_debugger_cli.c"
+        "${CMAKE_CURRENT_SOURCE_DIR}/config_integration_test.c")
 endif()
