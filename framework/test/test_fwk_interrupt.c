@@ -39,6 +39,7 @@ void test_case_setup(void)
     set_isr_nmi_param_return_val = FWK_E_HANDLER;
     set_isr_fault_return_val = FWK_E_HANDLER;
     get_current_return_val = FWK_E_HANDLER;
+    configure_return_val = FWK_E_HANDLER;
 }
 
 static void test_fwk_interrupt_init(void)
@@ -204,6 +205,15 @@ static void test_fwk_interrupt_nested_critical_section(void)
     assert(critical_section_nest_level == 0);
 }
 
+static void test_fwk_interrupt_configure(void)
+{
+    int result;
+
+    configure_return_val = FWK_SUCCESS;
+    result = fwk_interrupt_configure(INTERRUPT_ID, 0);
+    assert(result == FWK_SUCCESS);
+}
+
 static const struct fwk_test_case_desc test_case_table[] = {
     FWK_TEST_CASE(test_fwk_interrupt_init),
     FWK_TEST_CASE(test_fwk_interrupt_critical_section),
@@ -218,6 +228,7 @@ static const struct fwk_test_case_desc test_case_table[] = {
     FWK_TEST_CASE(test_fwk_interrupt_set_isr_fault),
     FWK_TEST_CASE(test_fwk_interrupt_get_current),
     FWK_TEST_CASE(test_fwk_interrupt_nested_critical_section),
+    FWK_TEST_CASE(test_fwk_interrupt_configure),
 };
 
 struct fwk_test_suite_desc test_suite = {

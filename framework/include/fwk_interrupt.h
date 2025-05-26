@@ -137,6 +137,17 @@ int fwk_interrupt_disable(unsigned int interrupt);
 int fwk_interrupt_is_pending(unsigned int interrupt, bool *pending);
 
 /*!
+ * \brief Configure Interrupt
+ *
+ * \param interrupt Interrupt number.
+ * \param cfg       Interrupt configuration value.
+ *
+ * \retval ::FWK_SUCCESS Operation succeeded.
+ * \retval ::FWK_E_SUPPORT Operation is not supported yet.
+ */
+int fwk_interrupt_configure(unsigned int interrupt, unsigned int cfg);
+
+/*!
  * \brief Change interrupt status to pending.
  *
  * \param interrupt Interrupt number.

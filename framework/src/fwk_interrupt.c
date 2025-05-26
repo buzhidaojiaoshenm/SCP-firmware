@@ -49,6 +49,11 @@ int fwk_interrupt_is_pending(unsigned int interrupt, bool *pending)
     return arch_interrupt_is_pending(interrupt, pending);
 }
 
+int fwk_interrupt_configure(unsigned int interrupt, unsigned int cfg)
+{
+    return arch_interrupt_configure(interrupt, cfg);
+}
+
 int fwk_interrupt_set_pending(unsigned int interrupt)
 {
     return arch_interrupt_set_pending(interrupt);

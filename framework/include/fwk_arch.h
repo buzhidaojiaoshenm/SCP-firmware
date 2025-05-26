@@ -92,6 +92,17 @@ int arch_interrupt_disable(unsigned int interrupt);
 int arch_interrupt_is_pending(unsigned int interrupt, bool *pending);
 
 /*!
+ * \brief Configure Interrupt Trigger type
+ *
+ * \param interrupt Interrupt number.
+ * \param cfg       Interrupt Trigger type - Level, Edge etc..
+ *
+ * \retval ::FWK_SUCCESS Operation succeeded.
+ * \retval ::FWK_E_SUPPORT Operation is not supported yet
+ */
+int arch_interrupt_configure(unsigned int interrupt, unsigned int cfg);
+
+/*!
  * \brief Set an interrupt as pending.
  *
  * \param interrupt Interrupt number.

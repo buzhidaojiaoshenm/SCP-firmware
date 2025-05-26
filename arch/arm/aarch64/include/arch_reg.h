@@ -141,6 +141,14 @@
 #define GICD_ICENABLER(N) (0x0180u + (4 * (N)))
 #define GICD_ISPENDR(N)   (0x0200u + (4 * (N)))
 #define GICD_ICPENDR(N)   (0x0280u + (4 * (N)))
+#define GICD_ICFGR(N)     (0x0C00u + (4 * (N)))
+
+#define GICR_ICFGR0    0x0C00u
+#define GICR_ICFGR1    0x0C04u
+#define GICR_IGRPMODR0 0x0D00u
+
+#define GIC_LEVEL_TRIGGER_INTR 0x0
+#define GIC_EDGE_TRIGGER_INTR  0x2
 
 /*
  * GIC V2 registers

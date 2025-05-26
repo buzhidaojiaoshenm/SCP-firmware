@@ -21,6 +21,15 @@
 #define INTERRUPT_ID_ISR_LIMIT INTERRUPT_ID_SPI_LIMIT
 #define INTERRUPT_ID_INVALID   1024
 
+#define GIC_CFG_BITS_PER_INT 2U /* Each interrupt uses 2 bits */
+#define GIC_CFG_MASK         0x3U /* Mask for one interrupt's config */
+#define GIC_PPI_BASE         16U /* PPIs start at interrupt 16 */
+#define GIC_INTS_PER_REG     16U /* Each ICFGR register covers 16 interrupts */
+
+#define GIC_INTS_PER_REG_SHIFT 4U
+#define GIC_INTS_PER_REG_MASK  (GIC_INTS_PER_REG - 1U)
+#define GIC_BITS_PER_INT_SHIFT 1U
+
 enum interrupt_type {
     INTERRUPT_TYPE_SGI,
     INTERRUPT_TYPE_PPI,
@@ -179,6 +188,42 @@ int arch_interrupt_is_pending(unsigned int interrupt, bool *pending)
     case INTERRUPT_TYPE_OTHER:
         return FWK_E_SUPPORT;
     }
+
+    return FWK_SUCCESS;
+}
+
+int arch_interrupt_configure(unsigned int interrupt, unsigned int cfg)
+{
+    unsigned int shift, n;
+    uint32_t val;
+    uintptr_t reg_addr;
+
+    switch (interrupt_type_from_id(interrupt)) {
+    case INTERRUPT_TYPE_SGI:
+        reg_addr = FMW_GICR_BASE + GICR_ICFGR0;
+        shift = (interrupt & GIC_INTS_PER_REG_MASK) << GIC_BITS_PER_INT_SHIFT;
+        break;
+
+    case INTERRUPT_TYPE_PPI:
+        reg_addr = FMW_GICR_BASE + GICR_ICFGR1;
+        shift = ((interrupt - GIC_PPI_BASE) & GIC_INTS_PER_REG_MASK)
+            << GIC_BITS_PER_INT_SHIFT;
+        break;
+
+    case INTERRUPT_TYPE_SPI:
+        n = interrupt >> GIC_INTS_PER_REG_SHIFT;
+        shift = (interrupt & GIC_INTS_PER_REG_MASK) << GIC_BITS_PER_INT_SHIFT;
+        reg_addr = FMW_GICD_BASE + GICD_ICFGR(n);
+        break;
+
+    default:
+        return FWK_E_SUPPORT;
+    }
+
+    val = fwk_mmio_read_32(reg_addr);
+    val &= ~(GIC_CFG_MASK << shift);
+    val |= ((cfg & GIC_CFG_MASK) << shift);
+    fwk_mmio_write_32(reg_addr, val);
 
     return FWK_SUCCESS;
 }

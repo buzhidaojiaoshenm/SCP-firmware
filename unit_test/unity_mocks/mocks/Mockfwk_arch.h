@@ -29,6 +29,16 @@ typedef void(*cmock_fwk_arch_func_ptr4)(uintptr_t param);
 typedef void(*cmock_fwk_arch_func_ptr5)(void);
 
 
+#define arch_interrupt_init_IgnoreAndReturn(cmock_retval) arch_interrupt_init_CMockIgnoreAndReturn(__LINE__, cmock_retval)
+void arch_interrupt_init_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return);
+#define arch_interrupt_init_StopIgnore() arch_interrupt_init_CMockStopIgnore()
+void arch_interrupt_init_CMockStopIgnore(void);
+#define arch_interrupt_init_ExpectAndReturn(cmock_retval) arch_interrupt_init_CMockExpectAndReturn(__LINE__, cmock_retval)
+void arch_interrupt_init_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return);
+typedef int (* CMOCK_arch_interrupt_init_CALLBACK)(int cmock_num_calls);
+void arch_interrupt_init_AddCallback(CMOCK_arch_interrupt_init_CALLBACK Callback);
+void arch_interrupt_init_Stub(CMOCK_arch_interrupt_init_CALLBACK Callback);
+#define arch_interrupt_init_StubWithCallback arch_interrupt_init_Stub
 #define arch_interrupt_global_enable_IgnoreAndReturn(cmock_retval) arch_interrupt_global_enable_CMockIgnoreAndReturn(__LINE__, cmock_retval)
 void arch_interrupt_global_enable_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return);
 #define arch_interrupt_global_enable_StopIgnore() arch_interrupt_global_enable_CMockStopIgnore()
@@ -121,6 +131,22 @@ void arch_interrupt_is_pending_CMockReturnMemThruPtr_pending(UNITY_LINE_TYPE cmo
 void arch_interrupt_is_pending_CMockIgnoreArg_interrupt(UNITY_LINE_TYPE cmock_line);
 #define arch_interrupt_is_pending_IgnoreArg_pending() arch_interrupt_is_pending_CMockIgnoreArg_pending(__LINE__)
 void arch_interrupt_is_pending_CMockIgnoreArg_pending(UNITY_LINE_TYPE cmock_line);
+#define arch_interrupt_configure_IgnoreAndReturn(cmock_retval) arch_interrupt_configure_CMockIgnoreAndReturn(__LINE__, cmock_retval)
+void arch_interrupt_configure_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return);
+#define arch_interrupt_configure_StopIgnore() arch_interrupt_configure_CMockStopIgnore()
+void arch_interrupt_configure_CMockStopIgnore(void);
+#define arch_interrupt_configure_ExpectAnyArgsAndReturn(cmock_retval) arch_interrupt_configure_CMockExpectAnyArgsAndReturn(__LINE__, cmock_retval)
+void arch_interrupt_configure_CMockExpectAnyArgsAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return);
+#define arch_interrupt_configure_ExpectAndReturn(interrupt, cfg, cmock_retval) arch_interrupt_configure_CMockExpectAndReturn(__LINE__, interrupt, cfg, cmock_retval)
+void arch_interrupt_configure_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, unsigned int interrupt, unsigned int cfg, int cmock_to_return);
+typedef int (* CMOCK_arch_interrupt_configure_CALLBACK)(unsigned int interrupt, unsigned int cfg, int cmock_num_calls);
+void arch_interrupt_configure_AddCallback(CMOCK_arch_interrupt_configure_CALLBACK Callback);
+void arch_interrupt_configure_Stub(CMOCK_arch_interrupt_configure_CALLBACK Callback);
+#define arch_interrupt_configure_StubWithCallback arch_interrupt_configure_Stub
+#define arch_interrupt_configure_IgnoreArg_interrupt() arch_interrupt_configure_CMockIgnoreArg_interrupt(__LINE__)
+void arch_interrupt_configure_CMockIgnoreArg_interrupt(UNITY_LINE_TYPE cmock_line);
+#define arch_interrupt_configure_IgnoreArg_cfg() arch_interrupt_configure_CMockIgnoreArg_cfg(__LINE__)
+void arch_interrupt_configure_CMockIgnoreArg_cfg(UNITY_LINE_TYPE cmock_line);
 #define arch_interrupt_set_pending_IgnoreAndReturn(cmock_retval) arch_interrupt_set_pending_CMockIgnoreAndReturn(__LINE__, cmock_retval)
 void arch_interrupt_set_pending_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return);
 #define arch_interrupt_set_pending_StopIgnore() arch_interrupt_set_pending_CMockStopIgnore()

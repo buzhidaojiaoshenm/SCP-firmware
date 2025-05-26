@@ -418,6 +418,11 @@ int arch_interrupt_is_pending(unsigned int interrupt, bool *pending)
     return FWK_SUCCESS;
 }
 
+int arch_interrupt_configure(unsigned int interrupt, unsigned int cfg)
+{
+    return FWK_E_SUPPORT;
+}
+
 int arch_interrupt_set_pending(unsigned int interrupt)
 {
     unsigned int bit;
@@ -472,6 +477,11 @@ int arch_interrupt_disable(unsigned int interrupt)
 }
 
 int arch_interrupt_is_pending(unsigned int interrupt, bool *pending)
+{
+    return FWK_SUCCESS;
+}
+
+int arch_interrupt_configure(unsigned int interrupt, unsigned int cfg)
 {
     return FWK_SUCCESS;
 }

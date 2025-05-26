@@ -125,6 +125,11 @@ int arch_interrupt_is_pending(unsigned int interrupt, bool *pending)
     return FWK_SUCCESS;
 }
 
+int arch_interrupt_configure(unsigned int interrupt, unsigned int cfg)
+{
+    return FWK_E_SUPPORT;
+}
+
 int arch_interrupt_set_pending(unsigned int interrupt)
 {
     if (interrupt >= irq_count) {
