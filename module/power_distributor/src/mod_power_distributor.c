@@ -347,6 +347,10 @@ static int domain_power_distribute(
 {
     uint32_t remaining_budget = domain_ctx->node.data.power_budget;
 
+    if (domain_ctx->node.children_count == 0) {
+        return FWK_SUCCESS;
+    }
+
     /* Phase 1: Base allocation */
     distribute_power(
         domain_ctx, &remaining_budget, &calculate_base_allocation_deficit);
