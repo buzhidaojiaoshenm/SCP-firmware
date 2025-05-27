@@ -370,7 +370,7 @@ static int set_budgets()
                     FWK_ID_ELEMENT(FWK_MODULE_IDX_POWER_DISTRIBUTOR, i)));
             domain_ctx->controller_api->set_power_limit(
                 domain_ctx->config->controller_id,
-                domain_ctx->node.data.power_limit);
+                domain_ctx->node.data.power_budget);
         }
     }
 

@@ -339,7 +339,7 @@ void utest_mod_distributor_set_budgets(void)
     for (size_t i = 0; i < power_distributor_ctx.domain_count; ++i) {
         struct mod_power_distributor_domain_ctx *domain_ctx =
             &power_distributor_ctx.domain[i];
-        domain_ctx->node.data.power_limit = 0xDEADBEEF + i;
+        domain_ctx->node.data.power_budget = 0xDEADBEEF + i;
     }
 
     for (size_t i = 0; i < power_distributor_ctx.domain_count; ++i) {
@@ -351,7 +351,7 @@ void utest_mod_distributor_set_budgets(void)
                 FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_CONTROLLER, i);
             fwk_module_get_element_name_ExpectAnyArgsAndReturn("");
             mock_set_power_limit_ExpectAndReturn(
-                elem_id, domain_ctx->node.data.power_limit, FWK_SUCCESS);
+                elem_id, domain_ctx->node.data.power_budget, FWK_SUCCESS);
         }
     }
 
