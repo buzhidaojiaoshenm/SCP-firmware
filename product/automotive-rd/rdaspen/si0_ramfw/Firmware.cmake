@@ -28,7 +28,8 @@ list(PREPEND SCP_MODULE_PATHS
      "${CMAKE_CURRENT_LIST_DIR}/../module/cluster_control"
      "${CMAKE_CURRENT_LIST_DIR}/../../module/fmu"
      "${CMAKE_CURRENT_LIST_DIR}/../../module/test_fmu"
-     "${CMAKE_CURRENT_LIST_DIR}/../../module/ssu")
+     "${CMAKE_CURRENT_LIST_DIR}/../../module/ssu"
+     "${CMAKE_CURRENT_LIST_DIR}/../../module/test_ssu")
 
 list(APPEND SCP_MODULES
     "armv8r-mpu"
@@ -63,5 +64,6 @@ list(APPEND SCP_MODULES
 if(SCP_ENABLE_DEBUGGER)
     list(APPEND SCP_MODULES "debugger-cli"
         "integration-test"
-        "test-fmu")
+        "test-fmu"
+        "test-ssu")
 endif()
