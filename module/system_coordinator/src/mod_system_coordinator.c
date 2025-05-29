@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2024-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -148,20 +148,22 @@ static int process_current_phase(const struct phase_event_params *params)
     phase_ctx = &system_coordinator_ctx.phase_ctx[params->phase_idx];
     next_phase_params.phase_idx = params->phase_idx + 1;
     next_phase_params.cycle_count = params->cycle_count;
+    if (next_phase_params.phase_idx < system_coordinator_ctx.phase_count) {
+        if (phase_ctx->phase_config->phase_us == 0) {
+            /* Send event to process next phase if current phase timer is 0 */
+            status = send_phase_event(&next_phase_params);
+        } else if (
+            params->phase_idx <= (system_coordinator_ctx.phase_count - 1)) {
+            /*
+             * Start timer for next phase. Timer will be skip if the phase is
+             * the last phase or the phase time value is 0.
+             */
+            status = start_timer_for_next_phase(phase_ctx, &next_phase_params);
+        }
 
-    if (phase_ctx->phase_config->phase_us == 0) {
-        /* Send event to process next phase if current phase timer is 0 */
-        status = send_phase_event(&next_phase_params);
-    } else if (params->phase_idx < (system_coordinator_ctx.phase_count - 1)) {
-        /*
-         * Start timer for next phase. Timer will be skip if the phase is the
-         * last phase or the phase time value is 0.
-         */
-        status = start_timer_for_next_phase(phase_ctx, &next_phase_params);
-    }
-
-    if (status != FWK_SUCCESS) {
-        return status;
+        if (status != FWK_SUCCESS) {
+            return status;
+        }
     }
 
     /* Call phase API */
