@@ -27,6 +27,7 @@
 #define SI0_PERIPHERAL_BASE  0x2A000000
 #define SI0_PERIPHERAL_SIZE  (16 * FWK_MIB)
 #define SI0_UART_BASE        0x2A400000
+#define SI0_SSU_BASE         0x2A500000
 #define SI0_FMU0_BASE        0x2A510000
 #define SI0_FMU1_BASE        0x2A520000
 #define SI0_FMU2_BASE        0x2A530000
@@ -35,12 +36,12 @@
 #define SI0_TIMER_HW_COUNTER 0x2A6F0000
 #define SI0_TIMER_HW_TIMER   0x2A720000
 
-#define SI0_MHU_BASE                 0x38000000
-#define SI0_MHU_SIZE                 (16 * FWK_MIB)
-#define SI0_RSE2SI0_MHUV3_RCV_BASE   0x38140000
-#define SI0_SI02RSE_MHUV3_SEND_BASE  0x38100000
-#define SI0_AP2SI0_S_MHUV3_RCV_BASE  0x380C0000
-#define SI0_SI02AP_S_MHUV3_SEND_BASE 0x38080000
+#define SI0_MHU_BASE                  0x38000000
+#define SI0_MHU_SIZE                  (16 * FWK_MIB)
+#define SI0_RSE2SI0_MHUV3_RCV_BASE    0x38140000
+#define SI0_SI02RSE_MHUV3_SEND_BASE   0x38100000
+#define SI0_AP2SI0_S_MHUV3_RCV_BASE   0x380C0000
+#define SI0_SI02AP_S_MHUV3_SEND_BASE  0x38080000
 
 #define SI0_ATW_IO_BASE  0x80000000
 #define SI0_ATW_IO_SIZE  (1536 * FWK_MIB)
@@ -110,7 +111,7 @@ static_assert(
 /*
  * Size of SCP's view of per-cluster utility memory region.
  */
-#define SI0_CLUSTER_UTILITY_SIZE (0x4000000UL)
+#define SI0_CLUSTER_UTILITY_SIZE  (0x4000000UL)
 
 /*
  * Offsets of various blocks within cluster utility that is

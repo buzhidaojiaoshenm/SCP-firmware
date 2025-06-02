@@ -27,7 +27,8 @@ list(PREPEND SCP_MODULE_PATHS
      "${CMAKE_CURRENT_LIST_DIR}/../module/ros_clock"
      "${CMAKE_CURRENT_LIST_DIR}/../module/cluster_control"
      "${CMAKE_CURRENT_LIST_DIR}/../../module/fmu"
-     "${CMAKE_CURRENT_LIST_DIR}/../../module/test_fmu")
+     "${CMAKE_CURRENT_LIST_DIR}/../../module/test_fmu"
+     "${CMAKE_CURRENT_LIST_DIR}/../../module/ssu")
 
 list(APPEND SCP_MODULES
     "armv8r-mpu"
@@ -54,6 +55,7 @@ list(APPEND SCP_MODULES
     "sds"
     "scmi-power-domain"
     "scmi-system-power"
+    "ssu"
     "cluster-control"
     "si0-platform"
 )
