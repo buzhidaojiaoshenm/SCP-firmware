@@ -57,3 +57,6 @@ unknownEvaluationOrder:*framework/src/fwk_log.c:56
 // Cppcheck is unable to fully parse newlib on AArch64 (when included explicitly with Clang)
 preprocessorErrorDirective:*machine/*
 preprocessorErrorDirective:*sys/*
+
+// Cppcheck is failing to interpret the FMU implementation API
+constParameter:*product/automotive-rd/module/fmu/src/*

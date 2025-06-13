@@ -7,27 +7,28 @@ The Fault Management Unit is for Safety Diagnostics Monitoring. It collects
 both internal faults and faults from upstream devices into a single pair of
 critical (C) and non-critical (NC) outputs.
 
-The only type of FMU currently implemented is the System FMU.
+The module provides a common API to multiple FMU implementations. Currently,
+the System FMU and GIC FMU are supported.
 
 ## Example topology
 
-The toplogy below consists of 3 System FMUs connected in a tree. FMUs 1 and 2
-are connected to upstream fault signals and their outputs are connected to the
-root FMU.
+The toplogy below consists of 3 System FMUs connected and a device FMU (e.g. a
+GIC FMU) in a tree. FMUs 1 and 2 are connected to upstream fault signals and
+their outputs are connected to the root FMU.
 
-        +---------+
-    --->|         |-C---------+
-    --->|  FMU 1  |           |
-    --->|         |-NC-----+  |       +------------+
-        +---------+        |  +----0->|            |       
-                           +-------1->|            |-----> C
-                                      |  Root FMU  |
-                           +-------2->|            |-----> NC
-        +---------+        |  +----3->|            |
-    --->|         |-C------+  |       +------------+
-    --->|  FMU 2  |           |
-    --->|         |-NC--------+
-        +---------+
+                     +-------+
+                --0->|       |-C-----+
+                --1->| FMU 1 |       |
+                --2->|       |-NC-+  |     +------------+
+                     +-------+    |  +--0->|            |       
+                                  +-----1->|            |--> C
+                                           |  Root FMU  |
+                                  +-----2->|            |--> NC
+    +--------+       +-------+    |  +--3->|            |
+    | Device |-C--0->|       |-C--+  |     +------------+
+    |  FMU   |-NC-1->| FMU 2 |       |
+    +--------+   -2->|       |-NC----+
+                     +-------+
 
 ## Configuration
 
@@ -40,6 +41,7 @@ enum fmu_device {
     SCP_FMU_ROOT,
     SCP_FMU_1,
     SCP_FMU_2,
+    SCP_FMU_GIC,
     SCP_FMU_COUNT,
 };
 
@@ -70,6 +72,16 @@ static const struct fwk_element fmu_devices[SCP_FMU_COUNT + 1] = {
             .parent_cr_index = 2,
             .parent_ncr_index = 3,
             .implementation = MOD_FMU_IMPL_SYSTEM,
+        }),
+    },
+    [SCP_FMU_GIC] = {
+        .name = "gic_fmu",
+        .data = &((struct mod_fmu_dev_config) {
+            .base = SCP_FMU_2,
+            .parent = SCP_FMU_ROOT,
+            .parent_cr_index = 0,
+            .parent_ncr_index = 1,
+            .implementation = MOD_FMU_IMPL_GIC,
         }),
     },
     [SCP_FMU_COUNT] = {0},
