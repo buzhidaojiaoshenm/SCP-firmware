@@ -11,4 +11,6 @@ target_include_directories(${SCP_MODULE_TARGET}
                            PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
 
 target_sources(
-    ${SCP_MODULE_TARGET} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src/mod_fmu.c")
+    ${SCP_MODULE_TARGET} PRIVATE
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/mod_fmu.c"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/fmu_system.c")

@@ -49,6 +49,7 @@ static const struct fwk_element fmu_devices[SCP_FMU_COUNT + 1] = {
         .data = &((struct mod_fmu_dev_config) {
             .base = SCP_FMU0_BASE,
             .parent = MOD_FMU_PARENT_NONE,
+            .implementation = MOD_FMU_IMPL_SYSTEM,
         }),
     },
     [SCP_FMU_1] = {
@@ -58,6 +59,7 @@ static const struct fwk_element fmu_devices[SCP_FMU_COUNT + 1] = {
             .parent = SCP_FMU_ROOT,
             .parent_cr_index = 0,
             .parent_ncr_index = 1,
+            .implementation = MOD_FMU_IMPL_SYSTEM,
         }),
     },
     [SCP_FMU_2] = {
@@ -67,6 +69,7 @@ static const struct fwk_element fmu_devices[SCP_FMU_COUNT + 1] = {
             .parent = SCP_FMU_ROOT,
             .parent_cr_index = 2,
             .parent_ncr_index = 3,
+            .implementation = MOD_FMU_IMPL_SYSTEM,
         }),
     },
     [SCP_FMU_COUNT] = {0},

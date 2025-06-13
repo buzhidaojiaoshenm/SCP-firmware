@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+#include "internal/fmu_common.h"
 #include "scp_unity.h"
 #include "unity.h"
 
@@ -18,21 +19,66 @@
 
 #include UNIT_TEST_SRC
 #include <config_fmu.h>
-#include <internal/fmu_reg.h>
 
 #include <mod_fmu.h>
 
+static bool system_next_fault(
+    const struct mod_fmu_dev_config *config,
+    struct mod_fmu_fault *fault,
+    unsigned int *next_node_idx)
+{
+    static unsigned int counter = 0;
+    bool ret = false;
+
+    if (counter == 0) {
+        fault->node_idx = 33;
+        fault->sm_idx = 17;
+        ret = true;
+    }
+
+    counter++;
+    return ret;
+}
+
+static int system_inject(
+    const struct mod_fmu_dev_config *config,
+    const struct mod_fmu_fault *fault)
+{
+    return FWK_SUCCESS;
+}
+
+static uint8_t s_threshold;
+
+static int system_set_threshold(
+    const struct mod_fmu_dev_config *config,
+    uint16_t node_id,
+    uint8_t threshold)
+{
+    s_threshold = threshold;
+
+    return FWK_SUCCESS;
+}
+
+static int system_get_threshold(
+    const struct mod_fmu_dev_config *config,
+    uint16_t node_id,
+    uint8_t *threshold)
+{
+    *threshold = s_threshold;
+
+    return FWK_SUCCESS;
+}
+
+struct mod_fmu_impl_api mod_fmu_system_api = {
+    .next_fault = system_next_fault,
+    .inject = system_inject,
+    .set_threshold = system_set_threshold,
+    .get_threshold = system_get_threshold,
+};
+
 void setUp(void)
 {
-    unsigned int idx;
-    /* Clear the cluster control registers between tests */
-    fwk_str_memset(fmu_reg, 0, sizeof(fmu_reg));
-
-    ctx.num_devices = SCP_FMU_COUNT;
-    ctx.device_config = fwk_mm_calloc(SCP_FMU_COUNT, sizeof(uintptr_t));
-    for (idx = 0; idx < SCP_FMU_COUNT; idx++) {
-        ctx.device_config[idx] = fmu_devices[idx].data;
-    }
+    /* Do nothing */
 }
 
 void tearDown(void)
@@ -95,127 +141,30 @@ void test_fmu_process_bind_request(void)
     TEST_ASSERT_EQUAL(&fmu_api, api);
 }
 
-void test_fmu_next_fault_simple(void)
+void test_fmu_isr(void)
 {
-    int status;
-    uint32_t val;
-    struct mod_fmu_fault fault = {
-        .device_idx = 0,
-        .node_idx = 1,
-        .sm_idx = MOD_FMU_SM_SYSTEM_INPUT_ERROR,
-    };
     struct fwk_event event = { 0 };
     struct mod_fmu_fault_notification_params *params;
-
-    status = fmu_api.inject(&fault);
-    TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
-
-    /* Asert fault has been injected state */
-    val = fwk_mmio_read_32(
-        (uintptr_t)fmu_reg[SCP_FMU_ROOT] + FMU_FIELD_ERRIMPDEF(1));
-    TEST_ASSERT_BITS(
-        FMU_ERRIMPDEF_IE_MASK,
-        MOD_FMU_SM_SYSTEM_INPUT_ERROR << FMU_ERRIMPDEF_IE_SHIFT,
-        val);
-
-    /* Set up FMU fault response */
-    fwk_mmio_write_32(
-        (uintptr_t)fmu_reg[SCP_FMU_ROOT] + FMU_FIELD_ERRGSR_L(0), FWK_BIT(1));
-    fwk_mmio_write_32(
-        (uintptr_t)fmu_reg[SCP_FMU_ROOT] + FMU_FIELD_ERR_STATUS(1),
-        MOD_FMU_SM_SYSTEM_INPUT_ERROR << FMU_ERR_STATUS_IERR_SHIFT);
-
-    event.id = mod_fmu_notification_id_fault;
-    event.source_id = fwk_module_id_fmu;
-    params = (struct mod_fmu_fault_notification_params *)event.params;
-    params->critical = false;
-    params->fault.device_idx = 0;
-    params->fault.node_idx = 1;
-    params->fault.sm_idx = MOD_FMU_SM_SYSTEM_INPUT_ERROR;
-    fwk_notification_notify_ExpectAndReturn(&event, NULL, FWK_SUCCESS);
-    fwk_notification_notify_IgnoreArg_count();
-    TEST_ASSERT_TRUE(next_fault(false));
-}
-
-void test_fmu_next_fault_upstream(void)
-{
-    int status;
-    uint32_t val;
-    struct mod_fmu_fault fault = {
-        .device_idx = 1,
-        .node_idx = 0,
-        .sm_idx = MOD_FMU_SM_SYSTEM_INPUT_ERROR,
-    };
-    struct fwk_event event = { 0 };
-    struct mod_fmu_fault_notification_params *params;
-
-    status = fmu_api.inject(&fault);
-    TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
-
-    /* Asert fault has been injected state */
-    val = fwk_mmio_read_32(
-        (uintptr_t)fmu_reg[SCP_FMU_1] + FMU_FIELD_ERRIMPDEF(0));
-    TEST_ASSERT_BITS(
-        FMU_ERRIMPDEF_IE_MASK,
-        MOD_FMU_SM_SYSTEM_INPUT_ERROR << FMU_ERRIMPDEF_IE_SHIFT,
-        val);
-
-    /* Set up FMU fault response */
-    fwk_mmio_write_32(
-        (uintptr_t)fmu_reg[SCP_FMU_ROOT] + FMU_FIELD_ERRGSR_L(0), FWK_BIT(0));
-    fwk_mmio_write_32(
-        (uintptr_t)fmu_reg[SCP_FMU_1] + FMU_FIELD_ERRGSR_L(0), FWK_BIT(0));
-    fwk_mmio_write_32(
-        (uintptr_t)fmu_reg[SCP_FMU_1] + FMU_FIELD_ERR_STATUS(0),
-        MOD_FMU_SM_SYSTEM_INPUT_ERROR << FMU_ERR_STATUS_IERR_SHIFT);
 
     event.id = mod_fmu_notification_id_fault;
     event.source_id = fwk_module_id_fmu;
     params = (struct mod_fmu_fault_notification_params *)event.params;
     params->critical = true;
-    params->fault.device_idx = 1;
-    params->fault.node_idx = 0;
-    params->fault.sm_idx = MOD_FMU_SM_SYSTEM_INPUT_ERROR;
+    params->fault.device_idx = 0;
+    params->fault.node_idx = 33;
+    params->fault.sm_idx = 17;
     fwk_notification_notify_ExpectAndReturn(&event, NULL, FWK_SUCCESS);
     fwk_notification_notify_IgnoreArg_count();
-    TEST_ASSERT_TRUE(next_fault(true));
+    fmu_isr(true);
 }
 
-void test_fmu_set_enabled(void)
+void test_fmu_set_count_unsupported(void)
 {
     int status;
-    bool enabled;
-    fwk_id_t id = FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_FMU, SCP_FMU_ROOT);
-
-    /* Set value to true and read back */
-    status = fmu_api.set_enabled(id, 2, true);
-    TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
-
-    status = fmu_api.get_enabled(id, 2, &enabled);
-    TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
-    TEST_ASSERT_EQUAL(true, enabled);
-
-    /* Set value to false and read back */
-    status = fmu_api.set_enabled(id, 2, false);
-    TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
-
-    status = fmu_api.get_enabled(id, 2, &enabled);
-    TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
-    TEST_ASSERT_EQUAL(false, enabled);
-}
-
-void test_fmu_set_count(void)
-{
-    int status;
-    uint8_t count;
     fwk_id_t id = FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_FMU, SCP_FMU_ROOT);
 
     status = fmu_api.set_count(id, 12, 13);
-    TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
-
-    status = fmu_api.get_count(id, 12, &count);
-    TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
-    TEST_ASSERT_EQUAL(13, count);
+    TEST_ASSERT_EQUAL(FWK_E_SUPPORT, status);
 }
 
 void test_fmu_set_threshold(void)
@@ -232,29 +181,6 @@ void test_fmu_set_threshold(void)
     TEST_ASSERT_EQUAL(25, count);
 }
 
-void test_fmu_set_upgrade_enabled(void)
-{
-    int status;
-    bool enabled;
-    fwk_id_t id = FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_FMU, SCP_FMU_ROOT);
-
-    /* Set value to true and read back */
-    status = fmu_api.set_upgrade_enabled(id, 101, true);
-    TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
-
-    status = fmu_api.get_upgrade_enabled(id, 101, &enabled);
-    TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
-    TEST_ASSERT_EQUAL(true, enabled);
-
-    /* Set value to false and read back */
-    status = fmu_api.set_upgrade_enabled(id, 101, false);
-    TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
-
-    status = fmu_api.get_upgrade_enabled(id, 101, &enabled);
-    TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
-    TEST_ASSERT_EQUAL(false, enabled);
-}
-
 int fmu_test_main(void)
 {
     UNITY_BEGIN();
@@ -263,12 +189,9 @@ int fmu_test_main(void)
     RUN_TEST(test_fmu_device_init);
     RUN_TEST(test_fmu_start);
     RUN_TEST(test_fmu_process_bind_request);
-    RUN_TEST(test_fmu_next_fault_simple);
-    RUN_TEST(test_fmu_next_fault_upstream);
-    RUN_TEST(test_fmu_set_enabled);
-    RUN_TEST(test_fmu_set_count);
+    RUN_TEST(test_fmu_isr);
+    RUN_TEST(test_fmu_set_count_unsupported);
     RUN_TEST(test_fmu_set_threshold);
-    RUN_TEST(test_fmu_set_upgrade_enabled);
 
     return UNITY_END();
 }

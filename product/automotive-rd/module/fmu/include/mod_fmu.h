@@ -93,6 +93,15 @@ struct mod_fmu_fault_notification_params {
 struct mod_fmu_config {
     uint32_t irq_critical;
     uint32_t irq_non_critical;
+    fwk_id_t timer_id;
+};
+
+/*!
+ * \brief FMU implementation types
+ */
+ enum mod_fmu_implementation {
+    MOD_FMU_SYSTEM_IMPL,
+    MOD_FMU_IMPL_COUNT,
 };
 
 /*!
@@ -105,13 +114,18 @@ struct mod_fmu_dev_config {
     /*! Element index of the FMU's parent */
     uint32_t parent;
 
+    enum mod_fmu_implementation implementation;
+
     /*! Node index to which the critical fault signal is connected */
     uint32_t parent_cr_index;
+
     /*! Node index to which the non-critical fault signal is connected */
     uint32_t parent_ncr_index;
 };
-//! A constant to indicate that the FMU does not have a parent (i.e. it is a
-//! root FMU)
+
+/**
+ * @brief A constant to indicate that the FMU does not have a parent (root FMU).
+ */
 #define MOD_FMU_PARENT_NONE UINT32_MAX
 
 /*!

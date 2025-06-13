@@ -27,6 +27,7 @@ static const struct fwk_element fmu_devices[SI0_FMU_COUNT + 1] = {
         .data = &((struct mod_fmu_dev_config) {
             .base = SI0_FMU0_BASE,
             .parent = MOD_FMU_PARENT_NONE,
+            .implementation = MOD_FMU_SYSTEM_IMPL,
         }),
     },
     [SI0_FMU_1] = {
@@ -36,6 +37,7 @@ static const struct fwk_element fmu_devices[SI0_FMU_COUNT + 1] = {
             .parent = SI0_FMU_ROOT,
             .parent_cr_index = 0,
             .parent_ncr_index = 1,
+            .implementation = MOD_FMU_SYSTEM_IMPL,
         }),
     },
     [SI0_FMU_2] = {
@@ -45,6 +47,7 @@ static const struct fwk_element fmu_devices[SI0_FMU_COUNT + 1] = {
             .parent = SI0_FMU_ROOT,
             .parent_cr_index = 2,
             .parent_ncr_index = 3,
+            .implementation = MOD_FMU_SYSTEM_IMPL,
         }),
     },
     [SI0_FMU_3] = {
@@ -54,6 +57,7 @@ static const struct fwk_element fmu_devices[SI0_FMU_COUNT + 1] = {
             .parent = SI0_FMU_ROOT,
             .parent_cr_index = 4,
             .parent_ncr_index = 5,
+            .implementation = MOD_FMU_SYSTEM_IMPL,
         }),
     },
     [SI0_FMU_4] = {
@@ -63,6 +67,7 @@ static const struct fwk_element fmu_devices[SI0_FMU_COUNT + 1] = {
             .parent = SI0_FMU_ROOT,
             .parent_cr_index = 6,
             .parent_ncr_index = 7,
+            .implementation = MOD_FMU_SYSTEM_IMPL,
         }),
     },
     [SI0_FMU_COUNT] = {0},

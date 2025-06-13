@@ -4,7 +4,7 @@
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
-#include "internal/fmu_reg.h"
+#include "internal/fmu_common.h"
 
 #include <mod_fmu.h>
 
@@ -12,22 +12,18 @@
 #include <fwk_id.h>
 #include <fwk_interrupt.h>
 #include <fwk_log.h>
-#include <fwk_math.h>
 #include <fwk_mm.h>
 #include <fwk_module.h>
 #include <fwk_module_idx.h>
 #include <fwk_notification.h>
 #include <fwk_status.h>
 
-#define MOD_NAME "[FMU] "
-
-#define LSB_GET(value) ((value) & -(value))
-
 #define FMU_ROOT_IDX       0
 #define FMU_MAX_TREE_DEPTH 4
 
 static struct {
     const struct mod_fmu_dev_config **device_config;
+    const struct mod_fmu_impl_api **impl_apis;
     unsigned int num_devices;
 } ctx;
 
@@ -54,86 +50,54 @@ static unsigned int find_next_fmu(
     return MOD_FMU_PARENT_NONE;
 }
 
-static unsigned int find_active_node(unsigned int device_idx)
-{
-    uint64_t errgsr;
-    unsigned int errgsr_idx;
-    const struct mod_fmu_dev_config *config;
-
-    if (device_idx == MOD_FMU_PARENT_NONE) {
-        return MOD_FMU_PARENT_NONE;
-    }
-
-    config = ctx.device_config[device_idx];
-
-    /* Determine fault record idx */
-    for (errgsr_idx = 0; errgsr_idx <= FMU_ERRGSR_MAX; errgsr_idx++) {
-        errgsr = fmu_read_32(config->base, FMU_FIELD_ERRGSR_L(errgsr_idx)) |
-            ((uint64_t)fmu_read_32(config->base, FMU_FIELD_ERRGSR_H(errgsr_idx))
-             << FMU_ERRGSR_NUM_BITS);
-
-        if (errgsr != 0) {
-            return (errgsr_idx * FMU_ERRGSR_NUM_BITS * 2) +
-                fwk_math_log2(LSB_GET(errgsr));
-        }
-    }
-
-    return MOD_FMU_PARENT_NONE;
-}
-
 static bool next_fault(bool critical)
 {
     unsigned int notifications_sent, depth;
-    unsigned int device_idx = MOD_FMU_PARENT_NONE, next_device_idx;
-    unsigned int node_idx = MOD_FMU_PARENT_NONE, next_node_idx;
-    uint8_t sm_idx;
+    unsigned int device_idx;
+    unsigned int next_node_idx;
     const struct mod_fmu_dev_config *config;
-    uint32_t val;
+    struct mod_fmu_fault fault = { 0 };
+    bool (*func)(
+        const struct mod_fmu_dev_config *config,
+        struct mod_fmu_fault *fault,
+        unsigned int *next_node_idx);
 #ifdef BUILD_HAS_NOTIFICATION
     struct mod_fmu_fault_notification_params *params;
 #endif
 
     /* Traverse tree until no device is found for fault record */
-    for (next_device_idx = FMU_ROOT_IDX, depth = 0;
-         next_device_idx != MOD_FMU_PARENT_NONE;
-         next_device_idx = find_next_fmu(next_device_idx, next_node_idx),
-        depth++) {
+    for (device_idx = FMU_ROOT_IDX, depth = 0;
+         device_idx != MOD_FMU_PARENT_NONE;
+         depth++) {
         if (depth >= FMU_MAX_TREE_DEPTH) {
             FWK_LOG_ERR(MOD_NAME "Maximum tree depth reached");
             fwk_trap();
         }
 
-        next_node_idx = find_active_node(next_device_idx);
-        /* If current FMU has an active fault record, select and acknowledge it
-         */
-        if (next_node_idx != MOD_FMU_PARENT_NONE) {
-            node_idx = next_node_idx;
-            device_idx = next_device_idx;
-
-            /* Acknowledge the fault */
-            config = ctx.device_config[device_idx];
-            val = fmu_read_32(config->base, FMU_FIELD_ERRIMPDEF(node_idx));
-            val |= FMU_ERRIMPDEF_IC_MASK;
-            fmu_write_32(config->base, FMU_FIELD_ERRIMPDEF(node_idx), val);
+        config = ctx.device_config[device_idx];
+        func = ctx.impl_apis[device_idx]->next_fault;
+        fwk_assert(func != NULL);
+        next_node_idx = MOD_FMU_PARENT_NONE;
+        if (!func(config, &fault, &next_node_idx)) {
+            break;
         }
+
+        fault.device_idx = device_idx;
+        device_idx = find_next_fmu(device_idx, next_node_idx);
     }
 
-    if (device_idx == MOD_FMU_PARENT_NONE || node_idx == MOD_FMU_PARENT_NONE) {
+    /* Return false if no fault found at the root FMU */
+    if (device_idx == FMU_ROOT_IDX && fault.device_idx == FMU_ROOT_IDX) {
         return false;
     }
 
-    /* Collect data, log details and raise event */
-    config = ctx.device_config[device_idx];
-    sm_idx = (fmu_read_32(config->base, FMU_FIELD_ERR_STATUS(node_idx)) &
-              FMU_ERR_STATUS_IERR_MASK) >>
-        FMU_ERR_STATUS_IERR_SHIFT;
-
+    /* Log details and raise event */
     FWK_LOG_INFO(
         MOD_NAME "%s fault received: Device: 0x%x, Node 0x%x, SM 0x%x",
         critical ? "Critical" : "Non-critical",
-        device_idx,
-        node_idx,
-        sm_idx);
+        fault.device_idx,
+        fault.node_idx,
+        fault.sm_idx);
 
 #ifdef BUILD_HAS_NOTIFICATION
     struct fwk_event event = {
@@ -142,9 +106,9 @@ static bool next_fault(bool critical)
     };
     params = (struct mod_fmu_fault_notification_params *)event.params;
     params->critical = critical;
-    params->fault.device_idx = device_idx;
-    params->fault.node_idx = node_idx;
-    params->fault.sm_idx = sm_idx;
+    params->fault.device_idx = fault.device_idx;
+    params->fault.node_idx = fault.node_idx;
+    params->fault.sm_idx = fault.sm_idx;
 
     if (fwk_notification_notify(&event, &notifications_sent) != FWK_SUCCESS) {
         FWK_LOG_ERR(MOD_NAME "Error raising notification");
@@ -194,177 +158,209 @@ static void fmu_isr_non_critical(void)
  */
 static int inject(const struct mod_fmu_fault *fault)
 {
-    uint32_t val;
     const struct mod_fmu_dev_config *config;
+    int (*func)(
+        const struct mod_fmu_dev_config *config,
+        const struct mod_fmu_fault *fault);
 
     if (fault == NULL || fault->device_idx >= ctx.num_devices) {
         return FWK_E_PARAM;
     }
 
+    func = ctx.impl_apis[fault->device_idx]->inject;
+    if (func == NULL) {
+        return FWK_E_SUPPORT;
+    }
     config = ctx.device_config[fault->device_idx];
 
-    val = fmu_read_32(config->base, FMU_FIELD_ERRIMPDEF(fault->node_idx));
-    val |= ((uint32_t)fault->sm_idx << FMU_ERRIMPDEF_IE_SHIFT) &
-        FMU_ERRIMPDEF_IE_MASK;
-    /* Ensure injection ack bits are cleared */
-    val &= ~(FMU_ERRIMPDEF_IC_MASK);
-
-    fmu_write_32(config->base, FMU_FIELD_ERRIMPDEF(fault->node_idx), val);
-
-    return FWK_SUCCESS;
+    return func(config, fault);
 }
 
 static int get_enabled(fwk_id_t id, uint16_t node_id, bool *enabled)
 {
-    uint32_t val;
     const struct mod_fmu_dev_config *config;
+    unsigned int idx;
+    int (*func)(
+        const struct mod_fmu_dev_config *config,
+        uint16_t node_id,
+        bool *enabled);
 
-    if (fwk_id_get_element_idx(id) >= ctx.num_devices || enabled == NULL) {
+    idx = fwk_id_get_element_idx(id);
+    if (enabled == NULL || idx >= ctx.num_devices) {
         return FWK_E_PARAM;
     }
 
-    config = ctx.device_config[fwk_id_get_element_idx(id)];
+    func = ctx.impl_apis[idx]->get_enabled;
+    if (func == NULL) {
+        return FWK_E_SUPPORT;
+    }
+    config = ctx.device_config[idx];
 
-    val = fmu_read_32(config->base, FMU_FIELD_ERR_CTRL(node_id));
-    *enabled = (val & FMU_ERR_CTRL_ED_MASK) != 0;
-
-    return FWK_SUCCESS;
+    return func(config, node_id, enabled);
 }
 
 static int set_enabled(fwk_id_t id, uint16_t node_id, bool enabled)
 {
-    uint32_t val;
     const struct mod_fmu_dev_config *config;
+    unsigned int idx;
+    int (*func)(
+        const struct mod_fmu_dev_config *config,
+        uint16_t node_id,
+        bool enabled);
 
-    if (fwk_id_get_element_idx(id) >= ctx.num_devices) {
+    idx = fwk_id_get_element_idx(id);
+    if (idx >= ctx.num_devices) {
         return FWK_E_PARAM;
     }
 
-    config = ctx.device_config[fwk_id_get_element_idx(id)];
-
-    val = fmu_read_32(config->base, FMU_FIELD_ERR_CTRL(node_id));
-    if (enabled) {
-        val |= FMU_ERR_CTRL_ENABLE_MASK;
-    } else {
-        val &= ~FMU_ERR_CTRL_ENABLE_MASK;
+    func = ctx.impl_apis[idx]->set_enabled;
+    if (func == NULL) {
+        return FWK_E_SUPPORT;
     }
-    fmu_write_32(config->base, FMU_FIELD_ERR_CTRL(node_id), val);
+    config = ctx.device_config[idx];
 
-    return FWK_SUCCESS;
+    return func(config, node_id, enabled);
 }
 
 static int get_count(fwk_id_t id, uint16_t node_id, uint8_t *count)
 {
-    uint32_t val;
     const struct mod_fmu_dev_config *config;
+    unsigned int idx;
+    int (*func)(
+        const struct mod_fmu_dev_config *config,
+        uint16_t node_id,
+        uint8_t *count);
 
-    if (fwk_id_get_element_idx(id) >= ctx.num_devices || count == NULL) {
+    idx = fwk_id_get_element_idx(id);
+    if (count == NULL || idx >= ctx.num_devices) {
         return FWK_E_PARAM;
     }
 
-    config = ctx.device_config[fwk_id_get_element_idx(id)];
+    func = ctx.impl_apis[idx]->get_count;
+    if (func == NULL) {
+        return FWK_E_SUPPORT;
+    }
+    config = ctx.device_config[idx];
 
-    val = fmu_read_32(config->base, FMU_FIELD_ERRIMPDEF(node_id));
-    *count = (val & FMU_ERRIMPDEF_CNT_MASK) >> FMU_ERRIMPDEF_CNT_SHIFT;
-
-    return FWK_SUCCESS;
+    return func(config, node_id, count);
 }
 
 static int set_count(fwk_id_t id, uint16_t node_id, uint8_t count)
 {
-    uint32_t val;
     const struct mod_fmu_dev_config *config;
+    unsigned int idx;
+    int (*func)(
+        const struct mod_fmu_dev_config *config,
+        uint16_t node_id,
+        uint8_t count);
 
-    if (fwk_id_get_element_idx(id) >= ctx.num_devices) {
+    idx = fwk_id_get_element_idx(id);
+    if (idx >= ctx.num_devices) {
         return FWK_E_PARAM;
     }
 
-    config = ctx.device_config[fwk_id_get_element_idx(id)];
+    func = ctx.impl_apis[idx]->set_count;
+    if (func == NULL) {
+        return FWK_E_SUPPORT;
+    }
+    config = ctx.device_config[idx];
 
-    val = fmu_read_32(config->base, FMU_FIELD_ERRIMPDEF(node_id));
-    val &= ~FMU_ERRIMPDEF_CNT_MASK;
-    val |= ((uint32_t)count << FMU_ERRIMPDEF_CNT_SHIFT);
-    fmu_write_32(config->base, FMU_FIELD_ERRIMPDEF(node_id), val);
-
-    return FWK_SUCCESS;
+    return func(config, node_id, count);
 }
 
 static int get_threshold(fwk_id_t id, uint16_t node_id, uint8_t *threshold)
 {
-    uint32_t val;
     const struct mod_fmu_dev_config *config;
+    unsigned int idx;
+    int (*func)(
+        const struct mod_fmu_dev_config *config,
+        uint16_t node_id,
+        uint8_t *threshold);
 
-    if (fwk_id_get_element_idx(id) >= ctx.num_devices || threshold == NULL) {
+    idx = fwk_id_get_element_idx(id);
+    if (threshold == NULL || idx >= ctx.num_devices) {
         return FWK_E_PARAM;
     }
 
-    config = ctx.device_config[fwk_id_get_element_idx(id)];
+    func = ctx.impl_apis[idx]->get_threshold;
+    if (func == NULL) {
+        return FWK_E_SUPPORT;
+    }
+    config = ctx.device_config[idx];
 
-    val = fmu_read_32(config->base, FMU_FIELD_ERRIMPDEF(node_id));
-    *threshold = (val & FMU_ERRIMPDEF_THR_MASK) >> FMU_ERRIMPDEF_THR_SHIFT;
-
-    return FWK_SUCCESS;
+    return func(config, node_id, threshold);
 }
 
 static int set_threshold(fwk_id_t id, uint16_t node_id, uint8_t threshold)
 {
-    uint32_t val;
     const struct mod_fmu_dev_config *config;
+    unsigned int idx;
+    int (*func)(
+        const struct mod_fmu_dev_config *config,
+        uint16_t node_id,
+        uint8_t threshold);
 
-    if (fwk_id_get_element_idx(id) >= ctx.num_devices) {
+    idx = fwk_id_get_element_idx(id);
+    if (idx >= ctx.num_devices) {
         return FWK_E_PARAM;
     }
 
-    config = ctx.device_config[fwk_id_get_element_idx(id)];
+    func = ctx.impl_apis[idx]->set_threshold;
+    if (func == NULL) {
+        return FWK_E_SUPPORT;
+    }
+    config = ctx.device_config[idx];
 
-    val = fmu_read_32(config->base, FMU_FIELD_ERRIMPDEF(node_id));
-    val &= ~FMU_ERRIMPDEF_THR_MASK;
-    val |= ((uint32_t)threshold << FMU_ERRIMPDEF_THR_SHIFT);
-    fmu_write_32(config->base, FMU_FIELD_ERRIMPDEF(node_id), val);
-
-    return FWK_SUCCESS;
+    return func(config, node_id, threshold);
 }
 
 static int get_upgrade_enabled(fwk_id_t id, uint16_t node_id, bool *enabled)
 {
-    uint32_t val;
     const struct mod_fmu_dev_config *config;
+    unsigned int idx;
+    int (*func)(
+        const struct mod_fmu_dev_config *config,
+        uint16_t node_id,
+        bool *enabled);
 
-    if (fwk_id_get_element_idx(id) >= ctx.num_devices || enabled == NULL) {
+    idx = fwk_id_get_element_idx(id);
+    if (enabled == NULL || idx >= ctx.num_devices) {
         return FWK_E_PARAM;
     }
 
-    config = ctx.device_config[fwk_id_get_element_idx(id)];
+    func = ctx.impl_apis[idx]->get_upgrade_enabled;
+    if (func == NULL) {
+        return FWK_E_SUPPORT;
+    }
+    config = ctx.device_config[idx];
 
-    val = fmu_read_32(config->base, FMU_FIELD_ERRIMPDEF(node_id));
-    *enabled = (val & FMU_ERRIMPDEF_UE_MASK) != 0;
-
-    return FWK_SUCCESS;
+    return func(config, node_id, enabled);
 }
 
 static int set_upgrade_enabled(fwk_id_t id, uint16_t node_id, bool enabled)
 {
-    uint32_t val;
     const struct mod_fmu_dev_config *config;
+    unsigned int idx;
+    int (*func)(
+        const struct mod_fmu_dev_config *config,
+        uint16_t node_id,
+        bool enabled);
 
-    if (fwk_id_get_element_idx(id) >= ctx.num_devices) {
+    idx = fwk_id_get_element_idx(id);
+    if (idx >= ctx.num_devices) {
         return FWK_E_PARAM;
     }
 
-    config = ctx.device_config[fwk_id_get_element_idx(id)];
-
-    val = fmu_read_32(config->base, FMU_FIELD_ERRIMPDEF(node_id));
-    if (enabled) {
-        val |= FMU_ERRIMPDEF_UE_MASK;
-    } else {
-        val &= ~FMU_ERRIMPDEF_UE_MASK;
+    func = ctx.impl_apis[idx]->set_upgrade_enabled;
+    if (func == NULL) {
+        return FWK_E_SUPPORT;
     }
-    fmu_write_32(config->base, FMU_FIELD_ERRIMPDEF(node_id), val);
+    config = ctx.device_config[idx];
 
-    return FWK_SUCCESS;
+    return func(config, node_id, enabled);
 }
 
-static struct mod_fmu_api fmu_api = {
+struct mod_fmu_api fmu_api = {
     .inject = inject,
     .get_enabled = get_enabled,
     .set_enabled = set_enabled,
@@ -390,21 +386,43 @@ static int fmu_init(
     ctx.num_devices = element_count;
     ctx.device_config =
         fwk_mm_calloc(element_count, sizeof(struct mod_fmu_dev_config *));
+    ctx.impl_apis =
+        fwk_mm_calloc(element_count, sizeof(struct mod_fmu_impl_api *));
 
     return FWK_SUCCESS;
 }
+
+extern struct mod_fmu_impl_api mod_fmu_system_api;
+
+struct mod_fmu_impl_api *implementation_apis[MOD_FMU_IMPL_COUNT] = {
+    [MOD_FMU_SYSTEM_IMPL] = &mod_fmu_system_api,
+};
 
 static int fmu_device_init(
     fwk_id_t device_id,
     unsigned int unused,
     const void *data)
 {
+    unsigned int element_idx = fwk_id_get_element_idx(device_id);
+    int (*configure)(const struct mod_fmu_config *config);
+    fwk_id_t module_id;
+
     fwk_assert(data != NULL);
-    fwk_assert(fwk_id_get_element_idx(device_id) < ctx.num_devices);
+    fwk_assert(element_idx < ctx.num_devices);
 
-    ctx.device_config[fwk_id_get_element_idx(device_id)] = data;
+    ctx.device_config[element_idx] = data;
+    ctx.impl_apis[element_idx] =
+        implementation_apis[ctx.device_config[element_idx]->implementation];
+    fwk_assert(ctx.impl_apis[element_idx]->next_fault != NULL);
 
-    return FWK_SUCCESS;
+    configure = ctx.impl_apis[element_idx]->configure;
+
+    if (configure == NULL) {
+        return FWK_SUCCESS;
+    }
+
+    module_id = FWK_ID_MODULE(fwk_id_get_module_idx(device_id));
+    return configure(fwk_module_get_data(module_id));
 }
 
 static int fmu_start(fwk_id_t id)
@@ -440,6 +458,25 @@ static int fmu_start(fwk_id_t id)
     return FWK_SUCCESS;
 }
 
+static int fmu_bind(fwk_id_t id, unsigned int round)
+{
+    unsigned int element_idx;
+    int (*func)(fwk_id_t id);
+
+    if ((round != 0) || (fwk_id_is_type(id, FWK_ID_TYPE_MODULE))) {
+        return FWK_SUCCESS;
+    }
+
+    element_idx = fwk_id_get_element_idx(id);
+    func = ctx.impl_apis[element_idx]->bind;
+
+    if (func == NULL) {
+        return FWK_SUCCESS;
+    }
+
+    return func(id);
+}
+
 static int fmu_process_bind_request(
     fwk_id_t requester_id,
     fwk_id_t target_id,
@@ -461,6 +498,7 @@ const struct fwk_module module_fmu = {
     .init = fmu_init,
     .element_init = fmu_device_init,
     .start = fmu_start,
+    .bind = fmu_bind,
     .api_count = MOD_FMU_API_COUNT,
     .process_bind_request = fmu_process_bind_request,
 #ifdef BUILD_HAS_NOTIFICATION
