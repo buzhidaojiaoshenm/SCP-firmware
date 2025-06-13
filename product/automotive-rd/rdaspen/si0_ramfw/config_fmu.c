@@ -18,6 +18,7 @@ enum fmu_device {
     SI0_FMU_2,
     SI0_FMU_3,
     SI0_FMU_4,
+    SI0_GIC_FMU,
     SI0_FMU_COUNT,
 };
 
@@ -70,6 +71,16 @@ static const struct fwk_element fmu_devices[SI0_FMU_COUNT + 1] = {
             .implementation = MOD_FMU_SYSTEM_IMPL,
         }),
     },
+    [SI0_GIC_FMU] = {
+        .name = "gic_fmu",
+        .data = &((struct mod_fmu_dev_config) {
+            .base = SI0_GIC_FMU_BASE,
+            .parent = SI0_FMU_4,
+            .parent_cr_index = 204,
+            .parent_ncr_index = 203,
+            .implementation = MOD_FMU_GIC_IMPL,
+        }),
+    },
     [SI0_FMU_COUNT] = {0},
 };
 
@@ -81,6 +92,7 @@ struct fwk_module_config config_fmu = {
         &(struct mod_fmu_config){
             .irq_critical = CL0_FMU_CRITICAL,
             .irq_non_critical = CL0_FMU_NON_CRITICAL,
+            .timer_id = FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_TIMER, 0),
         },
     .elements = FWK_MODULE_STATIC_ELEMENTS_PTR(fmu_devices),
 };
