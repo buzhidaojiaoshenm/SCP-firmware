@@ -32,7 +32,7 @@ int set_isr_nmi_return_val;
 int set_isr_nmi_param_return_val;
 int set_isr_fault_return_val;
 int get_current_return_val;
-int configure_return_val;
+int set_intr_priority_return_val;
 
 void fake_isr(void)
 {
@@ -72,6 +72,11 @@ int arch_interrupt_is_pending(unsigned int interrupt, bool *state)
 int arch_interrupt_configure(unsigned int interrupt, unsigned int cfg)
 {
     return configure_return_val;
+}
+
+int arch_interrupt_set_priority(unsigned int interrupt, unsigned int cfg)
+{
+    return set_intr_priority_return_val;
 }
 
 int arch_interrupt_set_pending(unsigned int interrupt)

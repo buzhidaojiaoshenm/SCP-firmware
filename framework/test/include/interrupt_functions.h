@@ -26,6 +26,7 @@ extern int set_isr_nmi_param_return_val;
 extern int set_isr_fault_return_val;
 extern int get_current_return_val;
 extern int configure_return_val;
+extern int set_intr_priority_return_val;
 
 void fake_isr(void);
 void fake_isr_param(uintptr_t param);

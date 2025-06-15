@@ -251,6 +251,27 @@ int arch_interrupt_set_pending(unsigned int interrupt)
     return FWK_SUCCESS;
 }
 
+int arch_interrupt_set_priority(unsigned int interrupt, unsigned int priority)
+{
+    switch (interrupt_type_from_id(interrupt)) {
+    case INTERRUPT_TYPE_SPI:
+        unsigned int reg = interrupt >> 2;
+        unsigned offset = interrupt % 4;
+        uint32_t shift = offset * 8;
+        uint32_t mask = 0xFFu << shift;
+        uintptr_t reg_addr = FMW_GICD_BASE + GICD_IPRIORITY + (reg << 2);
+
+        uint32_t reg_val = fwk_mmio_read_32(reg_addr);
+        reg_val = (reg_val & ~mask) | ((uint32_t)priority << shift);
+        fwk_mmio_write_32(reg_addr, reg_val);
+        break;
+    default:
+        return FWK_E_SUPPORT;
+    }
+
+    return FWK_SUCCESS;
+}
+
 int arch_interrupt_clear_pending(unsigned int interrupt)
 {
     switch (interrupt_type_from_id(interrupt)) {
