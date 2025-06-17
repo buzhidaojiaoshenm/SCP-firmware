@@ -25,6 +25,10 @@
 static struct mod_fmu_api *fmu_api;
 
 static fwk_id_t root_fmu = FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_FMU, 0);
+static fwk_id_t fmu1 = FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_FMU, 1);
+static fwk_id_t gic_fmu = FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_FMU, 5);
+
+#define GIC_FMU_BLOCK_TYPE_WAKE 1
 
 uint8_t test_fmu_step_idx;
 static bool fmu_inject_flag = false;
@@ -51,7 +55,7 @@ static int test_inject(unsigned int step_idx, const struct fwk_event *event)
 
     switch (state) {
     case STEP_START:
-        fault.device_idx = 0;
+        fault.device_idx = fwk_id_get_element_idx(root_fmu);
         fault.node_idx = 0;
         fault.sm_idx = MOD_FMU_SM_ALL;
         status = fmu_api->set_enabled(&fault, true);
@@ -68,8 +72,8 @@ static int test_inject(unsigned int step_idx, const struct fwk_event *event)
         event_params = (const struct fmu_event_packet *)event->params;
         params = (const struct mod_fmu_fault_notification_params *)
                      event_params->fmu_params;
-
-        TEST_ASSERT_EQUAL(0, params->fault.device_idx);
+        TEST_ASSERT_EQUAL(
+            fwk_id_get_element_idx(root_fmu), params->fault.device_idx);
         TEST_ASSERT_EQUAL(0, params->fault.node_idx);
         TEST_ASSERT_EQUAL(MOD_FMU_SM_SYSTEM_INPUT_ERROR, params->fault.sm_idx);
         TEST_ASSERT_TRUE(params->critical);
@@ -90,13 +94,14 @@ static int test_inject(unsigned int step_idx, const struct fwk_event *event)
         event_params = (const struct fmu_event_packet *)event->params;
         params = (const struct mod_fmu_fault_notification_params *)
                      event_params->fmu_params;
-        TEST_ASSERT_EQUAL(0, params->fault.device_idx);
+        TEST_ASSERT_EQUAL(
+            fwk_id_get_element_idx(root_fmu), params->fault.device_idx);
         TEST_ASSERT_EQUAL(1, params->fault.node_idx);
         TEST_ASSERT_EQUAL(MOD_FMU_SM_SYSTEM_INPUT_ERROR, params->fault.sm_idx);
         TEST_ASSERT_FALSE(params->critical);
 
         /* Inject a non-critical fault to an upstream FMU */
-        fault.device_idx = 1;
+        fault.device_idx = fwk_id_get_element_idx(fmu1);
         fault.node_idx = 0;
         fault.sm_idx = MOD_FMU_SM_ALL;
         status = fmu_api->set_enabled(&fault, true);
@@ -111,12 +116,80 @@ static int test_inject(unsigned int step_idx, const struct fwk_event *event)
         event_params = (const struct fmu_event_packet *)event->params;
         params = (const struct mod_fmu_fault_notification_params *)
                      event_params->fmu_params;
-        TEST_ASSERT_EQUAL(1, params->fault.device_idx);
+        TEST_ASSERT_EQUAL(
+            fwk_id_get_element_idx(fmu1), params->fault.device_idx);
         TEST_ASSERT_EQUAL(0, params->fault.node_idx);
         TEST_ASSERT_EQUAL(MOD_FMU_SM_SYSTEM_INPUT_ERROR, params->fault.sm_idx);
         TEST_ASSERT_FALSE(params->critical);
         return FWK_SUCCESS;
 
+    default:
+        fwk_unreachable();
+    }
+}
+
+static int test_inject_gic_fmu(
+    unsigned int step_idx,
+    const struct fwk_event *event)
+{
+    int status;
+    struct mod_fmu_fault fault = { 0 };
+    const struct fmu_event_packet *event_params;
+    const struct mod_fmu_fault_notification_params *params;
+    enum test_inject_state {
+        STEP_START,
+        STEP_INJECT_0,
+        STEP_INJECT_1,
+        STEP_COUNT,
+    } state = step_idx;
+    fwk_assert(step_idx < STEP_COUNT);
+
+    fault.device_idx = fwk_id_get_element_idx(gic_fmu);
+    fault.node_idx = GIC_FMU_BLOCK_TYPE_WAKE;
+    fault.sm_idx = 2;
+
+    switch (state) {
+    case STEP_START:
+        status = fmu_api->set_enabled(&fault, true);
+        TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
+        status = fmu_api->set_critical(&fault, true);
+        TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
+
+        /* Inject the fault */
+        status = fmu_api->inject(&fault);
+        TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
+        return FWK_PENDING;
+    case STEP_INJECT_0:
+        /* Validate the received fault */
+        event_params = (const struct fmu_event_packet *)event->params;
+        params = (const struct mod_fmu_fault_notification_params *)
+                     event_params->fmu_params;
+        TEST_ASSERT_EQUAL(
+            fwk_id_get_element_idx(gic_fmu), params->fault.device_idx);
+        TEST_ASSERT_EQUAL(GIC_FMU_BLOCK_TYPE_WAKE, params->fault.node_idx);
+        TEST_ASSERT_EQUAL(2, params->fault.sm_idx);
+        TEST_ASSERT_TRUE(params->critical);
+
+        status = fmu_api->set_critical(&fault, false);
+        TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
+
+        /* Inject the fault */
+        status = fmu_api->inject(&fault);
+        TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
+        return FWK_PENDING;
+
+    case STEP_INJECT_1:
+        /* Validate the received fault */
+        event_params = (const struct fmu_event_packet *)event->params;
+        params = (const struct mod_fmu_fault_notification_params *)
+                     event_params->fmu_params;
+        TEST_ASSERT_EQUAL(
+            fwk_id_get_element_idx(gic_fmu), params->fault.device_idx);
+        TEST_ASSERT_EQUAL(GIC_FMU_BLOCK_TYPE_WAKE, params->fault.node_idx);
+        TEST_ASSERT_EQUAL(2, params->fault.sm_idx);
+        TEST_ASSERT_FALSE(params->critical);
+
+        return FWK_SUCCESS;
     default:
         fwk_unreachable();
     }
@@ -235,7 +308,6 @@ static int test_upgrade(unsigned int step_idx, const struct fwk_event *event)
         event_params = (const struct fmu_event_packet *)event->params;
         params = (const struct mod_fmu_fault_notification_params *)
                      event_params->fmu_params;
-
         TEST_ASSERT_EQUAL(1, params->fault.node_idx);
         TEST_ASSERT_FALSE(params->critical);
 
@@ -257,7 +329,6 @@ static int test_upgrade(unsigned int step_idx, const struct fwk_event *event)
         event_params = (const struct fmu_event_packet *)event->params;
         params = (const struct mod_fmu_fault_notification_params *)
                      event_params->fmu_params;
-
         TEST_ASSERT_EQUAL(1, params->fault.node_idx);
         TEST_ASSERT_FALSE(params->critical);
 
@@ -278,7 +349,6 @@ static int test_upgrade(unsigned int step_idx, const struct fwk_event *event)
         event_params = (const struct fmu_event_packet *)event->params;
         params = (const struct mod_fmu_fault_notification_params *)
                      event_params->fmu_params;
-
         TEST_ASSERT_EQUAL(1, params->fault.node_idx);
         TEST_ASSERT_TRUE(params->critical);
 
@@ -296,6 +366,7 @@ static int test_upgrade(unsigned int step_idx, const struct fwk_event *event)
 
 enum test_case {
     TEST_CASE_INJECT,
+    TEST_CASE_INJECT_GIC_FMU,
     TEST_CASE_SET_ENABLED,
     TEST_CASE_UPGRADE,
     TEST_CASE_COUNT,
@@ -308,6 +379,8 @@ static const char *test_name(unsigned int case_idx)
     switch (current_test) {
     case TEST_CASE_INJECT:
         return "test_inject";
+    case TEST_CASE_INJECT_GIC_FMU:
+        return "test_inject_gic_fmu";
     case TEST_CASE_SET_ENABLED:
         return "test_set_enabled";
     case TEST_CASE_UPGRADE:
@@ -327,6 +400,8 @@ static int run(
     switch (current_test) {
     case TEST_CASE_INJECT:
         return test_inject(step_idx, event);
+    case TEST_CASE_INJECT_GIC_FMU:
+        return test_inject_gic_fmu(step_idx, event);
     case TEST_CASE_SET_ENABLED:
         return test_set_enabled(step_idx, event);
     case TEST_CASE_UPGRADE:
