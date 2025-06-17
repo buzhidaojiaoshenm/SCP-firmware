@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2024-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -25,5 +25,11 @@
 #define FVP_UART_SIZE       (64 * FWK_KIB)
 #define FVP_WATCHDOG_BASE   (FVP_PERIPHERAL_BASE + 0x1C0F0000)
 #define FVP_WATCHDOG_SIZE   (64 * FWK_KIB)
+#define FVP_GTIMER_BASE     (FVP_PERIPHERAL_BASE + 0x2A800000)
+#define FVP_GTIMER_SIZE     (1 * FWK_MIB)
+#define FVP_CNTCONTROL_BASE (FVP_PERIPHERAL_BASE + 0x2A430000)
+#define FVP_CNTCONTROL_SIZE (64 * FWK_KIB)
+#define FVP_HW_COUNTER_BASE (FVP_PERIPHERAL_BASE + 0x2A810000)
+#define FVP_HW_TIMER_BASE   (FVP_PERIPHERAL_BASE + 0x2A820000)
 
 #endif /* FVP_BASER_AEMV8R_MMAP_H */

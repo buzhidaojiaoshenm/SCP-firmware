@@ -1,6 +1,6 @@
 #
 # Arm SCP/MCP Software
-# Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+# Copyright (c) 2024-2025, Arm Limited and Contributors. All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -14,9 +14,15 @@ set(SCP_GENERATE_FLAT_BINARY_INIT TRUE)
 
 set(SCP_ARCHITECTURE "aarch64")
 
-list(APPEND SCP_MODULES
-    "armv8r-mpu"
-    "pl011"
-    "gicx00"
-    "sp805"
-)
+set(SCP_ENABLE_DEBUGGER_INIT FALSE)
+
+list(APPEND SCP_MODULES "armv8r-mpu")
+list(APPEND SCP_MODULES "pl011")
+list(APPEND SCP_MODULES "gicx00")
+list(APPEND SCP_MODULES "sp805")
+list(APPEND SCP_MODULES "gtimer")
+list(APPEND SCP_MODULES "timer")
+
+if(SCP_ENABLE_DEBUGGER)
+    list(APPEND SCP_MODULES "debugger-cli")
+endif()

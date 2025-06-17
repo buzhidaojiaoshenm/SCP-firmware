@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2024-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -58,6 +58,26 @@ static struct mod_armv8r_mpu_region mem_regions[] = {
           PRBAR_XN_NOT_PERMITTED),
       .prlar = PRLAR_VALUE(
           FVP_UART_BASE + FVP_UART_SIZE - 1,
+          PRLAR_NS_SECURE,
+          MPU_ATTR_1,
+          PRLAR_EN_ENABLED) },
+    { .prbar = PRBAR_VALUE(
+          FVP_GTIMER_BASE,
+          PRBAR_SH_NON_SHAREABLE,
+          PRBAR_AP_RW_EL2,
+          PRBAR_XN_NOT_PERMITTED),
+      .prlar = PRLAR_VALUE(
+          FVP_GTIMER_BASE + FVP_GTIMER_SIZE - 1,
+          PRLAR_NS_SECURE,
+          MPU_ATTR_1,
+          PRLAR_EN_ENABLED) },
+    { .prbar = PRBAR_VALUE(
+          FVP_CNTCONTROL_BASE,
+          PRBAR_SH_NON_SHAREABLE,
+          PRBAR_AP_RW_EL2,
+          PRBAR_XN_NOT_PERMITTED),
+      .prlar = PRLAR_VALUE(
+          FVP_CNTCONTROL_BASE + FVP_CNTCONTROL_SIZE - 1,
           PRLAR_NS_SECURE,
           MPU_ATTR_1,
           PRLAR_EN_ENABLED) },

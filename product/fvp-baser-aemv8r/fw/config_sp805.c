@@ -1,19 +1,17 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2024-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
 #include "fvp_baser_aemv8r_mmap.h"
+#include "fvp_baser_irq.h"
 
 #include <mod_sp805.h>
 
 #include <fwk_interrupt.h>
 #include <fwk_module.h>
-
-/* FVP watchdog interrupt line */
-#define FVP_WATCHDOG_IRQ 32
 
 /* Reload value for the WdogLoad register */
 #define LOAD_VALUE 0x0fffffff
