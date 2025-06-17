@@ -23,6 +23,12 @@ list(APPEND SCP_MODULES "sp805")
 list(APPEND SCP_MODULES "gtimer")
 list(APPEND SCP_MODULES "timer")
 
+set(SCP_ENABLE_NOTIFICATIONS TRUE)
+
 if(SCP_ENABLE_DEBUGGER)
     list(APPEND SCP_MODULES "debugger-cli")
+    list(APPEND SCP_MODULES "integration-test")
+    list(APPEND SCP_MODULES  "test-timer")
+    list(PREPEND SCP_MODULE_PATHS
+    "${CMAKE_CURRENT_LIST_DIR}/../module/test_timer")
 endif()

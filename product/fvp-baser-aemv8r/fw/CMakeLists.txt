@@ -19,5 +19,7 @@ target_sources(fvp-baser-aemv8r PRIVATE
 
 if(SCP_ENABLE_DEBUGGER)
     target_compile_definitions(fvp-baser-aemv8r PRIVATE BUILD_HAS_DEBUGGER)
-    target_sources(fvp-baser-aemv8r PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/config_debugger_cli.c")
+    target_sources(fvp-baser-aemv8r PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/config_debugger_cli.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/config_integration_test.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/config_test_timer.c")
 endif()

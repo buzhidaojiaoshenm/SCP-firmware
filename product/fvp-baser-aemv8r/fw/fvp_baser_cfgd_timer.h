@@ -14,6 +14,7 @@
 /* Alarm sub-element indices */
 enum timer_alarm_idx {
     FVP_BASE_R_TIMER_ALARM_IDX_DEBUGGER,
+    FVP_BASE_R_TIMER_ALARM_IDX_TEST_TIMER,
     FVP_BASE_R_TIMER_ALARM_IDX_COUNT,
 };
 
