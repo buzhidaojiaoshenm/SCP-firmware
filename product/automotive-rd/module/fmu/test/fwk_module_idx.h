@@ -12,6 +12,7 @@
 
 enum fwk_module_idx {
     FWK_MODULE_IDX_FMU,
+    FWK_MODULE_IDX_TIMER,
     FWK_MODULE_IDX_FAKE,
     FWK_MODULE_IDX_COUNT,
 };
