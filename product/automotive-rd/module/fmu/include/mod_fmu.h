@@ -49,10 +49,10 @@ struct mod_fmu_api {
     int (*inject)(const struct mod_fmu_fault *fault);
 
     /*! Get the enabled status for the given id and node_id */
-    int (*get_enabled)(fwk_id_t id, uint16_t node_id, bool *enabled);
+    int (*get_enabled)(const struct mod_fmu_fault *fault, bool *enabled);
 
     /*! Enable or disable fault reporting for the given id and node_id */
-    int (*set_enabled)(fwk_id_t id, uint16_t node_id, bool enabled);
+    int (*set_enabled)(const struct mod_fmu_fault *fault, bool enabled);
 
     /*! Get the current fault count for the given id and node_id */
     int (*get_count)(fwk_id_t id, uint16_t node_id, uint8_t *count);
@@ -127,6 +127,12 @@ struct mod_fmu_dev_config {
  * @brief A constant to indicate that the FMU does not have a parent (root FMU).
  */
 #define MOD_FMU_PARENT_NONE UINT32_MAX
+
+/**
+ * A constant to indicate that a function call targets all supported safety
+ * mechanisms
+ */
+#define MOD_FMU_SM_ALL UINT8_MAX
 
 /*!
  * \brief FMU notification indices.

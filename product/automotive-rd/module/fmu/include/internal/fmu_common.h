@@ -40,13 +40,13 @@ struct mod_fmu_impl_api {
     /*! Get the enabled status for the given id and node_id */
     int (*get_enabled)(
         const struct mod_fmu_dev_config *config,
-        uint16_t node_id,
+        const struct mod_fmu_fault *fault,
         bool *enabled);
 
     /*! Enable or disable fault reporting for the given id and node_id */
     int (*set_enabled)(
         const struct mod_fmu_dev_config *config,
-        uint16_t node_id,
+        const struct mod_fmu_fault *fault,
         bool enabled);
 
     /*! Get the current fault count for the given id and node_id */

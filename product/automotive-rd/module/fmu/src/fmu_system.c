@@ -150,15 +150,20 @@ static int inject(
 
 static int get_enabled(
     const struct mod_fmu_dev_config *config,
-    uint16_t node_id,
+    const struct mod_fmu_fault *fault,
     bool *enabled)
 {
     uint32_t val;
 
     fwk_assert(config != NULL);
+    fwk_assert(fault != NULL);
     fwk_assert(enabled != NULL);
 
-    val = fmu_read_32(config->base, FMU_FIELD_ERR_CTRL(node_id));
+    if (fault->sm_idx != MOD_FMU_SM_ALL) {
+        return FWK_E_SUPPORT;
+    }
+
+    val = fmu_read_32(config->base, FMU_FIELD_ERR_CTRL(fault->node_idx));
     *enabled = (val & FMU_ERR_CTRL_ED_MASK) != 0;
 
     return FWK_SUCCESS;
@@ -166,20 +171,25 @@ static int get_enabled(
 
 static int set_enabled(
     const struct mod_fmu_dev_config *config,
-    uint16_t node_id,
+    const struct mod_fmu_fault *fault,
     bool enabled)
 {
     uint32_t val;
 
     fwk_assert(config != NULL);
+    fwk_assert(fault != NULL);
 
-    val = fmu_read_32(config->base, FMU_FIELD_ERR_CTRL(node_id));
+    if (fault->sm_idx != MOD_FMU_SM_ALL) {
+        return FWK_E_SUPPORT;
+    }
+
+    val = fmu_read_32(config->base, FMU_FIELD_ERR_CTRL(fault->node_idx));
     if (enabled) {
         val |= FMU_ERR_CTRL_ENABLE_MASK;
     } else {
         val &= ~FMU_ERR_CTRL_ENABLE_MASK;
     }
-    fmu_write_32(config->base, FMU_FIELD_ERR_CTRL(node_id), val);
+    fmu_write_32(config->base, FMU_FIELD_ERR_CTRL(fault->node_idx), val);
 
     return FWK_SUCCESS;
 }

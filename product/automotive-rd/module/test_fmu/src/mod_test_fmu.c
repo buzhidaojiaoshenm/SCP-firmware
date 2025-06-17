@@ -25,7 +25,6 @@
 static struct mod_fmu_api *fmu_api;
 
 static fwk_id_t root_fmu = FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_FMU, 0);
-static fwk_id_t fmu1 = FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_FMU, 1);
 
 uint8_t test_fmu_step_idx;
 static bool fmu_inject_flag = false;
@@ -52,12 +51,13 @@ static int test_inject(unsigned int step_idx, const struct fwk_event *event)
 
     switch (state) {
     case STEP_START:
-        status = fmu_api->set_enabled(root_fmu, 0, true);
+        fault.device_idx = 0;
+        fault.node_idx = 0;
+        fault.sm_idx = MOD_FMU_SM_ALL;
+        status = fmu_api->set_enabled(&fault, true);
         TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
 
         /* Inject a critical fault */
-        fault.device_idx = 0;
-        fault.node_idx = 0;
         fault.sm_idx = MOD_FMU_SM_SYSTEM_INPUT_ERROR;
         status = fmu_api->inject(&fault);
         fmu_inject_flag = true;
@@ -75,10 +75,12 @@ static int test_inject(unsigned int step_idx, const struct fwk_event *event)
         TEST_ASSERT_TRUE(params->critical);
 
         /* Inject a non-critical fault */
-        status = fmu_api->set_enabled(root_fmu, 1, true);
-        TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
         fault.device_idx = 0;
         fault.node_idx = 1;
+        fault.sm_idx = MOD_FMU_SM_ALL;
+        status = fmu_api->set_enabled(&fault, true);
+        TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
+
         fault.sm_idx = MOD_FMU_SM_SYSTEM_INPUT_ERROR;
         status = fmu_api->inject(&fault);
         TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
@@ -94,10 +96,12 @@ static int test_inject(unsigned int step_idx, const struct fwk_event *event)
         TEST_ASSERT_FALSE(params->critical);
 
         /* Inject a non-critical fault to an upstream FMU */
-        status = fmu_api->set_enabled(fmu1, 0, true);
-        TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
         fault.device_idx = 1;
         fault.node_idx = 0;
+        fault.sm_idx = MOD_FMU_SM_ALL;
+        status = fmu_api->set_enabled(&fault, true);
+        TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
+
         fault.sm_idx = MOD_FMU_SM_SYSTEM_INPUT_ERROR;
         status = fmu_api->inject(&fault);
         TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
@@ -137,27 +141,30 @@ static int test_set_enabled(
     switch (state) {
     case STEP_START:
         /* Disable the fault and check its status */
-        status = fmu_api->set_enabled(root_fmu, 0, false);
+        fault.device_idx = 0;
+        fault.node_idx = 0;
+        fault.sm_idx = MOD_FMU_SM_ALL;
+        status = fmu_api->set_enabled(&fault, false);
         TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
-        status = fmu_api->get_enabled(root_fmu, 0, &enabled);
+        status = fmu_api->get_enabled(&fault, &enabled);
         TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
         TEST_ASSERT_FALSE(enabled);
 
         /* Inject a fault */
-        fault.device_idx = 0;
-        fault.node_idx = 0;
         fault.sm_idx = MOD_FMU_SM_SYSTEM_INPUT_ERROR;
         status = fmu_api->inject(&fault);
         TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
 
         /* Re-enable the fault and check its status */
-        status = fmu_api->set_enabled(root_fmu, 0, true);
+        fault.sm_idx = MOD_FMU_SM_ALL;
+        status = fmu_api->set_enabled(&fault, true);
         TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
-        status = fmu_api->get_enabled(root_fmu, 0, &enabled);
+        status = fmu_api->get_enabled(&fault, &enabled);
         TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
         TEST_ASSERT_TRUE(enabled);
 
         /* Inject a fault */
+        fault.sm_idx = MOD_FMU_SM_SYSTEM_INPUT_ERROR;
         status = fmu_api->inject(&fault);
         TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
 

@@ -176,50 +176,47 @@ static int inject(const struct mod_fmu_fault *fault)
     return func(config, fault);
 }
 
-static int get_enabled(fwk_id_t id, uint16_t node_id, bool *enabled)
+static int get_enabled(const struct mod_fmu_fault *fault, bool *enabled)
 {
     const struct mod_fmu_dev_config *config;
-    unsigned int idx;
     int (*func)(
         const struct mod_fmu_dev_config *config,
-        uint16_t node_id,
+        const struct mod_fmu_fault *fault,
         bool *enabled);
 
-    idx = fwk_id_get_element_idx(id);
-    if (enabled == NULL || idx >= ctx.num_devices) {
+    if (fault == NULL || enabled == NULL ||
+        fault->device_idx >= ctx.num_devices) {
         return FWK_E_PARAM;
     }
 
-    func = ctx.impl_apis[idx]->get_enabled;
+    func = ctx.impl_apis[fault->device_idx]->get_enabled;
     if (func == NULL) {
         return FWK_E_SUPPORT;
     }
-    config = ctx.device_config[idx];
+    config = ctx.device_config[fault->device_idx];
 
-    return func(config, node_id, enabled);
+    return func(config, fault, enabled);
 }
 
-static int set_enabled(fwk_id_t id, uint16_t node_id, bool enabled)
+static int set_enabled(const struct mod_fmu_fault *fault, bool enabled)
 {
     const struct mod_fmu_dev_config *config;
-    unsigned int idx;
     int (*func)(
         const struct mod_fmu_dev_config *config,
-        uint16_t node_id,
+        const struct mod_fmu_fault *fault,
         bool enabled);
 
-    idx = fwk_id_get_element_idx(id);
-    if (idx >= ctx.num_devices) {
+    if (fault == NULL || fault->device_idx >= ctx.num_devices) {
         return FWK_E_PARAM;
     }
 
-    func = ctx.impl_apis[idx]->set_enabled;
+    func = ctx.impl_apis[fault->device_idx]->set_enabled;
     if (func == NULL) {
         return FWK_E_SUPPORT;
     }
-    config = ctx.device_config[idx];
+    config = ctx.device_config[fault->device_idx];
 
-    return func(config, node_id, enabled);
+    return func(config, fault, enabled);
 }
 
 static int get_count(fwk_id_t id, uint16_t node_id, uint8_t *count)

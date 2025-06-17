@@ -95,20 +95,25 @@ void test_fmu_system_set_enabled(void)
 {
     int status;
     bool enabled;
+    struct mod_fmu_fault fault = {
+        .device_idx = 0,
+        .node_idx = 2,
+        .sm_idx = MOD_FMU_SM_ALL,
+    };
 
     /* Set value to true and read back */
-    status = set_enabled(&fmu_config, 2, true);
+    status = set_enabled(&fmu_config, &fault, true);
     TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
 
-    status = get_enabled(&fmu_config, 2, &enabled);
+    status = get_enabled(&fmu_config, &fault, &enabled);
     TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
     TEST_ASSERT_EQUAL(true, enabled);
 
     /* Set value to false and read back */
-    status = set_enabled(&fmu_config, 2, false);
+    status = set_enabled(&fmu_config, &fault, false);
     TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
 
-    status = get_enabled(&fmu_config, 2, &enabled);
+    status = get_enabled(&fmu_config, &fault, &enabled);
     TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
     TEST_ASSERT_EQUAL(false, enabled);
 }
