@@ -62,7 +62,7 @@ static struct mod_optee_mbx_channel_config *optee_mbx_data;
 
 #ifdef CFG_SCPFW_MOD_SCMI_CLOCK
 /* SCMI clock generic */
-static struct mod_scmi_clock_agent *scmi_clk_agent_tbl;
+static struct fwk_element *scmi_clock_elt;
 static struct mod_scmi_clock_agent_config *scmi_clk_agent_cfg;
 #endif
 
@@ -122,10 +122,16 @@ struct fwk_module_config config_msg_smt = {
 
 /* Config data for scmi_clock, clock and optee_clock modules */
 #ifdef CFG_SCPFW_MOD_SCMI_CLOCK
+static const struct fwk_element *scmi_clock_get_element_table(
+    fwk_id_t module_id)
+{
+    return (const struct fwk_element *)scmi_clock_elt;
+}
+
 struct fwk_module_config config_scmi_clock = {
-    .data = &((struct mod_scmi_clock_config){
-        .agent_table = NULL, /* Allocated during initialization */
-        .agent_count = 0, /* Set during initialization */
+    .elements = FWK_MODULE_DYNAMIC_ELEMENTS(scmi_clock_get_element_table),
+    .data = &((const struct mod_scmi_clock_config){
+        .max_pending_transactions = 0,
     }),
 };
 #endif
@@ -238,7 +244,6 @@ static void count_resources(struct scpfw_config *cfg)
 static void allocate_global_resources(struct scpfw_config *cfg)
 {
     struct mod_scmi_reset_domain_config *scmi_reset_config __maybe_unused;
-    struct mod_scmi_clock_config *scmi_clock_config __maybe_unused;
     size_t __maybe_unused scmi_agent_count;
 
     /*
@@ -249,13 +254,15 @@ static void allocate_global_resources(struct scpfw_config *cfg)
 
 #ifdef CFG_SCPFW_MOD_SCMI_CLOCK
     /* SCMI clock domains resources */
-    scmi_clk_agent_tbl =
-        fwk_mm_calloc(scmi_agent_count, sizeof(*scmi_clk_agent_tbl));
+    scmi_clock_elt =
+        fwk_mm_calloc(scmi_agent_count + 1, sizeof(*scmi_clock_elt));
     scmi_clk_agent_cfg =
         fwk_mm_calloc(scmi_agent_count, sizeof(*scmi_clk_agent_cfg));
-    scmi_clock_config = (void *)config_scmi_clock.data;
-    scmi_clock_config->agent_table = scmi_clk_agent_tbl;
-    scmi_clock_config->agent_count = scmi_agent_count;
+
+    scmi_clock_elt[SCMI_AGENT_ID_RSV] = (struct fwk_element){
+        .name = "",
+        .data = scmi_clk_agent_cfg + SCMI_AGENT_ID_RSV,
+    };
 #endif
 
 #ifdef CFG_SCPFW_MOD_CLOCK
@@ -438,14 +445,18 @@ static void set_resources(struct scpfw_config *cfg)
                     channel_cfg->clock_count,
                     sizeof(struct mod_scmi_clock_device));
 
-                fwk_assert(!scmi_clk_agent_tbl[agent_index].agent_config);
+                fwk_assert(!scmi_clk_agent_cfg[agent_index].device_table);
                 scmi_clk_agent_cfg[agent_index] =
                     (struct mod_scmi_clock_agent_config){
-                        .device_count = channel_cfg->clock_count,
+                        .agent_device_count = channel_cfg->clock_count,
                         .device_table = dev,
                     };
-                scmi_clk_agent_tbl[agent_index].agent_config =
-                    scmi_clk_agent_cfg + agent_index;
+
+                fwk_assert(!scmi_clock_elt[agent_index].data);
+                scmi_clock_elt[agent_index] = (struct fwk_element){
+                    .name = agent_cfg->name,
+                    .data = scmi_clk_agent_cfg + agent_index,
+                };
 
                 /* Set clock and optee/clock elements and config data */
                 for (size_t k = 0; k < channel_cfg->clock_count; k++) {
