@@ -47,6 +47,7 @@ struct isr_callback {
         void (*func_with_param)(uintptr_t);
     };
     uintptr_t param;
+    bool use_param;
 };
 
 static unsigned int current_iar = INTERRUPT_ID_INVALID;
@@ -73,10 +74,12 @@ void irq_global(void)
 
     entry = &callback[current_iar];
 
-    if (entry->func != NULL) {
-        if (entry->param == 0) {
+    if (entry->use_param == false) {
+        if (entry->func != NULL) {
             entry->func();
-        } else {
+        }
+    } else {
+        if (entry->func_with_param != NULL) {
             entry->func_with_param(entry->param);
         }
     }
@@ -220,6 +223,7 @@ int arch_interrupt_set_isr_irq(unsigned int interrupt, void (*isr)(void))
     entry = &callback[interrupt];
     entry->func = isr;
     entry->param = 0;
+    entry->use_param = false;
 
     return FWK_SUCCESS;
 }
@@ -231,13 +235,14 @@ int arch_interrupt_set_isr_irq_param(
 {
     struct isr_callback *entry;
 
-    if (interrupt >= INTERRUPT_ID_ISR_LIMIT || isr == NULL || parameter == 0) {
+    if (interrupt >= INTERRUPT_ID_ISR_LIMIT || isr == NULL) {
         return FWK_E_PARAM;
     }
 
     entry = &callback[interrupt];
     entry->func_with_param = isr;
     entry->param = parameter;
+    entry->use_param = true;
 
     return FWK_SUCCESS;
 }
