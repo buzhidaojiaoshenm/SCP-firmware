@@ -85,6 +85,12 @@ struct mod_fmu_impl_api {
         const struct mod_fmu_dev_config *config,
         uint16_t node_id,
         bool enabled);
+
+    /*! Configure the criticality of a safety mechanism */
+    int (*set_critical)(
+        const struct mod_fmu_dev_config *config,
+        const struct mod_fmu_fault *fault,
+        bool critical);
 };
 
 #endif

@@ -357,6 +357,27 @@ static int set_upgrade_enabled(fwk_id_t id, uint16_t node_id, bool enabled)
     return func(config, node_id, enabled);
 }
 
+static int set_critical(const struct mod_fmu_fault *fault, bool critical)
+{
+    const struct mod_fmu_dev_config *config;
+    int (*func)(
+        const struct mod_fmu_dev_config *config,
+        const struct mod_fmu_fault *fault,
+        bool critical);
+
+    if (fault == NULL || fault->device_idx >= ctx.num_devices) {
+        return FWK_E_PARAM;
+    }
+
+    func = ctx.impl_apis[fault->device_idx]->set_critical;
+    if (func == NULL) {
+        return FWK_E_SUPPORT;
+    }
+    config = ctx.device_config[fault->device_idx];
+
+    return func(config, fault, critical);
+}
+
 struct mod_fmu_api fmu_api = {
     .inject = inject,
     .get_enabled = get_enabled,
@@ -367,6 +388,7 @@ struct mod_fmu_api fmu_api = {
     .set_threshold = set_threshold,
     .get_upgrade_enabled = get_upgrade_enabled,
     .set_upgrade_enabled = set_upgrade_enabled,
+    .set_critical = set_critical,
 };
 
 /*

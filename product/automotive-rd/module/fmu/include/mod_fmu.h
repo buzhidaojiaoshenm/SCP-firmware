@@ -72,6 +72,9 @@ struct mod_fmu_api {
     /*! Enable or disable whether a fault is upgraded to critical when the
      * threshold is reached */
     int (*set_upgrade_enabled)(fwk_id_t id, uint16_t node_id, bool enabled);
+
+    /*! Configure the criticality of a safety mechanism */
+    int (*set_critical)(const struct mod_fmu_fault *fault, bool critical);
 };
 
 #ifdef BUILD_HAS_NOTIFICATION
