@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2024-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -19,18 +19,6 @@ enum test_power_capping_domain_idx {
     TEST_DOMAIN_COUNT,
 };
 
-enum test_power_limiter_idx {
-    TEST_POWER_LIMITER_CORE_0,
-    TEST_POWER_LIMITER_SOC,
-    TEST_POWER_LIMITER_COUNT,
-};
-
-enum test_power_limiter_api_idx {
-    TEST_POWER_LIMITER_API_CORE_0,
-    TEST_POWER_LIMITER_API_SOC,
-    TEST_POWER_LIMITER_API_COUNT,
-};
-
 enum test_power_limit_set_notifier_idx {
     TEST_POWER_LIMIT_SET_NOTIFIER_CORE_0,
     TEST_POWER_LIMIT_SET_NOTIFIER_SOC,
@@ -46,12 +34,6 @@ enum test_power_limit_set_notification_idx {
 struct fwk_element test_domain_config[TEST_DOMAIN_COUNT] = {
     [TEST_CORE_0] = {
         .data = &(struct mod_power_capping_domain_config) {
-            .power_limiter_id = FWK_ID_ELEMENT_INIT(
-                FWK_MODULE_IDX_FAKE_LIMITER,
-                TEST_POWER_LIMITER_CORE_0),
-            .power_limiter_api_id = FWK_ID_API_INIT(
-                FWK_MODULE_IDX_FAKE_LIMITER,
-                TEST_POWER_LIMITER_API_CORE_0),
             .power_limit_set_notifier_id = FWK_ID_ELEMENT_INIT(
                 FWK_MODULE_IDX_FAKE_LIMIT_NOTIFIER,
                 TEST_POWER_LIMIT_SET_NOTIFIER_CORE_0),
@@ -62,12 +44,6 @@ struct fwk_element test_domain_config[TEST_DOMAIN_COUNT] = {
     },
     [TEST_SOC] = {
         .data = &(struct mod_power_capping_domain_config) {
-            .power_limiter_id = FWK_ID_ELEMENT_INIT(
-                FWK_MODULE_IDX_FAKE_LIMITER,
-                TEST_POWER_LIMITER_SOC),
-            .power_limiter_api_id = FWK_ID_API_INIT(
-                FWK_MODULE_IDX_FAKE_LIMITER,
-                TEST_POWER_LIMITER_API_SOC),
             .power_limit_set_notifier_id = FWK_ID_ELEMENT_INIT(
                 FWK_MODULE_IDX_FAKE_LIMIT_NOTIFIER,
                 TEST_POWER_LIMIT_SET_NOTIFIER_SOC),

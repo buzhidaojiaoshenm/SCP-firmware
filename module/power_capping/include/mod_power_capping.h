@@ -209,14 +209,6 @@ struct mod_power_capping_api {
  */
 struct mod_power_capping_domain_config {
     /*!
-     * \brief ID of the object that outputs a power limit.
-     */
-    fwk_id_t power_limiter_id;
-    /*!
-     * \brief API ID of the api that would return the power limit.
-     */
-    fwk_id_t power_limiter_api_id;
-    /*!
      * \brief ID of the power_measurement driver.
      */
     fwk_id_t power_measurement_id;

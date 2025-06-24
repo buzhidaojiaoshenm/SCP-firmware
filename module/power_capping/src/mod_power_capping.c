@@ -30,7 +30,6 @@ struct pcapping_domain_ctx {
     uint32_t threshold_high;
     uint32_t cookie;
     unsigned int notifications_sent_count;
-    struct interface_power_management_api *power_management_api;
     struct mod_power_measurement_driver_api *power_measurement_driver_api;
     struct mod_pid_controller_api *pid_ctrl_api;
 };
@@ -310,7 +309,7 @@ static int mod_pcapping_get_power_limit(
     return FWK_SUCCESS;
 }
 
-struct mod_power_capping_api pcapping_api = {
+static struct mod_power_capping_api pcapping_api = {
     .request_cap = mod_pcapping_request_cap,
     .get_applied_cap = mod_pcapping_get_applied_cap,
     .get_average_power = mod_pcapping_get_average_power,
@@ -321,11 +320,11 @@ struct mod_power_capping_api pcapping_api = {
     .set_power_thresholds = mod_pcapping_set_power_thresholds,
 };
 
-struct interface_power_management_api power_management_api = {
+static struct interface_power_management_api power_management_api = {
     .get_power_limit = mod_pcapping_get_power_limit,
 };
 
-int pcapping_init(
+static int pcapping_init(
     fwk_id_t module_id,
     unsigned int element_count,
     const void *data)
@@ -338,7 +337,7 @@ int pcapping_init(
     return FWK_SUCCESS;
 }
 
-int pcapping_domain_init(
+static int pcapping_domain_init(
     fwk_id_t element_id,
     unsigned int unused,
     const void *data)
@@ -380,7 +379,7 @@ static int mod_pcapping_process_notification(
     return FWK_E_PARAM;
 }
 
-int mod_pcapping_bind(fwk_id_t id, unsigned int round)
+static int mod_pcapping_bind(fwk_id_t id, unsigned int round)
 {
     int status;
     struct pcapping_domain_ctx *domain_ctx;
@@ -392,19 +391,14 @@ int mod_pcapping_bind(fwk_id_t id, unsigned int round)
     domain_ctx = &pcapping_domain_ctx_table[fwk_id_get_element_idx(id)];
 
     status = fwk_module_bind(
-        domain_ctx->config->power_limiter_id,
-        domain_ctx->config->power_limiter_api_id,
-        &domain_ctx->power_management_api);
-
-    if (status != FWK_SUCCESS)
-        return status;
-
-    status = fwk_module_bind(
         domain_ctx->config->power_measurement_id,
         domain_ctx->config->power_measurement_api_id,
         &domain_ctx->power_measurement_driver_api);
 
-    /* Bind to PID Controller */
+    if (status != FWK_SUCCESS) {
+        return status;
+    }
+
     status = fwk_module_bind(
         domain_ctx->config->pid_controller_id,
         domain_ctx->config->pid_controller_api_id,
@@ -413,7 +407,7 @@ int mod_pcapping_bind(fwk_id_t id, unsigned int round)
     return status;
 }
 
-int mod_pcapping_start(fwk_id_t id)
+static int mod_pcapping_start(fwk_id_t id)
 {
     int status;
     struct pcapping_domain_ctx *domain_ctx;
@@ -435,7 +429,7 @@ int mod_pcapping_start(fwk_id_t id)
     return status;
 }
 
-int mod_pcapping_process_bind_request(
+static int mod_pcapping_process_bind_request(
     fwk_id_t source_id,
     fwk_id_t target_id,
     fwk_id_t api_id,

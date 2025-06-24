@@ -21,6 +21,9 @@ void Mockmod_power_capping_extra_Init(void);
 void Mockmod_power_capping_extra_Destroy(void);
 void Mockmod_power_capping_extra_Verify(void);
 
+
+
+
 #define get_power_limit_IgnoreAndReturn(cmock_retval) get_power_limit_CMockIgnoreAndReturn(__LINE__, cmock_retval)
 void get_power_limit_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return);
 #define get_power_limit_StopIgnore() get_power_limit_CMockStopIgnore()

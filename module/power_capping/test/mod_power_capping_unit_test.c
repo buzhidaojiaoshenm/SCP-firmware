@@ -29,10 +29,6 @@
 
 struct pcapping_domain_ctx test_ctx_table[TEST_DOMAIN_COUNT];
 
-struct interface_power_management_api test_power_management_api = {
-    .get_power_limit = get_power_limit,
-};
-
 struct mod_power_measurement_driver_api test_power_measurement_driver_api = {
     .get_average_power = get_average_power,
     .set_averaging_interval = set_averaging_interval,
@@ -55,8 +51,6 @@ void setUp(void)
     pcapping_ctx.domain_count = TEST_DOMAIN_COUNT;
 
     for (unsigned int i = 0U; i < TEST_DOMAIN_COUNT; i++) {
-        pcapping_domain_ctx_table[i].power_management_api =
-            &test_power_management_api;
         pcapping_domain_ctx_table[i].power_measurement_driver_api =
             &test_power_measurement_driver_api;
         pcapping_domain_ctx_table[i].pid_ctrl_api = &test_pid_ctrl_api;
@@ -470,12 +464,6 @@ void utest_mod_pcapping_bind_round_0(void)
             FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_POWER_CAPPING, index);
         struct pcapping_domain_ctx *domain_ctx =
             &(pcapping_domain_ctx_table[index]);
-
-        fwk_module_bind_ExpectAndReturn(
-            domain_ctx->config->power_limiter_id,
-            domain_ctx->config->power_limiter_api_id,
-            &domain_ctx->power_management_api,
-            FWK_SUCCESS);
 
         fwk_module_bind_ExpectAndReturn(
             domain_ctx->config->power_measurement_id,
