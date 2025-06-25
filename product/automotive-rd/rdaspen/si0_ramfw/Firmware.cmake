@@ -29,7 +29,8 @@ list(PREPEND SCP_MODULE_PATHS
      "${CMAKE_CURRENT_LIST_DIR}/../../module/fmu"
      "${CMAKE_CURRENT_LIST_DIR}/../../module/test_fmu"
      "${CMAKE_CURRENT_LIST_DIR}/../../module/ssu"
-     "${CMAKE_CURRENT_LIST_DIR}/../../module/test_ssu")
+     "${CMAKE_CURRENT_LIST_DIR}/../../module/test_ssu"
+     "${CMAKE_CURRENT_LIST_DIR}/../../module/sbistc")
 
 list(APPEND SCP_MODULES
     "armv8r-mpu"
@@ -51,6 +52,7 @@ list(APPEND SCP_MODULES
     "power-domain"
     "cmn-cyprus"
     "fmu"
+    "sbistc"
     "apcontext"
     "scmi"
     "sds"
