@@ -10,14 +10,18 @@
 
 #include "internal/ssu_reg.h"
 
+#include <mod_fmu.h>
 #include <mod_ssu.h>
 
 #include <fwk_assert.h>
+#include <fwk_event.h>
+#include <fwk_id.h>
 #include <fwk_log.h>
-#include <fwk_mm.h>
 #include <fwk_macros.h>
+#include <fwk_mm.h>
 #include <fwk_module.h>
 #include <fwk_module_idx.h>
+#include <fwk_notification.h>
 #include <fwk_status.h>
 
 #include <stdbool.h>
@@ -317,6 +321,66 @@ static int ssu_element_init(
     return FWK_SUCCESS;
 }
 
+static int ssu_start(fwk_id_t id)
+{
+    int status;
+
+    if (!fwk_id_is_type(id, FWK_ID_TYPE_ELEMENT)) {
+        return FWK_SUCCESS;
+    }
+
+    /* Register the module for fmu notifications */
+    status = fwk_notification_subscribe(
+        mod_fmu_notification_id_fault, FWK_ID_MODULE(FWK_MODULE_IDX_FMU), id);
+    if (status != FWK_SUCCESS) {
+        fwk_unexpected();
+    }
+
+    return FWK_SUCCESS;
+}
+
+#ifdef BUILD_HAS_NOTIFICATION
+static int ssu_process_notification(
+    const struct fwk_event *event,
+    struct fwk_event *resp_event)
+{
+    struct mod_fmu_fault_notification_params *params;
+    uint32_t state = 0;
+
+    fwk_assert(fwk_id_is_type(event->target_id, FWK_ID_TYPE_ELEMENT));
+    if (fwk_id_is_equal(event->id, mod_fmu_notification_id_fault)) {
+        params = (struct mod_fmu_fault_notification_params *)event->params;
+        if (params->critical) {
+            ssu_get_sys_status(event->target_id, &state);
+            if (state == MOD_SSU_SAFETY_STATUS_ERRC) {
+                FWK_LOG_CRIT(MOD_NAME
+                             "Critical Error received "
+                             "from FMU module.");
+            } else {
+                FWK_LOG_CRIT(MOD_NAME
+                             "Critical Error received from FMU module.");
+                FWK_LOG_CRIT(MOD_NAME "But SSU FSM failed to change state");
+            }
+        }
+        else {
+            ssu_get_sys_status(event->target_id, &state);
+            if (state == MOD_SSU_SAFETY_STATUS_ERRN) {
+                FWK_LOG_CRIT(MOD_NAME
+                         "Non-Critical Error received "
+                         "from FMU module");
+            } else {
+                FWK_LOG_CRIT(MOD_NAME
+                          "Non-Critical Error received from FMU module.");
+                FWK_LOG_CRIT(MOD_NAME
+                         "But SSU FSM failed to change state");
+            }
+        }
+    }
+
+    return FWK_SUCCESS;
+}
+#endif
+
 static int ssu_process_bind_request(
     fwk_id_t requester_id,
     fwk_id_t target_id,
@@ -342,5 +406,9 @@ const struct fwk_module module_ssu = {
     .api_count = MOD_SSU_API_COUNT,
     .init = ssu_init,
     .element_init = ssu_element_init,
+    .start = ssu_start,
     .process_bind_request = ssu_process_bind_request,
+#ifdef BUILD_HAS_NOTIFICATION
+    .process_notification = ssu_process_notification,
+#endif
 };
