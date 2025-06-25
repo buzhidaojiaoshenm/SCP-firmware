@@ -280,8 +280,69 @@ void test_ssu_error_status_api(void)
     /* Get MOD_SSU_ERR_VALID */
     api->get_err_status(element_id, MOD_SSU_ERR_VALID, &value);
     TEST_ASSERT_EQUAL(0x1, value);
-
 }
+
+void test_ssu_start(void)
+{
+    int status;
+
+    fwk_id_is_type_ExpectAndReturn(
+        fwk_element_id_ssu, FWK_ID_TYPE_ELEMENT, true);
+
+    fwk_notification_subscribe_ExpectAndReturn(
+        mod_fmu_notification_id_fault,
+        FWK_ID_MODULE(FWK_MODULE_IDX_FMU),
+        fwk_element_id_ssu,
+        FWK_SUCCESS);
+
+    status = ssu_start(fwk_element_id_ssu);
+    TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
+}
+
+#ifdef BUILD_HAS_NOTIFICATION
+void test_ssu_subscribe_notification_false(void)
+{
+    int status;
+    struct fwk_event event = {
+        .target_id = FWK_ID_ELEMENT(FWK_MODULE_IDX_SSU, CONFIG_SSU_ELEMENT_IDX)
+    };
+    struct fwk_event resp_event = { 0 };
+
+    fwk_id_is_equal_ExpectAndReturn(
+        event.id, mod_fmu_notification_id_fault, false);
+
+    status = ssu_process_notification(&event, &resp_event);
+
+    TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
+}
+
+void test_ssu_subscribe_notification_true(void)
+{
+    int status;
+
+    fwk_id_t element_id =
+        FWK_ID_ELEMENT(FWK_MODULE_IDX_SSU, CONFIG_SSU_ELEMENT_IDX);
+    struct fwk_event event = {
+        .target_id = FWK_ID_ELEMENT(FWK_MODULE_IDX_SSU, CONFIG_SSU_ELEMENT_IDX)
+    };
+    struct fwk_event resp_event = { 0 };
+
+    struct mod_fmu_fault_notification_params *req_params =
+        (struct mod_fmu_fault_notification_params *)&event.params;
+
+    req_params->critical = true;
+
+    fwk_id_is_equal_ExpectAndReturn(
+        event.id, mod_fmu_notification_id_fault, true);
+
+    fwk_id_get_element_idx_ExpectAndReturn(element_id, 0);
+
+    status = ssu_process_notification(&event, &resp_event);
+
+    TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
+}
+
+#endif
 
 int ssu_test_main(void)
 {
@@ -291,6 +352,11 @@ int ssu_test_main(void)
     RUN_TEST(test_ssu_sys_api);
     RUN_TEST(test_ssu_error_control_api);
     RUN_TEST(test_ssu_error_status_api);
+    RUN_TEST(test_ssu_start);
+#ifdef BUILD_HAS_NOTIFICATION
+    RUN_TEST(test_ssu_subscribe_notification_false);
+    RUN_TEST(test_ssu_subscribe_notification_true);
+#endif
 
     return UNITY_END();
 }

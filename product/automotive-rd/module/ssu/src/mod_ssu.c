@@ -361,18 +361,16 @@ static int ssu_process_notification(
                              "Critical Error received from FMU module.");
                 FWK_LOG_CRIT(MOD_NAME "But SSU FSM failed to change state");
             }
-        }
-        else {
+        } else {
             ssu_get_sys_status(event->target_id, &state);
             if (state == MOD_SSU_SAFETY_STATUS_ERRN) {
                 FWK_LOG_CRIT(MOD_NAME
-                         "Non-Critical Error received "
-                         "from FMU module");
+                             "Non-Critical Error received "
+                             "from FMU module");
             } else {
-                FWK_LOG_CRIT(MOD_NAME
-                          "Non-Critical Error received from FMU module.");
-                FWK_LOG_CRIT(MOD_NAME
-                         "But SSU FSM failed to change state");
+                FWK_LOG_INFO(MOD_NAME
+                             "By default, SSU FSM state is not changed for "
+                             "non-critical errors");
             }
         }
     }

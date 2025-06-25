@@ -12,6 +12,7 @@
 
 enum config_ssu_module_idx {
     FWK_MODULE_IDX_SSU,
+    FWK_MODULE_IDX_FMU,
     FWK_MODULE_IDX_COUNT,
     FWK_MODULE_IDX_FAKE,
 };
@@ -23,6 +24,9 @@ enum config_ssu_element_idx {
 
 static const fwk_id_t fwk_module_id_ssu =
     FWK_ID_MODULE_INIT(FWK_MODULE_IDX_SSU);
+
+static const fwk_id_t fwk_element_id_ssu =
+    FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_SSU, 0);
 
 static const fwk_id_t fwk_module_id_fake =
     FWK_ID_MODULE_INIT(FWK_MODULE_IDX_FAKE);
