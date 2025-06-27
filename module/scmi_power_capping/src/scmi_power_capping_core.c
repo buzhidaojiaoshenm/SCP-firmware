@@ -315,7 +315,7 @@ int pcapping_core_domain_init(
         return status;
     }
 
-    status = pcapping_core_check_domain_configuration(domain_ctx->config);
+    status = pcapping_core_check_domain_configuration(config);
 
     if (!fwk_expect(status == FWK_SUCCESS)) {
         return status;

@@ -202,6 +202,27 @@ void utest_pcapping_core_domain_init(void)
     TEST_ASSERT_EQUAL(status, FWK_SUCCESS);
 }
 
+void utest_pcapping_core_domain_init_invalid_config(void)
+{
+    int status;
+    uint32_t domain_idx = FAKE_POWER_CAPPING_IDX_COUNT - 1u;
+    fwk_id_t none_id = FWK_ID_NONE;
+    struct mod_scmi_power_capping_domain_config invalid_configs = {
+        .min_power_cap = 9u,
+        .max_power_cap = 100u,
+        .power_cap_step = 2u,
+    };
+    (void)none_id;
+
+    struct mod_scmi_power_capping_domain_context *ctx =
+        &pcapping_core_ctx.power_capping_domain_ctx_table[domain_idx];
+
+    status = pcapping_core_domain_init(domain_idx, &invalid_configs);
+
+    TEST_ASSERT_EQUAL(FWK_E_DATA, status);
+    TEST_ASSERT(ctx->config != &invalid_configs);
+}
+
 void utest_pcapping_core_start(void)
 {
     int status;
@@ -938,6 +959,8 @@ int scmi_test_main(void)
     RUN_TEST(
         utest_pcapping_core_check_domain_configuration_valid_cap_step_zero);
     RUN_TEST(utest_pcapping_core_check_domain_configuration_success);
+    RUN_TEST(utest_pcapping_core_domain_init);
+    RUN_TEST(utest_pcapping_core_domain_init_invalid_config);
     RUN_TEST(utest_pcapping_core_bind);
     RUN_TEST(utest_pcapping_core_init);
     RUN_TEST(utest_pcapping_core_start);
