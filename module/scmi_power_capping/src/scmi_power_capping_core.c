@@ -75,10 +75,12 @@ static int pcapping_core_check_domain_configuration(
         return FWK_E_DATA;
     }
 
-    if (config->min_power_cap != config->max_power_cap) {
-        if (config->power_cap_step == (uint32_t)0) {
-            return FWK_E_DATA;
-        }
+    if (config->min_power_cap == config->max_power_cap) {
+        return FWK_SUCCESS;
+    }
+
+    if (config->power_cap_step == (uint32_t)0) {
+        return FWK_E_DATA;
     }
 
     if ((config->max_power_cap - config->min_power_cap) %

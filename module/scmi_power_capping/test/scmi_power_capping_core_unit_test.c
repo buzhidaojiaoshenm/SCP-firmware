@@ -127,6 +127,20 @@ void utest_pcapping_core_check_domain_configuration_invalid_cap_step_zero(void)
     TEST_ASSERT_EQUAL(status, FWK_E_DATA);
 }
 
+void utest_pcapping_core_check_domain_configuration_valid_cap_step_zero(void)
+{
+    int status;
+
+    struct mod_scmi_power_capping_domain_config config = {
+        .min_power_cap = 10u,
+        .max_power_cap = 10u,
+        .power_cap_step = 0u,
+    };
+
+    status = pcapping_core_check_domain_configuration(&config);
+    TEST_ASSERT_EQUAL(status, FWK_SUCCESS);
+}
+
 void utest_pcapping_core_check_domain_configuration_success(void)
 {
     int status;
@@ -921,6 +935,8 @@ int scmi_test_main(void)
     RUN_TEST(utest_pcapping_core_check_domain_configuration_max_cap_0);
     RUN_TEST(
         utest_pcapping_core_check_domain_configuration_invalid_cap_step_zero);
+    RUN_TEST(
+        utest_pcapping_core_check_domain_configuration_valid_cap_step_zero);
     RUN_TEST(utest_pcapping_core_check_domain_configuration_success);
     RUN_TEST(utest_pcapping_core_bind);
     RUN_TEST(utest_pcapping_core_init);
