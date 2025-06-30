@@ -114,13 +114,14 @@ list(APPEND FWK_SRC ${UNITY_SRC_ROOT}/unity.c)
 list(APPEND SCP_UNITY_SRC ${SCP_ROOT}/unit_test/unity_mocks/scp_unity.c)
 
 #Append common unit tests under product/ below here (alphabetical order)
-list(APPEND UNIT_PRODUCT optee/common/module/mbx)
 list(APPEND UNIT_PRODUCT automotive-rd/module/fmu)
+list(APPEND UNIT_PRODUCT automotive-rd/module/sbistc)
+list(APPEND UNIT_PRODUCT automotive-rd/module/ssu)
 list(APPEND UNIT_PRODUCT automotive-rd/rd1ae/module/safety_island_platform)
 list(APPEND UNIT_PRODUCT automotive-rd/rdaspen/module/cluster_control)
-list(APPEND UNIT_PRODUCT automotive-rd/rdaspen/module/si0_platform)
 list(APPEND UNIT_PRODUCT automotive-rd/rdaspen/module/ros_clock)
-list(APPEND UNIT_PRODUCT automotive-rd/module/ssu)
+list(APPEND UNIT_PRODUCT automotive-rd/rdaspen/module/si0_platform)
+list(APPEND UNIT_PRODUCT optee/common/module/mbx)
 
 list(LENGTH UNIT_PRODUCT UNIT_PRODUCT_MAX)
 
