@@ -11,6 +11,7 @@
 enum integration_test {
     TEST_FMU,
     TEST_SSU,
+    TEST_SBISTC,
     TEST_COUNT,
 };
 
@@ -29,6 +30,14 @@ static const struct fwk_element config_integration_test_elements[] = {
             .test_id = FWK_ID_MODULE_INIT(FWK_MODULE_IDX_TEST_SSU),
             .run_at_start = false,
             .num_test_cases = 1,
+        },
+    },
+    [TEST_SBISTC] = {
+        .name = "sbistc",
+        .data = &(struct mod_integration_test_config){
+            .test_id = FWK_ID_MODULE_INIT(FWK_MODULE_IDX_TEST_SBISTC),
+            .run_at_start = false,
+            .num_test_cases = 32,
         },
     },
     [TEST_COUNT] = {0},
