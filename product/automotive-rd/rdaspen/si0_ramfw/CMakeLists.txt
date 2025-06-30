@@ -38,6 +38,7 @@ target_sources(rdaspen-si0-bl2 PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/config_system_power.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/config_ni_710ae.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/config_ssu.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/config_sbistc.c"
     )
 
 if(SCP_ENABLE_DEBUGGER)
