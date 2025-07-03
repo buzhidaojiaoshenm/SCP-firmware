@@ -26,9 +26,29 @@ static struct mod_fmu_api *fmu_api;
 
 static fwk_id_t root_fmu = FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_FMU, 0);
 static fwk_id_t fmu1 = FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_FMU, 1);
+
 static fwk_id_t gic_fmu = FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_FMU, 5);
+static fwk_id_t rse_cl0_mhu_fmu = FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_FMU, 6);
+static fwk_id_t cl0_rse_mhu_fmu = FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_FMU, 7);
+static fwk_id_t pc0_cl0_mhu_fmu = FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_FMU, 8);
+static fwk_id_t cl0_pc0_mhu_fmu = FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_FMU, 9);
+static fwk_id_t pc1_cl0_mhu_fmu = FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_FMU, 10);
+static fwk_id_t cl0_pc1_mhu_fmu = FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_FMU, 11);
+static fwk_id_t pc2_cl0_mhu_fmu = FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_FMU, 12);
+static fwk_id_t cl0_pc2_mhu_fmu = FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_FMU, 13);
+static fwk_id_t pc3_cl0_mhu_fmu = FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_FMU, 14);
+static fwk_id_t cl0_pc3_mhu_fmu = FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_FMU, 15);
 
 #define GIC_FMU_BLOCK_TYPE_WAKE 1
+#define MHU_FMU_BLOCK_TYPE_FMU  2
+
+enum test_inject_state {
+    STEP_START,
+    STEP_INJECT_0,
+    STEP_INJECT_1,
+    STEP_INJECT_2,
+    STEP_COUNT
+};
 
 uint8_t test_fmu_step_idx;
 static bool fmu_inject_flag = false;
@@ -44,16 +64,10 @@ static int test_inject(unsigned int step_idx, const struct fwk_event *event)
     struct mod_fmu_fault fault = { 0 };
     const struct fmu_event_packet *event_params;
     const struct mod_fmu_fault_notification_params *params;
-    enum test_inject_state {
-        STEP_START,
-        STEP_INJECT_0,
-        STEP_INJECT_1,
-        STEP_INJECT_2,
-        STEP_COUNT,
-    } state = step_idx;
+
     fwk_assert(step_idx < STEP_COUNT);
 
-    switch (state) {
+    switch (step_idx) {
     case STEP_START:
         fault.device_idx = fwk_id_get_element_idx(root_fmu);
         fault.node_idx = 0;
@@ -128,71 +142,153 @@ static int test_inject(unsigned int step_idx, const struct fwk_event *event)
     }
 }
 
-static int test_inject_gic_fmu(
+static void validate_fault(
+    fwk_id_t device_id,
+    int node_idx,
+    int sm_idx,
+    bool expected_critical,
+    const struct fwk_event *event)
+{
+    const struct fmu_event_packet *event_params;
+    const struct mod_fmu_fault_notification_params *params;
+
+    event_params = (const struct fmu_event_packet *)event->params;
+    params = (const struct mod_fmu_fault_notification_params *)
+                 event_params->fmu_params;
+
+    TEST_ASSERT_EQUAL(
+        fwk_id_get_element_idx(device_id), params->fault.device_idx);
+    TEST_ASSERT_EQUAL(node_idx, params->fault.node_idx);
+    TEST_ASSERT_EQUAL(sm_idx, params->fault.sm_idx);
+    TEST_ASSERT_EQUAL(expected_critical, params->critical);
+}
+
+static void enable_and_inject(struct mod_fmu_fault *fault, bool critical)
+{
+    int status = fmu_api->set_enabled(fault, true);
+    TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
+
+    if (critical) {
+        status = fmu_api->set_critical(fault, true);
+        TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
+    }
+
+    status = fmu_api->inject(fault);
+    TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
+}
+
+static int inject_fault(
+    fwk_id_t fmu_id,
+    int node_idx,
     unsigned int step_idx,
     const struct fwk_event *event)
 {
-    int status;
-    struct mod_fmu_fault fault = { 0 };
-    const struct fmu_event_packet *event_params;
-    const struct mod_fmu_fault_notification_params *params;
-    enum test_inject_state {
-        STEP_START,
-        STEP_INJECT_0,
-        STEP_INJECT_1,
-        STEP_COUNT,
-    } state = step_idx;
     fwk_assert(step_idx < STEP_COUNT);
-
-    fault.device_idx = fwk_id_get_element_idx(gic_fmu);
-    fault.node_idx = GIC_FMU_BLOCK_TYPE_WAKE;
-    fault.sm_idx = 2;
-
-    switch (state) {
+    struct mod_fmu_fault fault = { .device_idx = fwk_id_get_element_idx(fmu_id),
+                                   .node_idx = node_idx,
+                                   .sm_idx = 2 };
+    switch (step_idx) {
     case STEP_START:
-        status = fmu_api->set_enabled(&fault, true);
-        TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
-        status = fmu_api->set_critical(&fault, true);
-        TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
-
-        /* Inject the fault */
-        status = fmu_api->inject(&fault);
-        TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
+        enable_and_inject(&fault, true);
         return FWK_PENDING;
     case STEP_INJECT_0:
-        /* Validate the received fault */
-        event_params = (const struct fmu_event_packet *)event->params;
-        params = (const struct mod_fmu_fault_notification_params *)
-                     event_params->fmu_params;
-        TEST_ASSERT_EQUAL(
-            fwk_id_get_element_idx(gic_fmu), params->fault.device_idx);
-        TEST_ASSERT_EQUAL(GIC_FMU_BLOCK_TYPE_WAKE, params->fault.node_idx);
-        TEST_ASSERT_EQUAL(2, params->fault.sm_idx);
-        TEST_ASSERT_TRUE(params->critical);
-
-        status = fmu_api->set_critical(&fault, false);
-        TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
-
-        /* Inject the fault */
-        status = fmu_api->inject(&fault);
-        TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
+        validate_fault(fmu_id, node_idx, 2, true, event);
+        fmu_api->set_critical(&fault, false);
+        enable_and_inject(&fault, false);
         return FWK_PENDING;
-
     case STEP_INJECT_1:
-        /* Validate the received fault */
-        event_params = (const struct fmu_event_packet *)event->params;
-        params = (const struct mod_fmu_fault_notification_params *)
-                     event_params->fmu_params;
-        TEST_ASSERT_EQUAL(
-            fwk_id_get_element_idx(gic_fmu), params->fault.device_idx);
-        TEST_ASSERT_EQUAL(GIC_FMU_BLOCK_TYPE_WAKE, params->fault.node_idx);
-        TEST_ASSERT_EQUAL(2, params->fault.sm_idx);
-        TEST_ASSERT_FALSE(params->critical);
-
+        validate_fault(fmu_id, node_idx, 2, false, event);
         return FWK_SUCCESS;
     default:
         fwk_unreachable();
     }
+}
+
+static int test_inject_gic_fmu(
+    unsigned int step_idx,
+    const struct fwk_event *event)
+{
+    return inject_fault(gic_fmu, GIC_FMU_BLOCK_TYPE_WAKE, step_idx, event);
+}
+
+static int test_inject_rse_cl0_mhu_fmu(
+    unsigned int step_idx,
+    const struct fwk_event *event)
+{
+    return inject_fault(
+        rse_cl0_mhu_fmu, MHU_FMU_BLOCK_TYPE_FMU, step_idx, event);
+}
+
+static int test_inject_cl0_rse_mhu_fmu(
+    unsigned int step_idx,
+    const struct fwk_event *event)
+{
+    return inject_fault(
+        cl0_rse_mhu_fmu, MHU_FMU_BLOCK_TYPE_FMU, step_idx, event);
+}
+
+static int test_inject_pc0_cl0_mhu_fmu(
+    unsigned int step_idx,
+    const struct fwk_event *event)
+{
+    return inject_fault(
+        pc0_cl0_mhu_fmu, MHU_FMU_BLOCK_TYPE_FMU, step_idx, event);
+}
+
+static int test_inject_cl0_pc0_mhu_fmu(
+    unsigned int step_idx,
+    const struct fwk_event *event)
+{
+    return inject_fault(
+        cl0_pc0_mhu_fmu, MHU_FMU_BLOCK_TYPE_FMU, step_idx, event);
+}
+
+static int test_inject_pc1_cl0_mhu_fmu(
+    unsigned int step_idx,
+    const struct fwk_event *event)
+{
+    return inject_fault(
+        pc1_cl0_mhu_fmu, MHU_FMU_BLOCK_TYPE_FMU, step_idx, event);
+}
+
+static int test_inject_cl0_pc1_mhu_fmu(
+    unsigned int step_idx,
+    const struct fwk_event *event)
+{
+    return inject_fault(
+        cl0_pc1_mhu_fmu, MHU_FMU_BLOCK_TYPE_FMU, step_idx, event);
+}
+
+static int test_inject_pc2_cl0_mhu_fmu(
+    unsigned int step_idx,
+    const struct fwk_event *event)
+{
+    return inject_fault(
+        pc2_cl0_mhu_fmu, MHU_FMU_BLOCK_TYPE_FMU, step_idx, event);
+}
+
+static int test_inject_cl0_pc2_mhu_fmu(
+    unsigned int step_idx,
+    const struct fwk_event *event)
+{
+    return inject_fault(
+        cl0_pc2_mhu_fmu, MHU_FMU_BLOCK_TYPE_FMU, step_idx, event);
+}
+
+static int test_inject_pc3_cl0_mhu_fmu(
+    unsigned int step_idx,
+    const struct fwk_event *event)
+{
+    return inject_fault(
+        pc3_cl0_mhu_fmu, MHU_FMU_BLOCK_TYPE_FMU, step_idx, event);
+}
+
+static int test_inject_cl0_pc3_mhu_fmu(
+    unsigned int step_idx,
+    const struct fwk_event *event)
+{
+    return inject_fault(
+        cl0_pc3_mhu_fmu, MHU_FMU_BLOCK_TYPE_FMU, step_idx, event);
 }
 
 static int test_set_enabled(
@@ -367,6 +463,16 @@ static int test_upgrade(unsigned int step_idx, const struct fwk_event *event)
 enum test_case {
     TEST_CASE_INJECT,
     TEST_CASE_INJECT_GIC_FMU,
+    TEST_CASE_INJECT_RSE_CL0_MHU_FMU,
+    TEST_CASE_INJECT_CL0_RSE_MHU_FMU,
+    TEST_CASE_INJECT_PC0_CL0_MHU_FMU,
+    TEST_CASE_INJECT_CL0_PC0_MHU_FMU,
+    TEST_CASE_INJECT_PC1_CL0_MHU_FMU,
+    TEST_CASE_INJECT_CL0_PC1_MHU_FMU,
+    TEST_CASE_INJECT_PC2_CL0_MHU_FMU,
+    TEST_CASE_INJECT_CL0_PC2_MHU_FMU,
+    TEST_CASE_INJECT_PC3_CL0_MHU_FMU,
+    TEST_CASE_INJECT_CL0_PC3_MHU_FMU,
     TEST_CASE_SET_ENABLED,
     TEST_CASE_UPGRADE,
     TEST_CASE_COUNT,
@@ -381,6 +487,26 @@ static const char *test_name(unsigned int case_idx)
         return "test_inject";
     case TEST_CASE_INJECT_GIC_FMU:
         return "test_inject_gic_fmu";
+    case TEST_CASE_INJECT_RSE_CL0_MHU_FMU:
+        return "test_inject_rse_cl0_mhu_fmu";
+    case TEST_CASE_INJECT_CL0_RSE_MHU_FMU:
+        return "test_inject_cl0_rse_mhu_fmu";
+    case TEST_CASE_INJECT_PC0_CL0_MHU_FMU:
+        return "test_inject_pc0_cl0_mhu_fmu";
+    case TEST_CASE_INJECT_CL0_PC0_MHU_FMU:
+        return "test_inject_cl0_pc0_mhu_fmu";
+    case TEST_CASE_INJECT_PC1_CL0_MHU_FMU:
+        return "test_inject_pc1_cl0_mhu_fmu";
+    case TEST_CASE_INJECT_CL0_PC1_MHU_FMU:
+        return "test_inject_cl0_pc1_mhu_fmu";
+    case TEST_CASE_INJECT_PC2_CL0_MHU_FMU:
+        return "test_inject_pc2_cl0_mhu_fmu";
+    case TEST_CASE_INJECT_CL0_PC2_MHU_FMU:
+        return "test_inject_cl0_pc2_mhu_fmu";
+    case TEST_CASE_INJECT_PC3_CL0_MHU_FMU:
+        return "test_inject_pc3_cl0_mhu_fmu";
+    case TEST_CASE_INJECT_CL0_PC3_MHU_FMU:
+        return "test_inject_cl0_pc3_mhu_fmu";
     case TEST_CASE_SET_ENABLED:
         return "test_set_enabled";
     case TEST_CASE_UPGRADE:
@@ -402,6 +528,26 @@ static int run(
         return test_inject(step_idx, event);
     case TEST_CASE_INJECT_GIC_FMU:
         return test_inject_gic_fmu(step_idx, event);
+    case TEST_CASE_INJECT_RSE_CL0_MHU_FMU:
+        return test_inject_rse_cl0_mhu_fmu(step_idx, event);
+    case TEST_CASE_INJECT_CL0_RSE_MHU_FMU:
+        return test_inject_cl0_rse_mhu_fmu(step_idx, event);
+    case TEST_CASE_INJECT_PC0_CL0_MHU_FMU:
+        return test_inject_pc0_cl0_mhu_fmu(step_idx, event);
+    case TEST_CASE_INJECT_CL0_PC0_MHU_FMU:
+        return test_inject_cl0_pc0_mhu_fmu(step_idx, event);
+    case TEST_CASE_INJECT_PC1_CL0_MHU_FMU:
+        return test_inject_pc1_cl0_mhu_fmu(step_idx, event);
+    case TEST_CASE_INJECT_CL0_PC1_MHU_FMU:
+        return test_inject_cl0_pc1_mhu_fmu(step_idx, event);
+    case TEST_CASE_INJECT_PC2_CL0_MHU_FMU:
+        return test_inject_pc2_cl0_mhu_fmu(step_idx, event);
+    case TEST_CASE_INJECT_CL0_PC2_MHU_FMU:
+        return test_inject_cl0_pc2_mhu_fmu(step_idx, event);
+    case TEST_CASE_INJECT_PC3_CL0_MHU_FMU:
+        return test_inject_pc3_cl0_mhu_fmu(step_idx, event);
+    case TEST_CASE_INJECT_CL0_PC3_MHU_FMU:
+        return test_inject_cl0_pc3_mhu_fmu(step_idx, event);
     case TEST_CASE_SET_ENABLED:
         return test_set_enabled(step_idx, event);
     case TEST_CASE_UPGRADE:

@@ -20,7 +20,7 @@ static const struct fwk_element config_integration_test_elements[] = {
         .data = &(struct mod_integration_test_config){
             .test_id = FWK_ID_MODULE_INIT(FWK_MODULE_IDX_TEST_FMU),
             .run_at_start = false,
-            .num_test_cases = 4,
+            .num_test_cases = 14,
         },
     },
     [TEST_SSU] = {
