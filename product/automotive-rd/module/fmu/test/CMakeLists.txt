@@ -40,9 +40,9 @@ list(APPEND MOCK_REPLACEMENTS fwk_interrupt)
 
 include(${SCP_ROOT}/unit_test/module_common.cmake)
 
-set(TEST_SRC fmu_gic)
-set(TEST_FILE fmu_gic)
-set(UNIT_TEST_TARGET fmu_gic_unit_test)
+set(TEST_SRC fmu_gic_mhu)
+set(TEST_FILE fmu_gic_mhu)
+set(UNIT_TEST_TARGET fmu_gic_mhu_unit_test)
 
 set(MODULE_SRC ${PRODUCT_ROOT}/${TEST_MODULE}/src)
 set(MODULE_INC ${PRODUCT_ROOT}/${TEST_MODULE}/include)

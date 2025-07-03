@@ -75,7 +75,8 @@ struct mod_fmu_impl_api mod_fmu_system_api = {
     .set_threshold = system_set_threshold,
     .get_threshold = system_get_threshold,
 };
-struct mod_fmu_impl_api mod_fmu_gic_api = { 0 };
+
+struct mod_fmu_impl_api mod_fmu_gic_mhu_api = { 0 };
 
 void setUp(void)
 {
