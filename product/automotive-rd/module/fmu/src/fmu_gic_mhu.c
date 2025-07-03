@@ -266,7 +266,7 @@ static int set_critical(
     return fmu_device_wait_busy(config);
 }
 
-struct mod_fmu_impl_api mod_fmu_gic_api = {
+struct mod_fmu_impl_api mod_fmu_gic_mhu_api = {
     .configure = configure,
     .bind = bind,
     .next_fault = next_fault,

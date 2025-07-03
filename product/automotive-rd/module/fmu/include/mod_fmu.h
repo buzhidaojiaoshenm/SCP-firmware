@@ -104,7 +104,7 @@ struct mod_fmu_config {
  */
 enum mod_fmu_implementation {
     MOD_FMU_SYSTEM_IMPL,
-    MOD_FMU_GIC_IMPL,
+    MOD_FMU_GIC_MHU_IMPL,
     MOD_FMU_IMPL_COUNT,
 };
 

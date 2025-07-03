@@ -8,19 +8,19 @@ both internal faults and faults from upstream devices into a single pair of
 critical (C) and non-critical (NC) outputs.
 
 The module provides a common API to multiple FMU implementations. Currently,
-the System FMU and GIC FMU are supported.
+the System FMU, GIC FMU and MHU FMU are supported.
 
 ## Example topology
 
 The toplogy below consists of 3 System FMUs connected and a device FMU (e.g. a
-GIC FMU) in a tree. FMUs 1 and 2 are connected to upstream fault signals and
-their outputs are connected to the root FMU.
+GIC FMU, MHU FMU) in a tree. FMUs 1 and 2 are connected to upstream fault
+signals and their outputs are connected to the root FMU.
 
                      +-------+
                 --0->|       |-C-----+
                 --1->| FMU 1 |       |
                 --2->|       |-NC-+  |     +------------+
-                     +-------+    |  +--0->|            |       
+                     +-------+    |  +--0->|            |
                                   +-----1->|            |--> C
                                            |  Root FMU  |
                                   +-----2->|            |--> NC
@@ -41,7 +41,7 @@ enum fmu_device {
     SCP_FMU_ROOT,
     SCP_FMU_1,
     SCP_FMU_2,
-    SCP_FMU_GIC,
+    SCP_GIC_FMU,
     SCP_FMU_COUNT,
 };
 
@@ -74,7 +74,7 @@ static const struct fwk_element fmu_devices[SCP_FMU_COUNT + 1] = {
             .implementation = MOD_FMU_IMPL_SYSTEM,
         }),
     },
-    [SCP_FMU_GIC] = {
+    [SCP_GIC_FMU] = {
         .name = "gic_fmu",
         .data = &((struct mod_fmu_dev_config) {
             .base = SCP_FMU_2,
