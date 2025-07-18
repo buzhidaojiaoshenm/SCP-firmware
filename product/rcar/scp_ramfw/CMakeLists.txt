@@ -1,6 +1,6 @@
 #
 # Arm SCP/MCP Software
-# Copyright (c) 2021-2024, Arm Limited and Contributors. All rights reserved.
+# Copyright (c) 2021-2025, Arm Limited and Contributors. All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -48,6 +48,7 @@ target_sources(
             "${CMAKE_CURRENT_SOURCE_DIR}/config_rcar_system_power.c"
             "${CMAKE_CURRENT_SOURCE_DIR}/config_rcar_system.c"
             "${CMAKE_CURRENT_SOURCE_DIR}/config_sds.c"
+            "${CMAKE_CURRENT_SOURCE_DIR}/rcar_libc.c"
             "${CMAKE_CURRENT_SOURCE_DIR}/../src/rcar_core.c")
 
 if(SCP_ENABLE_RESOURCE_PERMISSIONS)
