@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2015-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2015-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -49,6 +49,9 @@ MEMORY {
 
     mem0 (x) : ORIGIN = FMW_MEM0_BASE, LENGTH = FMW_MEM0_SIZE
     mem1 (rw) : ORIGIN = FMW_MEM1_BASE, LENGTH = FMW_MEM1_SIZE
+#endif
+#ifdef FMW_SYSTEM_RAM
+    sram (rxw): ORIGIN = FMW_SYSTEM_RAM_BASE, LENGTH = FMW_SYSTEM_RAM_SIZE
 #endif
 }
 
@@ -125,6 +128,16 @@ SECTIONS {
         KEEP(*(.fini_array))
         __fini_array_end = .;
     } > r
+
+#ifdef FMW_SYSTEM_RAM
+    __sram_copy_start__ = .;
+    .system_ram : {
+        __system_ram_start__ = .;
+        *(.system_ram*)
+        *iic_dvfs.o(.rodata)
+        __system_ram_end__ = .;
+    } > sram AT> r
+#endif
 
     .rodata : {
         *(.rodata .rodata.*)

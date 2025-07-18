@@ -1,6 +1,6 @@
 /*
  * Renesas SCP/MCP Software
- * Copyright (c) 2020-2021, Renesas Electronics Corporation. All rights
+ * Copyright (c) 2020-2025, Renesas Electronics Corporation. All rights
  * reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
@@ -12,6 +12,13 @@
 #include <system_mmap_scp.h>
 
 #define FMW_MEM_MODE ARCH_MEM_MODE_SINGLE_REGION
+#define FMW_SYSTEM_RAM
+
+/*
+ * SRAM memory
+ */
+#define FMW_SYSTEM_RAM_SIZE SCP_SRAM_SIZE
+#define FMW_SYSTEM_RAM_BASE SCP_SRAM_BASE
 
 /*
  * RAM memory
