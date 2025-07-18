@@ -1,6 +1,6 @@
 /*
  * Renesas SCP/MCP Software
- * Copyright (c) 2020-2022, Renesas Electronics Corporation. All rights
+ * Copyright (c) 2020-2025, Renesas Electronics Corporation. All rights
  * reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
@@ -12,11 +12,11 @@
 #define MOD_RCAR_CLOCK_H
 
 #include <rcar_mmap.h>
-#include <utils_def.h>
 
 #include <mod_clock.h>
 
 #include <fwk_element.h>
+#include <fwk_macros.h>
 
 #include <stdint.h>
 
@@ -371,8 +371,8 @@ struct op_points {
 #define CPG_PLLECR 0x00D0
 
 /* Implementation for customized clocks (Z-clk, Z2-clk, PLL0-clk) for CPUFreq */
-#define CPG_PLLECR_PLL0ST BIT(8)
-#define CPG_PLLECR_PLL2ST BIT(10)
+#define CPG_PLLECR_PLL0ST FWK_BIT(8)
+#define CPG_PLLECR_PLL2ST FWK_BIT(10)
 
 /* Define for PLL0 clk driver */
 #define CPG_PLLCR_STC_MASK 0x7f000000

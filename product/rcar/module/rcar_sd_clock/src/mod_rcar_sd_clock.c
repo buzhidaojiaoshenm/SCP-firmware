@@ -1,6 +1,6 @@
 /*
  * Renesas SCP/MCP Software
- * Copyright (c) 2020-2024, Renesas Electronics Corporation. All rights
+ * Copyright (c) 2020-2025, Renesas Electronics Corporation. All rights
  * reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
@@ -167,9 +167,9 @@ static int sd_clock_set_state(
 
     value = fwk_mmio_read_32(ctx->config->control_reg);
     if (MOD_CLOCK_STATE_RUNNING == target_state)
-        value &= ~(BIT(ctx->config->stop_clk_bit));
+        value &= ~(FWK_BIT(ctx->config->stop_clk_bit));
     else
-        value |= BIT(ctx->config->stop_clk_bit);
+        value |= FWK_BIT(ctx->config->stop_clk_bit);
 
     fwk_mmio_write_32(ctx->config->control_reg, value);
 
@@ -232,7 +232,7 @@ static int sd_clock_hw_initial_set_state(
         ctx->current_state = MOD_CLOCK_STATE_RUNNING;
         if (ctx->config->stop_clk) {
             if (fwk_mmio_read_32(ctx->config->control_reg) &
-                BIT(ctx->config->stop_clk_bit))
+                FWK_BIT(ctx->config->stop_clk_bit))
                 ctx->current_state = MOD_CLOCK_STATE_STOPPED;
         }
         /* Holds clock frequency at startup. */

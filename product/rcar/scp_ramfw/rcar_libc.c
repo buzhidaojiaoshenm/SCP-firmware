@@ -1,6 +1,6 @@
 /*
  * Renesas SCP/MCP Software
- * Copyright (c) 2020-2021, Renesas Electronics Corporation. All rights
+ * Copyright (c) 2020-2025, Renesas Electronics Corporation. All rights
  * reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
@@ -274,8 +274,8 @@ void __assert_fail(
         continue;
 }
 
-extern char __HEAP_START__;
-extern char __HEAP_END__;
+extern char __stackheap_start__;
+extern char __stackheap_end__;
 
 /*!
  * \brief Architecture memory manager context.
@@ -284,8 +284,8 @@ static struct arch_mm_ctx {
     uintptr_t heap_break;
     uintptr_t heap_end;
 } arch_mm_ctx = {
-    .heap_break = (uintptr_t)(&__HEAP_START__),
-    .heap_end = (uintptr_t)(&__HEAP_END__),
+    .heap_break = (uintptr_t)(&__stackheap_start__),
+    .heap_end = (uintptr_t)(&__stackheap_end__),
 };
 
 void *sbrk(intptr_t increment)

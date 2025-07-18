@@ -1,6 +1,6 @@
 /*
  * Renesas SCP/MCP Software
- * Copyright (c) 2020-2021, Renesas Electronics Corporation. All rights
+ * Copyright (c) 2020-2025, Renesas Electronics Corporation. All rights
  * reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
@@ -9,9 +9,9 @@
 #ifndef MOD_RCAR_REG_SENSOR_H
 #define MOD_RCAR_REG_SENSOR_H
 
-#include <utils_def.h>
-
 #include <mod_sensor.h>
+
+#include <fwk_macros.h>
 
 #include <stdint.h>
 
@@ -73,8 +73,8 @@ enum mod_rcar_reg_sensor_api_type {
 #define NEXT_REG_OFFSET (4)
 
 /* THCTR bits */
-#define THCTR_PONM BIT(6)
-#define THCTR_THSST BIT(0)
+#define THCTR_PONM  FWK_BIT(6)
+#define THCTR_THSST FWK_BIT(0)
 
 #define CTEMP_MASK (0xFFF)
 #define MCELSIUS(temp) ((temp)*1000)

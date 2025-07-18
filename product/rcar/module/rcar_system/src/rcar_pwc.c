@@ -16,6 +16,7 @@
 
 #include <arch_interrupt.h>
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
 
@@ -74,7 +75,14 @@ extern uint32_t rcar_pwrc_switch_stack(
     uintptr_t stack,
     void *arg);
 
-extern void panic(void);
+/*
+ * Error handler for failures that occur during early initialization.
+ */
+void panic(void)
+{
+    while (true)
+        asm volatile("wfi");
+}
 
 static void FWK_SECTION(".system_ram") rcar_pwrc_set_self_refresh(void)
 {
@@ -182,7 +190,7 @@ void FWK_SECTION(".system_ram") FWK_NOINLINE rcar_pwrc_go_suspend_to_ram(void)
         }
     }
 
-    wfi();
+    asm volatile("wfi");
 
     while (1)
         continue;
@@ -195,9 +203,9 @@ void rcar_pwrc_set_suspend_to_ram(void)
     uint32_t sctlr;
 
     /* disable MMU */
-    sctlr = (uint32_t)read_sctlr_el3();
+    sctlr = (uint32_t)READ_SYSREG(sctlr_el3);
     sctlr &= (uint32_t)~SCTLR_EL3_M_BIT;
-    write_sctlr_el3((uint64_t)sctlr);
+    WRITE_SYSREG(sctlr_el3, (uint64_t)sctlr);
 
     rcar_pwrc_switch_stack(jump, stack, NULL);
 }

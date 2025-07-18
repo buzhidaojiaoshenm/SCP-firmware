@@ -6,6 +6,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+#include <config_shutdown.h>
 #include <rcar_mmap.h>
 #include <rcar_pwc.h>
 #include <rcar_scmi.h>
@@ -32,9 +33,7 @@
 #include <fwk_notification.h>
 #include <fwk_status.h>
 
-#include <arch_gic.h>
 #include <arch_interrupt.h>
-#include <arch_system.h>
 
 /* Device context */
 struct rcar_system_dev_ctx {
@@ -118,12 +117,6 @@ void rcar_system_code_copy_to_system_ram(void)
         (SYSTEM_RAM_END - SYSTEM_RAM_START));
 }
 
-int _platform_init(void *params)
-{
-    rcar_system_code_copy_to_system_ram();
-    return FWK_SUCCESS;
-}
-
 /*
  * Functions fulfilling the framework's module interface
  */
@@ -157,6 +150,8 @@ static int rcar_system_init(
     unsigned int element_count,
     const void *data)
 {
+    rcar_system_code_copy_to_system_ram();
+
     module_ctx.dev_count = element_count;
 
     if (element_count == 0)

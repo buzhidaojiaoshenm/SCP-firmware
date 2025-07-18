@@ -1,6 +1,6 @@
 /*
  * Renesas SCP/MCP Software
- * Copyright (c) 2020-2021, Renesas Electronics Corporation. All rights
+ * Copyright (c) 2020-2025, Renesas Electronics Corporation. All rights
  * reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
@@ -150,8 +150,8 @@ struct rcar_gen3_cpg_pll_config {
 #define CPG_FRQCRB_ZTRD2FC_12 0x5
 
 #define CPG_PLL_CONFIG_INDEX(md) \
-    ((((md)&BIT(14)) >> 11) | (((md)&BIT(13)) >> 11) | \
-     (((md)&BIT(19)) >> 18) | (((md)&BIT(17)) >> 17))
+    ((((md)&FWK_BIT(14)) >> 11) | (((md)&FWK_BIT(13)) >> 11) | \
+     (((md)&FWK_BIT(19)) >> 18) | (((md)&FWK_BIT(17)) >> 17))
 
 static const struct rcar_gen3_cpg_pll_config cpg_pll_configs[16] = {
     /* EXTAL div PLL1 mult/div PLL3 mult/div OSC prediv */

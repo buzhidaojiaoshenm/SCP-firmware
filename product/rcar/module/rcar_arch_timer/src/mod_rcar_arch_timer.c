@@ -45,7 +45,7 @@ static uint64_t mod_arch_timer_get_counter(void)
 {
     uint64_t counter;
 
-    counter = read_cntpct_el0();
+    counter = READ_SYSREG(cntpct_el0);
 
     return counter;
 }
@@ -58,9 +58,9 @@ static int enable(fwk_id_t dev_id)
 {
     uint32_t cntp_ctl;
 
-    cntp_ctl = read_cntp_ctl_el0() & ~CNTBASE_P_CTL_IMASK;
+    cntp_ctl = READ_SYSREG(cntp_ctl_el0) & ~CNTBASE_P_CTL_IMASK;
     cntp_ctl |= CNTBASE_P_CTL_ENABLE;
-    write_cntp_ctl_el0(cntp_ctl);
+    WRITE_SYSREG(cntp_ctl_el0, cntp_ctl);
 
     return FWK_SUCCESS;
 }
@@ -69,9 +69,10 @@ static int disable(fwk_id_t dev_id)
 {
     uint32_t cntp_ctl;
 
-    cntp_ctl = read_cntp_ctl_el0() | CNTBASE_P_CTL_IMASK;
+    cntp_ctl = READ_SYSREG(cntp_ctl_el0);
+    cntp_ctl |= CNTBASE_P_CTL_IMASK;
     cntp_ctl &= ~CNTBASE_P_CTL_ENABLE;
-    write_cntp_ctl_el0(cntp_ctl);
+    WRITE_SYSREG(cntp_ctl_el0, cntp_ctl);
 
     return FWK_SUCCESS;
 }
@@ -94,21 +95,21 @@ static int set_timer(fwk_id_t dev_id, uint64_t timestamp)
 
     timestamp = FWK_MAX(counter + GTIMER_MIN_TIMESTAMP, timestamp);
 
-    write_cntp_cval_el0(timestamp);
+    WRITE_SYSREG(cntp_cval_el0, timestamp);
 
     return FWK_SUCCESS;
 }
 
 static int get_timer(fwk_id_t dev_id, uint64_t *timestamp)
 {
-    *timestamp = read_cntp_cval_el0();
+    *timestamp = READ_SYSREG(cntp_cval_el0);
 
     return FWK_SUCCESS;
 }
 
 static int get_frequency(fwk_id_t dev_id, uint32_t *frequency)
 {
-    *frequency = read_cntfrq_el0();
+    *frequency = READ_SYSREG(cntfrq_el0);
 
     return FWK_SUCCESS;
 }
@@ -167,7 +168,7 @@ static int arch_timer_process_bind_request(fwk_id_t requester_id,
 static void arch_timer_control_init(void)
 {
     /* Disable & Imask */
-    write_cntp_ctl_el0(CNTBASE_P_CTL_IMASK);
+    WRITE_SYSREG(cntp_ctl_el0, CNTBASE_P_CTL_IMASK);
 }
 
 static int arch_timer_start(fwk_id_t id)
@@ -228,7 +229,7 @@ static fwk_timestamp_t mod_arch_timer_timestamp(const void *ctx)
 {
     fwk_timestamp_t timestamp;
 
-    uint32_t frequency = read_cntfrq_el0();
+    uint32_t frequency = READ_SYSREG(cntfrq_el0);
     uint64_t counter = mod_arch_timer_get_counter();
 
     timestamp = (FWK_S(1) / frequency) * counter;

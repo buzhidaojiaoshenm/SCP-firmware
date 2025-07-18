@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2015-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2015-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -469,6 +469,18 @@
         (((~0ULL) - (1ULL << (L)) + 1) & (~0ULL >> (64ULL - 1 - (H))))
 
 #endif
+
+/*!
+ * \brief Import an assembly or linker symbol as a C expression
+ *
+ * \param[in] type type of the C variable to create
+ * \param[in] sym name of the symbol to import
+ * \param[in] name name of the C variable to create
+ *
+ */
+#define IMPORT_SYM(type, sym, name) \
+    extern char sym[]; \
+    static const __attribute__((unused)) type name = (type)sym;
 
 /*!
  * \}

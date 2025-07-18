@@ -1,13 +1,12 @@
 /*
  * Renesas SCP/MCP Software
- * Copyright (c) 2020-2024, Renesas Electronics Corporation. All rights
+ * Copyright (c) 2020-2025, Renesas Electronics Corporation. All rights
  * reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
 #include <clock_mstp_devices.h>
-#include <utils_def.h>
 
 #include <mod_clock.h>
 #include <mod_rcar_clock.h>
@@ -16,6 +15,7 @@
 
 #include <fwk_assert.h>
 #include <fwk_element.h>
+#include <fwk_macros.h>
 #include <fwk_mm.h>
 #include <fwk_mmio.h>
 #include <fwk_module.h>
@@ -41,9 +41,9 @@ static int mstp_clock_set_state(
 
     value = fwk_mmio_read_32(CPG_BASE + smstpcr[ctx->config->control_reg]);
     if (MOD_CLOCK_STATE_RUNNING == target_state)
-        value &= ~(BIT(ctx->config->bit));
+        value &= ~(FWK_BIT(ctx->config->bit));
     else
-        value |= BIT(ctx->config->bit);
+        value |= FWK_BIT(ctx->config->bit);
 
     fwk_mmio_write_32((CPG_BASE + smstpcr[ctx->config->control_reg]), value);
 
@@ -51,7 +51,7 @@ static int mstp_clock_set_state(
         for (i = 1000; i > 0; --i) {
             if (!(fwk_mmio_read_32(
                       CPG_BASE + mstpsr[ctx->config->control_reg]) &
-                  BIT(ctx->config->bit)))
+                  FWK_BIT(ctx->config->bit)))
                 break;
         }
 
@@ -78,7 +78,7 @@ static void mstp_clock_hw_initial_set_state(
 {
     /* Maintain clock supply at startup. */
     if (module_ctx.mstp_init->smstpcr_init[ctx->config->control_reg] &
-        BIT(ctx->config->bit))
+        FWK_BIT(ctx->config->bit))
         ctx->current_state = MOD_CLOCK_STATE_STOPPED;
     else
         ctx->current_state = MOD_CLOCK_STATE_RUNNING;

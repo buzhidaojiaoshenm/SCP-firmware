@@ -1,6 +1,6 @@
 #
 # Arm SCP/MCP Software
-# Copyright (c) 2021-2023, Arm Limited and Contributors. All rights reserved.
+# Copyright (c) 2021-2025, Arm Limited and Contributors. All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -27,7 +27,9 @@ set(SCP_ENABLE_IPO_INIT FALSE)
 
 set(SCP_ENABLE_OUTBAND_MSG_SUPPORT_INIT TRUE)
 
-set(SCP_ARCHITECTURE "armv8-a")
+set(SCP_HAVE_NEWLIB FALSE)
+
+set(SCP_ARCHITECTURE "aarch64")
 
 list(PREPEND SCP_MODULE_PATHS "${CMAKE_CURRENT_LIST_DIR}/../module/rcar_arch_timer")
 list(PREPEND SCP_MODULE_PATHS "${CMAKE_CURRENT_LIST_DIR}/../module/rcar_reset")

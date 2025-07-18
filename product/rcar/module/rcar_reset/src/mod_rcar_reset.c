@@ -1,12 +1,10 @@
 /*
  * Renesas SCP/MCP Software
- * Copyright (c) 2020-2024, Renesas Electronics Corporation. All rights
+ * Copyright (c) 2020-2025, Renesas Electronics Corporation. All rights
  * reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
-
-#include <lib/utils_def.h>
 
 #include <mod_rcar_reset.h>
 #include <mod_reset_domain.h>
@@ -42,14 +40,15 @@ static int rcar_auto_domain(fwk_id_t dev_id, uint32_t state)
     ctx = module_ctx.dev_ctx_table + fwk_id_get_element_idx(dev_id);
 
     fwk_mmio_write_32(
-        (CPG_BASE + srcr[ctx->config->control_reg]), BIT(ctx->config->bit));
+        (CPG_BASE + srcr[ctx->config->control_reg]), FWK_BIT(ctx->config->bit));
 
     /* Wait for at least one cycle of the RCLK clock (@ ca. 32 kHz) */
     udelay(SCSR_DELAY_US);
 
     /* Release module from reset state */
     fwk_mmio_write_32(
-        (CPG_BASE + SRSTCLR(ctx->config->control_reg)), BIT(ctx->config->bit));
+        (CPG_BASE + SRSTCLR(ctx->config->control_reg)),
+        FWK_BIT(ctx->config->bit));
 
     return FWK_SUCCESS;
 }
@@ -61,7 +60,7 @@ static int rcar_assert_domain(fwk_id_t dev_id)
     ctx = module_ctx.dev_ctx_table + fwk_id_get_element_idx(dev_id);
 
     fwk_mmio_write_32(
-        (CPG_BASE + srcr[ctx->config->control_reg]), BIT(ctx->config->bit));
+        (CPG_BASE + srcr[ctx->config->control_reg]), FWK_BIT(ctx->config->bit));
 
     return FWK_SUCCESS;
 }
@@ -73,7 +72,8 @@ static int rcar_deassert_domain(fwk_id_t dev_id)
     ctx = module_ctx.dev_ctx_table + fwk_id_get_element_idx(dev_id);
 
     fwk_mmio_write_32(
-        (CPG_BASE + SRSTCLR(ctx->config->control_reg)), BIT(ctx->config->bit));
+        (CPG_BASE + SRSTCLR(ctx->config->control_reg)),
+        FWK_BIT(ctx->config->bit));
 
     return FWK_SUCCESS;
 }
