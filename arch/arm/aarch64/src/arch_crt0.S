@@ -147,6 +147,8 @@ skip_bss:
 #ifdef USE_NEWLIB
     /* Call FWK_CONSTRUCTOR functions */
     bl __libc_init_array
+#elif defined(BUILD_HAS_NOTIFICATION)
+    bl  __fwk_notification_reset
 #endif
 
     bl  arm_main
