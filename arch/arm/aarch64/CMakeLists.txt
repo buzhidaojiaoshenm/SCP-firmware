@@ -1,6 +1,6 @@
 #
 # Arm SCP/MCP Software
-# Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+# Copyright (c) 2024-2025, Arm Limited and Contributors. All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -23,6 +23,12 @@ target_sources(
             "${CMAKE_CURRENT_SOURCE_DIR}/src/arch_main.c"
             "${CMAKE_CURRENT_SOURCE_DIR}/../common/src/arch_mm.c"
             )
+
+if(DEFINED SCP_AARCH64_PROCESSOR_TARGET)
+    if(NOT SCP_AARCH64_PROCESSOR_TARGET MATCHES "cortex-r82")
+        target_compile_definitions(arch-aarch64 PUBLIC "ARMV8A64_EL3_SUPPORT")
+    endif()
+endif()
 
 if(SCP_HAVE_NEWLIB)
     target_compile_definitions(arch-aarch64 PUBLIC -DUSE_NEWLIB)

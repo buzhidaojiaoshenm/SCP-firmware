@@ -75,6 +75,28 @@
 #define MAIR_NORMAL_WB_NT  0xFF
 
 /*
+ * SCTLR_EL3 values
+ */
+#define SCTLR_EL3_RES1 \
+    (FWK_BIT(29) | FWK_BIT(28) | FWK_BIT(23) | FWK_BIT(18) | FWK_BIT(16) | \
+     FWK_BIT(5) | FWK_BIT(4))
+#define SCTLR_EL3_RESET SCTLR_EL3_RES1
+#define SCTLR_EL3_NAA   FWK_BIT(6)
+
+/*
+ * SCR_EL3 values
+ */
+#define SCR_EL3_RW FWK_BIT(10)
+
+/*
+ * SPSR_EL3 values
+ */
+#define SPSR_EL3_A      FWK_BIT(8)
+#define SPSR_EL3_I      FWK_BIT(7)
+#define SPSR_EL3_F      FWK_BIT(6)
+#define SPSR_EL3_M_EL2H 0b1001 /* EL2 is in handler mode */
+
+/*
  * SCTLR_EL2 values
  */
 #define SCTLR_EL2_RES1 \

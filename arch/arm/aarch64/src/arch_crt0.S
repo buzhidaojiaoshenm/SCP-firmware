@@ -30,8 +30,36 @@ arch_exception_reset:
     b wfe_loop
 
 el3_init:
-    /* TODO */
+#if defined(ARMV8A64_EL3_SUPPORT)
+    /* switch to el2 */
+    msr SCTLR_EL2, xzr
+    msr HCR_EL2, xzr
+
+    mrs x0, SCR_EL3
+    orr x0, x0, #(SCR_EL3_RW) /* Next lower exception level is AArch64 */
+    msr SCR_EL3, x0
+
+    mrs x0, SPSR_EL3
+    orr x0, x0, #(SPSR_EL3_A)  /* Mask SError */
+    orr x0, x0, #(SPSR_EL3_I)  /* Mask IRQ */
+    orr x0, x0, #(SPSR_EL3_F)  /* Mask FIQ */
+    mov x1, #(SPSR_EL3_M_EL2H) /* EL2 is in handler mode */
+    orr x0, x0, x1
+    msr SPSR_EL3, x0
+
+    ldr x0, =SCTLR_EL3_RESET
+    orr x0, x0, #(SCTLR_EL3_NAA)
+    msr SCTLR_EL3, x0
+
+    isb
+
+    adr x0, el2_init
+    msr ELR_EL3, x0
+
+    eret
+#else
     b wfe_loop
+#endif /* BUILD_HAS_AARCH64_ARMV8R64 */
 
 el2_init:
     /* Configure exception vectors */
