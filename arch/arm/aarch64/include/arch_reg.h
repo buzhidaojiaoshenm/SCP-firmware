@@ -120,4 +120,23 @@
 #define GICD_ISPENDR(N)   (0x0200u + (4 * (N)))
 #define GICD_ICPENDR(N)   (0x0280u + (4 * (N)))
 
+/*
+ * GIC V2 registers
+ */
+#define GICC_BASE 0x20000u
+
+#define FIQ_EN_BIT         FWK_BIT(3)
+#define CTLR_ENABLE_G0_BIT FWK_BIT(0)
+
+#define FIQ_BYP_DIS_GRP0 FWK_BIT(5)
+#define IRQ_BYP_DIS_GRP0 FWK_BIT(6)
+#define FIQ_BYP_DIS_GRP1 FWK_BIT(7)
+#define IRQ_BYP_DIS_GRP1 FWK_BIT(8)
+
+#define GICC_CTLR    (0x0)
+#define GICC_PMR     (0x4)
+#define GIC_PRI_MASK (0xff)
+#define GICC_IAR     (0xC)
+#define GICC_EOIR    (0x10)
+
 #endif /* ARCH_REG_H */

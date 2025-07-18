@@ -53,6 +53,7 @@ struct isr_callback {
 static unsigned int current_iar = INTERRUPT_ID_INVALID;
 static struct isr_callback callback[INTERRUPT_ID_ISR_LIMIT] = { 0 };
 
+#ifndef GIC_V2
 static uint64_t read_icc_iar0_el1(void)
 {
     return READ_SYSREG(icc_iar_el1);
@@ -62,12 +63,20 @@ static void write_icc_eoir0_el1(uint64_t value)
 {
     return WRITE_SYSREG(icc_eoir0_el1, value);
 }
+#endif
 
 void irq_global(void)
 {
     struct isr_callback *entry;
 
+#ifdef GIC_V2
+    current_iar = fwk_mmio_read_32(FMW_GICD_BASE + GICC_BASE + GICC_IAR);
+    fwk_mmio_write_32(FMW_GICD_BASE + GICC_BASE + GICC_EOIR, current_iar);
+    current_iar = current_iar & 0x00000FFFUL;
+#else
     current_iar = read_icc_iar0_el1();
+#endif
+
     if (current_iar >= INTERRUPT_ID_ISR_LIMIT) {
         return;
     }
@@ -84,7 +93,9 @@ void irq_global(void)
         }
     }
 
+#ifndef GIC_V2
     write_icc_eoir0_el1(current_iar);
+#endif
     current_iar = INTERRUPT_ID_INVALID;
 }
 
@@ -293,5 +304,20 @@ bool arch_interrupt_is_interrupt_context(void)
 
 int arch_interrupt_init(void)
 {
+#ifdef GIC_V2
+    unsigned int val;
+
+    /*
+     * Enable the Group 0 interrupts, FIQEn and disable Group 0/1
+     * bypass.
+     */
+    val = CTLR_ENABLE_G0_BIT | FIQ_EN_BIT | FIQ_BYP_DIS_GRP0;
+    val |= IRQ_BYP_DIS_GRP0 | FIQ_BYP_DIS_GRP1 | IRQ_BYP_DIS_GRP1;
+
+    /* Program the idle priority in the PMR */
+    fwk_mmio_write_32(FMW_GICD_BASE + GICC_BASE + GICC_PMR, GIC_PRI_MASK);
+    fwk_mmio_write_32(FMW_GICD_BASE + GICC_BASE + GICC_CTLR, val);
+#endif
+
     return FWK_SUCCESS;
 }
