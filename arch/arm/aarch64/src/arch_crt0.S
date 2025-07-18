@@ -67,13 +67,6 @@ el2_init:
     msr vbar_el2, x0
     isb
 
-    /* Ensure PMSA is present */
-    mrs x0, id_aa64mmfr0_el1
-    and x1, x0, #ID_AA64MMFR0_EL1_MSA_MASK
-    cbz x1, wfe_loop
-    and x1, x0, #ID_AA64MMFR0_EL1_MSA_FRAC_MASK
-    cbz x1, wfe_loop
-
     /* Initialize HCR */
     ldr x0, =HCR_EL2_RESET
     msr hcr_el2, x0
@@ -84,6 +77,14 @@ el2_init:
 
     dsb sy
     isb
+
+    /* Ensure PMSA is present */
+    mrs x0, id_aa64mmfr0_el1
+    and x1, x0, #ID_AA64MMFR0_EL1_MSA_MASK
+    cbz x1, no_pmsa_support
+    and x1, x0, #ID_AA64MMFR0_EL1_MSA_FRAC_MASK
+    cbz x1, no_pmsa_support
+
 
     /* Initial MPU region config */
 #if FMW_MEM_MODE == ARCH_MEM_MODE_SINGLE_REGION
@@ -118,7 +119,9 @@ el2_init:
     dsb sy
     isb
 
-    /* Enable PMSA, data cache and instruction cache */
+no_pmsa_support:
+
+    /* Enable PMSA/MMU, data cache and instruction cache */
     ldr x0, =SCTLR_EL2_RESET
     mov x1, #(SCTLR_EL2_M | SCTLR_EL2_C | SCTLR_EL2_I)
     orr x0, x0, x1
