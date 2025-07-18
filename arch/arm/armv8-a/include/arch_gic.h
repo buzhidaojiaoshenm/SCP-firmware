@@ -129,6 +129,6 @@
 #define RCAR_GICV_BASE U(0xF1060000)
 
 void gic_init(void);
-void irq_global(uint32_t iid);
+void irq_global(void);
 
 #endif /* ARMV8A_GIC_H */

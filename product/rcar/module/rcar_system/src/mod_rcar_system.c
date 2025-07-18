@@ -124,53 +124,6 @@ int _platform_init(void *params)
     return FWK_SUCCESS;
 }
 
-void vApplicationIdleHook(void)
-{
-    uint32_t req;
-    struct rcar_system_dev_ctx *ctx;
-    fwk_id_t element_id = FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_CLOCK, 0);
-    uint32_t i;
-    unsigned int flags;
-
-    if (is_available_shutdown_req(P_STATUS)) {
-        flags = fwk_interrupt_global_disable();
-        req = P_STATUS;
-        P_STATUS = R_CLEAR;
-        switch (req) {
-        case R_SUSPEND:
-            _boot_flag = R_WARMBOOT;
-            while (!(fwk_mmio_read_32(RCAR_CA57PSTR) & 0x0f))
-                continue;
-
-            _save_system();
-
-            rcar_system_code_copy_to_system_ram();
-
-            for (i = 0; i < module_ctx.dev_count; i++) {
-                element_id.element.element_idx = i;
-                ctx = module_ctx.dev_ctx_table +
-                    fwk_id_get_element_idx(element_id);
-                if (ctx->api->resume)
-                    ctx->api->resume();
-            }
-
-            messaging_stack_ready();
-            gic_init();
-            vConfigureTickInterrupt();
-            fwk_interrupt_global_enable(flags);
-            break;
-        case R_RESET:
-            rcar_system_reset();
-            break;
-        case R_OFF:
-            rcar_system_off();
-            break;
-        default:
-            break;
-        }
-    }
-}
-
 /*
  * Functions fulfilling the framework's module interface
  */

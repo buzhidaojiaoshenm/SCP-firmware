@@ -141,13 +141,17 @@ static int add_entry(struct r_tree *rt, uint32_t iid, void *entry, int len)
     return _add(&rt->root, iid, entry, len, 0);
 }
 
-void irq_global(uint32_t iid)
+void irq_global(void)
 {
     struct callback *entry;
+    uint32_t ulInterruptID;
 
-    c_interrupt = iid;
+    c_interrupt = fwk_mmio_read_32(RCAR_GICC_BASE + GICC_IAR);
+    fwk_mmio_write_32(RCAR_GICC_BASE + GICC_EOIR, c_interrupt);
 
-    entry = (struct callback *)lookup_entry(radix, iid);
+    ulInterruptID = c_interrupt & 0x00000FFFUL;
+
+    entry = (struct callback *)lookup_entry(radix, ulInterruptID);
     if (entry != NULL) {
         if (entry->func) {
             /* Available callback Function */
