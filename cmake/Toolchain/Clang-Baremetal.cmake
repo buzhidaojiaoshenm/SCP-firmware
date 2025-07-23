@@ -77,6 +77,9 @@ foreach(language IN ITEMS ASM C CXX)
     string(APPEND CMAKE_${language}_FLAGS_INIT "-Wno-unused-parameter ")
     string(APPEND CMAKE_${language}_FLAGS_INIT
            "-Wno-missing-field-initializers ")
+    string(APPEND CMAKE_${language}_FLAGS_INIT
+           "-ffile-prefix-map=${CMAKE_SOURCE_DIR}=. "
+           "-ffile-prefix-map=${CMAKE_BINARY_DIR}=${CMAKE_SOURCE_DIR} ")
 
     string(APPEND CMAKE_${language}_FLAGS_DEBUG_INIT "-Og")
 endforeach()

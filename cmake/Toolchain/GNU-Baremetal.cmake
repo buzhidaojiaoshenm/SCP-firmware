@@ -1,6 +1,6 @@
 #
 # Arm SCP/MCP Software
-# Copyright (c) 2021-2024, Arm Limited and Contributors. All rights reserved.
+# Copyright (c) 2021-2025, Arm Limited and Contributors. All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -34,6 +34,9 @@ foreach(language IN ITEMS ASM C CXX)
     string(APPEND CMAKE_${language}_FLAGS_INIT "-Wno-unused-parameter ")
     string(APPEND CMAKE_${language}_FLAGS_INIT
            "-Wno-missing-field-initializers ")
+    string(APPEND CMAKE_${language}_FLAGS_INIT
+           "-ffile-prefix-map=${CMAKE_SOURCE_DIR}=. "
+           "-ffile-prefix-map=${CMAKE_BINARY_DIR}=${CMAKE_SOURCE_DIR} ")
 
     string(APPEND CMAKE_${language}_FLAGS_DEBUG_INIT "-Og")
 endforeach()
