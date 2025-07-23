@@ -14,8 +14,8 @@
 #include <mod_ssu.h>
 
 #include <fwk_assert.h>
-#include <fwk_id.h>
 #include <fwk_event.h>
+#include <fwk_id.h>
 #include <fwk_log.h>
 #include <fwk_macros.h>
 #include <fwk_mm.h>

@@ -11,6 +11,7 @@
 #include <mod_fmu.h>
 #include <mod_integration_test.h>
 #include <mod_sbistc.h>
+#include <mod_ssu.h>
 
 #include <fwk_assert.h>
 #include <fwk_core.h>
@@ -39,6 +40,8 @@ struct sbistc_event_packet {
 
 static const struct mod_fmu_api *fmu_api = NULL;
 static const struct mod_sbistc_api *sbistc_api = NULL;
+static const struct mod_ssu_sys_register_api *ssu_sys_api = NULL;
+static const struct mod_ssu_error_control_status_api *ssu_err_api = NULL;
 
 static volatile bool handler_called = false;
 
@@ -57,6 +60,7 @@ static int test_sbistc_inject(
     uint8_t count_before = 0;
     uint8_t count_after = 0;
     struct mod_fmu_fault fault = { 0 };
+    uint32_t ssu_state = 0;
 
     const struct mod_sbistc_config *sbistc_mod_config =
         (const struct mod_sbistc_config *)fwk_module_get_data(
@@ -103,6 +107,19 @@ static int test_sbistc_inject(
         TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
         TEST_ASSERT_TRUE(count_after > count_before);
         TEST_ASSERT_TRUE(handler_called);
+
+        FWK_LOG_INFO(
+            MOD_NAME "fault:%u: count:%u, flag:%s, ssu_state:0x%X",
+            fault_id,
+            count_after,
+            handler_called ? "true" : "false",
+            ssu_state);
+        /* Check if the fault was reported to SSU */
+        fwk_id_t ssu_dev_id = FWK_ID_ELEMENT(FWK_MODULE_IDX_SSU, 0);
+        TEST_ASSERT_NOT_NULL(ssu_sys_api);
+        status = ssu_sys_api->get_sys_status(ssu_dev_id, &ssu_state);
+        TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
+        TEST_ASSERT_EQUAL(MOD_SSU_SAFETY_STATUS_ERRN, ssu_state);
 
         FWK_LOG_INFO(
             MOD_NAME "fault:%u: count:%u, flag:%s, ssu_state:0x%X",
@@ -195,12 +212,35 @@ static int test_sbistc_bind(fwk_id_t id, unsigned int round)
         FWK_ID_API(FWK_MODULE_IDX_SBISTC, MOD_SBISTC_API_IDX_DEFAULT),
         (const void **)&sbistc_api);
 
+    /* Bind to SSU sys API for state checking */
+    int ssu_status = fwk_module_bind(
+        FWK_ID_MODULE(FWK_MODULE_IDX_SSU),
+        FWK_ID_API(FWK_MODULE_IDX_SSU, MOD_SSU_SYS_API_IDX),
+        (const void **)&ssu_sys_api);
+    if (ssu_status != FWK_SUCCESS)
+        return ssu_status;
+
+    /* Bind to SSU error control/status API for test setup */
+    ssu_status = fwk_module_bind(
+        FWK_ID_MODULE(FWK_MODULE_IDX_SSU),
+        FWK_ID_API(FWK_MODULE_IDX_SSU, MOD_SSU_ERR_API_IDX),
+        (const void **)&ssu_err_api);
+    if (ssu_status != FWK_SUCCESS)
+        return ssu_status;
+
     return status;
 }
 
 static int test_sbistc_start(fwk_id_t id)
 {
     int status = FWK_SUCCESS;
+    /* Enable error detection for non-critical errors in SSU */
+    if (ssu_err_api) {
+        fwk_id_t ssu_dev_id = FWK_ID_ELEMENT(FWK_MODULE_IDX_SSU, 0);
+        status =
+            ssu_err_api->err_detect_control(ssu_dev_id, MOD_SSU_ERR_NCR_EN, 1);
+        TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
+    }
 
 #ifdef BUILD_HAS_NOTIFICATION
     if (!fwk_id_is_type(id, FWK_ID_TYPE_MODULE)) {

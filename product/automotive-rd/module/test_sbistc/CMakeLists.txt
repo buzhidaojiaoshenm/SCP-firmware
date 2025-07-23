@@ -12,4 +12,4 @@ target_sources(
 
 target_link_libraries(
     ${SCP_MODULE_TARGET}
-    PRIVATE module-integration-test module-fmu module-sbistc)
+    PRIVATE module-integration-test module-fmu module-ssu module-sbistc)
