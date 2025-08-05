@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2020-2023, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2020-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -307,7 +307,7 @@ static void cli_error_handler(uint32_t status);
  */
 static void cli_val2str(
     char **outstr,
-    char *smax,
+    const char *smax,
     uint32_t value,
     uint32_t base,
     int32_t fill);
@@ -1340,7 +1340,7 @@ static void cli_error_handler(uint32_t status)
 
 static void cli_val2str(
     char **outstr,
-    char *smax,
+    const char *smax,
     uint32_t value,
     uint32_t base,
     int32_t fill)

@@ -136,10 +136,10 @@ static const char cycle_memory_help[] =
     "   Base address and size must be on 4 byte boundaries.\n";
 static int32_t cycle_memory_f(int32_t argc, char **argv)
 {
-    uintptr_t addr = (uintptr_t)(strtoul(argv[1], 0, 0) & 0xFFFFFFF8);
+    volatile uintptr_t *addr =
+        (volatile uintptr_t *)(strtoul(argv[1], 0, 0) & 0xFFFFFFF8);
     size_t size = (size_t)strtoul(argv[2], 0, 0);
     uint32_t iterations = (uint32_t)strtoul(argv[3], 0, 0);
-    volatile uintptr_t *tmp_address = (volatile uintptr_t *)addr;
     uint32_t deviation_count = 0;
     uint32_t cycle_count, index = 0;
 
@@ -153,19 +153,19 @@ static int32_t cycle_memory_f(int32_t argc, char **argv)
         NONE,
         "Cycle Compare Starts for 0x%08x for Length 0x%08x for iterations "
         "%d.\n",
-        addr,
+        (uintptr_t)addr,
         size,
         iterations);
 
     /* Snapshot the current state */
     for (index = 0; index < size; index++)
-        cycle_buffer[index] = tmp_address[index];
+        cycle_buffer[index] = addr[index];
 
     /* Loop through all bytes. */
     for (cycle_count = 0; cycle_count < iterations; cycle_count++) {
         for (index = 0; index < size; index++) {
-            if (tmp_address[index] != cycle_buffer[index]) {
-                cycle_buffer[index] = tmp_address[index];
+            if (addr[index] != cycle_buffer[index]) {
+                cycle_buffer[index] = addr[index];
                 deviation_count++;
             }
         }

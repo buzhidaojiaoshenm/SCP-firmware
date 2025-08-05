@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2020-2021, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2020-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -48,7 +48,7 @@ uint32_t fifo_get(fifo_st *fifo, char *val)
     return FWK_E_DATA;
 }
 
-uint32_t fifo_put(fifo_st *fifo, char *val)
+uint32_t fifo_put(fifo_st *fifo, const char *val)
 {
     /* Checking parameters. */
     if (fifo == 0 || val == 0)

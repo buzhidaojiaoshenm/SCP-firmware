@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2020-2021, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2020-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -71,7 +71,7 @@ uint32_t fifo_get(fifo_st *fifo, char *val);
  *   Return
  *     Platform return codes defined in cli_config.h.
  */
-uint32_t fifo_put(fifo_st *fifo, char *val);
+uint32_t fifo_put(fifo_st *fifo, const char *val);
 
 /*
  * fifo_free_space
