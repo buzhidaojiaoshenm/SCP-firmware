@@ -41,6 +41,9 @@ internalAstError:*framework/src/fwk_core.c:317
 // Suppress CMSIS errors
 *:*/CMSIS*/*
 
+// Suppress Cmock errors
+*:*/cmock*/*
+
 // Cppcheck seems to get confused with macro substitution
 unknownMacro:*product/rcar/module/rcar_system/src/rcar_common.c:22
 unknownMacro:*product/rcar/module/rcar_system/src/rcar_iic_dvfs.c:172

@@ -153,7 +153,7 @@ static int continue_test_case(const struct fwk_event *event)
 
     if (ctx.case_idx >= config->num_test_cases) {
         /* The test suite has finished */
-        int status = UNITY_END();
+        status = UNITY_END();
         FWK_LOG_INFO(
             MOD_NAME "End: %s", fwk_module_get_element_name(element_id));
         return status;
