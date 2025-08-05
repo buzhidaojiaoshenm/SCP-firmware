@@ -6,6 +6,10 @@
 #
 
 - product: fvp-baser-aemv8r
+  configs:
+    - name: default
+    - name: integration-test-debug
+      extra_config_args: ["-DSCP_ENABLE_DEBUGGER=ON"]
   toolchains:
     - name: GNU
     - name: Clang
