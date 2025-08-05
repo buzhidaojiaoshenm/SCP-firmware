@@ -52,17 +52,6 @@ static fifo_st cli_print_fifo = { 0 };
 static char cli_print_fifo_buffer[CLI_CONFIG_PRINT_BUFFER_SIZE] = { 0 };
 static bool overflow = false;
 
-size_t strnlen(s, maxlen) register const char *s;
-size_t maxlen;
-{
-    register const char *e;
-    size_t n;
-
-    for (e = s, n = 0; *e && n < maxlen; e++, n++)
-        ;
-    return n;
-}
-
 struct command_ctx {
     cli_command_st cmd;
     struct fwk_slist_node list_node;
