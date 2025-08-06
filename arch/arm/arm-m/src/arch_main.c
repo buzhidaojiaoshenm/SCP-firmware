@@ -10,6 +10,7 @@
 #include <fwk_arch.h>
 #include <fwk_assert.h>
 #include <fwk_macros.h>
+#include <fwk_status.h>
 
 #include <fmw_cmsis.h>
 
@@ -21,6 +22,11 @@
  * arch_interrupt.h
  */
 unsigned int critical_section_nest_level;
+
+FWK_WEAK int platform_init_hook(void *params)
+{
+    return FWK_SUCCESS;
+}
 
 #ifdef __NEWLIB__
 /* Platform-dependent backend for the _Exit() function */
@@ -59,9 +65,16 @@ static void arch_init_ccr(void)
 
 int main(void)
 {
+    int status;
+
 #ifndef ARMV6M
     arch_init_ccr();
 #endif
+
+    status = platform_init_hook(NULL);
+    if (status != FWK_SUCCESS) {
+        fwk_trap();
+    }
 
     return fwk_arch_init();
 }
