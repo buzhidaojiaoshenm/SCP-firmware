@@ -17,11 +17,6 @@
 
     .global arch_exception_reset;
 arch_exception_reset:
-    /* Ensure primary core */
-    mrs x0, mpidr_el1
-    and x0, x0, #0xffffff
-    cbnz x0, wfe_loop
-
     /* Check current exception level */
     mrs x0, CurrentEL
     cmp x0, (2 << 2)
