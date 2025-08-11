@@ -89,7 +89,7 @@ static bool is_addr_mapped(uint64_t address, size_t size)
 {
     return ctx.is_region_mapped &&
         (address >= ctx.current_mapped_phys_address) &&
-        ((address + size) <
+        ((address + size) <=
          (ctx.current_mapped_phys_address + ctx.config->map_size));
 }
 
