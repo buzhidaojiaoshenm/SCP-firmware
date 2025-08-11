@@ -212,7 +212,6 @@ static int integration_test_element_init(
 static int integration_test_bind(fwk_id_t id, unsigned int round)
 {
     unsigned int idx;
-    int status;
 
     if (round > 0) {
         return FWK_SUCCESS;
@@ -223,19 +222,13 @@ static int integration_test_bind(fwk_id_t id, unsigned int round)
 
     const struct mod_integration_test_config *config = fwk_module_get_data(id);
     idx = fwk_id_get_element_idx(id);
-    fwk_id_t elem_id = FWK_ID_ELEMENT(FWK_MODULE_IDX_INTEGRATION_TEST, idx);
-    const char *name = fwk_module_get_element_name(elem_id);
-    status = fwk_module_bind(
+
+    return fwk_module_bind(
         config->test_id,
         FWK_ID_API(
             fwk_id_get_module_idx(config->test_id),
             MOD_INTEGRATION_TEST_API_IDX_TEST),
         &ctx.apis[idx]);
-    if (status != FWK_SUCCESS) {
-        FWK_LOG_ERR("Error binding to test %s", name);
-        return status;
-    }
-    return FWK_SUCCESS;
 }
 
 static int integration_test_process_event(
