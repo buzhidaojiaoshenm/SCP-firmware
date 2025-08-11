@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2024-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -47,6 +47,8 @@ struct atu_mmio_context {
     uint64_t current_mapped_phys_address;
     /*! Region index of the mapping in ATU. */
     uint8_t mapped_index;
+    /*! Flag indicating the presence of an active ATU mapping */
+    bool is_region_mapped;
 };
 
 static struct atu_mmio_context ctx;
@@ -85,7 +87,8 @@ static size_t get_width(enum atu_mmio_read_write_width width)
 /* Check if the address fall within previously mapped window. */
 static bool is_addr_mapped(uint64_t address, size_t size)
 {
-    return (address >= ctx.current_mapped_phys_address) &&
+    return ctx.is_region_mapped &&
+        (address >= ctx.current_mapped_phys_address) &&
         ((address + size) <
          (ctx.current_mapped_phys_address + ctx.config->map_size));
 }
@@ -111,7 +114,7 @@ static uintptr_t map_region(
             (uintptr_t)(ctx.config->window_address), ctx.config->map_size);
 #endif
 
-        if (ctx.current_mapped_phys_address != 0) {
+        if (ctx.is_region_mapped) {
             status = ctx.atu_api->remove_region(
                 ctx.mapped_index,
                 ctx.config->atu_id,
@@ -119,6 +122,7 @@ static uintptr_t map_region(
             if (status != FWK_SUCCESS) {
                 fwk_unexpected();
             }
+            ctx.is_region_mapped = false;
         }
 
         /*
@@ -139,7 +143,7 @@ static uintptr_t map_region(
         if (status != FWK_SUCCESS) {
             fwk_unexpected();
         }
-
+        ctx.is_region_mapped = true;
         ctx.current_mapped_phys_address = aligned_request_phy_address;
     }
 
@@ -277,6 +281,8 @@ static int atu_mmio_init(
     const void *config)
 {
     ctx.config = config;
+    ctx.is_region_mapped = false;
+
     return FWK_SUCCESS;
 }
 
