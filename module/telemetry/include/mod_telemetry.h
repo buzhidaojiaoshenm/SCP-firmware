@@ -5,75 +5,77 @@
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * Description:
- *     Telemetry HAL module (See SCMI Specification > 3.2).
+ *     Telemetry domain HAL (Hardware Abstraction Layer).
+ *
+ *     This module provides telemetry functionalities, including memory
+ *     management for SHMTI (Shared Memory Telemetry Interface), bitmaps for
+ *     allocation tracking, and functions for telemetry source and event
+ *     management.
  */
-
 #ifndef MOD_TELEMETRY_H
 #define MOD_TELEMETRY_H
 
 #include <fwk_id.h>
+#include <fwk_macros.h>
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
-#include <string.h>
 
 /*!
- * \addtogroup GroupModules
+ * \addtogroup GroupModules Modules
  * \{
  */
 
 /*!
- * \defgroup GroupTelemetry Telemetry Support
+ * \defgroup GroupTELEMETRY Telemetry HAL.
  * \{
  */
 
+/*! Maximum number of telemetry sources allowed in HAL. */
+#define MOD_TELEMETRY_MAX_TELEMETRY_SOURCES 5
+
 /*!
- * \brief Defines the maximum telemetry sources and data event limits.
+ * \brief Telemetry HAL Data event handle.
  */
-#define MOD_TELEMETRY_MAX_TELEMETRY_SOURCES 16
+typedef struct {
+    /*! Source Index */
+    uint32_t source_index : 8;
 
-/*! Maximum Data Events per telemetry source */
-#define MOD_TELEMETRY_MAX_DE_PER_SOURCE     256
+    /*! Index of the group within the source. */
+    uint32_t group_index : 8;
+
+    /*! Index of the DE within the group. */
+    uint32_t de_offset_index : 8;
+
+    /*! Reserving it for future use.*/
+    uint32_t reserved : 8;
+} telemetry_de_handle_st;
 
 /*!
- * \brief Defines various field types as specified for TDCF in the
- *        SCMI specification > 3.2.
+ * \brief Telemetry update interval format types.
  */
-
-/*! Size in bytes for Header MetadataH + Header MetadataL */
-#define MOD_TELEMETRY_HEADER_METADATA_N_BYTES 8
-
-/*! Size in bytes for StartMatchSequenceH + StartMatchSequenceL */
-#define MOD_TELEMETRY_HEADER_MATCH_SEQ_N_BYTES 8
-
-/*! Size in bytes for Line-TimestampH + Line-TimestampL */
-#define MOD_TELEMETRY_TS_N_BYTES 8
-
-/*! Size in bytes for Line-DataH + Line-DataL */
-#define MOD_TELEMETRY_DE_DATA_N_BYTES 8
-
-/*! Size in bytes for Line-ID */
-#define MOD_TELEMETRY_DE_ID_N_BYTES 4
-
-/*! Size in bytes for Line-Metadata */
-#define MOD_TELEMETRY_LINE_META_DATA_SIZE_BYTES 4
-
-/*! Total size in bytes for Line that does not include a timestamp */
-#define MOD_TELEMETRY_DE_SIZE_NON_TS \
-    (MOD_TELEMETRY_DE_DATA_N_BYTES + MOD_TELEMETRY_DE_ID_N_BYTES + \
-     MOD_TELEMETRY_LINE_META_DATA_SIZE_BYTES)
-
-/*! Total size in bytes for Line that includes a timestamp */
-#define MOD_TELEMETRY_DE_SIZE_TS \
-    (MOD_TELEMETRY_DE_SIZE_NON_TS + MOD_TELEMETRY_TS_N_BYTES)
-
-/*! Size in bytes for a block timestamp line */
-#define MOD_TELEMETRY_DE_BLOCK_LINE_N_BYTES \
-    (MOD_TELEMETRY_TS_N_BYTES + MOD_TELEMETRY_DE_ID_N_BYTES + \
-     MOD_TELEMETRY_LINE_META_DATA_SIZE_BYTES)
+enum mod_telemetry_update_interval_formats {
+    MOD_TELEMETRY_UPDATE_INTERVALS_DISCRETE,
+    MOD_TELEMETRY_UPDATE_INTERVALS_LINEAR
+};
 
 /*!
- * \brief SHMTI (Shared-memory based telemetry interfaces) descriptor.
+ * \brief Holds Telemetry module conmfig.
+ */
+struct mod_telemetry_config {
+    /*! Number of available Telemetry Shared memory areas (SHMTI)  */
+    uint32_t shmti_count;
+    /*! Number of valid update intervals available. */
+    uint32_t num_intervals;
+    /*! Telemetry update interval type. */
+    enum mod_telemetry_update_interval_formats interval_format;
+    /*! List of available sampling rates. */
+    uint32_t *sampling_rates;
+};
+
+/*!
+ * \brief Telemetry SHMTI description.
  */
 struct mod_telemetry_shmti_desc {
     /*! SHMTI ID. */
@@ -87,169 +89,49 @@ struct mod_telemetry_shmti_desc {
 };
 
 /*!
- * \brief Holds SHMTI info such as addresses and size.
+ * \brief Telemetry Data Event Line Type.
  */
-struct mod_telemetry_shmti_info {
-    /*! Start address of the SHMTI region. */
-    uintptr_t start_addr;
-    /*! Agent (e.g. AP) view of the start address of the SHMTI region. */
-    uint64_t start_ap_addr;
-    /*! Length of the SHMTI region. */
-    size_t length;
+enum mod_telemetry_de_line_type {
+    mod_telemetry_de_line_type_ts,
+    mod_telemetry_de_line_type_non_ts,
+    mod_telemetry_de_line_type_block_ts,
+    mod_telemetry_de_line_type_count
 };
 
 /*!
- * \brief DE(Data Event) descriptor.
+ * \brief Telemetry Data Event Fast Channel Attributes.
+ */
+struct mod_telemetry_de_fch_attr {
+    /*! Lower 32 bits of fast channel address. */
+    uint32_t fch_addr_low;
+    /*! Higher 32 bits of fast channel address. */
+    uint32_t fch_addr_high;
+    /*! Size of fast channel in bytes. */
+    uint32_t fch_size;
+};
+
+/*!
+ * \brief Telemetry Data Event Description.
  */
 struct mod_telemetry_de_desc {
-    /*! DE ID. */
+    /*! Data event ID. */
     uint32_t de_id;
-    /*! Attribute 1, Refer SCMI specification for details  */
-    uint32_t attributes_1;
-    /*! Attribute 2. Refer SCMI specification for details */
-    uint32_t attributes_2;
-    /*! Attribute 3, Reserved must be zero */
-    uint32_t attributes_3;
-    /*! Attribute 4, Lower 32 bits of the FastChannel address. */
-    uint32_t attributes_4;
-    /*! Attribute 5, Higher 32 bits of the FastChannel address. */
-    uint32_t attributes_5;
-    /*! Attribute 6, Size of the FastChannel is bytes. */
-    uint32_t attributes_6;
+    /*! Group ID. */
+    uint32_t group_id;
+    /*! Size of the data event in bytes. */
+    uint32_t de_data_size;
+    /*! Data Event mandatory attributes. */
+    uint32_t attributes[3];
 };
 
 /*!
- * \brief Various DE(Data Event) types as per the SCMI specification.
- */
-enum mod_telemetry_de_types {
-    mod_telemetry_de_type_unspecified = 0x0,
-    mod_telemetry_de_type_accumulating_residency = 0x1,
-    mod_telemetry_de_type_accumulating_count = 0x2,
-    mod_telemetry_de_type_accumulating_other = 0x3,
-    mod_telemetry_de_type_instantaneous = 0x4,
-    mod_telemetry_de_type_instantaneous_other = 0x5,
-    mod_telemetry_de_type_averaging = 0x6,
-    mod_telemetry_de_type_status = 0x7,
-};
-
-/*!
- * \brief Various DE Component types as per the SCMI specification.
- */
-enum mod_telemetry_de_comp_type_id {
-    mod_telemetry_de_component_unspecified = 0x0,
-    mod_telemetry_de_cpu = 0x1,
-    mod_telemetry_de_cluster = 0x2,
-    mod_telemetry_de_gpu = 0x3,
-    mod_telemetry_de_npu = 0x4,
-    mod_telemetry_de_interconnect = 0x5,
-    mod_telemetry_de_memory_controller = 0x6,
-    mod_telemetry_de_l1_cache = 0x7,
-    mod_telemetry_de_l2_cache = 0x8,
-    mod_telemetry_de_l3_cache = 0x9,
-    mod_telemetry_de_last_level_cache = 0xA,
-    mod_telemetry_de_system_cache = 0xB,
-    mod_telemetry_de_display_controller = 0xC,
-    mod_telemetry_de_ipu_camera = 0xD,
-    mod_telemetry_de_chiplet = 0xE,
-    mod_telemetry_de_package = 0xF,
-    mod_telemetry_de_soc = 0x10,
-    mod_telemetry_de_system = 0x11,
-    mod_telemetry_de_smcu = 0x12,
-    mod_telemetry_de_accelerator = 0x13,
-    mod_telemetry_de_battery = 0x14,
-    mod_telemetry_de_battery_charger = 0x15,
-    mod_telemetry_de_pmic = 0x16,
-    mod_telemetry_de_board = 0x17,
-    mod_telemetry_de_memory = 0x18,
-    mod_telemetry_de_device = 0x19,
-    mod_telemetry_de_subcomponent = 0x1A,
-    mod_telemetry_de_lid = 0x1B,
-    mod_telemetry_de_display = 0x1C,
-};
-
-/*!
- * \brief Architected DE IDs specified by the SCMI specification.
- */
-enum mod_telemetry_de_id {
-    mod_telemetry_de_id_soc_energy = 0xA000,
-    mod_telemetry_de_id_total_cpu_energy = 0xA001,
-    mod_telemetry_de_id_dram_energy = 0xA002,
-    mod_telemetry_de_id_gpu_energy = 0xA003,
-    mod_telemetry_de_id_soc_temp = 0xA004,
-    mod_telemetry_de_id_max_cpu_temp = 0xA005,
-    mod_telemetry_de_id_gpu_temp = 0xA006,
-    mod_telemetry_de_id_dram_temp = 0xA007,
-    mod_telemetry_de_id_interconnect_freq = 0xA008,
-    mod_telemetry_de_id_gpu_freq = 0xA009,
-    mod_telemetry_de_id_memory_bw = 0xA00A,
-    mod_telemetry_de_id_dram_speed = 0xA00B,
-    mod_telemetry_de_id_num_cpu_throttle_events = 0xA00C,
-    mod_telemetry_de_id_num_gpu_throttle_events = 0xA00D,
-    mod_telemetry_de_id_num_dram_throttle_events = 0xA00E,
-    mod_telemetry_de_id_num_soc_throttle_events = 0xA00F,
-    mod_telemetry_de_id_cpu_active_throttle = 0xA010,
-    mod_telemetry_de_id_gpu_active_throttle = 0xA011,
-    mod_telemetry_de_id_dram_active_throttle = 0xA012,
-    mod_telemetry_de_id_soc_active_throttle = 0xA013,
-};
-
-/*!
- * \brief Interval Format types.
- *
- * SCMI Specification specifies two types of update intervals for telemetry
- * data to be refreshed/updated. These intervals could be discrete or linear.
- */
-enum mod_telemetry_update_interval_formats {
-    MOD_TELEMETRY_UPDATE_INTERVALS_DISCRETE,
-    MOD_TELEMETRY_UPDATE_INTERVALS_LINEAR,
-};
-
-/*!
- * \brief The exponent length within a word.
- */
-struct mod_telemetry_update_interval_exponent {
-    /*! Exponent field width */
-    int32_t value : 5;
-};
-
-/*! Number of bits for exponent field in a 32 bit interval value */
-#define MOD_TELEMETRY_INTERVAL_NUM_EXPONENT_BITS (5U)
-/*! Number of bits for second field in a 32 bit interval value */
-#define MOD_TELEMETRY_INTERVAL_NUM_SECONDS_BITS  (15U)
-/*! Bit position of second field in 32 bit value */
-#define MOD_TELEMETRY_INTERVAL_SECONDS_POS       (5U)
-
-/*! Bitmask for exponent field */
-#define MOD_TELEMETRY_INTERVAL_NUM_EXPONENT_MASK \
-    ((1UL << MOD_TELEMETRY_INTERVAL_NUM_EXPONENT_BITS) - 1)
-
-/*! Bitmask for second field */
-#define MOD_TELEMETRY_INTERVAL_NUM_SECONDS_MASK \
-    (((1UL << MOD_TELEMETRY_INTERVAL_NUM_SECONDS_BITS) - 1) \
-     << MOD_TELEMETRY_INTERVAL_SECONDS_POS)
-
-/*! Extract exponent field */
-#define MOD_TELEMETRY_INTERVAL_EXPONENT(rate_value) \
-    ((rate_value) & (uint32_t)MOD_TELEMETRY_INTERVAL_NUM_EXPONENT_MASK)
-
-/*! Extract second field */
-#define MOD_TELEMETRY_INTERVAL_SECONDS(rate_value) \
-    (((rate_value) & (uint32_t)MOD_TELEMETRY_INTERVAL_NUM_SECONDS_MASK) >> \
-     MOD_TELEMETRY_INTERVAL_SECONDS_POS)
-
-/*!
- * \brief DE (Data Event) Status.
- *
- * This structure holds the runtime status of a Data Event (DE).
- * It includes the DE ID and its timestamp mode.
+ * \brief Telemetry Data Event status.
  */
 struct mod_telemetry_de_status {
-    /*! Unique identifier for the Data Event (DE). */
+    /*! Data event ID. */
     uint32_t de_id;
-    /*! Timestamp mode for this DE (2-bit field). */
-    uint32_t de_ts_mode : 2;
-    /*! Reserved bits for future use, must be set to 0. */
-    uint32_t reserved : 30;
+    /*! Timestamp mode for this DE. */
+    uint32_t de_ts_mode;
 };
 
 /*!
@@ -260,207 +142,18 @@ struct mod_telemetry_de_status {
 struct mod_telemetry_de {
     /*! Descriptor defining DE attributes. */
     struct mod_telemetry_de_desc desc;
-    /*! Current status and timestamp mode. */
-    struct mod_telemetry_de_status status;
+    /*! Timestamp mode for this DE. */
+    uint32_t de_ts_mode;
 };
 
 /*!
- * \brief Line types in TDCF shared memory.
- *
- * These line types define how Data Events (DEs) store timestamp information.
- * - `mod_telemetry_de_line_type_ts`: Each DE has an individual timestamp.
- * - `mod_telemetry_de_line_type_non_ts`: DEs do not have a timestamp.
- * - `mod_telemetry_de_line_type_block_ts`: Multiple DEs share a common
- * timestamp.
- */
-enum mod_telemetry_de_line_type {
-    /*! Each DE has an individual timestamp. */
-    mod_telemetry_de_line_type_ts = 0,
-    /*! DEs do not have an individual timestamp. */
-    mod_telemetry_de_line_type_non_ts = 1,
-    /*! Multiple DEs share a common timestamp block. */
-    mod_telemetry_de_line_type_block_ts = 2
-};
-
-/*!
- * \brief DE Pool structure.
- *
- * This structure defines a pool of Data Events allocated in shared memory.
- */
-struct mod_telemetry_de_pool {
-    /*! ID of the Shared Memory Telemetry Interface (SHMTI). */
-    uint32_t shmti_id;
-    /*! Base address of the DE pool in shared memory. */
-    uintptr_t addr;
-    /*! Type of DE line (timestamped or not). */
-    enum mod_telemetry_de_line_type de_type;
-    /*! Size of each DE in bytes. */
-    uint8_t de_size;
-    /*! Total number of DEs allocated in this pool. */
-    uint8_t num_de;
-};
-
-/*!
- * \brief Telemetry Configuration
- *
- * This structure defines the telemetry configuration settings, including
- * update intervals, shared memory details, and miscellaneous settings.
- */
-struct mod_telemetry_config {
-    /* --- Sampling Rates Configuration --- */
-
-    /*! Number of telemetry update intervals available. */
-    uint32_t num_intervals;
-
-    /*! Format of the update intervals (discrete or linear). */
-    enum mod_telemetry_update_interval_formats interval_format;
-
-    /*!
-     * Pointer to an array of sampling rates in Hz.
-     *
-     * \note The array should contain `num_intervals` elements.
-     */
-    uint32_t *sampling_rates;
-
-    /*! Alarm ID used for scheduling periodic telemetry updates. */
-    fwk_id_t alarm_id;
-
-    /* --- SHMTI Configuration --- */
-
-    /*! Number of SHMTI (Shared Memory Telemetry Interface) regions. */
-    uint32_t shmti_count;
-
-    /*! Pointer to an array of SHMTI region info.
-     *
-     * \note The array size should be `shmti_count`.
-     */
-    struct mod_telemetry_shmti_info *shmti_list;
-
-    /* --- Miscellaneous Configuration --- */
-
-    /*! Enables asynchronous telemetry data updates.
-     *
-     * \note When enabled, telemetry updates do not block and run independently.
-     */
-    bool async_support;
-
-    /*! Enables continuous update notifications for telemetry data.
-     *
-     * \note When enabled, notifications are sent upon every telemetry update.
-     */
-    bool continuous_update_notif_support;
-};
-
-/*!
- * \brief SHMTI API.
- */
-struct mod_telemetry_shmti_api {
-    /*!
-     * \brief Allocate a pool of Data Events (DEs) with individual timestamps.
-     *
-     * \param[in] num_de Number of Data Events.
-     * \param[in,out] de_pool Pointer to the DE pool structure to be populated.
-     *
-     * \retval ::FWK_SUCCESS The operation was successful.
-     * \return One of the standard framework error codes.
-     */
-    int (*allocate_ts_de_pool_shmti)(
-        uint32_t num_de,
-        struct mod_telemetry_de_pool *de_pool);
-    /*!
-     * \brief Allocate a pool of Data Events (DEs) without individual
-     *    timestamps.
-     *
-     * \param[in] num_de Number of Data Events.
-     * \param[in,out] de_pool Pointer to the DE pool structure to be populated.
-     *
-     * \retval ::FWK_SUCCESS The operation was successful.
-     * \return One of the standard framework error codes.
-     */
-    int (*allocate_non_ts_de_pool_shmti)(
-        uint32_t num_de,
-        struct mod_telemetry_de_pool *de_pool);
-    /*!
-     * \brief Allocate memory for a single Data Event (non-timestamped).
-     *
-     * \param[in,out] shmti_id Pointer to store the SHMTI identifier.
-     * \param[in,out] addr Pointer to store the allocated memory address.
-     *
-     * \retval ::FWK_SUCCESS The operation was successful.
-     * \return One of the standard framework error codes.
-     */
-    int (*allocate_de_non_ts)(uint32_t *shmti_id, uintptr_t *addr);
-    /*!
-     * \brief Allocate memory for a single Data Event that requires a timestamp.
-     *
-     * \param[in,out] shmti_id Pointer to store the SHMTI identifier.
-     * \param[in,out] addr Pointer to store the allocated memory address.
-     *
-     * \retval ::FWK_SUCCESS The operation was successful.
-     * \return One of the standard framework error codes.
-     */
-    int (*allocate_de_ts)(uint32_t *shmti_id, uintptr_t *addr);
-    /*!
-     * \brief Allocate a block of Data Events (DEs) sharing a common timestamp.
-     *
-     * \param[in] num_de Number of Data Events.
-     * \param[in,out] de_pool Pointer to the DE pool structure to be populated.
-     *
-     * \retval ::FWK_SUCCESS The operation was successful.
-     * \return One of the standard framework error codes.
-     */
-    int (*allocate_block_ts_shmti)(
-        uint32_t num_de,
-        struct mod_telemetry_de_pool *de_pool);
-    /*!
-     * \brief Free a DE pool.
-     *
-     * \param[in] de_pool Pointer to the DE pool structure.
-     *
-     * \retval ::FWK_SUCCESS The operation was successful.
-     * \return One of the standard framework error codes.
-     */
-    int (*free_de_pool)(struct mod_telemetry_de_pool *de_pool);
-    /*!
-     * \brief Free a single Data Event.
-     *
-     * \param[in] shmti_id SHMTI identifier.
-     * \param[in] addr Memory address of the Data Event.
-     * \param[in] de_size size of the allocated Data Event.
-     *
-     * \retval ::FWK_SUCCESS The operation was successful.
-     * \return One of the standard framework error codes..
-     */
-    int (*free_de)(uint32_t shmti_id, uintptr_t addr, size_t de_size);
-};
-
-/*!
- * \brief API indices for Telemetry Module.
- *
- * These indices define the available APIs provided by the telemetry module.
+ * \brief Telemetry HAL API indices.
  */
 enum mod_telemetry_api_idx {
-    /*! Protocol support API index */
     MOD_TELEMETRY_API_IDX_PROTOCOL_SUPPORT,
-
-    /*! Driver support API index */
     MOD_TELEMETRY_API_IDX_DRIVER_SUPPORT,
-
-    /*! Total number of available APIs */
-    MOD_TELEMETRY_API_IDX_COUNT,
-};
-
-/*!
- * \brief API indices for Telemetry Driver.
- *
- * These indices define the available APIs for telemetry source drivers.
- */
-enum mod_telemetry_driver_api_idx {
-    /*! Hardware Abstraction Layer (HAL) support API index */
     MOD_TELEMETRY_DRIVER_API_IDX_HAL_SUPPORT,
-
-    /*! Total number of available driver APIs */
-    MOD_TELEMETRY_DRIVER_API_COUNT,
+    MOD_TELEMETRY_API_IDX_COUNT
 };
 
 /*!
@@ -503,21 +196,31 @@ struct mod_telemetry_driver_api {
      * \brief Enable a Data Event (DE) without an individual timestamp.
      *
      * \param[in] de_index Index of the DE to enable.
+     * \param[out] shmti_id SHMTI ID contianing the give Data Event.
+     * \param[out] shmti_de_offset Byte offset from the start of the given
      *
      * \retval ::FWK_SUCCESS The operation was successful.
      * \return One of the standard framework error codes.
      */
-    int (*enable_de_non_ts)(uint32_t de_index);
+    int (*enable_de_non_ts)(
+        uint32_t de_index,
+        uint32_t *shmti_id,
+        uint32_t *shmti_de_offset);
 
     /*!
      * \brief Enable a Data Event (DE) with an individual timestamp.
      *
      * \param[in] de_index Index of the DE to enable.
+     * \param[out] shmti_id SHMTI ID contianing the give Data Event.
+     * \param[out] shmti_de_offset Byte offset from the start of the given
      *
      * \retval ::FWK_SUCCESS The operation was successful.
      * \return One of the standard framework error codes.
      */
-    int (*enable_de_ts)(uint32_t de_index);
+    int (*enable_de_ts)(
+        uint32_t de_index,
+        uint32_t *shmti_id,
+        uint32_t *shmti_de_offset);
 
     /*!
      * \brief Trigger telemetry data update.
@@ -525,7 +228,7 @@ struct mod_telemetry_driver_api {
      * This function updates the telemetry data by fetching values from
      * registered telemetry sources.
      */
-    void (*update)();
+    int (*update)(void);
 };
 
 /*!
@@ -580,6 +283,30 @@ struct mod_telemetry_protocol_support_api {
     int (*get_de)(uint32_t de_index, struct mod_telemetry_de_desc *de_desc);
 
     /*!
+     * \brief Retrieve Fast Channel details of a specific Data Event (DE).
+     *
+     * \param[in] de_index Index of the DE.
+     * \param[out] de_fch_attr Pointer to store the fast Channel attributes.
+     *
+     * \retval ::FWK_SUCCESS The operation was successful.
+     * \return One of the standard framework error codes.
+     */
+    int (*get_de_fch_desc)(
+        uint32_t de_index,
+        struct mod_telemetry_de_fch_attr *de_fch_attr);
+
+    /*!
+     * \brief Retrieve name of a specific Data Event (DE).
+     *
+     * \param[in] de_index Index of the DE.
+     * \param[out] name Pointer to store the DE name.
+     *
+     * \retval ::FWK_SUCCESS The operation was successful.
+     * \return One of the standard framework error codes.
+     */
+    int (*get_de_name)(uint32_t de_index, char *name);
+
+    /*!
      * \brief Get information about supported update intervals.
      *
      * \param[out] num_intervals Pointer to store the number of intervals.
@@ -617,14 +344,14 @@ struct mod_telemetry_protocol_support_api {
     /*!
      * \brief Get the status of an enabled Data Event (DE).
      *
-     * \param[in] index Index of the enabled DE.
+     * \param[in] de_handle Handle of the enabled DE.
      * \param[out] de_status Pointer to store the DE status.
      *
      * \retval ::FWK_SUCCESS The operation was successful.
      * \return One of the standard framework error codes.
      */
     int (*get_de_enabled)(
-        uint32_t index,
+        telemetry_de_handle_st de_handle,
         struct mod_telemetry_de_status *de_status);
 
     /*!
@@ -638,32 +365,48 @@ struct mod_telemetry_protocol_support_api {
     /*!
      * \brief Disable a specific Data Event (DE).
      *
-     * \param[in] de_id ID of the DE to disable.
+     * \param[in] de_handle Handle of the enabled DE to disable.
      *
      * \retval ::FWK_SUCCESS The operation was successful.
      * \return One of the standard framework error codes.
      */
-    int (*disable_de)(uint32_t de_id);
+    int (*disable_de)(telemetry_de_handle_st de_handle);
 
     /*!
      * \brief Enable a Data Event (DE) without an individual timestamp.
      *
      * \param[in] de_id ID of the DE to enable.
+     * \param[out] de_handle Pointer to the constructed handle for the
+     * requested DE.
+     * \param[out] shmti_id SHMTI ID contianing the give Data Event.
+     * \param[out] shmti_de_offset Byte offset from the start of the given
      *
      * \retval ::FWK_SUCCESS The operation was successful.
      * \return One of the standard framework error codes.
      */
-    int (*enable_de_non_ts)(uint32_t de_id);
+    int (*enable_de_non_ts)(
+        uint32_t de_id,
+        telemetry_de_handle_st *de_handle,
+        uint32_t *shmti_id,
+        uint32_t *shmti_de_offset);
 
     /*!
      * \brief Enable a Data Event (DE) with an individual timestamp.
      *
      * \param[in] de_id ID of the DE to enable.
+     * \param[out] de_handle Pointer to the constructed handle for the
+     * requested DE.
+     * \param[out] shmti_id SHMTI ID contianing the give Data Event.
+     * \param[out] shmti_de_offset Byte offset from the start of the given
      *
      * \retval ::FWK_SUCCESS The operation was successful.
      * \return One of the standard framework error codes.
      */
-    int (*enable_de_ts)(uint32_t de_id);
+    int (*enable_de_ts)(
+        uint32_t de_id,
+        telemetry_de_handle_st *de_handle,
+        uint32_t *shmti_id,
+        uint32_t *shmti_de_offset);
 
     /*!
      * \brief Disable telemetry functionality.
@@ -690,7 +433,17 @@ struct mod_telemetry_protocol_support_api {
      * \return One of the standard framework error codes.
      */
     int (*set_sampling_rate)(uint32_t sampling_rate);
+
+    /*!
+     * \brief Resets the telemetry infrastructure.
+     *
+     * \retval ::FWK_SUCCESS The operation was successful.
+     * \return One of the standard framework error codes.
+     */
+
+    int (*telemetry_reset)(void);
 };
+
 /*!
  * \}
  */
@@ -698,4 +451,5 @@ struct mod_telemetry_protocol_support_api {
 /*!
  * \}
  */
+
 #endif /* MOD_TELEMETRY_H */
