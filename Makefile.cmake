@@ -37,6 +37,13 @@ export GENHTML  := genhtml
 export PYTHON := python3
 
 #
+# Optional user-defined products path
+#
+ifneq ($(PRODUCT_PATH),)
+	PRODUCTS_DIR := $(PRODUCT_PATH)
+endif
+
+#
 # Documentation paths
 #
 export BUILD_STRING := $(shell $(TOOLS_DIR)/build_string.py 2>/dev/null)
@@ -196,6 +203,15 @@ ifdef PLATFORM_VARIANT
     CMAKE_COMMAND_OPTION += -DSCP_PLATFORM_VARIANT="$(PLATFORM_VARIANT)"
 endif
 
+ifdef PRODUCT_PATH
+	CMAKE_COMMAND_OPTION += -DPRODUCT_PATH="$(PRODUCT_PATH)"
+	# Defining PRODUCT without defining PRODUCT_PATH results in unused variable
+	# warning.
+	ifdef PRODUCT
+		CMAKE_COMMAND_OPTION += -DPRODUCT="$(PRODUCT)"
+	endif
+endif
+
 ifdef CMAKE_BUILD_VERBOSE_OPTION
     CMAKE_COMMAND_OPTION += -DCOMMAND_OUTPUT_VERBOSE=1
 endif
@@ -286,6 +302,10 @@ help:
 	@echo "    LLVM_SYSROOT_CC"
 	@echo "        Value: <LLVM sysroot compiler path>"
 	@echo "        Specify LLVM sysroot compiler path to build the firmware."
+	@echo ""
+	@echo "    PRODUCT_PATH"
+	@echo "        Value: <Path to external product directory>"
+	@echo "        Select the path to an external directory with products in.  "
 	@echo ""
 	@echo "    PLATFORM_VARIANT"
 	@echo "        Value: <Platform variant>"

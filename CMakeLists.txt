@@ -44,8 +44,10 @@ if(SCP_FIRMWARE_SOURCE_DIR)
         file(RELATIVE_PATH SCP_FIRMWARE_BINARY_DIR "${CMAKE_SOURCE_DIR}"
              "${SCP_FIRMWARE_SOURCE_DIR}")
     endif()
-
-    if(SCP_FIRMWARE_BINARY_DIR MATCHES "\\.\\.")
+    #
+    # If PRODUCT_PATH is defined, then allow absolute directory paths
+    #
+    if(NOT PRODUCT_PATH AND SCP_FIRMWARE_BINARY_DIR MATCHES "\\.\\.")
         # cmake-format: off
         message(FATAL_ERROR
             "Invalid firmware binary directory.\n"
@@ -362,8 +364,15 @@ if(SCP_FIRMWARE)
     # architecture library, etc.
     #
 
-    add_subdirectory("${SCP_FIRMWARE_SOURCE_DIR}" "${SCP_FIRMWARE_BINARY_DIR}"
-                     EXCLUDE_FROM_ALL)
+    if(NOT PRODUCT_PATH)
+        add_subdirectory("${SCP_FIRMWARE_SOURCE_DIR}" "${SCP_FIRMWARE_BINARY_DIR}"
+                         EXCLUDE_FROM_ALL)
+    else()
+        # Needs to store binaries in the product directory with a directory tree in
+        # this format.
+        get_filename_component(FW_DIR_NAME "${SCP_FIRMWARE_BINARY_DIR}" NAME)
+        add_subdirectory("${SCP_FIRMWARE_SOURCE_DIR}" "product/${PRODUCT}/${FW_DIR_NAME}")
+    endif()
 
     #
     # Generate a map file for the firmware.
