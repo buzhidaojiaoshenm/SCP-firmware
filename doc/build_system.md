@@ -20,8 +20,8 @@ documentation using the build system's "help" parameter:
 
 ## Product and Firmware Hierarchy
 
-A product is a collection of firmware. All products are located under the
-__product__ directory and must adhere to the following hierarchy:
+A product is a collection of firmware. All existing products are located under
+the __product__ directory and must adhere to the following hierarchy:
 
     <root>
      └─ product
@@ -40,6 +40,9 @@ __product__ directory and must adhere to the following hierarchy:
                 └── <firmware 2 level configuration files...>
                 └── Firmware.cmake
                 └── CMakeLists.txt
+
+> **NOTE**: There is functionality for building a product located outside of
+> this root directory. Read below for instructions.
 
 Different products that share similar files can be grouped into
 product_group. Shared files are located under __common__ directory, while
@@ -438,6 +441,50 @@ $ cmake "${SCP_SOURCE_DIR}" -B "${SCP_BUILD_DIR}" \
 
 > **NOTE:** An out-of-tree firmware may be configured per these instructions by
 > providing a firmware directory outside of the project source directory.
+
+## Build a Product Outside of the Root Directory
+The following instructions are for building a product that is located outside
+of the root directory.
+
+### Change toolchain files
+
+First, the `Toolchain-(GNU/Clang/ArmClang).cmake` file for the product needs to be
+changed. The variable `${CMAKE_CURRENT_LIST_DIR}` used in the Toolchain file will
+point to a directory in the external product directory as opposed to the
+SCP-firmware root directory. So, the `Toolchain-(GNU/Clang/ArmClang).cmake` 
+file should be changed to something similar to the following:
+
+```
+include_guard()
+
+set(CMAKE_SYSTEM_PROCESSOR "<TBD>")
+set(CMAKE_TOOLCHAIN_PREFIX "<TBD>")
+
+set(CMAKE_ASM_COMPILER_TARGET "<TBD>")
+set(CMAKE_C_COMPILER_TARGET "<TBD>")
+set(CMAKE_CXX_COMPILER_TARGET "<TBD>")
+
+if(NOT DEFINED ENV{CMAKE_TOP_DIR})
+    set(ENV{CMAKE_TOP_DIR} "${CMAKE_SOURCE_DIR}")
+endif()
+
+set(CMAKE_TOP_DIR "$ENV{CMAKE_TOP_DIR}")
+include("${CMAKE_TOP_DIR}/cmake/Toolchain/<TOOLCHAIN>-Baremetal.cmake")
+```
+
+An environment variable is needed here because there is an LTO try_compile
+iteration of this file which does not include cached variables. 
+It needs to be stored on the first iteration as each try_compile iteration
+will be performed in different directories.
+
+### Add PRODUCT_PATH parameter to the make command
+The `PRODUCT_PATH` parameter should be assigned the directory in which the
+product resides. For example, if `neoverse-rd/sgi575` is an external product
+located in the directory: `~/foo/ExternalProducts`, then the command
+should be as follows:
+```
+make -f Makefile.cmake PRODUCT_PATH=~/foo/ExternalProducts PRODUCT=neoverse-rd/sgi575 MODE=debug
+```
 
 # Development Environments
 
