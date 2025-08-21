@@ -70,3 +70,9 @@
 
 - product: tc3
   product_group: totalcompute
+
+- product: tc4
+  product_group: totalcompute
+  configs:
+    - name: default
+      extra_config_args: ["-DSCP_ENABLE_PLAT_FVP=ON"]

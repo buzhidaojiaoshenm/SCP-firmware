@@ -38,7 +38,7 @@
     matrix:
       - BUILD_PRODUCT:
           [host, juno, morello, n1sdp, rcar, rdv3, rdv1, rdv1mc, rdn1e1, rdn2,
-           sgi575, sgm775, sgm776, synquacer, rd1ae, fvp-baser-aemv8r, tc3]
+           sgi575, sgm775, sgm776, synquacer, rd1ae, fvp-baser-aemv8r, tc3, tc4]
 
 .build-products-all-products-all-log-levels:
   extends: .build-products
@@ -46,7 +46,7 @@
     matrix:
       - BUILD_PRODUCT:
           [host, juno, morello, n1sdp, rcar, rdv3, rdv1, rdv1mc, rdn1e1, rdn2,
-           sgi575, sgm775, sgm776, synquacer, rd1ae, fvp-baser-aemv8r, tc3]
+           sgi575, sgm775, sgm776, synquacer, rd1ae, fvp-baser-aemv8r, tc3, tc4]
         BUILD_PRODUCTS_LOG_LEVEL:
           [DEBUG, INFO, WARN, ERROR, CRIT, DISABLED]
 
