@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Arm SCP/MCP Software
-# Copyright (c) 2021-2024, Arm Limited and Contributors. All rights reserved.
+# Copyright (c) 2021-2025, Arm Limited and Contributors. All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -167,7 +167,7 @@ class Product:
             if 'configs' in yaml_entry:
                 configs = yaml_entry['configs']
                 parsed_configs = Parameter.from_yaml(configs)
-                if default_config not in parsed_configs:
+                if not any(cfg.name == 'default' for cfg in parsed_configs):
                     parsed_configs.insert(0, default_config)
                 product_properties['configs'] = parsed_configs
 
