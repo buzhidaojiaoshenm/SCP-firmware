@@ -1,13 +1,12 @@
 #
 # Arm SCP/MCP Software
-# Copyright (c) 2021-2024, Arm Limited and Contributors. All rights reserved.
+# Copyright (c) 2021-2025, Arm Limited and Contributors. All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
 
 list(APPEND SCP_ARCHITECTURE_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/arm/aarch64")
 list(APPEND SCP_ARCHITECTURE_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/arm/arm-m")
-list(APPEND SCP_ARCHITECTURE_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/arm/armv8-a")
 list(APPEND SCP_ARCHITECTURE_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/none/host")
 list(APPEND SCP_ARCHITECTURE_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/none/optee")
 
