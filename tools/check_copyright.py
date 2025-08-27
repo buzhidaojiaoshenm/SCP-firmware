@@ -43,7 +43,6 @@ EXCLUDE_DIRECTORIES = [
     '.git',
     'build',
     'contrib',
-    'product/rcar/src/CMSIS-FreeRTOS',
     'unit_test/unity_mocks',
 ] + UNIT_TEST_MOCKS
 

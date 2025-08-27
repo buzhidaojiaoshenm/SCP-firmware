@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Arm SCP/MCP Software
-# Copyright (c) 2015-2024, Arm Limited and Contributors. All rights reserved.
+# Copyright (c) 2015-2025, Arm Limited and Contributors. All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -29,7 +29,6 @@ EXCLUDE_DIRECTORIES = [
     '.git',
     'build',
     'contrib',
-    'product/rcar/src/CMSIS-FreeRTOS',
     'unit_test/unity_mocks',
 ] + UNIT_TEST_MOCKS
 
