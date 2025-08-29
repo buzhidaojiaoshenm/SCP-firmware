@@ -67,9 +67,9 @@
  *
  * \param flags Value returned by fwk_interrupt_global_disable.
  */
-inline static void fwk_interrupt_global_enable(unsigned int flags)
+static inline void fwk_interrupt_global_enable(unsigned int flags)
 {
-    arch_interrupts_enable(flags);
+    arch_interrupt_global_enable(flags);
 }
 
 /*!
@@ -77,9 +77,9 @@ inline static void fwk_interrupt_global_enable(unsigned int flags)
  *
  * \retval Opaque value to be passed when enabling.
  */
-inline static unsigned int fwk_interrupt_global_disable(void)
+static inline unsigned int fwk_interrupt_global_disable(void)
 {
-    return arch_interrupts_disable();
+    return arch_interrupt_global_disable();
 }
 
 /*!

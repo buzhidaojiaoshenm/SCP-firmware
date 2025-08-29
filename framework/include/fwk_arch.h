@@ -36,20 +36,6 @@
 int arch_interrupt_init(void);
 
 /*!
- * \brief Enable interrupts.
- *
- * \retval ::FWK_SUCCESS Operation succeeded.
- */
-int arch_interrupt_global_enable(void);
-
-/*!
- * \brief Disable interrupts.
- *
- * \retval ::FWK_SUCCESS Operation succeeded.
- */
-int arch_interrupt_global_disable(void);
-
-/*!
  * \brief Test whether an interrupt is enabled.
  *
  * \param interrupt Interrupt number.

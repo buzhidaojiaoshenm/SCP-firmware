@@ -67,20 +67,6 @@ void irq_global(void)
     entry->func(entry->param);
 }
 
-int arch_interrupt_global_enable(void)
-{
-    __enable_irq();
-
-    return FWK_SUCCESS;
-}
-
-int arch_interrupt_global_disable(void)
-{
-    __disable_irq();
-
-    return FWK_SUCCESS;
-}
-
 int arch_interrupt_is_enabled(unsigned int interrupt, bool *enabled)
 {
     if (interrupt >= irq_count) {

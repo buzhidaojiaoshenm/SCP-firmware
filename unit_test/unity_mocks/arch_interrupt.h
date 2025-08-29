@@ -5,14 +5,14 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-#ifndef ARCH_HELPERS_H
-#define ARCH_HELPERS_H
+#ifndef ARCH_INTERRUPT_H
+#define ARCH_INTERRUPT_H
 
 /*!
  * \brief Enables global CPU interrupts. (stub)
  *
  */
-inline static void arch_interrupts_enable(unsigned int not_used)
+inline static void arch_interrupt_global_enable(unsigned int not_used)
 {
 }
 
@@ -20,7 +20,7 @@ inline static void arch_interrupts_enable(unsigned int not_used)
  * \brief Disables global CPU interrupts. (stub)
  *
  */
-inline static unsigned int arch_interrupts_disable(void)
+inline static unsigned int arch_interrupt_global_disable(void)
 {
     return 0;
 }
@@ -35,4 +35,4 @@ inline static void arch_suspend(void)
 
 int arch_interrupt_init();
 
-#endif /* ARCH_HELPERS_H */
+#endif /* ARCH_INTERRUPT_H */

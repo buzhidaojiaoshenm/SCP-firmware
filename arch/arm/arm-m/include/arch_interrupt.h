@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-#ifndef ARCH_HELPERS_H
-#define ARCH_HELPERS_H
+#ifndef ARCH_INTERRUPT_H
+#define ARCH_INTERRUPT_H
 
 #include <fmw_cmsis.h>
 
@@ -22,7 +22,7 @@ extern unsigned int critical_section_nest_level;
  * \note inline is necessary as this call can be used in performance sensitive
  *     path
  */
-inline static void arch_interrupts_enable(unsigned int not_used)
+static inline void arch_interrupt_global_enable(unsigned int not_used)
 {
     /* Decrement critical_section_nest_level only if in critical section */
     if (critical_section_nest_level > 0) {
@@ -41,7 +41,7 @@ inline static void arch_interrupts_enable(unsigned int not_used)
  * \note inline is necessary as this call can be used in performance sensitive
  *     path
  */
-inline static unsigned int arch_interrupts_disable(void)
+static inline unsigned int arch_interrupt_global_disable(void)
 {
     __disable_irq();
     critical_section_nest_level++;
@@ -55,9 +55,9 @@ inline static unsigned int arch_interrupts_disable(void)
  * \note CPU will be woken up by receiving interrupts.
  *
  */
-inline static void arch_suspend(void)
+static inline void arch_suspend(void)
 {
     __asm volatile("wfe");
 }
 
-#endif /* ARCH_HELPERS_H */
+#endif /* ARCH_INTERRUPT_H */

@@ -14,16 +14,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-int arch_interrupt_global_enable(void)
-{
-    return FWK_E_SUPPORT;
-}
-
-int arch_interrupt_global_disable(void)
-{
-    return FWK_E_SUPPORT;
-}
-
 int arch_interrupt_is_enabled(unsigned int interrupt, bool *state)
 {
     return FWK_E_SUPPORT;

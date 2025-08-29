@@ -49,16 +49,6 @@ int arch_interrupt_init(void)
     return init_return_val;
 }
 
-int arch_interrupt_global_enable(void)
-{
-    return FWK_SUCCESS;
-}
-
-int arch_interrupt_global_disable(void)
-{
-    return FWK_SUCCESS;
-}
-
 int arch_interrupt_is_enabled(unsigned int interrupt, bool *state)
 {
     return is_enabled_return_val;

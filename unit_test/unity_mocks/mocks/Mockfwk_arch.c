@@ -10,8 +10,6 @@ static const char* CMockString_arch_interrupt_configure = "arch_interrupt_config
 static const char* CMockString_arch_interrupt_disable = "arch_interrupt_disable";
 static const char* CMockString_arch_interrupt_enable = "arch_interrupt_enable";
 static const char* CMockString_arch_interrupt_get_current = "arch_interrupt_get_current";
-static const char* CMockString_arch_interrupt_global_disable = "arch_interrupt_global_disable";
-static const char* CMockString_arch_interrupt_global_enable = "arch_interrupt_global_enable";
 static const char* CMockString_arch_interrupt_init = "arch_interrupt_init";
 static const char* CMockString_arch_interrupt_is_enabled = "arch_interrupt_is_enabled";
 static const char* CMockString_arch_interrupt_is_interrupt_context = "arch_interrupt_is_interrupt_context";
@@ -39,22 +37,6 @@ typedef struct _CMOCK_arch_interrupt_init_CALL_INSTANCE
   int ReturnVal;
 
 } CMOCK_arch_interrupt_init_CALL_INSTANCE;
-
-typedef struct _CMOCK_arch_interrupt_global_enable_CALL_INSTANCE
-{
-  UNITY_LINE_TYPE LineNumber;
-  char ExpectAnyArgsBool;
-  int ReturnVal;
-
-} CMOCK_arch_interrupt_global_enable_CALL_INSTANCE;
-
-typedef struct _CMOCK_arch_interrupt_global_disable_CALL_INSTANCE
-{
-  UNITY_LINE_TYPE LineNumber;
-  char ExpectAnyArgsBool;
-  int ReturnVal;
-
-} CMOCK_arch_interrupt_global_disable_CALL_INSTANCE;
 
 typedef struct _CMOCK_arch_interrupt_is_enabled_CALL_INSTANCE
 {
@@ -251,18 +233,6 @@ static struct Mockfwk_archInstance
   CMOCK_arch_interrupt_init_CALLBACK arch_interrupt_init_CallbackFunctionPointer;
   int arch_interrupt_init_CallbackCalls;
   CMOCK_MEM_INDEX_TYPE arch_interrupt_init_CallInstance;
-  char arch_interrupt_global_enable_IgnoreBool;
-  int arch_interrupt_global_enable_FinalReturn;
-  char arch_interrupt_global_enable_CallbackBool;
-  CMOCK_arch_interrupt_global_enable_CALLBACK arch_interrupt_global_enable_CallbackFunctionPointer;
-  int arch_interrupt_global_enable_CallbackCalls;
-  CMOCK_MEM_INDEX_TYPE arch_interrupt_global_enable_CallInstance;
-  char arch_interrupt_global_disable_IgnoreBool;
-  int arch_interrupt_global_disable_FinalReturn;
-  char arch_interrupt_global_disable_CallbackBool;
-  CMOCK_arch_interrupt_global_disable_CALLBACK arch_interrupt_global_disable_CallbackFunctionPointer;
-  int arch_interrupt_global_disable_CallbackCalls;
-  CMOCK_MEM_INDEX_TYPE arch_interrupt_global_disable_CallInstance;
   char arch_interrupt_is_enabled_IgnoreBool;
   int arch_interrupt_is_enabled_FinalReturn;
   char arch_interrupt_is_enabled_CallbackBool;
@@ -381,32 +351,6 @@ void Mockfwk_arch_Verify(void)
     UNITY_TEST_FAIL(cmock_line, CMockStringCalledLess);
   }
   if (Mock.arch_interrupt_init_CallbackFunctionPointer != NULL)
-  {
-    call_instance = CMOCK_GUTS_NONE;
-    (void)call_instance;
-  }
-  call_instance = Mock.arch_interrupt_global_enable_CallInstance;
-  if (Mock.arch_interrupt_global_enable_IgnoreBool)
-    call_instance = CMOCK_GUTS_NONE;
-  if (CMOCK_GUTS_NONE != call_instance)
-  {
-    UNITY_SET_DETAIL(CMockString_arch_interrupt_global_enable);
-    UNITY_TEST_FAIL(cmock_line, CMockStringCalledLess);
-  }
-  if (Mock.arch_interrupt_global_enable_CallbackFunctionPointer != NULL)
-  {
-    call_instance = CMOCK_GUTS_NONE;
-    (void)call_instance;
-  }
-  call_instance = Mock.arch_interrupt_global_disable_CallInstance;
-  if (Mock.arch_interrupt_global_disable_IgnoreBool)
-    call_instance = CMOCK_GUTS_NONE;
-  if (CMOCK_GUTS_NONE != call_instance)
-  {
-    UNITY_SET_DETAIL(CMockString_arch_interrupt_global_disable);
-    UNITY_TEST_FAIL(cmock_line, CMockStringCalledLess);
-  }
-  if (Mock.arch_interrupt_global_disable_CallbackFunctionPointer != NULL)
   {
     call_instance = CMOCK_GUTS_NONE;
     (void)call_instance;
@@ -723,166 +667,6 @@ void arch_interrupt_init_Stub(CMOCK_arch_interrupt_init_CALLBACK Callback)
   Mock.arch_interrupt_init_IgnoreBool = (char)0;
   Mock.arch_interrupt_init_CallbackBool = (char)0;
   Mock.arch_interrupt_init_CallbackFunctionPointer = Callback;
-}
-
-int arch_interrupt_global_enable(void)
-{
-  UNITY_LINE_TYPE cmock_line = TEST_LINE_NUM;
-  CMOCK_arch_interrupt_global_enable_CALL_INSTANCE* cmock_call_instance;
-  UNITY_SET_DETAIL(CMockString_arch_interrupt_global_enable);
-  cmock_call_instance = (CMOCK_arch_interrupt_global_enable_CALL_INSTANCE*)CMock_Guts_GetAddressFor(Mock.arch_interrupt_global_enable_CallInstance);
-  Mock.arch_interrupt_global_enable_CallInstance = CMock_Guts_MemNext(Mock.arch_interrupt_global_enable_CallInstance);
-  if (Mock.arch_interrupt_global_enable_IgnoreBool)
-  {
-    UNITY_CLR_DETAILS();
-    if (cmock_call_instance == NULL)
-      return Mock.arch_interrupt_global_enable_FinalReturn;
-    Mock.arch_interrupt_global_enable_FinalReturn = cmock_call_instance->ReturnVal;
-    return cmock_call_instance->ReturnVal;
-  }
-  if (!Mock.arch_interrupt_global_enable_CallbackBool &&
-      Mock.arch_interrupt_global_enable_CallbackFunctionPointer != NULL)
-  {
-    int cmock_cb_ret = Mock.arch_interrupt_global_enable_CallbackFunctionPointer(Mock.arch_interrupt_global_enable_CallbackCalls++);
-    UNITY_CLR_DETAILS();
-    return cmock_cb_ret;
-  }
-  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringCalledMore);
-  cmock_line = cmock_call_instance->LineNumber;
-  if (Mock.arch_interrupt_global_enable_CallbackFunctionPointer != NULL)
-  {
-    cmock_call_instance->ReturnVal = Mock.arch_interrupt_global_enable_CallbackFunctionPointer(Mock.arch_interrupt_global_enable_CallbackCalls++);
-  }
-  UNITY_CLR_DETAILS();
-  return cmock_call_instance->ReturnVal;
-}
-
-void arch_interrupt_global_enable_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return)
-{
-  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_arch_interrupt_global_enable_CALL_INSTANCE));
-  CMOCK_arch_interrupt_global_enable_CALL_INSTANCE* cmock_call_instance = (CMOCK_arch_interrupt_global_enable_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
-  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringOutOfMemory);
-  memset(cmock_call_instance, 0, sizeof(*cmock_call_instance));
-  Mock.arch_interrupt_global_enable_CallInstance = CMock_Guts_MemChain(Mock.arch_interrupt_global_enable_CallInstance, cmock_guts_index);
-  Mock.arch_interrupt_global_enable_IgnoreBool = (char)0;
-  cmock_call_instance->LineNumber = cmock_line;
-  cmock_call_instance->ExpectAnyArgsBool = (char)0;
-  cmock_call_instance->ReturnVal = cmock_to_return;
-  Mock.arch_interrupt_global_enable_IgnoreBool = (char)1;
-}
-
-void arch_interrupt_global_enable_CMockStopIgnore(void)
-{
-  if(Mock.arch_interrupt_global_enable_IgnoreBool)
-    Mock.arch_interrupt_global_enable_CallInstance = CMock_Guts_MemNext(Mock.arch_interrupt_global_enable_CallInstance);
-  Mock.arch_interrupt_global_enable_IgnoreBool = (char)0;
-}
-
-void arch_interrupt_global_enable_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return)
-{
-  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_arch_interrupt_global_enable_CALL_INSTANCE));
-  CMOCK_arch_interrupt_global_enable_CALL_INSTANCE* cmock_call_instance = (CMOCK_arch_interrupt_global_enable_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
-  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringOutOfMemory);
-  memset(cmock_call_instance, 0, sizeof(*cmock_call_instance));
-  Mock.arch_interrupt_global_enable_CallInstance = CMock_Guts_MemChain(Mock.arch_interrupt_global_enable_CallInstance, cmock_guts_index);
-  Mock.arch_interrupt_global_enable_IgnoreBool = (char)0;
-  cmock_call_instance->LineNumber = cmock_line;
-  cmock_call_instance->ExpectAnyArgsBool = (char)0;
-  cmock_call_instance->ReturnVal = cmock_to_return;
-}
-
-void arch_interrupt_global_enable_AddCallback(CMOCK_arch_interrupt_global_enable_CALLBACK Callback)
-{
-  Mock.arch_interrupt_global_enable_IgnoreBool = (char)0;
-  Mock.arch_interrupt_global_enable_CallbackBool = (char)1;
-  Mock.arch_interrupt_global_enable_CallbackFunctionPointer = Callback;
-}
-
-void arch_interrupt_global_enable_Stub(CMOCK_arch_interrupt_global_enable_CALLBACK Callback)
-{
-  Mock.arch_interrupt_global_enable_IgnoreBool = (char)0;
-  Mock.arch_interrupt_global_enable_CallbackBool = (char)0;
-  Mock.arch_interrupt_global_enable_CallbackFunctionPointer = Callback;
-}
-
-int arch_interrupt_global_disable(void)
-{
-  UNITY_LINE_TYPE cmock_line = TEST_LINE_NUM;
-  CMOCK_arch_interrupt_global_disable_CALL_INSTANCE* cmock_call_instance;
-  UNITY_SET_DETAIL(CMockString_arch_interrupt_global_disable);
-  cmock_call_instance = (CMOCK_arch_interrupt_global_disable_CALL_INSTANCE*)CMock_Guts_GetAddressFor(Mock.arch_interrupt_global_disable_CallInstance);
-  Mock.arch_interrupt_global_disable_CallInstance = CMock_Guts_MemNext(Mock.arch_interrupt_global_disable_CallInstance);
-  if (Mock.arch_interrupt_global_disable_IgnoreBool)
-  {
-    UNITY_CLR_DETAILS();
-    if (cmock_call_instance == NULL)
-      return Mock.arch_interrupt_global_disable_FinalReturn;
-    Mock.arch_interrupt_global_disable_FinalReturn = cmock_call_instance->ReturnVal;
-    return cmock_call_instance->ReturnVal;
-  }
-  if (!Mock.arch_interrupt_global_disable_CallbackBool &&
-      Mock.arch_interrupt_global_disable_CallbackFunctionPointer != NULL)
-  {
-    int cmock_cb_ret = Mock.arch_interrupt_global_disable_CallbackFunctionPointer(Mock.arch_interrupt_global_disable_CallbackCalls++);
-    UNITY_CLR_DETAILS();
-    return cmock_cb_ret;
-  }
-  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringCalledMore);
-  cmock_line = cmock_call_instance->LineNumber;
-  if (Mock.arch_interrupt_global_disable_CallbackFunctionPointer != NULL)
-  {
-    cmock_call_instance->ReturnVal = Mock.arch_interrupt_global_disable_CallbackFunctionPointer(Mock.arch_interrupt_global_disable_CallbackCalls++);
-  }
-  UNITY_CLR_DETAILS();
-  return cmock_call_instance->ReturnVal;
-}
-
-void arch_interrupt_global_disable_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return)
-{
-  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_arch_interrupt_global_disable_CALL_INSTANCE));
-  CMOCK_arch_interrupt_global_disable_CALL_INSTANCE* cmock_call_instance = (CMOCK_arch_interrupt_global_disable_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
-  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringOutOfMemory);
-  memset(cmock_call_instance, 0, sizeof(*cmock_call_instance));
-  Mock.arch_interrupt_global_disable_CallInstance = CMock_Guts_MemChain(Mock.arch_interrupt_global_disable_CallInstance, cmock_guts_index);
-  Mock.arch_interrupt_global_disable_IgnoreBool = (char)0;
-  cmock_call_instance->LineNumber = cmock_line;
-  cmock_call_instance->ExpectAnyArgsBool = (char)0;
-  cmock_call_instance->ReturnVal = cmock_to_return;
-  Mock.arch_interrupt_global_disable_IgnoreBool = (char)1;
-}
-
-void arch_interrupt_global_disable_CMockStopIgnore(void)
-{
-  if(Mock.arch_interrupt_global_disable_IgnoreBool)
-    Mock.arch_interrupt_global_disable_CallInstance = CMock_Guts_MemNext(Mock.arch_interrupt_global_disable_CallInstance);
-  Mock.arch_interrupt_global_disable_IgnoreBool = (char)0;
-}
-
-void arch_interrupt_global_disable_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return)
-{
-  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_arch_interrupt_global_disable_CALL_INSTANCE));
-  CMOCK_arch_interrupt_global_disable_CALL_INSTANCE* cmock_call_instance = (CMOCK_arch_interrupt_global_disable_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
-  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringOutOfMemory);
-  memset(cmock_call_instance, 0, sizeof(*cmock_call_instance));
-  Mock.arch_interrupt_global_disable_CallInstance = CMock_Guts_MemChain(Mock.arch_interrupt_global_disable_CallInstance, cmock_guts_index);
-  Mock.arch_interrupt_global_disable_IgnoreBool = (char)0;
-  cmock_call_instance->LineNumber = cmock_line;
-  cmock_call_instance->ExpectAnyArgsBool = (char)0;
-  cmock_call_instance->ReturnVal = cmock_to_return;
-}
-
-void arch_interrupt_global_disable_AddCallback(CMOCK_arch_interrupt_global_disable_CALLBACK Callback)
-{
-  Mock.arch_interrupt_global_disable_IgnoreBool = (char)0;
-  Mock.arch_interrupt_global_disable_CallbackBool = (char)1;
-  Mock.arch_interrupt_global_disable_CallbackFunctionPointer = Callback;
-}
-
-void arch_interrupt_global_disable_Stub(CMOCK_arch_interrupt_global_disable_CALLBACK Callback)
-{
-  Mock.arch_interrupt_global_disable_IgnoreBool = (char)0;
-  Mock.arch_interrupt_global_disable_CallbackBool = (char)0;
-  Mock.arch_interrupt_global_disable_CallbackFunctionPointer = Callback;
 }
 
 int arch_interrupt_is_enabled(unsigned int interrupt, bool* enabled)
