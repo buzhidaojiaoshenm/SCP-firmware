@@ -133,3 +133,122 @@ This is invalid because:
 happened yet.
 - Calling module APIs assumes those modules have already been registered and
 initialized, which is not true at this stage.
+
+## Adding a New Architecture
+
+To add a new architecture to the framework, follow these steps:
+
+### 1. Define Architecture-Specific Interrupts
+
+The framework requires architecture-specific interrupt handling to be
+implemented. This is achieved by defining the necessary functions in the
+`fwk_interrupt` module. These functions include enabling, disabling, and
+managing interrupts for the new architecture.
+
+#### Example:
+```c
+#include <fwk_interrupt.h>
+
+void arch_interrupt_global_enable(unsigned int flags) {
+    /* Architecture-specific implementation to enable global interrupts */
+}
+
+unsigned int arch_interrupt_global_disable(void) {
+    /* Architecture-specific implementation to disable global interrupts */
+    return 0;
+}
+```
+
+### 2. Create Architecture-Specific Files
+
+Create a new directory under `arch/` for your architecture. For example,
+if the new architecture is `arch_new`, the directory structure should look like
+this:
+
+```
+arch/
+    arch_new/
+        include/
+            arch_interrupt.h
+        src/
+            arch_interrupt.c
+```
+
+### 3. Implement Required Functions
+
+In the `arch_interrupt.c` file, implement the required functions for interrupt
+management. These functions must match the declarations in `arch_interrupt.h`.
+
+### 4. Update Build System
+
+Update the `CMakeLists.txt` file in the `arch/` directory to include the new
+architecture. For example:
+
+```cmake
+add_subdirectory(arch_new)
+```
+
+### 5. Implement Standard Library Hooks
+
+For the new architecture, it is possible that a minimal implementation for
+standard library hooks are required. These hooks for basic functionality should
+be implemented in a file such as `arch_libc_hooks.c`.
+
+#### Example:
+```c
+#include <stdbool.h>
+
+void _exit(int rc)
+{
+    while (true) {
+    }
+}
+
+int _write(int fd, const void *buf, int nbytes)
+{
+    return 0;
+}
+```
+
+These hooks should be placed in the `src/` directory of your new architecture
+folder.
+
+### 6. Implement the `main` Function
+
+The `main` function serves as the entry point for the architecture. It is
+responsible for initializing the framework and handling early failures.
+This function must be implemented in a file such as `arch_main.c`.
+
+#### Example:
+```c
+#include <fwk_arch.h>
+#include <fwk_status.h>
+#include <fwk_noreturn.h>
+
+#include <stdio.h>
+#include <stdlib.h>
+
+static noreturn void panic(void) {
+    printf("Panic!\n");
+    exit(1);
+}
+
+int main(void) {
+    int status;
+
+    status = fwk_arch_init();
+    if (status != FWK_SUCCESS) {
+        panic();
+    }
+}
+```
+
+This function initializes the framework using `fwk_arch_init()` and handles any
+errors by invoking a panic handler. Place this implementation in the `src/`
+directory of your new architecture folder.
+
+> **Note:**
+> - The `fwk_interrupt` module provides the interface for interrupt management.
+>   Ensure that all required functions are implemented for the new architecture.
+> - Refer to existing architectures (e.g., `arch/arm`) for examples of how to
+>   structure and implement the required files.
