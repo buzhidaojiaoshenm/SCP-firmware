@@ -12,4 +12,5 @@ target_include_directories(${SCP_MODULE_TARGET}
 
 target_sources(
     ${SCP_MODULE_TARGET}
-    PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src/mod_telemetry.c")
+    PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src/mod_telemetry.c"
+    PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src/telemetry_shmti_manager.c")

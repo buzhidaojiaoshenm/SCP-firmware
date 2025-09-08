@@ -54,6 +54,20 @@ struct mod_scmi_telemetry_device {
 };
 
 /*!
+ * \brief Agent specific information for Telemetry SHMTI.
+ *
+ * \details Describes the telemetry shmti region and its access information for
+ * each agent.
+ */
+struct mod_scmi_telemetry_agent_shmti_config {
+    /*! SHMTI ID. */
+    uint32_t shmti_id;
+
+    /*! Start addresses of SHMTI region for the agent. */
+    const uint64_t start_addr;
+};
+
+/*!
  * \brief SCMI Agent descriptor.
  *
  * \details Describes an SCMI agent using the telemetry protocol.
@@ -65,6 +79,12 @@ struct mod_scmi_telemetry_agent {
 
     /*! Number of devices in the agent's telemetry table */
     uint8_t agent_device_count;
+
+    /*! Number of SHMTI regions visible to this agent. */
+    uint32_t shmti_count;
+
+    /*! List of SHMTI regions for the agent. */
+    const struct mod_scmi_telemetry_agent_shmti_config *shmtis;
 };
 
 /*!
@@ -83,7 +103,13 @@ struct mod_scmi_telemetry_config {
     /*! Maximum number of DEs that can be enabled at once. */
     uint32_t max_enabled_de_count;
 
-    /*! Attributes supported by SCMI telemetry protocol */
+    /*! Number of available Telemetry Shared memory areas (SHMTI)  */
+    uint32_t shmti_count;
+
+    /*! List of available Telemetry Shared memory areas (SHMTI)  */
+    const struct mod_telemetry_shmti_info *shmti_list;
+
+    /*! Protocol attributes. */
     uint32_t attributes;
 };
 

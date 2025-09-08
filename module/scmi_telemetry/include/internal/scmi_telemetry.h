@@ -221,6 +221,19 @@ struct scmi_telemetry_protocol_attributes_p2a {
       SCMI_TELEMETRY_LIST_SHMTI_NUM_REMAIN_MASK) | \
      (((CURRENT) << SCMI_TELEMETRY_LIST_SHMTI_NUM_POS) & \
       SCMI_TELEMETRY_LIST_SHMTI_NUM_MASK))
+/*!
+ * \brief Telemetry SHMTI description.
+ */
+struct scmi_telemetry_shmti_desc {
+    /*! SHMTI ID. */
+    uint32_t shmti_id;
+    /*! Start address of the SHMTI region (low part). */
+    uint32_t addr_lo;
+    /*! Start address of the SHMTI region (high part). */
+    uint32_t addr_hi;
+    /*! Length of the SHMTI region. */
+    uint32_t length;
+};
 
 /*!
  * \brief SCMI response structure for listing SHMTI instances.
@@ -231,7 +244,7 @@ struct scmi_telemetry_protocol_attributes_p2a {
 struct scmi_telemetry_list_shmti_p2a {
     int32_t status; /*!< Status of the SCMI request (SCMI_SUCCESS, etc.) */
     uint32_t num_shmti; /*!< Number of SHMTI instances in the response */
-    struct mod_telemetry_shmti_desc
+    struct scmi_telemetry_shmti_desc
         shmti_desc[]; /*!< Array of SHMTI descriptors */
 };
 

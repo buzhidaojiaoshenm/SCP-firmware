@@ -32,9 +32,6 @@
  * \{
  */
 
-/*! Maximum number of telemetry sources allowed in HAL. */
-#define MOD_TELEMETRY_MAX_TELEMETRY_SOURCES 5
-
 /*!
  * \brief Telemetry HAL Data event handle.
  */
@@ -53,6 +50,18 @@ typedef struct {
 } telemetry_de_handle_st;
 
 /*!
+ * \brief Holds SHMTI Information.
+ */
+struct mod_telemetry_shmti_info {
+    /*! ID of this SHMTI region */
+    uint32_t shmti_id;
+    /*! Start address of the SHMTI region. */
+    uintptr_t start_addr;
+    /*! Length of the SHMTI region. */
+    size_t length;
+};
+
+/*!
  * \brief Telemetry update interval format types.
  */
 enum mod_telemetry_update_interval_formats {
@@ -61,41 +70,15 @@ enum mod_telemetry_update_interval_formats {
 };
 
 /*!
- * \brief Holds Telemetry module conmfig.
+ * \brief Holds Telemetry module config.
  */
 struct mod_telemetry_config {
-    /*! Number of available Telemetry Shared memory areas (SHMTI)  */
-    uint32_t shmti_count;
     /*! Number of valid update intervals available. */
     uint32_t num_intervals;
     /*! Telemetry update interval type. */
     enum mod_telemetry_update_interval_formats interval_format;
     /*! List of available sampling rates. */
     uint32_t *sampling_rates;
-};
-
-/*!
- * \brief Telemetry SHMTI description.
- */
-struct mod_telemetry_shmti_desc {
-    /*! SHMTI ID. */
-    uint32_t shmti_id;
-    /*! Start address of the SHMTI region (low part). */
-    uint32_t addr_lo;
-    /*! Start address of the SHMTI region (high part). */
-    uint32_t addr_hi;
-    /*! Length of the SHMTI region. */
-    size_t length;
-};
-
-/*!
- * \brief Telemetry Data Event Line Type.
- */
-enum mod_telemetry_de_line_type {
-    mod_telemetry_de_line_type_ts,
-    mod_telemetry_de_line_type_non_ts,
-    mod_telemetry_de_line_type_block_ts,
-    mod_telemetry_de_line_type_count
 };
 
 /*!
@@ -135,18 +118,6 @@ struct mod_telemetry_de_status {
 };
 
 /*!
- * \brief Data Event (DE) descriptor and its runtime status.
- *
- * This structure holds a Data Event descriptor along with its status.
- */
-struct mod_telemetry_de {
-    /*! Descriptor defining DE attributes. */
-    struct mod_telemetry_de_desc desc;
-    /*! Timestamp mode for this DE. */
-    uint32_t de_ts_mode;
-};
-
-/*!
  * \brief Telemetry HAL API indices.
  */
 enum mod_telemetry_api_idx {
@@ -172,7 +143,34 @@ struct mod_telemetry_driver_api {
      * \retval ::FWK_SUCCESS The operation was successful.
      * \return One of the standard framework error codes.
      */
-    int (*get_de_list)(uint32_t *num_de, struct mod_telemetry_de **de_list);
+    int (*get_de_list)(
+        uint32_t *num_de,
+        const struct mod_telemetry_de_desc **de_list);
+
+    /*!
+     * \brief Get the additionnal fast channel attributes for Data Events (DEs).
+     *
+     * \param[in] de_index Index of the DE in the source.
+     * \param[out] de_fch_attr Pointer to store the fast Channel attributes.
+     *
+     * \retval ::FWK_SUCCESS The operation was successful.
+     * \return One of the standard framework error codes.
+     */
+
+    int (*get_de_fch_attr)(
+        uint32_t de_index,
+        struct mod_telemetry_de_fch_attr *de_fch_attr);
+
+    /*!
+     * \brief Retrieve name of a specific Data Event (DE).
+     *
+     * \param[in] de_index Index of the DE in the source.
+     * \param[out] name Pointer to store the DE name.
+     *
+     * \retval ::FWK_SUCCESS The operation was successful.
+     * \return One of the standard framework error codes.
+     */
+    int (*get_de_name)(uint32_t de_index, char *name);
 
     /*!
      * \brief Disable a specific Data Event (DE).
@@ -202,25 +200,7 @@ struct mod_telemetry_driver_api {
      * \retval ::FWK_SUCCESS The operation was successful.
      * \return One of the standard framework error codes.
      */
-    int (*enable_de_non_ts)(
-        uint32_t de_index,
-        uint32_t *shmti_id,
-        uint32_t *shmti_de_offset);
-
-    /*!
-     * \brief Enable a Data Event (DE) with an individual timestamp.
-     *
-     * \param[in] de_index Index of the DE to enable.
-     * \param[out] shmti_id SHMTI ID contianing the give Data Event.
-     * \param[out] shmti_de_offset Byte offset from the start of the given
-     *
-     * \retval ::FWK_SUCCESS The operation was successful.
-     * \return One of the standard framework error codes.
-     */
-    int (*enable_de_ts)(
-        uint32_t de_index,
-        uint32_t *shmti_id,
-        uint32_t *shmti_de_offset);
+    int (*enable_de)(uint32_t de_index);
 
     /*!
      * \brief Trigger telemetry data update.
@@ -239,27 +219,17 @@ struct mod_telemetry_driver_api {
  */
 struct mod_telemetry_protocol_support_api {
     /*!
-     * \brief Get the number of Shared Memory Telemetry Instances (SHMTI).
+     * \brief Initialise the SHMTI(s) .
      *
-     * \param[out] num_shmti Pointer to store the number of SHMTI instances.
-     *
-     * \retval ::FWK_SUCCESS The operation was successful.
-     * \return One of the standard framework error codes.
-     */
-    int (*get_num_shmti)(uint32_t *num_shmti);
-
-    /*!
-     * \brief Get details of a specific SHMTI.
-     *
-     * \param[in] shmti_index Index of the SHMTI.
-     * \param[out] shmti_desc Pointer to store the SHMTI descriptor.
+     * \param[in] config Pointer to telemetry config container.
+     * \param[out] shmti_ctx_list List of initialised SHMTI contexts.
      *
      * \retval ::FWK_SUCCESS The operation was successful.
      * \return One of the standard framework error codes.
      */
-    int (*get_shmti)(
-        uint32_t shmti_index,
-        struct mod_telemetry_shmti_desc *shmti_desc);
+    int (*shmti_init)(
+        const struct mod_telemetry_shmti_info *shmti_info,
+        uint32_t shmti_count);
 
     /*!
      * \brief Get the total number of registered Data Events (DEs).
@@ -333,16 +303,6 @@ struct mod_telemetry_protocol_support_api {
         *get_update_interval)(uint32_t interval_index, uint32_t *sampling_rate);
 
     /*!
-     * \brief Get the number of currently enabled Data Events (DEs).
-     *
-     * \param[out] num_de_enabled Pointer to store the number of enabled DEs.
-     *
-     * \retval ::FWK_SUCCESS The operation was successful.
-     * \return One of the standard framework error codes.
-     */
-    int (*get_num_de_enabled)(uint32_t *num_de_enabled);
-
-    /*!
      * \brief Get the status of an enabled Data Event (DE).
      *
      * \param[in] de_handle Handle of the enabled DE.
@@ -351,17 +311,9 @@ struct mod_telemetry_protocol_support_api {
      * \retval ::FWK_SUCCESS The operation was successful.
      * \return One of the standard framework error codes.
      */
-    int (*get_de_enabled)(
+    int (*get_enabled_de_status)(
         telemetry_de_handle_st de_handle,
         struct mod_telemetry_de_status *de_status);
-
-    /*!
-     * \brief Disable all Data Events (DEs).
-     *
-     * \retval ::FWK_SUCCESS The operation was successful.
-     * \return One of the standard framework error codes.
-     */
-    int (*disable_all_de)(void);
 
     /*!
      * \brief Disable a specific Data Event (DE).
@@ -387,8 +339,8 @@ struct mod_telemetry_protocol_support_api {
      */
     int (*enable_de_non_ts)(
         uint32_t de_id,
+        uint32_t shmti_id,
         telemetry_de_handle_st *de_handle,
-        uint32_t *shmti_id,
         uint32_t *shmti_de_offset);
 
     /*!
@@ -405,8 +357,8 @@ struct mod_telemetry_protocol_support_api {
      */
     int (*enable_de_ts)(
         uint32_t de_id,
+        uint32_t shmti_id,
         telemetry_de_handle_st *de_handle,
-        uint32_t *shmti_id,
         uint32_t *shmti_de_offset);
 
     /*!
