@@ -18,6 +18,8 @@ set(SCP_ENABLE_NOTIFICATIONS_INIT TRUE)
 
 set(SCP_ENABLE_OUTBAND_MSG_SUPPORT TRUE)
 
+set(SCP_ENABLE_AE_EXTENSION TRUE)
+
 list(PREPEND SCP_MODULE_PATHS
      "${CMAKE_CURRENT_LIST_DIR}/../module/si0_platform")
 
@@ -30,5 +32,7 @@ list(APPEND SCP_MODULES
     "pcid"
     "mhu3"
     "transport"
+    "ppu-v1"
+    "power-domain"
     "si0-platform"
 )

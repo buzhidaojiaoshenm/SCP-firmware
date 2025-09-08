@@ -49,3 +49,25 @@ include(${SCP_ROOT}/unit_test/module_common.cmake)
 
 target_compile_definitions(${UNIT_TEST_TARGET} PUBLIC
                            "BUILD_HAS_MOD_TRANSPORT")
+
+# Test platform_power_mgmt.c
+
+set(TEST_SRC platform_power_mgmt)
+set(TEST_FILE platform_power_mgmt)
+
+set(UNIT_TEST_TARGET mod_si0_platform_platform_power_mgmt_unit_test)
+
+set(MODULE_SRC ${PRODUCT_ROOT}/${TEST_MODULE}/src)
+set(MODULE_INC ${PRODUCT_ROOT}/${TEST_MODULE}/include)
+list(APPEND OTHER_MODULE_INC ${MODULE_ROOT}/power_domain/include)
+
+set(MODULE_UT_SRC ${CMAKE_CURRENT_LIST_DIR})
+set(MODULE_UT_INC ${CMAKE_CURRENT_LIST_DIR})
+
+list(APPEND MOCK_REPLACEMENTS fwk_id)
+list(APPEND MOCK_REPLACEMENTS fwk_module)
+
+include(${SCP_ROOT}/unit_test/module_common.cmake)
+
+target_compile_definitions(${UNIT_TEST_TARGET} PUBLIC
+                           "BUILD_HAS_MOD_POWER_DOMAIN")

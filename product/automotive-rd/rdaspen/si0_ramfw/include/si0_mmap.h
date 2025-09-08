@@ -53,4 +53,24 @@
 
 #define SI0_SID_BASE (SI0_ATW4_SYSTEM_ID_BASE)
 
+#define SI0_CMN_BASE (SI0_ATW0_CMN_BASE)
+
+#define SI0_SYSTOP_PPU_OFFSET 0x1000
+#define SI0_PPU_SYS0_BASE     (SI0_ATW3_SYSTOP_PIK_BASE + SI0_SYSTOP_PPU_OFFSET)
+
+/*
+ * Size of SCP's view of per-cluster utility memory region.
+ */
+#define SI0_CLUSTER_UTILITY_SIZE (0x4000000UL)
+
+/*
+ * Offsets of various blocks within cluster utility that is
+ * mapped into SI0's address translation window 0. These offsets are applicable
+ * to each cluster in the system.
+ */
+#define SI0_CLUSTER_UTILITY_CLUSTER_PPU_OFFSET (0x1030000UL)
+#define SI0_CLUSTER_UTILITY_CLUSTER_AE_OFFSET  (0x1050000UL)
+#define SI0_CLUSTER_UTILITY_CORE_PPU0_OFFSET   (0x1080000UL)
+#define SI0_CLUSTER_UTILITY_CORE_PPU_OFFSET    (0x100000UL)
+
 #endif /* SI0_MMAP_H */

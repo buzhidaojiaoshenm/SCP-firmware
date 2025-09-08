@@ -50,4 +50,26 @@ int notify_rse_and_wait_for_response(void);
  */
 int platform_rse_bind(const struct mod_si0_platform_config *config);
 
+/*
+ * Power management interface helper functions.
+ */
+
+/*!
+ * \brief Helper function to bind to power domain restricted API.
+ *
+ * \param None.
+ *
+ * \retval ::FWK_SUCCESS Operation succeeded.
+ * \return One of the standard error codes for implementation-defined errors.
+ */
+int platform_power_mgmt_bind(void);
+
+/*!
+ * \brief Power on the initial AP core.
+ *
+ * \retval ::FWK_SUCCESS Operation succeeded.
+ * \return One of the standard error codes for implementation-defined errors.
+ */
+int init_ap(void);
+
 #endif /* SI0_PLATFORM_H */

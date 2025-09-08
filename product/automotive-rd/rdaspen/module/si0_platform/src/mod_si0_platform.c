@@ -63,6 +63,12 @@ static int si0_platform_bind(fwk_id_t id, unsigned int round)
         return status;
     }
 
+    /* Bind to modules required for power management */
+    status = platform_power_mgmt_bind();
+    if (status != FWK_SUCCESS) {
+        return status;
+    }
+
     return status;
 }
 
@@ -100,6 +106,14 @@ static int si0_platform_start(fwk_id_t id)
     status = notify_rse_and_wait_for_response();
     if (status != FWK_SUCCESS) {
         FWK_LOG_ERR(MOD_NAME "Error! SCP-RSE handshake failed");
+        return FWK_E_PANIC;
+    }
+
+    FWK_LOG_INFO(MOD_NAME "Initializing the primary core...");
+
+    status = init_ap();
+    if (status != FWK_SUCCESS) {
+        FWK_LOG_ERR(MOD_NAME "Error! Failed to initialize primary core");
         return FWK_E_PANIC;
     }
 
