@@ -28,7 +28,8 @@ static int fwk_io_null_putch(const struct fwk_io_stream *stream, char ch)
     return FWK_SUCCESS;
 }
 
-static int fwk_io_null_write(const struct fwk_io_stream *stream,
+static int fwk_io_null_write(
+    const struct fwk_io_stream *stream,
     size_t *written,
     const void *buffer,
     size_t size,

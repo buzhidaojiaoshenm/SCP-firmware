@@ -49,9 +49,9 @@ unknownMacro:*product/rcar/module/rcar_system/src/rcar_common.c:22
 unknownMacro:*product/rcar/module/rcar_system/src/rcar_iic_dvfs.c:172
 unknownMacro:*product/rcar/module/rcar_system/src/rcar_pwc.c:172
 unknownMacro:*product/morello/module/morello_system/src/mod_morello_system.c:302
-unknownEvaluationOrder:*framework/src/fwk_io.c:70
 unknownEvaluationOrder:*framework/src/fwk_io.c:71
-unknownEvaluationOrder:*framework/src/fwk_io.c:73
+unknownEvaluationOrder:*framework/src/fwk_io.c:72
+unknownEvaluationOrder:*framework/src/fwk_io.c:74
 unknownEvaluationOrder:*framework/src/fwk_log.c:54
 unknownEvaluationOrder:*framework/src/fwk_log.c:56
 
