@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2020-2023, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2020-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -181,6 +181,37 @@ struct fwk_io_adapter {
      *      accept new characters.
      */
     int (*putch)(const struct fwk_io_stream *stream, char ch);
+
+    /*!
+     * \brief Write data to the stream (partial writes allowed).
+     *
+     * \details Attempt to write up to \p count objects, each \p size bytes,
+     *      from \p buffer. This call may write fewer than \p count objects;
+     *      the number of objects actually written is returned via \p written.
+     *
+     *      The `stream` and `buffer` parameters are guaranteed to be non-null.
+     *
+     *      This enables adapters to provide efficient bulk writes (e.g. FIFO,
+     *      DMA bursts) without enforcing all-or-nothing semantics.
+     *
+     * \param[in]  stream Stream to write to.
+     * \param[out] written Number of whole objects written (0..count).
+     * \param[in]  buffer  Pointer to the first object to write.
+     * \param[in]  size    Size of each object.
+     * \param[in]  count   Max number of objects to write this call.
+     *
+     * \return Status code representing the result of the operation.
+     *
+     * \retval ::FWK_SUCCESS The string was successfully fully written.
+     * \retval ::FWK_E_BUSY The resource is currently unavailable and it cannot
+     *      accept new characters.
+     */
+    int (*write)(
+        const struct fwk_io_stream *stream,
+        size_t *written,
+        const void *buffer,
+        size_t size,
+        size_t count);
 
     /*!
      * \brief Close the stream.

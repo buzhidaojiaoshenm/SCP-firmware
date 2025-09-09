@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2020-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2020-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -28,6 +28,15 @@ static int fwk_io_null_putch(const struct fwk_io_stream *stream, char ch)
     return FWK_SUCCESS;
 }
 
+static int fwk_io_null_write(const struct fwk_io_stream *stream,
+    size_t *written,
+    const void *buffer,
+    size_t size,
+    size_t count)
+{
+    return FWK_SUCCESS;
+}
+
 static int fwk_io_null_close(const struct fwk_io_stream *stream)
 {
     return FWK_SUCCESS;
@@ -39,6 +48,7 @@ static struct fwk_io_stream fwk_io_null = {
             .open = fwk_io_null_open,
             .getch = fwk_io_null_getch,
             .putch = fwk_io_null_putch,
+            .write = fwk_io_null_write,
             .close = fwk_io_null_close,
         },
 
@@ -298,11 +308,20 @@ int fwk_io_write(
     size_t count)
 {
     int status = FWK_SUCCESS;
-
+    const struct fwk_io_adapter *adapter;
     const char *cbuffer = buffer;
 
-    if (cbuffer == NULL) {
+    if ((stream == NULL) || (cbuffer == NULL)) {
         return FWK_E_PARAM;
+    }
+
+    adapter = stream->adapter;
+    if (adapter == NULL) {
+        return FWK_E_PARAM;
+    }
+
+    if (adapter->write != NULL) {
+        return adapter->write(stream, written, buffer, size, count);
     }
 
     if (written != NULL) {
@@ -357,7 +376,7 @@ int fwk_io_puts(
     const struct fwk_io_stream *restrict stream,
     const char *restrict str)
 {
-    if (str == NULL) {
+    if ((stream == NULL) || (str == NULL)) {
         return FWK_E_PARAM;
     }
 
