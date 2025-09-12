@@ -6,15 +6,15 @@
 #
 
 set(CMAKE_ASM_COMPILER
-    clang-19
+    clang-${SCP_LLVM_VERSION}
     CACHE FILEPATH "Path to the assembler.")
 set(CMAKE_C_COMPILER
-    clang-19
+    clang-${SCP_LLVM_VERSION}
     CACHE FILEPATH "Path to the C compiler.")
 set(CMAKE_CXX_COMPILER
-    clang-19
+    clang-${SCP_LLVM_VERSION}
     CACHE FILEPATH "Path to the C++ compiler.")
 
 set(CMAKE_OBJCOPY
-    llvm-objcopy-19
+    llvm-objcopy-${SCP_LLVM_VERSION}
     CACHE FILEPATH "Path to objcopy tool.")

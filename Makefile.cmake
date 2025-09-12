@@ -62,6 +62,7 @@ DEFAULT_VERBOSE := n
 DEFAULT_DEBUGGER := n
 DEFAULT_ENABLE_COVERAGE := n
 DEFAULT_TOOLCHAIN := GNU
+DEFAULT_LLVM_VERSION := 19
 DEFAULT_BUILD_SYSTEM := Ninja
 export CMSIS_DIR := $(TOP_DIR)/contrib/cmsis/git/CMSIS/Core
 DEFAULT_LOG_LEVEL_debug := INFO
@@ -95,6 +96,9 @@ TOOLCHAIN ?= $(DEFAULT_TOOLCHAIN)
 ifneq ($(filter-out GNU ArmClang Clang, $(TOOLCHAIN)),)
     $(error "Invalid TOOLCHAIN parameter. Aborting...")
 endif
+
+# LLVM version
+LLVM_VERSION ?= $(DEFAULT_LLVM_VERSION)
 
 # Log level
 LOG_LEVEL ?= $(DEFAULT_LOG_LEVEL_${MODE})
@@ -197,7 +201,11 @@ endif
 
 CMAKE_COMMAND_OPTION := $(CMAKE_BUILD_TYPE)
 CMAKE_COMMAND_OPTION += -DSCP_TOOLCHAIN="$(TOOLCHAIN)"
-CMAKE_COMMAND_OPTION += -DSCP_LLVM_SYSROOT_CC="$(LLVM_SYSROOT_CC)"
+
+ifeq ($(filter-out Clang, $(TOOLCHAIN)),)
+    CMAKE_COMMAND_OPTION += -DSCP_LLVM_SYSROOT_CC="$(LLVM_SYSROOT_CC)"
+    CMAKE_COMMAND_OPTION += -DSCP_LLVM_VERSION="$(LLVM_VERSION)"
+endif
 
 ifdef PLATFORM_VARIANT
     CMAKE_COMMAND_OPTION += -DSCP_PLATFORM_VARIANT="$(PLATFORM_VARIANT)"
@@ -302,6 +310,11 @@ help:
 	@echo "    LLVM_SYSROOT_CC"
 	@echo "        Value: <LLVM sysroot compiler path>"
 	@echo "        Specify LLVM sysroot compiler path to build the firmware."
+	@echo ""
+	@echo "    LLVM_VERSION"
+	@echo "        Value: <LLVM version>"
+	@echo "        Default: $(DEFAULT_LLVM_VERSION)"
+	@echo "        Specify LLVM compiler version."
 	@echo ""
 	@echo "    PRODUCT_PATH"
 	@echo "        Value: <Path to external product directory>"
