@@ -141,7 +141,7 @@ struct mod_fmu_dev_config {
 /*!
  * \brief FMU notification indices.
  */
-enum mod_scmi_notification_idx {
+enum mod_fmu_notification_idx {
     /*! The SCMI service has been initialized */
     MOD_FMU_NOTIFICATION_IDX_FAULT,
 
@@ -150,7 +150,7 @@ enum mod_scmi_notification_idx {
 };
 
 /*!
- * \brief Identifier for the MOD_SCMI_NOTIFICATION_IDX_INITIALIZED
+ * \brief Identifier for the MOD_FMU_NOTIFICATION_IDX_INITIALIZED
  *     notification.
  */
 static const fwk_id_t mod_fmu_notification_id_fault = FWK_ID_NOTIFICATION_INIT(
