@@ -478,7 +478,7 @@
  * \param[in] name name of the C variable to create
  *
  */
-#define IMPORT_SYM(type, sym, name) \
+#define FWK_IMPORT_SYM(type, sym, name) \
     extern char sym[]; \
     static const __attribute__((unused)) type name = (type)sym;
 

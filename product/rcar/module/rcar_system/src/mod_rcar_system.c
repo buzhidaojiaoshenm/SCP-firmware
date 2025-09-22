@@ -65,9 +65,9 @@ static unsigned int scmi_notification_table[] = {
     RCAR_SCMI_SERVICE_IDX_VM2,
 };
 
-IMPORT_SYM(unsigned long, __system_ram_start__, SYSTEM_RAM_START);
-IMPORT_SYM(unsigned long, __system_ram_end__, SYSTEM_RAM_END);
-IMPORT_SYM(unsigned long, __sram_copy_start__, SRAM_COPY_START);
+FWK_IMPORT_SYM(unsigned long, __system_ram_start__, SYSTEM_RAM_START);
+FWK_IMPORT_SYM(unsigned long, __system_ram_end__, SYSTEM_RAM_END);
+FWK_IMPORT_SYM(unsigned long, __sram_copy_start__, SRAM_COPY_START);
 
 /*
  * Static helpers
