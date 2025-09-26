@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2020-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2020-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -201,6 +201,48 @@
 #define FWK_LOG_LEVEL_DISABLED 5
 
 /*!
+ * \def FWK_LOG_LEVEL_LOCAL_STR
+ *
+ * \brief String printed for *local* log level
+ *
+ * \def FWK_LOG_LEVEL_DEBUG_STR
+ *
+ * \brief String printed for *debug* log level
+ *
+ * \def FWK_LOG_LEVEL_INFO_STR
+ *
+ * \brief String printed for *info* log level
+ *
+ * \def FWK_LOG_LEVEL_WARN_STR
+ *
+ * \brief String printed for *warn* log level
+ *
+ * \def FWK_LOG_LEVEL_ERR_STR
+ *
+ * \brief String printed for *err* log level
+ *
+ * \def FWK_LOG_LEVEL_CRIT_STR
+ *
+ * \brief String printed for *crit* log level
+ *
+ */
+#ifdef FWK_LOG_PRINT_LEVEL
+#    define FWK_LOG_LEVEL_LOCAL_STR "[LOCAL] "
+#    define FWK_LOG_LEVEL_DEBUG_STR "[DEBUG] "
+#    define FWK_LOG_LEVEL_INFO_STR  "[INFO] "
+#    define FWK_LOG_LEVEL_WARN_STR  "[WARN] "
+#    define FWK_LOG_LEVEL_ERR_STR   "[ERR] "
+#    define FWK_LOG_LEVEL_CRIT_STR  "[CRIT] "
+#else
+#    define FWK_LOG_LEVEL_LOCAL_STR NULL
+#    define FWK_LOG_LEVEL_DEBUG_STR NULL
+#    define FWK_LOG_LEVEL_INFO_STR  NULL
+#    define FWK_LOG_LEVEL_WARN_STR  NULL
+#    define FWK_LOG_LEVEL_ERR_STR   NULL
+#    define FWK_LOG_LEVEL_CRIT_STR  NULL
+#endif
+
+/*!
  * \}
  */
 
@@ -226,7 +268,8 @@
  */
 
 #ifdef FWK_LOG_LOCAL_ENABLE
-#    define FWK_LOG_LOCAL(...) fwk_log_printf(__VA_ARGS__)
+#    define FWK_LOG_LOCAL(...) \
+        fwk_log_printf(FWK_LOG_LEVEL_LOCAL_STR, __VA_ARGS__)
 #else
 #    define FWK_LOG_LOCAL(...)
 #endif
@@ -240,7 +283,8 @@
  */
 
 #if FWK_LOG_LEVEL <= FWK_LOG_LEVEL_DEBUG
-#    define FWK_LOG_DEBUG(...) fwk_log_printf(__VA_ARGS__)
+#    define FWK_LOG_DEBUG(...) \
+        fwk_log_printf(FWK_LOG_LEVEL_DEBUG_STR, __VA_ARGS__)
 #else
 #    define FWK_LOG_DEBUG(...)
 #endif
@@ -254,7 +298,8 @@
  */
 
 #if FWK_LOG_LEVEL <= FWK_LOG_LEVEL_INFO
-#    define FWK_LOG_INFO(...) fwk_log_printf(__VA_ARGS__)
+#    define FWK_LOG_INFO(...) \
+        fwk_log_printf(FWK_LOG_LEVEL_INFO_STR, __VA_ARGS__)
 #else
 #    define FWK_LOG_INFO(...)
 #endif
@@ -268,7 +313,8 @@
  */
 
 #if FWK_LOG_LEVEL <= FWK_LOG_LEVEL_WARN
-#    define FWK_LOG_WARN(...) fwk_log_printf(__VA_ARGS__)
+#    define FWK_LOG_WARN(...) \
+        fwk_log_printf(FWK_LOG_LEVEL_WARN_STR, __VA_ARGS__)
 #else
 #    define FWK_LOG_WARN(...)
 #endif
@@ -282,7 +328,7 @@
  */
 
 #if FWK_LOG_LEVEL <= FWK_LOG_LEVEL_ERROR
-#    define FWK_LOG_ERR(...) fwk_log_printf(__VA_ARGS__)
+#    define FWK_LOG_ERR(...) fwk_log_printf(FWK_LOG_LEVEL_ERR_STR, __VA_ARGS__)
 #else
 #    define FWK_LOG_ERR(...)
 #endif
@@ -296,7 +342,8 @@
  */
 
 #if FWK_LOG_LEVEL <= FWK_LOG_LEVEL_CRIT
-#    define FWK_LOG_CRIT(...) fwk_log_printf(__VA_ARGS__)
+#    define FWK_LOG_CRIT(...) \
+        fwk_log_printf(FWK_LOG_LEVEL_CRIT_STR, __VA_ARGS__)
 #else
 #    define FWK_LOG_CRIT(...)
 #endif
@@ -306,10 +353,12 @@
  *
  * \brief Log a message with a specified filter level.
  *
+ * \param[in] level_string Log level identifier.
  * \param[in] format Format string.
  * \param[in] ... Associated parameters.
  */
-void fwk_log_printf(const char *format, ...) FWK_PRINTF(1, 2);
+void fwk_log_printf(const char *level_string, const char *format, ...)
+    FWK_PRINTF(2, 3);
 
 /*!
  * \internal

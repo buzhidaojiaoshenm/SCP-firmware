@@ -577,7 +577,7 @@ buffer and outputting characters. These functions make up the log driver
 interface and are forward declared in fwk_log.h:
 ```
 int fwk_log_init(void);
-void fwk_log_printf(const char *format, ...);
+void fwk_log_printf(const char* level_string, const char *format, ...);
 void fwk_log_flush(void);
 ```
 

@@ -13,7 +13,7 @@ int _ut_unit_status = UT_SUCCESS;
 
 int _ut_fail_line_no;
 
-void __wrap_fwk_log_printf(const char *format, ...)
+void __wrap_fwk_log_printf(const char *string_level, const char *format, ...)
 {
     char buffer[88];
 

@@ -23,9 +23,9 @@ variableScope
 unusedStructMember
 
 // Cppcheck seems to get confused with macro substitution
-syntaxError:*framework/src/fwk_log.c:169
-syntaxError:*framework/src/fwk_log.c:177
-syntaxError:*framework/src/fwk_log.c:181
+syntaxError:*framework/src/fwk_log.c:178
+syntaxError:*framework/src/fwk_log.c:186
+syntaxError:*framework/src/fwk_log.c:190
 syntaxError:*product/morello/module/morello_system/src/mod_morello_system.c:302
 
 // Cppcheck doesn't like include directives that use macros

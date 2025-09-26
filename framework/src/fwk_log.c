@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2020-2023, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2020-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -11,6 +11,7 @@
 #include <fwk_log.h>
 #include <fwk_ring.h>
 #include <fwk_status.h>
+#include <fwk_string.h>
 #include <fwk_time.h>
 
 #include <inttypes.h>
@@ -86,6 +87,7 @@ static bool fwk_log_buffer(struct fwk_ring *ring, const char *message)
 #endif
 
 static void fwk_log_vsnprintf(
+    const char *level_string,
     size_t buffer_size,
     char buffer[buffer_size],
     const char *format,
@@ -131,6 +133,13 @@ static void fwk_log_vsnprintf(
         duration_us);
     fwk_assert(length < buffer_size);
 
+    /* Add level string indicator */
+    if (level_string) {
+        fwk_str_strncpy(buffer + length, level_string, strlen(level_string));
+        length += strlen(level_string);
+        fwk_assert(length < buffer_size);
+    }
+
     /*
      * We then need to `snprintf()` the message into a temporary buffer because
      * we need to manipulate it before we print or store it.
@@ -157,7 +166,7 @@ static void fwk_log_snprintf(
     va_list args;
 
     va_start(args, format);
-    fwk_log_vsnprintf(buffer_size, buffer, format, &args);
+    fwk_log_vsnprintf(NULL, buffer_size, buffer, format, &args);
     va_end(args);
 }
 
@@ -191,7 +200,7 @@ static bool fwk_log_banner(void)
     return true;
 }
 
-void fwk_log_printf(const char *format, ...)
+void fwk_log_printf(const char *level_string, const char *format, ...)
 {
     unsigned int flags;
     static bool banner = false;
@@ -214,7 +223,7 @@ void fwk_log_printf(const char *format, ...)
     }
 
     va_start(args, format);
-    fwk_log_vsnprintf(sizeof(buffer), buffer, format, &args);
+    fwk_log_vsnprintf(level_string, sizeof(buffer), buffer, format, &args);
     va_end(args);
 
 #ifdef FWK_LOG_BUFFERED
@@ -275,7 +284,9 @@ int fwk_log_unbuffer(void)
 
             if (fwk_log_ctx.dropped > 0) {
                 fwk_log_printf(
-                    "[FWK] ... and %u more messages...", fwk_log_ctx.dropped);
+                    NULL,
+                    "[FWK] ... and %u more messages...",
+                    fwk_log_ctx.dropped);
 
                 fwk_log_ctx.dropped = 0;
 
