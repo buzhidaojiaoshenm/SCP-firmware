@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2015-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2015-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -32,6 +32,10 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#define MOD_NAME "[PPU_V1] "
+
+#define PPU_V1_MIN_NUM_OPMODES 2u
+
 /* Power domain context */
 struct ppu_v1_pd_ctx {
     /* Power domain configuration data */
@@ -58,8 +62,14 @@ struct ppu_v1_pd_ctx {
     /* Context data specific to the type of power domain */
     void *data;
 
-    /*! Alarm to be used for deeper locking states */
+    /* Alarm to be used for deeper locking states */
     struct mod_timer_alarm_api *alarm_api;
+
+    /* Pending operating mode state */
+    bool opmode_pending;
+
+    /* Target operating mode state */
+    enum ppu_v1_opmode opmode_target;
 };
 
 /* Cluster power domain specific context */
@@ -89,10 +99,6 @@ struct ppu_v1_ctx {
     uint8_t max_num_cores_per_cluster;
 };
 
-/*
- * Internal variables
- */
-
 static struct ppu_v1_ctx ppu_v1_ctx;
 
 #define MODE_UNSUPPORTED        ~0U
@@ -109,6 +115,28 @@ static const uint8_t ppu_mode_to_power_state[] = {
     [PPU_V1_MODE_WARM_RST]    = (uint8_t)MODE_UNSUPPORTED,
     [PPU_V1_MODE_DBG_RECOV]   = (uint8_t)MODE_UNSUPPORTED
 };
+
+#define PPU_V1_MIN_NUM_OPMODES 2u
+
+static inline enum ppu_v1_opmode select_initial_opmode(
+    const struct mod_ppu_v1_pd_config *cfg)
+{
+    if (cfg->enable_opmode_support) {
+        return (enum ppu_v1_opmode)cfg->default_op_mode;
+    }
+    return cfg->opmode; /* Maintain backwards compatibility */
+}
+
+static void ppu_v1_pd_opmode_irq_complete(struct ppu_v1_pd_ctx *ctx)
+{
+    if (!ctx->opmode_pending) {
+        return;
+    }
+
+    if (ppu_v1_get_operating_mode(&ctx->ppu) == ctx->opmode_target) {
+        ctx->opmode_pending = false;
+    }
+}
 
 /*
  * Functions not specific to any type of power domain
@@ -148,6 +176,46 @@ static int start_deeper_locking_alarm(fwk_id_t core_pd_id)
 #    endif
 }
 #endif
+
+static int apply_op_mode_for_pd(struct ppu_v1_pd_ctx *pd_ctx)
+{
+    struct ppu_v1_regs *ppu;
+    enum ppu_v1_opmode target;
+    int status;
+
+    if (!fwk_expect(pd_ctx != NULL)) {
+        return FWK_E_PARAM;
+    }
+
+    ppu = &pd_ctx->ppu;
+
+    if (!pd_ctx->config->enable_opmode_support ||
+        (ppu_v1_get_num_opmode(ppu) < PPU_V1_MIN_NUM_OPMODES)) {
+        return FWK_E_SUPPORT;
+    }
+
+    if (ppu_v1_get_power_mode(ppu) != PPU_V1_MODE_ON) {
+        return FWK_E_STATE;
+    }
+
+    target = select_initial_opmode(pd_ctx->config);
+
+    if (ppu_v1_get_operating_mode(ppu) == target) {
+        return FWK_E_STATE;
+    }
+
+    if (pd_ctx->config->use_opmode_irqs) {
+        status = ppu_v1_request_operating_mode(ppu, target);
+        if (status == FWK_SUCCESS) {
+            pd_ctx->opmode_target = target;
+            pd_ctx->opmode_pending = true;
+        }
+        return status;
+    }
+
+    return ppu_v1_set_operating_mode(
+        ppu, target, pd_ctx->timer_ctx, pd_ctx->config->opmode_time_out);
+}
 
 static int get_state(struct ppu_v1_regs *ppu, unsigned int *state)
 {
@@ -190,6 +258,21 @@ static int ppu_v1_pd_set_state(fwk_id_t pd_id, unsigned int state)
             pd_mod_state = state;
         } else {
             get_state(&pd_ctx->ppu, &pd_mod_state);
+        }
+
+        /* If this is the system-top domain and OP modes are enabled, apply now.
+         */
+        if (pd_ctx->config->pd_type == MOD_PD_TYPE_SYSTEM &&
+            pd_ctx->config->enable_opmode_support) {
+            status = apply_op_mode_for_pd(pd_ctx);
+
+            /* Not applicable at this time is not a failure to turn SYSTOP on */
+            if (status == FWK_E_SUPPORT) {
+                status = FWK_SUCCESS;
+            }
+            if (status != FWK_SUCCESS) {
+                return status;
+            }
         }
 
         status = pd_ctx->pd_driver_input_api->report_power_state_transition(
@@ -259,6 +342,28 @@ static const struct mod_pd_driver_api pd_driver = {
     .reset = ppu_v1_pd_reset,
     .shutdown = ppu_v1_pd_shutdown,
 };
+
+static void noncore_opmode_init(struct ppu_v1_pd_ctx *pd_ctx)
+{
+    struct ppu_v1_regs *ppu = &pd_ctx->ppu;
+
+    if (ppu_v1_get_num_opmode(ppu) < PPU_V1_MIN_NUM_OPMODES) {
+        return;
+    }
+
+    if (pd_ctx->config->enable_opmode_support &&
+        pd_ctx->config->enable_opmode_dynamic_policy) {
+        /* Enable HW dynamic operating-mode policy (sets OP_DYN_EN). */
+        ppu_v1_opmode_dynamic_enable(ppu, PPU_V1_OPMODE_00);
+    }
+
+    if (pd_ctx->config->use_opmode_irqs) {
+        ppu_v1_additional_interrupt_unmask(
+            ppu, PPU_V1_AIMR_STA_POLICY_OP_IRQ_MASK);
+        ppu_v1_additional_interrupt_unmask(
+            ppu, PPU_V1_AIMR_UNSPT_POLICY_IRQ_MASK);
+    }
+}
 
 /*
  * Functions specific to core power domains
@@ -449,9 +554,34 @@ static const struct mod_pd_driver_api core_pd_driver = {
 };
 #endif
 
-/*
- * Functions specific to cluster power domains
- */
+static void cluster_handle_opmode_interrupts(struct ppu_v1_pd_ctx *pd_ctx)
+{
+    if (!pd_ctx->config->use_opmode_irqs)
+        return;
+
+    struct ppu_v1_regs *ppu = &pd_ctx->ppu;
+    bool policy_complete = false;
+
+    if (ppu_v1_is_additional_interrupt_pending(
+            ppu, PPU_V1_AISR_STA_POLICY_OP_IRQ)) {
+        ppu_v1_ack_additional_interrupt(ppu, PPU_V1_AISR_STA_POLICY_OP_IRQ);
+        policy_complete = true;
+    }
+
+    if (ppu_v1_is_additional_interrupt_pending(
+            ppu, PPU_V1_AISR_UNSPT_POLICY_IRQ)) {
+        ppu_v1_ack_additional_interrupt(ppu, PPU_V1_AISR_UNSPT_POLICY_IRQ);
+        FWK_LOG_WARN("[PPU_V1] Unsupported operating-mode policy requested");
+        /* Defensive: clear pending so we don't wedge waiting */
+        pd_ctx->opmode_pending = false;
+        return;
+    }
+
+    if (policy_complete) {
+        /* Confirm status reached and clear pending */
+        ppu_v1_pd_opmode_irq_complete(pd_ctx);
+    }
+}
 
 static void unlock_all_cores(struct ppu_v1_pd_ctx *pd_ctx)
 {
@@ -530,20 +660,25 @@ static void cluster_on(struct ppu_v1_pd_ctx *pd_ctx)
     struct ppu_v1_regs *ppu;
 
     fwk_assert(pd_ctx != NULL);
-
     ppu = &pd_ctx->ppu;
 
-    ppu_v1_set_input_edge_sensitivity(ppu,
-                                      PPU_V1_MODE_ON,
-                                      PPU_V1_EDGE_SENSITIVITY_MASKED);
-
-    ppu_v1_request_operating_mode(ppu, pd_ctx->config->opmode);
+    ppu_v1_set_input_edge_sensitivity(
+        ppu, PPU_V1_MODE_ON, PPU_V1_EDGE_SENSITIVITY_MASKED);
 
     if (ppu_v1_ctx.is_cluster_ppu_dynamic_mode_configured) {
         ppu_v1_lock_off_enable(ppu);
         ppu_v1_dynamic_enable(ppu, PPU_V1_MODE_OFF);
     } else {
         ppu_v1_set_power_mode(ppu, PPU_V1_MODE_ON, pd_ctx->timer_ctx);
+    }
+
+    if (pd_ctx->config->enable_opmode_support) {
+        /* Now apply the configured operating mode */
+        status = apply_op_mode_for_pd(pd_ctx);
+        if (status != FWK_SUCCESS) {
+            FWK_LOG_WARN(
+                "[PPU_V1] Failed to apply operating mode (%d)", status);
+        }
     }
 
     status = pd_ctx->pd_driver_input_api->report_power_state_transition(
@@ -564,6 +699,10 @@ static int ppu_v1_cluster_pd_init(struct ppu_v1_pd_ctx *pd_ctx)
     struct ppu_v1_regs *ppu = &pd_ctx->ppu;
     unsigned int state;
 
+    if (!fwk_expect(pd_ctx != NULL)) {
+        return FWK_E_PARAM;
+    }
+
     ppu_v1_init(ppu);
 
     status = get_state(ppu, &state);
@@ -571,17 +710,21 @@ static int ppu_v1_cluster_pd_init(struct ppu_v1_pd_ctx *pd_ctx)
         return status;
     }
 
-    /* For clusters with operating mode support, enable the dynamic support */
-    if (ppu_v1_get_num_opmode(ppu) > 1) {
-        ppu_v1_opmode_dynamic_enable(ppu, PPU_V1_OPMODE_00);
-    }
+    /* Initialise operating-mode support (dynamic OP policy + AIMR) if used */
+    noncore_opmode_init(pd_ctx);
 
+    /*
+     * If the cluster is already ON, set edge sensitivity and, if configured,
+     * enable dynamic power policy (separate from OP-mode policy).
+     */
     if (state == MOD_PD_STATE_ON) {
-        ppu_v1_set_input_edge_sensitivity(ppu,
-                                          PPU_V1_MODE_ON,
-                                          PPU_V1_EDGE_SENSITIVITY_FALLING_EDGE);
+        ppu_v1_set_input_edge_sensitivity(
+            ppu, PPU_V1_MODE_ON, PPU_V1_EDGE_SENSITIVITY_FALLING_EDGE);
 
-        if (ppu_v1_ctx.is_cluster_ppu_dynamic_mode_configured) {
+        if (ppu_v1_ctx.is_cluster_ppu_dynamic_mode_configured &&
+            pd_ctx->config->enable_opmode_support &&
+            pd_ctx->config->enable_opmode_dynamic_policy) {
+            /* Power dynamic mode (DYNAMIC_EN) for cluster when required. */
             ppu_v1_dynamic_enable(ppu, PPU_V1_MODE_OFF);
         }
     }
@@ -646,6 +789,8 @@ static void cluster_pd_ppu_normal_mode_int_handler(struct ppu_v1_pd_ctx *pd_ctx)
 
     ppu = &pd_ctx->ppu;
 
+    cluster_handle_opmode_interrupts(pd_ctx);
+
     if (!ppu_v1_is_power_active_edge_interrupt(ppu, PPU_V1_MODE_ON)) {
         return; /* Spurious interrupt */
     }
@@ -708,6 +853,17 @@ static void cluster_pd_ppu_interrupt_handler(struct ppu_v1_pd_ctx *pd_ctx)
     return cluster_pd_ppu_normal_mode_int_handler(pd_ctx);
 }
 
+static void system_pd_ppu_interrupt_handler(struct ppu_v1_pd_ctx *pd_ctx)
+{
+    if (!fwk_expect(pd_ctx != NULL)) {
+        return;
+    }
+
+    /* Reuse the common OP-mode IRQ helper and complete pending request */
+    cluster_handle_opmode_interrupts(pd_ctx);
+    ppu_v1_pd_opmode_irq_complete(pd_ctx);
+}
+
 #ifdef BUILD_HAS_MOD_POWER_DOMAIN
 static const struct mod_pd_driver_api cluster_pd_driver = {
     .set_state = ppu_v1_cluster_pd_set_state,
@@ -721,12 +877,27 @@ static void ppu_interrupt_handler(uintptr_t pd_ctx_param)
 {
     struct ppu_v1_pd_ctx *pd_ctx = (struct ppu_v1_pd_ctx *)pd_ctx_param;
 
-    fwk_assert(pd_ctx != NULL);
+    if (!fwk_expect(pd_ctx != NULL)) {
+        return;
+    }
 
-    if (pd_ctx->config->pd_type == MOD_PD_TYPE_CORE) {
+    switch (pd_ctx->config->pd_type) {
+    case MOD_PD_TYPE_CORE:
         core_pd_ppu_interrupt_handler(pd_ctx);
-    } else {
+        break;
+
+    case MOD_PD_TYPE_CLUSTER:
         cluster_pd_ppu_interrupt_handler(pd_ctx);
+        break;
+
+    case MOD_PD_TYPE_SYSTEM:
+        system_pd_ppu_interrupt_handler(pd_ctx);
+        break;
+
+    default:
+        /* Should not happen; keep running but flag it in debug builds */
+        (void)fwk_expect(false);
+        break;
     }
 }
 
@@ -807,6 +978,10 @@ static int ppu_v1_pd_init(fwk_id_t pd_id, unsigned int unused, const void *data)
     pd_ctx = ppu_v1_ctx.pd_ctx_table + fwk_id_get_element_idx(pd_id);
     pd_ctx->config = config;
     pd_ctx->ppu.ppu_reg = (struct ppu_v1_ppu_reg *)(config->ppu.reg_base);
+
+    pd_ctx->opmode_pending = false;
+    pd_ctx->opmode_target = PPU_V1_OPMODE_00;
+
 #ifdef BUILD_HAS_AE_EXTENSION
     pd_ctx->ppu.cluster_ae_reg =
         (struct ppu_v1_cluster_ae_reg *)(config->cluster_ae_reg_base);
@@ -1176,6 +1351,11 @@ static int ppu_v1_process_notification(
 
     case MOD_PD_TYPE_CLUSTER:
         return ppu_v1_cluster_pd_init(pd_ctx);
+
+    case MOD_PD_TYPE_SYSTEM:
+        ppu_v1_init(&pd_ctx->ppu);
+        noncore_opmode_init(pd_ctx);
+        return FWK_SUCCESS;
 
     default:
         ppu_v1_init(&pd_ctx->ppu);

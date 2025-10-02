@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2015-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2015-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -20,6 +20,11 @@ struct set_power_status_check_params_v1 {
     struct ppu_v1_regs *reg;
 };
 
+struct set_op_status_check_params_v1 {
+    enum ppu_v1_opmode op_mode;
+    struct ppu_v1_regs *reg;
+};
+
 static bool ppu_v1_set_power_status_check(void *data)
 {
     struct set_power_status_check_params_v1 *params;
@@ -32,6 +37,19 @@ static bool ppu_v1_set_power_status_check(void *data)
          (PPU_V1_PWSR_PWR_STATUS | PPU_V1_PWSR_PWR_DYN_STATUS)) ==
         params->mode);
 }
+#ifdef BUILD_HAS_MOD_TIMER
+static bool ppu_v1_set_op_status_check(void *data)
+{
+    struct set_op_status_check_params_v1 *params;
+
+    fwk_assert(data != NULL);
+    params = (struct set_op_status_check_params_v1 *)data;
+
+    return (
+        ((params->reg->ppu_reg->PWSR & PPU_V1_PWSR_OP_STATUS) >>
+         PPU_V1_PWSR_OP_STATUS_POS) == (unsigned int)params->op_mode);
+}
+#endif
 
 static inline void ppu_v1_write_ppu_reg(
     struct ppu_v1_regs *ppu,
@@ -122,12 +140,67 @@ int ppu_v1_request_operating_mode(
     fwk_assert(ppu->ppu_reg != NULL);
     fwk_assert(op_mode < PPU_V1_OPMODE_COUNT);
 
-    power_policy =
-        ppu->ppu_reg->PWPR & ~(PPU_V1_PWPR_OP_POLICY | PPU_V1_PWPR_OP_DYN_EN);
+    /* Operating modes only have context when power mode is ON */
+    if ((ppu->ppu_reg->PWSR & PPU_V1_PWSR_PWR_STATUS) != PPU_V1_MODE_ON) {
+        return FWK_E_STATE;
+    }
+
+    /* Preserve OP_DYN_EN; only update OP_POLICY */
+    power_policy = ppu->ppu_reg->PWPR & ~PPU_V1_PWPR_OP_POLICY;
     PPU_V1_WRITE_PPU_REG(
         ppu, PWPR, power_policy | (op_mode << PPU_V1_PWPR_OP_POLICY_POS));
 
     return FWK_SUCCESS;
+}
+
+int ppu_v1_set_operating_mode(
+    struct ppu_v1_regs *ppu,
+    enum ppu_v1_opmode op_mode,
+    struct ppu_v1_timer_ctx *timer_ctx,
+    uint32_t timeout)
+{
+    int status;
+
+    if ((unsigned)op_mode >= (unsigned)PPU_V1_OPMODE_COUNT) {
+        return FWK_E_PARAM;
+    }
+
+    status = ppu_v1_request_operating_mode(ppu, op_mode);
+    if (status != FWK_SUCCESS) {
+        return status;
+    }
+
+#ifdef BUILD_HAS_MOD_TIMER
+    /* If a timer context is provided, use it to wait, otherwise fall back to
+     * spin */
+    if (timer_ctx != NULL) {
+        struct set_op_status_check_params_v1 params = {
+            .op_mode = op_mode,
+            .reg = ppu,
+        };
+
+        return timer_ctx->timer_api->wait(
+            timer_ctx->timer_id,
+            timer_ctx->delay_us,
+            ppu_v1_set_op_status_check,
+            &params);
+    }
+
+    return FWK_E_PARAM;
+#else
+    /* No timer support in this build: bounded spin */
+    (void)timer_ctx;
+
+    for (unsigned int remaining = timeout; remaining > 0; remaining--) {
+        unsigned int current_op_mode =
+            (unsigned int)((ppu->ppu_reg->PWSR & PPU_V1_PWSR_OP_STATUS) >> PPU_V1_PWSR_OP_STATUS_POS);
+
+        if (current_op_mode == (unsigned int)op_mode) {
+            return FWK_SUCCESS;
+        }
+    }
+    return FWK_E_TIMEOUT;
+#endif
 }
 
 void ppu_v1_opmode_dynamic_enable(

@@ -277,26 +277,6 @@ void ppu_v1_get_programmed_power_mode_CMockExpectWithArrayAndReturn(UNITY_LINE_T
 void ppu_v1_get_programmed_power_mode_CMockReturnMemThruPtr_ppu(UNITY_LINE_TYPE cmock_line, struct ppu_v1_regs* ppu, size_t cmock_size);
 #define ppu_v1_get_programmed_power_mode_IgnoreArg_ppu() ppu_v1_get_programmed_power_mode_CMockIgnoreArg_ppu(__LINE__)
 void ppu_v1_get_programmed_power_mode_CMockIgnoreArg_ppu(UNITY_LINE_TYPE cmock_line);
-#define ppu_v1_get_operating_mode_IgnoreAndReturn(cmock_retval) ppu_v1_get_operating_mode_CMockIgnoreAndReturn(__LINE__, cmock_retval)
-void ppu_v1_get_operating_mode_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, enum ppu_v1_opmode cmock_to_return);
-#define ppu_v1_get_operating_mode_StopIgnore() ppu_v1_get_operating_mode_CMockStopIgnore()
-void ppu_v1_get_operating_mode_CMockStopIgnore(void);
-#define ppu_v1_get_operating_mode_ExpectAnyArgsAndReturn(cmock_retval) ppu_v1_get_operating_mode_CMockExpectAnyArgsAndReturn(__LINE__, cmock_retval)
-void ppu_v1_get_operating_mode_CMockExpectAnyArgsAndReturn(UNITY_LINE_TYPE cmock_line, enum ppu_v1_opmode cmock_to_return);
-#define ppu_v1_get_operating_mode_ExpectAndReturn(ppu, cmock_retval) ppu_v1_get_operating_mode_CMockExpectAndReturn(__LINE__, ppu, cmock_retval)
-void ppu_v1_get_operating_mode_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, struct ppu_v1_regs* ppu, enum ppu_v1_opmode cmock_to_return);
-typedef enum ppu_v1_opmode (* CMOCK_ppu_v1_get_operating_mode_CALLBACK)(struct ppu_v1_regs* ppu, int cmock_num_calls);
-void ppu_v1_get_operating_mode_AddCallback(CMOCK_ppu_v1_get_operating_mode_CALLBACK Callback);
-void ppu_v1_get_operating_mode_Stub(CMOCK_ppu_v1_get_operating_mode_CALLBACK Callback);
-#define ppu_v1_get_operating_mode_StubWithCallback ppu_v1_get_operating_mode_Stub
-#define ppu_v1_get_operating_mode_ExpectWithArrayAndReturn(ppu, ppu_Depth, cmock_retval) ppu_v1_get_operating_mode_CMockExpectWithArrayAndReturn(__LINE__, ppu, ppu_Depth, cmock_retval)
-void ppu_v1_get_operating_mode_CMockExpectWithArrayAndReturn(UNITY_LINE_TYPE cmock_line, struct ppu_v1_regs* ppu, int ppu_Depth, enum ppu_v1_opmode cmock_to_return);
-#define ppu_v1_get_operating_mode_ReturnThruPtr_ppu(ppu) ppu_v1_get_operating_mode_CMockReturnMemThruPtr_ppu(__LINE__, ppu, sizeof(struct ppu_v1_regs))
-#define ppu_v1_get_operating_mode_ReturnArrayThruPtr_ppu(ppu, cmock_len) ppu_v1_get_operating_mode_CMockReturnMemThruPtr_ppu(__LINE__, ppu, cmock_len * sizeof(*ppu))
-#define ppu_v1_get_operating_mode_ReturnMemThruPtr_ppu(ppu, cmock_size) ppu_v1_get_operating_mode_CMockReturnMemThruPtr_ppu(__LINE__, ppu, cmock_size)
-void ppu_v1_get_operating_mode_CMockReturnMemThruPtr_ppu(UNITY_LINE_TYPE cmock_line, struct ppu_v1_regs* ppu, size_t cmock_size);
-#define ppu_v1_get_operating_mode_IgnoreArg_ppu() ppu_v1_get_operating_mode_CMockIgnoreArg_ppu(__LINE__)
-void ppu_v1_get_operating_mode_CMockIgnoreArg_ppu(UNITY_LINE_TYPE cmock_line);
 #define ppu_v1_get_programmed_operating_mode_IgnoreAndReturn(cmock_retval) ppu_v1_get_programmed_operating_mode_CMockIgnoreAndReturn(__LINE__, cmock_retval)
 void ppu_v1_get_programmed_operating_mode_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, enum ppu_v1_opmode cmock_to_return);
 #define ppu_v1_get_programmed_operating_mode_StopIgnore() ppu_v1_get_programmed_operating_mode_CMockStopIgnore()
@@ -855,6 +835,56 @@ void ppu_v1_get_arch_id_CMockExpectWithArrayAndReturn(UNITY_LINE_TYPE cmock_line
 void ppu_v1_get_arch_id_CMockReturnMemThruPtr_ppu(UNITY_LINE_TYPE cmock_line, struct ppu_v1_regs* ppu, size_t cmock_size);
 #define ppu_v1_get_arch_id_IgnoreArg_ppu() ppu_v1_get_arch_id_CMockIgnoreArg_ppu(__LINE__)
 void ppu_v1_get_arch_id_CMockIgnoreArg_ppu(UNITY_LINE_TYPE cmock_line);
+#define ppu_v1_set_operating_mode_IgnoreAndReturn(cmock_retval) ppu_v1_set_operating_mode_CMockIgnoreAndReturn(__LINE__, cmock_retval)
+void ppu_v1_set_operating_mode_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return);
+#define ppu_v1_set_operating_mode_StopIgnore() ppu_v1_set_operating_mode_CMockStopIgnore()
+void ppu_v1_set_operating_mode_CMockStopIgnore(void);
+#define ppu_v1_set_operating_mode_ExpectAnyArgsAndReturn(cmock_retval) ppu_v1_set_operating_mode_CMockExpectAnyArgsAndReturn(__LINE__, cmock_retval)
+void ppu_v1_set_operating_mode_CMockExpectAnyArgsAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return);
+#define ppu_v1_set_operating_mode_ExpectAndReturn(ppu, mode, tctx, timeout, cmock_retval) ppu_v1_set_operating_mode_CMockExpectAndReturn(__LINE__, ppu, mode, tctx, timeout, cmock_retval)
+void ppu_v1_set_operating_mode_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, struct ppu_v1_regs* ppu, enum ppu_v1_opmode mode, struct ppu_v1_timer_ctx* tctx, uint32_t timeout, int cmock_to_return);
+typedef int (* CMOCK_ppu_v1_set_operating_mode_CALLBACK)(struct ppu_v1_regs* ppu, enum ppu_v1_opmode mode, struct ppu_v1_timer_ctx* tctx, uint32_t timeout, int cmock_num_calls);
+void ppu_v1_set_operating_mode_AddCallback(CMOCK_ppu_v1_set_operating_mode_CALLBACK Callback);
+void ppu_v1_set_operating_mode_Stub(CMOCK_ppu_v1_set_operating_mode_CALLBACK Callback);
+#define ppu_v1_set_operating_mode_StubWithCallback ppu_v1_set_operating_mode_Stub
+#define ppu_v1_set_operating_mode_ExpectWithArrayAndReturn(ppu, ppu_Depth, mode, tctx, tctx_Depth, timeout, cmock_retval) ppu_v1_set_operating_mode_CMockExpectWithArrayAndReturn(__LINE__, ppu, ppu_Depth, mode, tctx, tctx_Depth, timeout, cmock_retval)
+void ppu_v1_set_operating_mode_CMockExpectWithArrayAndReturn(UNITY_LINE_TYPE cmock_line, struct ppu_v1_regs* ppu, int ppu_Depth, enum ppu_v1_opmode mode, struct ppu_v1_timer_ctx* tctx, int tctx_Depth, uint32_t timeout, int cmock_to_return);
+#define ppu_v1_set_operating_mode_ReturnThruPtr_ppu(ppu) ppu_v1_set_operating_mode_CMockReturnMemThruPtr_ppu(__LINE__, ppu, sizeof(struct ppu_v1_regs))
+#define ppu_v1_set_operating_mode_ReturnArrayThruPtr_ppu(ppu, cmock_len) ppu_v1_set_operating_mode_CMockReturnMemThruPtr_ppu(__LINE__, ppu, cmock_len * sizeof(*ppu))
+#define ppu_v1_set_operating_mode_ReturnMemThruPtr_ppu(ppu, cmock_size) ppu_v1_set_operating_mode_CMockReturnMemThruPtr_ppu(__LINE__, ppu, cmock_size)
+void ppu_v1_set_operating_mode_CMockReturnMemThruPtr_ppu(UNITY_LINE_TYPE cmock_line, struct ppu_v1_regs* ppu, size_t cmock_size);
+#define ppu_v1_set_operating_mode_ReturnThruPtr_tctx(tctx) ppu_v1_set_operating_mode_CMockReturnMemThruPtr_tctx(__LINE__, tctx, sizeof(struct ppu_v1_timer_ctx))
+#define ppu_v1_set_operating_mode_ReturnArrayThruPtr_tctx(tctx, cmock_len) ppu_v1_set_operating_mode_CMockReturnMemThruPtr_tctx(__LINE__, tctx, cmock_len * sizeof(*tctx))
+#define ppu_v1_set_operating_mode_ReturnMemThruPtr_tctx(tctx, cmock_size) ppu_v1_set_operating_mode_CMockReturnMemThruPtr_tctx(__LINE__, tctx, cmock_size)
+void ppu_v1_set_operating_mode_CMockReturnMemThruPtr_tctx(UNITY_LINE_TYPE cmock_line, struct ppu_v1_timer_ctx* tctx, size_t cmock_size);
+#define ppu_v1_set_operating_mode_IgnoreArg_ppu() ppu_v1_set_operating_mode_CMockIgnoreArg_ppu(__LINE__)
+void ppu_v1_set_operating_mode_CMockIgnoreArg_ppu(UNITY_LINE_TYPE cmock_line);
+#define ppu_v1_set_operating_mode_IgnoreArg_mode() ppu_v1_set_operating_mode_CMockIgnoreArg_mode(__LINE__)
+void ppu_v1_set_operating_mode_CMockIgnoreArg_mode(UNITY_LINE_TYPE cmock_line);
+#define ppu_v1_set_operating_mode_IgnoreArg_tctx() ppu_v1_set_operating_mode_CMockIgnoreArg_tctx(__LINE__)
+void ppu_v1_set_operating_mode_CMockIgnoreArg_tctx(UNITY_LINE_TYPE cmock_line);
+#define ppu_v1_set_operating_mode_IgnoreArg_timeout() ppu_v1_set_operating_mode_CMockIgnoreArg_timeout(__LINE__)
+void ppu_v1_set_operating_mode_CMockIgnoreArg_timeout(UNITY_LINE_TYPE cmock_line);
+#define ppu_v1_get_operating_mode_IgnoreAndReturn(cmock_retval) ppu_v1_get_operating_mode_CMockIgnoreAndReturn(__LINE__, cmock_retval)
+void ppu_v1_get_operating_mode_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, enum ppu_v1_opmode cmock_to_return);
+#define ppu_v1_get_operating_mode_StopIgnore() ppu_v1_get_operating_mode_CMockStopIgnore()
+void ppu_v1_get_operating_mode_CMockStopIgnore(void);
+#define ppu_v1_get_operating_mode_ExpectAnyArgsAndReturn(cmock_retval) ppu_v1_get_operating_mode_CMockExpectAnyArgsAndReturn(__LINE__, cmock_retval)
+void ppu_v1_get_operating_mode_CMockExpectAnyArgsAndReturn(UNITY_LINE_TYPE cmock_line, enum ppu_v1_opmode cmock_to_return);
+#define ppu_v1_get_operating_mode_ExpectAndReturn(ppu, cmock_retval) ppu_v1_get_operating_mode_CMockExpectAndReturn(__LINE__, ppu, cmock_retval)
+void ppu_v1_get_operating_mode_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, struct ppu_v1_regs* ppu, enum ppu_v1_opmode cmock_to_return);
+typedef enum ppu_v1_opmode (* CMOCK_ppu_v1_get_operating_mode_CALLBACK)(struct ppu_v1_regs* ppu, int cmock_num_calls);
+void ppu_v1_get_operating_mode_AddCallback(CMOCK_ppu_v1_get_operating_mode_CALLBACK Callback);
+void ppu_v1_get_operating_mode_Stub(CMOCK_ppu_v1_get_operating_mode_CALLBACK Callback);
+#define ppu_v1_get_operating_mode_StubWithCallback ppu_v1_get_operating_mode_Stub
+#define ppu_v1_get_operating_mode_ExpectWithArrayAndReturn(ppu, ppu_Depth, cmock_retval) ppu_v1_get_operating_mode_CMockExpectWithArrayAndReturn(__LINE__, ppu, ppu_Depth, cmock_retval)
+void ppu_v1_get_operating_mode_CMockExpectWithArrayAndReturn(UNITY_LINE_TYPE cmock_line, struct ppu_v1_regs* ppu, int ppu_Depth, enum ppu_v1_opmode cmock_to_return);
+#define ppu_v1_get_operating_mode_ReturnThruPtr_ppu(ppu) ppu_v1_get_operating_mode_CMockReturnMemThruPtr_ppu(__LINE__, ppu, sizeof(struct ppu_v1_regs))
+#define ppu_v1_get_operating_mode_ReturnArrayThruPtr_ppu(ppu, cmock_len) ppu_v1_get_operating_mode_CMockReturnMemThruPtr_ppu(__LINE__, ppu, cmock_len * sizeof(*ppu))
+#define ppu_v1_get_operating_mode_ReturnMemThruPtr_ppu(ppu, cmock_size) ppu_v1_get_operating_mode_CMockReturnMemThruPtr_ppu(__LINE__, ppu, cmock_size)
+void ppu_v1_get_operating_mode_CMockReturnMemThruPtr_ppu(UNITY_LINE_TYPE cmock_line, struct ppu_v1_regs* ppu, size_t cmock_size);
+#define ppu_v1_get_operating_mode_IgnoreArg_ppu() ppu_v1_get_operating_mode_CMockIgnoreArg_ppu(__LINE__)
+void ppu_v1_get_operating_mode_CMockIgnoreArg_ppu(UNITY_LINE_TYPE cmock_line);
 
 #if defined(__GNUC__) && !defined(__ICC) && !defined(__TMS470__)
 #if __GNUC__ > 4 || (__GNUC__ == 4 && (__GNUC_MINOR__ > 6 || (__GNUC_MINOR__ == 6 && __GNUC_PATCHLEVEL__ > 0)))

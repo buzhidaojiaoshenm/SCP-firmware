@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2024-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -9,6 +9,13 @@
  */
 
 #include <ppu_v1.h>
+
+#include <mod_timer.h>
+
+#include <fwk_id.h>
+
+#include <stdbool.h>
+#include <stdint.h>
 
 /* For the alarm API*/
 int start_alarm_api(
@@ -50,8 +57,6 @@ void ppu_v1_lock_off_disable(struct ppu_v1_regs *ppu);
 enum ppu_v1_mode ppu_v1_get_power_mode(struct ppu_v1_regs *ppu);
 
 enum ppu_v1_mode ppu_v1_get_programmed_power_mode(struct ppu_v1_regs *ppu);
-
-enum ppu_v1_opmode ppu_v1_get_operating_mode(struct ppu_v1_regs *ppu);
 
 enum ppu_v1_opmode ppu_v1_get_programmed_operating_mode(
     struct ppu_v1_regs *ppu);
@@ -135,3 +140,11 @@ bool ppu_v1_is_dyn_policy_min_interrupt(struct ppu_v1_regs *ppu);
 unsigned int ppu_v1_get_num_opmode(struct ppu_v1_regs *ppu);
 
 unsigned int ppu_v1_get_arch_id(struct ppu_v1_regs *ppu);
+
+int ppu_v1_set_operating_mode(
+    struct ppu_v1_regs *ppu,
+    enum ppu_v1_opmode mode,
+    struct ppu_v1_timer_ctx *tctx,
+    uint32_t timeout);
+
+enum ppu_v1_opmode ppu_v1_get_operating_mode(struct ppu_v1_regs *ppu);

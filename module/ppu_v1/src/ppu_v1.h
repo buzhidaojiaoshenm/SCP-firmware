@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2015-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2015-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -150,13 +150,14 @@ enum ppu_v1_edge_sensitivity {
 /*
  * Bit definitions for IMR
  */
-#define PPU_V1_IMR_MASK                     UINT32_C(0x0000003F)
+#define PPU_V1_IMR_MASK                     UINT32_C(0x0000007F)
 #define PPU_V1_IMR_STA_POLICY_TRN_IRQ_MASK  UINT32_C(0x00000001)
 #define PPU_V1_IMR_STA_ACCEPT_IRQ_MASK      UINT32_C(0x00000002)
 #define PPU_V1_IMR_STA_DENY_IRQ_MASK        UINT32_C(0x00000004)
 #define PPU_V1_IMR_EMU_ACCEPT_IRQ_MASK      UINT32_C(0x00000008)
 #define PPU_V1_IMR_EMU_DENY_IRQ_MASK        UINT32_C(0x00000010)
 #define PPU_V1_IMR_DYN_POLICY_MIN_IRQ_MASK  UINT32_C(0x00000020)
+#define PPU_V1_IMR_OP_POLICY_TRN_IRQ_MASK   UINT32_C(0x00000040)
 
 /*
  * Bit definitions for AIMR
@@ -298,11 +299,20 @@ int ppu_v1_request_power_mode(
     enum ppu_v1_mode ppu_mode);
 
 /*
- * Request a change to the PPU's operating mode.
+ * Request a change to the PPU's operating mode if using IRQ.
  */
 int ppu_v1_request_operating_mode(
     struct ppu_v1_regs *ppu,
     enum ppu_v1_opmode op_mode);
+
+/*
+ * Set a PPU's operating mode.
+ */
+int ppu_v1_set_operating_mode(
+    struct ppu_v1_regs *ppu,
+    enum ppu_v1_opmode op_mode,
+    struct ppu_v1_timer_ctx *timer_ctx,
+    uint32_t timeout);
 
 /*
  * Enable PPU's dynamic operating mode transitions

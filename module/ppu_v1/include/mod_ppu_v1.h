@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2015-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2015-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -147,11 +147,6 @@ struct mod_ppu_v1_pd_config {
     fwk_id_t cluster_id;
 
     /*!
-     *  Product specific ppu opmode.
-     */
-    enum ppu_v1_opmode opmode;
-
-    /*!
      * Flag indicating if this domain should be powered on during element
      * init. This flag is only supported for device and system PPUs and should
      * not be set for any other type. Timeout is not provided at this stage.
@@ -195,6 +190,27 @@ struct mod_ppu_v1_pd_config {
      * value greater than 0 if using the alarm.
      */
     uint32_t alarm_delay;
+
+    /*! Enable operating mode support. */
+    bool enable_opmode_support;
+
+    /*! Enable dynamic operating mode policy.*/
+    bool enable_opmode_dynamic_policy;
+
+    /*! Defined primary operating mode to apply when an element is on. */
+    enum ppu_v1_opmode default_op_mode;
+
+    /*!
+     * Product specific ppu opmode kept for backwards comptibility used when op
+     * mode support is not enabled.
+     */
+    enum ppu_v1_opmode opmode;
+
+    /*! Use optional op-mode interrupts (policy-complete / unsupported). */
+    bool use_opmode_irqs;
+
+    /*! Time out value for op mode updating if not using ISR not timer ctx */
+    uint32_t opmode_time_out;
 };
 
 /*!
