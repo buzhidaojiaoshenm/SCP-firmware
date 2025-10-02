@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2022-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2022-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -143,16 +143,16 @@ static void mhu3_isr(void)
              */
             if (((1u << channel->dbch.mbx_channel) &
                  mbx_reg->MBX_DBCH_INT_ST[0]) != 0u) {
-                /*
-                 * Clear Doorbell flag, we should clear only the flag(bit) which
-                 * is set. However, we are using only one flag(bit) of
-                 * corresponding doorbell channel for communication.
-                 */
-                mdbcw_reg[channel->dbch.mbx_channel].MDBCW_CLR |=
-                    (1UL << channel->dbch.mbx_flag_pos);
-                if (channel_ctx->transport_id_bound) {
-                    channel_ctx->transport_api->signal_message(
-                        channel_ctx->transport_id);
+                /* Check if the corresponding flag is set */
+                if ((mdbcw_reg[channel->dbch.mbx_channel].MDBCW_ST &
+                     (1UL << channel->dbch.mbx_flag_pos)) != 0u) {
+                    /* Clear Doorbell flag */
+                    mdbcw_reg[channel->dbch.mbx_channel].MDBCW_CLR |=
+                        (1UL << channel->dbch.mbx_flag_pos);
+                    if (channel_ctx->transport_id_bound) {
+                        channel_ctx->transport_api->signal_message(
+                            channel_ctx->transport_id);
+                    }
                 }
             }
             break;
