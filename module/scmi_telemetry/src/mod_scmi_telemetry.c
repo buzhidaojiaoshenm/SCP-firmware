@@ -1431,31 +1431,28 @@ static int scmi_telemetry_config_set_handler(
         goto exit;
     }
 
+    /* Enable with requested samping rate. */
+    sampling_rate_msec = convert_sampling_rate_to_msecs(params->sampling_rate);
+    if (sampling_rate_msec != 0) {
+        status = scmi_telemetry_ctx.telemetry_api->set_sampling_rate(
+            (uint32_t)sampling_rate_msec);
+        if (status != FWK_SUCCESS) {
+            return_values.status = SCMI_PROTOCOL_ERROR;
+            goto exit;
+        }
+        scmi_telemetry_ctx.current_sampling_rate = params->sampling_rate;
+    }
+
     /* Enable telemetry */
     status = scmi_telemetry_ctx.telemetry_api->telemetry_enable();
     if (status != FWK_SUCCESS) {
         return_values.status = SCMI_PROTOCOL_ERROR;
-        goto exit;
+    } else {
+        scmi_telemetry_ctx.telemetry_enable = true;
+        return_values.status = SCMI_SUCCESS;
     }
-    scmi_telemetry_ctx.telemetry_enable = true;
-
-    if (SCMI_TELEMETRY_SAMPLING_RATE_SECONDS(params->sampling_rate) == 0) {
-        /* Sampling rate is mandatory for enablement of DE. */
-        status = FWK_E_PARAM;
-        return_values.status = SCMI_INVALID_PARAMETERS;
-        goto exit;
-    }
-
-    sampling_rate_msec = convert_sampling_rate_to_msecs(params->sampling_rate);
-    status = scmi_telemetry_ctx.telemetry_api->set_sampling_rate(
-        (uint32_t)sampling_rate_msec);
-    if (status != FWK_SUCCESS) {
-        return_values.status = SCMI_PROTOCOL_ERROR;
-        goto exit;
-    }
-    scmi_telemetry_ctx.current_sampling_rate = params->sampling_rate;
-
     return_values.status = SCMI_SUCCESS;
+
 exit:
     /* Determine response size */
     response_size = (return_values.status == SCMI_SUCCESS) ?

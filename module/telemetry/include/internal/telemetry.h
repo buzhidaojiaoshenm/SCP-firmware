@@ -12,6 +12,7 @@
 #define TELEMETRY_H
 
 #include <mod_telemetry.h>
+#include <mod_timer.h>
 
 /*!
  * \brief SHMTI (Shared Memory Telemetry Interface) context structure.
@@ -69,6 +70,8 @@ struct telemetry_source_context {
     bool is_data_updated;
     /*! Count of enabled DEs */
     uint32_t de_enabled_count;
+    /*! De Data array. */
+    struct mod_telemetry_de_data *de_data_list;
 };
 
 /*!
@@ -95,6 +98,10 @@ struct mod_telemetry_context {
     uint32_t shmti_count;
     /*! SHMTI context */
     struct telemetry_shmti_context *shmti_ctx_table;
+    /*! Internal flag to indicate if telemetry updates are ongoing. */
+    bool is_telemetry_update_ongoing;
+    /*! Alarm API for periodic sampling intervals */
+    const struct mod_timer_alarm_api *alarm_api;
 };
 
 /* SHMTI APIs */
@@ -151,5 +158,19 @@ int shmti_free_pool(
     struct telemetry_shmti_context *shmti_ctx,
     size_t bytes_allocated,
     uint32_t offset);
+
+/*!
+ * \brief Increments the sequence number for all SHMTI regions.
+ *
+ *
+ * \details This function updates the start and end sequence numbers for
+ *          all SHMTI (Shared Memory Telemetry Interface) regions. The sequence
+ *          numbers help track telemetry data updates, ensuring consistency
+ *          between the start and end markers.
+ *
+ * \param[in] shmti_ctx Pointer to the SHMTI context structure.
+ *
+ */
+int shmti_seq_inc(const struct telemetry_shmti_context *shmti_ctx);
 
 #endif /* !TELEMETRY_H */

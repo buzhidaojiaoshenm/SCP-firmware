@@ -655,6 +655,51 @@ void run_shmti_free_tests(void)
     RUN_TEST(test_shmti_free_pool_uninitialized_shmti);
 }
 
+void test_shmti_seq_inc_success(void)
+{
+    int status;
+    uint64_t start_value = 10;
+    uint64_t end_value = 20;
+    test_shmti_info.start_addr = (uintptr_t)&start_value;
+    test_shmti_ctx.end_seq_addr = (uintptr_t)&end_value;
+
+    status = shmti_seq_inc(&test_shmti_ctx);
+    TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
+    TEST_ASSERT_EQUAL_UINT64(11, start_value);
+    TEST_ASSERT_EQUAL_UINT64(21, end_value);
+}
+
+void test_shmti_seq_inc_null_start_or_end_addr(void)
+{
+    int status;
+    uint64_t start_value = 10;
+    uint64_t end_value = 20;
+    test_shmti_info.start_addr = (uintptr_t)&start_value;
+    test_shmti_ctx.end_seq_addr = (uintptr_t)&end_value;
+
+    /* Inject failure on start match sequence addr. */
+    test_shmti_info.start_addr = (uintptr_t)NULL;
+    status = shmti_seq_inc(&test_shmti_ctx);
+    TEST_ASSERT_EQUAL(FWK_E_PARAM, status);
+    TEST_ASSERT_EQUAL_UINT64(10, start_value);
+    TEST_ASSERT_EQUAL_UINT64(20, end_value);
+
+    test_shmti_info.start_addr = (uintptr_t)&start_value;
+    /* Inject failure on end match sequence addr. */
+    test_shmti_ctx.end_seq_addr = (uintptr_t)NULL;
+    status = shmti_seq_inc(&test_shmti_ctx);
+    TEST_ASSERT_EQUAL(FWK_E_PARAM, status);
+    TEST_ASSERT_EQUAL_UINT64(10, start_value);
+    TEST_ASSERT_EQUAL_UINT64(20, end_value);
+}
+
+/* Helper function to invoke all shmti_seq_inc tests */
+void run_shmti_seq_inc_tests(void)
+{
+    RUN_TEST(test_shmti_seq_inc_success);
+    RUN_TEST(test_shmti_seq_inc_null_start_or_end_addr);
+}
+
 int main(void)
 {
     UNITY_BEGIN();
@@ -666,6 +711,7 @@ int main(void)
     run_shmti_create_tests();
     run_shmti_alloc_tests();
     run_shmti_free_tests();
+    run_shmti_seq_inc_tests();
 
     return UNITY_END();
 }

@@ -98,6 +98,8 @@ struct mod_telemetry_source_config {
  * \brief Holds Telemetry module config.
  */
 struct mod_telemetry_config {
+    /*! Identifier for the Telemetry update data alarm. */
+    fwk_id_t alarm_id;
     /*! Number of valid update intervals available. */
     uint32_t num_intervals;
     /*! Telemetry update interval type. */
@@ -142,6 +144,19 @@ struct mod_telemetry_de_status {
     bool ts_enabled;
 };
 
+/*!
+ * \brief Stores DE's telemetry data.
+ */
+struct mod_telemetry_de_data {
+    /*! Index of the Event in the source. */
+    uint32_t source_de_index;
+    /*! Number of QWORDS in data. */
+    size_t data_qword_count;
+    /*! Data associated with Event. */
+    uint64_t *data;
+    /*! Timestamp for the data. */
+    uint64_t timestamp;
+};
 /*!
  * \brief Telemetry HAL API indices.
  */
@@ -227,12 +242,20 @@ struct mod_telemetry_driver_api {
     int (*enable_de)(uint32_t de_index);
 
     /*!
-     * \brief Trigger telemetry data update.
+     * \brief Fetch the data from source driver.
      *
-     * This function updates the telemetry data by fetching values from
+     * This function fetches the data from the source driver when it's ready.
      * registered telemetry sources.
+     *
+     * \param[out] data_array Array of Data.
+     * \param[out] num_des Number of DEs available for consumption.
+     *
+     * \retval ::FWK_SUCCESS The operation was successful.
+     * \return One of the standard framework error codes.
+
      */
-    int (*update)(void);
+    int (
+        *get_data)(struct mod_telemetry_de_data **data_array, uint32_t num_des);
 };
 
 /*!

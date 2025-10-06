@@ -357,3 +357,27 @@ int shmti_free_pool(
 
     return FWK_SUCCESS;
 }
+
+int shmti_seq_inc(const struct telemetry_shmti_context *shmti_ctx)
+{
+    uint64_t *start_seq_addr;
+    uint64_t *end_seq_addr;
+
+    /* Get the memory addresses for start and end sequence markers */
+    start_seq_addr = (uint64_t *)shmti_ctx->shmti_info->start_addr;
+    end_seq_addr = (uint64_t *)shmti_ctx->end_seq_addr;
+
+    /* Ensure valid memory addresses before modifying values */
+    if (start_seq_addr == NULL || end_seq_addr == NULL) {
+        return FWK_E_PARAM;
+    }
+
+    /*!
+     * Increment both start and end sequence numbers.
+     * This ensures the telemetry system can detect changes in data updates.
+     */
+    (*start_seq_addr)++;
+    (*end_seq_addr)++;
+
+    return FWK_SUCCESS;
+}

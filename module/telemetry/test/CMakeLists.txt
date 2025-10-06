@@ -12,6 +12,7 @@ set(UNIT_TEST_TARGET mod_${TEST_MODULE}_shmti_manager_unit_test)
 
 set(MODULE_SRC ${MODULE_ROOT}/${TEST_MODULE}/src)
 set(MODULE_INC ${MODULE_ROOT}/${TEST_MODULE}/include)
+list(APPEND OTHER_MODULE_INC ${MODULE_ROOT}/timer/include)
 
 list(APPEND OTHER_MODULE_INC ${MODULE_ROOT}/telemetry/include/internal)
 
