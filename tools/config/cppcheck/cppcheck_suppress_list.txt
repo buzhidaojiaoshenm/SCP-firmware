@@ -51,8 +51,8 @@ unknownMacro:*product/morello/module/morello_system/src/mod_morello_system.c:302
 unknownEvaluationOrder:*framework/src/fwk_io.c:71
 unknownEvaluationOrder:*framework/src/fwk_io.c:72
 unknownEvaluationOrder:*framework/src/fwk_io.c:74
-unknownEvaluationOrder:*framework/src/fwk_log.c:54
-unknownEvaluationOrder:*framework/src/fwk_log.c:56
+unknownEvaluationOrder:*framework/src/fwk_log.c:55
+unknownEvaluationOrder:*framework/src/fwk_log.c:57
 
 // Cppcheck is unable to fully parse newlib on AArch64 (when included explicitly with Clang)
 preprocessorErrorDirective:*machine/*
