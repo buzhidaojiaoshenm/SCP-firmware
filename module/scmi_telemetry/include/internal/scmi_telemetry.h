@@ -798,7 +798,7 @@ struct scmi_telemetry_config_set_p2a {
 };
 
 /*! \brief Bit position and mask for configuring telemetry selector */
-#define SCMI_TELEMETRY_CONFIG_GET_FLAGS_ID_SELECTOR_POS 5
+#define SCMI_TELEMETRY_CONFIG_GET_FLAGS_ID_SELECTOR_POS 0
 #define SCMI_TELEMETRY_CONFIG_GET_FLAGS_ID_SELECTOR_MASK \
     (UINT32_C(0xF) << SCMI_TELEMETRY_CONFIG_GET_FLAGS_ID_SELECTOR_POS)
 

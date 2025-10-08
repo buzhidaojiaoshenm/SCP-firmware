@@ -953,7 +953,7 @@ static int de_configure_enable_data_event(
     unsigned int shmti_idx;
     size_t de_index;
     telemetry_de_handle_st de_handle;
-    uint32_t curr_shmti_id;
+    uint32_t curr_shmti_id = 0;
     uint32_t available_shmti_count;
     const struct mod_scmi_telemetry_agent_shmti_config *agent_shmtis;
 
@@ -1164,6 +1164,8 @@ static int scmi_telemetry_de_configure_handler(
 
     if (status == FWK_SUCCESS) {
         return_values.status = SCMI_SUCCESS;
+    } else if (status == FWK_E_SUPPORT) {
+        return_values.status = SCMI_NOT_SUPPORTED;
     } else if (status == FWK_E_PARAM) {
         return_values.status = SCMI_INVALID_PARAMETERS;
     }
@@ -1269,7 +1271,9 @@ static int scmi_telemetry_de_enabled_list_handler(
             goto exit;
         }
         de_enabled_value[0] = de_status.de_id;
-        de_enabled_value[1] = de_status.de_ts_mode;
+        de_enabled_value[1] = de_status.ts_enabled ?
+            SCMI_TELEMETRY_DE_TS_ENABLED :
+            SCMI_TELEMETRY_DE_TS_DISABLED;
 
         status = scmi_telemetry_ctx.scmi_api->write_payload(
             service_id,

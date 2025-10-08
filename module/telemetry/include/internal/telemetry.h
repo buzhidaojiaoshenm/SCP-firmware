@@ -33,6 +33,20 @@ struct telemetry_shmti_context {
 };
 
 /*!
+ * \brief Data Event (DE) descriptor and its runtime status.
+ *
+ * This structure holds a Data Event descriptor along with its status.
+ */
+struct telemetry_de_status {
+    /*! Timestamp mode for this DE. */
+    bool ts_enabled;
+    /*! SHMTI context DE resides in. */
+    struct telemetry_shmti_context *curr_shmti_ctx;
+    /*! Offset of the allocated in SHMTI */
+    uint32_t shmti_de_offset;
+};
+
+/*!
  * \brief Telemetry source (driver) context structure.
  *
  * This structure manages telemetry sources, their associated APIs, and
@@ -41,12 +55,16 @@ struct telemetry_shmti_context {
 struct telemetry_source_context {
     /*! Source driver config. */
     const struct mod_telemetry_source_config *config;
+    /*! Source Index */
+    uint32_t index;
     /*! API for telemetry source */
     const struct mod_telemetry_driver_api *api;
     /*! Number of Data Events (DEs) */
     uint32_t num_de;
     /*! List of DEs */
     const struct mod_telemetry_de_desc *de_list;
+    /*! List of Data Event */
+    struct telemetry_de_status *de_status_list;
     /*! Flag to indicate if data is updated */
     bool is_data_updated;
     /*! Count of enabled DEs */

@@ -32,10 +32,24 @@
  * \{
  */
 
+/*! Size(Bytes) of the LINE with Timestamp. */
+#define MOD_TELEMETRY_DE_LINE_SIZE_TS (24)
+/*! Size(Bytes) of the LINE without Timestamp. */
+#define MOD_TELEMETRY_DE_LINE_SIZE_NON_TS (16)
+/*! Size(Bytes) of the LINE with Block Timestamp. */
+#define MOD_TELEMETRY_DE_BLOCK_LINE_SIZE (16)
+/*! Size(Bytes) of the Timestamp field in a line. */
+#define MOD_TELEMETRY_TS_N_BYTES (8)
+/*! Size(Bytes) of the Data field in a line. */
+#define MOD_TELEMETRY_DE_DATA_SIZE_PER_LINE (8)
+
 /*!
  * \brief Telemetry HAL Data event handle.
  */
 typedef struct {
+    /*! Flag to indicate if handle is valid. */
+    uint32_t valid : 8;
+
     /*! Source Index */
     uint32_t source_index : 8;
 
@@ -44,9 +58,6 @@ typedef struct {
 
     /*! Index of the DE within the group. */
     uint32_t de_offset_index : 8;
-
-    /*! Reserving it for future use.*/
-    uint32_t reserved : 8;
 } telemetry_de_handle_st;
 
 /*!
@@ -127,8 +138,8 @@ struct mod_telemetry_de_desc {
 struct mod_telemetry_de_status {
     /*! Data event ID. */
     uint32_t de_id;
-    /*! Timestamp mode for this DE. */
-    uint32_t de_ts_mode;
+    /*! Flag to indicate if timestamp is enabled. */
+    bool ts_enabled;
 };
 
 /*!
@@ -170,7 +181,6 @@ struct mod_telemetry_driver_api {
      * \retval ::FWK_SUCCESS The operation was successful.
      * \return One of the standard framework error codes.
      */
-
     int (*get_de_fch_attr)(
         uint32_t de_index,
         struct mod_telemetry_de_fch_attr *de_fch_attr);
