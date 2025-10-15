@@ -33,11 +33,36 @@ struct telemetry_shmti_context {
 };
 
 /*!
+ * \brief Telemetry source (driver) context structure.
+ *
+ * This structure manages telemetry sources, their associated APIs, and
+ * allocated data events.
+ */
+struct telemetry_source_context {
+    /*! Source driver config. */
+    const struct mod_telemetry_source_config *config;
+    /*! API for telemetry source */
+    const struct mod_telemetry_driver_api *api;
+    /*! Number of Data Events (DEs) */
+    uint32_t num_de;
+    /*! List of DEs */
+    const struct mod_telemetry_de_desc *de_list;
+    /*! Flag to indicate if data is updated */
+    bool is_data_updated;
+    /*! Count of enabled DEs */
+    uint32_t de_enabled_count;
+};
+
+/*!
  * \brief Global telemetry module context.
  *
  * Stores state, telemetry sources, and SHMTI management structures.
  */
 struct mod_telemetry_context {
+    /*! Number of sources */
+    uint32_t num_sources;
+    /*! Telemetry sources */
+    struct telemetry_source_context *source_ctx_table;
     /*! Flag indicating telemetry is enabled */
     bool telemetry_enabled;
     /*! Telemetry sampling rate */

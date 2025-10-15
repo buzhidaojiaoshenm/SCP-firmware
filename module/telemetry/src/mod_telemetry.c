@@ -19,7 +19,6 @@
 #include <fwk_mm.h>
 #include <fwk_module.h>
 #include <fwk_module_idx.h>
-#include <fwk_notification.h>
 #include <fwk_string.h>
 
 #define MOD_NAME "[telemetry]"
@@ -181,19 +180,65 @@ static struct mod_telemetry_protocol_support_api scmi_protocol_support_api = {
 
 static int telemetry_init(
     fwk_id_t module_id,
-    unsigned int element_count,
+    unsigned int source_count,
     const void *data)
 {
-    unsigned int i;
     const struct mod_telemetry_config *config =
         (const struct mod_telemetry_config *)data;
     if (config == NULL) {
         return FWK_E_PARAM;
     }
 
+    telemetry_ctx.source_ctx_table =
+        fwk_mm_calloc(source_count, (sizeof(struct telemetry_source_context)));
+    if (telemetry_ctx.source_ctx_table == NULL) {
+        return FWK_E_NOMEM;
+    }
+    /*! Initialise telemetry context. */
     telemetry_ctx.config = config;
+    telemetry_ctx.num_sources = source_count;
+    telemetry_ctx.total_de_count = 0;
+    telemetry_ctx.total_de_enabled_count = 0;
+    telemetry_ctx.telemetry_enabled = false;
 
     return FWK_SUCCESS;
+}
+
+static int telemetry_element_init(
+    fwk_id_t source_id,
+    unsigned int unused,
+    const void *data)
+{
+    unsigned int source_idx;
+    const struct mod_telemetry_source_config *config =
+        (const struct mod_telemetry_source_config *)data;
+    if (!fwk_module_is_valid_element_id(source_id) || config == NULL) {
+        return FWK_E_PARAM;
+    }
+
+    source_idx = fwk_id_get_element_idx(source_id);
+    telemetry_ctx.source_ctx_table[source_idx].config = config;
+
+    return FWK_SUCCESS;
+}
+
+static int telemetry_bind(fwk_id_t id, unsigned int round)
+{
+    struct telemetry_source_context *source_ctx;
+
+    if (round == 0 || fwk_id_is_type(id, FWK_ID_TYPE_MODULE)) {
+        return FWK_SUCCESS;
+    }
+    if (!fwk_module_is_valid_element_id(id) ||
+        fwk_id_get_element_idx(id) >= telemetry_ctx.num_sources) {
+        return FWK_E_PARAM;
+    }
+
+    source_ctx = &telemetry_ctx.source_ctx_table[fwk_id_get_element_idx(id)];
+    return fwk_module_bind(
+        FWK_ID_MODULE(fwk_id_get_module_idx(source_ctx->config->drv_api_id)),
+        source_ctx->config->drv_api_id,
+        &source_ctx->api);
 }
 
 static int telemetry_process_bind_request(
@@ -216,10 +261,38 @@ static int telemetry_process_bind_request(
     return FWK_SUCCESS;
 }
 
+static int telemetry_start(fwk_id_t id)
+{
+    int status;
+    struct telemetry_source_context *source_ctx;
+
+    if (fwk_id_is_type(id, FWK_ID_TYPE_MODULE)) {
+        return FWK_SUCCESS;
+    }
+
+    if (!fwk_module_is_valid_element_id(id) ||
+        fwk_id_get_element_idx(id) >= telemetry_ctx.num_sources) {
+        return FWK_E_PARAM;
+    }
+
+    source_ctx = &telemetry_ctx.source_ctx_table[fwk_id_get_element_idx(id)];
+    status =
+        source_ctx->api->get_de_list(&source_ctx->num_de, &source_ctx->de_list);
+    if (status != FWK_SUCCESS) {
+        return status;
+    }
+    /* Update the total DE count */
+    telemetry_ctx.total_de_count += source_ctx->num_de;
+
+    return FWK_SUCCESS;
+}
+
 const struct fwk_module module_telemetry = {
     .type = FWK_MODULE_TYPE_HAL,
     .api_count = (unsigned int)MOD_TELEMETRY_API_IDX_COUNT,
     .init = telemetry_init,
+    .element_init = telemetry_element_init,
+    .bind = telemetry_bind,
     .process_bind_request = telemetry_process_bind_request,
     .start = telemetry_start,
 };

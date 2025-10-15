@@ -70,6 +70,20 @@ enum mod_telemetry_update_interval_formats {
 };
 
 /*!
+ * \brief Holds Telemetry module element config.
+ *
+ * Element of Telemetry module is a Telemetry source which is responsible for
+ * providing data for DEs and Event groups.
+ */
+struct mod_telemetry_source_config {
+    /*! Identifier of the API ID. */
+    fwk_id_t drv_api_id;
+
+    /*! Uses Block Timestamp. */
+    bool uses_blk_ts;
+};
+
+/*!
  * \brief Holds Telemetry module config.
  */
 struct mod_telemetry_config {
