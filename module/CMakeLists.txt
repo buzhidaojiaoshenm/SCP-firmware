@@ -114,6 +114,7 @@ list(APPEND SCP_MODULE_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/transport")
 list(APPEND SCP_MODULE_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/voltage_domain")
 list(APPEND SCP_MODULE_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/xr77128")
 list(APPEND SCP_MODULE_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/fch_polled")
+list(APPEND SCP_MODULE_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/mock_telemetry_source")
 
 #
 # Remove paths if this variable is defined by the platform target's
