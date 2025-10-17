@@ -41,6 +41,29 @@
  */
 #define FWK_IS_VALUE_POWER_OF_TWO(VALUE) \
     (((VALUE) > 0) && (((VALUE) & ((VALUE)-1)) == 0))
+
+/*!
+ * \brief Aligns a value to the previous power of 2 multiple.
+ *
+ * \param VALUE Value to be aligned.
+ * \param PWR_OF_2_INTERVAL Power of 2 multiple to align to.
+ *
+ * \return The nearest multiple which is smaller than or equal to VALUE.
+ */
+#define FWK_ALIGN_TO_PREVIOUS_PWR_OF_2(VALUE, PWR_OF_2_INTERVAL) \
+    ((VALUE) & ~((PWR_OF_2_INTERVAL)-1))
+
+/*!
+ * \brief Aligns a value to the next power of 2 multiple.
+ *
+ * \param VALUE Value to be aligned.
+ * \param PWR_OF_2_INTERVAL Power of 2 multiple to align to.
+ *
+ * \return The nearest multiple which is greater than or equal to VALUE.
+ */
+#define FWK_ALIGN_TO_NEXT_PWR_OF_2(VALUE, PWR_OF_2_INTERVAL) \
+    ((((VALUE) + ((PWR_OF_2_INTERVAL)-1)) & ~((PWR_OF_2_INTERVAL)-1)))
+
 /*!
  * \brief Aligns a value to the next multiple.
  *

@@ -1,6 +1,6 @@
 /*
  * Arm SCP/MCP Software
- * Copyright (c) 2015-2024, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2015-2025, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -12,6 +12,8 @@
 static void test_fwk_macros_array_size(void);
 static void test_fwk_macros_align_next(void);
 static void test_fwk_macros_align_previous(void);
+static void test_fwk_macros_align_next_pwrof2(void);
+static void test_fwk_macros_align_previous_pwrof2(void);
 static void test_fwk_macros_power_of_two_check(void);
 static void test_fwk_macros_align_check(void);
 static void test_fwk_macros_bit(void);
@@ -22,6 +24,8 @@ static const struct fwk_test_case_desc test_case_table[] = {
     FWK_TEST_CASE(test_fwk_macros_array_size),
     FWK_TEST_CASE(test_fwk_macros_align_next),
     FWK_TEST_CASE(test_fwk_macros_align_previous),
+    FWK_TEST_CASE(test_fwk_macros_align_next_pwrof2),
+    FWK_TEST_CASE(test_fwk_macros_align_previous_pwrof2),
     FWK_TEST_CASE(test_fwk_macros_power_of_two_check),
     FWK_TEST_CASE(test_fwk_macros_align_check),
     FWK_TEST_CASE(test_fwk_macros_bit),
@@ -103,6 +107,62 @@ static void test_fwk_macros_align_previous(void)
     value = 9;
     interval = 8;
     result = FWK_ALIGN_PREVIOUS(value, interval);
+    assert(result == 8);
+}
+
+static void test_fwk_macros_align_next_pwrof2(void)
+{
+    unsigned int value;
+    unsigned int interval;
+    unsigned int result;
+
+    value = 0;
+    interval = 32;
+    /* Precedence test with expression as arguments to macro. */
+    result = FWK_ALIGN_TO_NEXT_PWR_OF_2(value | 1, interval + 32);
+    assert(result == 64);
+
+    value = 0;
+    interval = 32;
+    result = FWK_ALIGN_TO_NEXT_PWR_OF_2(value, interval);
+    assert(result == 0);
+
+    value = 8;
+    interval = 8;
+    result = FWK_ALIGN_TO_NEXT_PWR_OF_2(value, interval);
+    assert(result == 8);
+
+    value = 9;
+    interval = 8;
+    result = FWK_ALIGN_TO_NEXT_PWR_OF_2(value, interval);
+    assert(result == 16);
+}
+
+static void test_fwk_macros_align_previous_pwrof2(void)
+{
+    unsigned int value;
+    unsigned int interval;
+    unsigned int result;
+
+    value = 65;
+    interval = 32;
+    /* Precedence test with expression as arguments to macro. */
+    result = FWK_ALIGN_TO_PREVIOUS_PWR_OF_2(value & 1, interval + 32);
+    assert(result == 0);
+
+    value = 0;
+    interval = 32;
+    result = FWK_ALIGN_TO_PREVIOUS_PWR_OF_2(value, interval);
+    assert(result == 0);
+
+    value = 8;
+    interval = 8;
+    result = FWK_ALIGN_TO_PREVIOUS_PWR_OF_2(value, interval);
+    assert(result == 8);
+
+    value = 9;
+    interval = 8;
+    result = FWK_ALIGN_TO_PREVIOUS_PWR_OF_2(value, interval);
     assert(result == 8);
 }
 
