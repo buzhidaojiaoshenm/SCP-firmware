@@ -20,7 +20,7 @@
 
 #define WRITE_SYSREG(reg, value) \
     ({ \
-        __asm__ volatile("msr " FWK_STRINGIFY(reg) ", %0" ::"r"(value) \
+        __asm__ volatile("msr " FWK_STRINGIFY(reg) ", %x0" ::"r"(value) \
                          : "memory"); \
     })
 
