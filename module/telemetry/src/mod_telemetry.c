@@ -13,7 +13,7 @@
  *     management.
  */
 
-#include <mod_telemetry.h>
+#include <internal/telemetry.h>
 
 #include <fwk_log.h>
 #include <fwk_mm.h>

@@ -636,8 +636,8 @@ static int scmi_telemetry_de_description_handler(
     /* Iterate through the DE descriptors and add them to the response */
     for (i = 0; i < count; i++, de_desc_index++) {
         /* Write Data Event description in payload. */
-        status =
-            scmi_telemetry_ctx.telemetry_api->get_de(de_desc_index, &de_desc);
+        status = scmi_telemetry_ctx.telemetry_api->get_de_desc(
+            de_desc_index, &de_desc);
         if (status != FWK_SUCCESS) {
             goto exit;
         }

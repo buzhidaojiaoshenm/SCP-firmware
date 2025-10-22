@@ -272,15 +272,16 @@ struct mod_telemetry_protocol_support_api {
     int (*get_num_de)(uint32_t *num_de);
 
     /*!
-     * \brief Retrieve details of a specific Data Event (DE).
+     * \brief Retrieve description of a specific Data Event (DE).
      *
      * \param[in] de_index Index of the DE.
-     * \param[out] de_desc Pointer to store the DE descriptor.
+     * \param[out] de_desc Pointer to store the Data Event descriptor.
      *
      * \retval ::FWK_SUCCESS The operation was successful.
      * \return One of the standard framework error codes.
      */
-    int (*get_de)(uint32_t de_index, struct mod_telemetry_de_desc *de_desc);
+    int (
+        *get_de_desc)(uint32_t de_index, struct mod_telemetry_de_desc *de_desc);
 
     /*!
      * \brief Retrieve Fast Channel details of a specific Data Event (DE).
