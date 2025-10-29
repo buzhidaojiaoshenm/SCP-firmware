@@ -46,6 +46,9 @@ el3_init:
     orr x0, x0, #(SCTLR_EL3_NAA)
     msr SCTLR_EL3, x0
 
+    /* Configure EL3 exception vector for managing FIQ */
+    ldr x0, =exception_vectors
+    msr vbar_el3, x0
     isb
 
     adr x0, el2_init
