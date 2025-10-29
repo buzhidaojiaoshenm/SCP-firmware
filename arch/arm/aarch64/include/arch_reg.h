@@ -155,7 +155,7 @@
 /*
  * GIC V2 registers
  */
-#define GICC_BASE 0x20000u
+#define GICC_BASE 0x10000u
 
 #define FIQ_EN_BIT         FWK_BIT(3)
 #define CTLR_ENABLE_G0_BIT FWK_BIT(0)
