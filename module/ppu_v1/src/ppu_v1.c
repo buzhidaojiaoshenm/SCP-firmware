@@ -25,6 +25,11 @@ struct set_op_status_check_params_v1 {
     struct ppu_v1_regs *reg;
 };
 
+struct op_dyn_status_check_params {
+    const struct ppu_v1_regs *reg;
+    bool enabled;
+};
+
 static bool ppu_v1_set_power_status_check(void *data)
 {
     struct set_power_status_check_params_v1 *params;
@@ -203,24 +208,73 @@ int ppu_v1_set_operating_mode(
 #endif
 }
 
-void ppu_v1_opmode_dynamic_enable(
-    struct ppu_v1_regs *ppu,
-    enum ppu_v1_opmode min_dyn_mode)
+#ifdef BUILD_HAS_MOD_TIMER
+static bool ppu_v1_op_dyn_status_check(void *data)
 {
-    uint32_t power_policy;
+    const struct op_dyn_status_check_params *p = data;
+    bool is_enabled = (p->reg->ppu_reg->PWSR & PPU_V1_PWSR_OP_DYN_STATUS) != 0u;
 
-    fwk_assert(ppu != NULL);
-    fwk_assert(ppu->ppu_reg != NULL);
-    fwk_assert(min_dyn_mode < PPU_V1_OPMODE_COUNT);
+    return (is_enabled == p->enabled);
+}
+#endif
 
-    power_policy = ppu->ppu_reg->PWPR & ~PPU_V1_PWPR_OP_POLICY;
-    PPU_V1_WRITE_PPU_REG(
-        ppu,
-        PWPR,
-        power_policy | PPU_V1_PWPR_OP_DYN_EN |
-            (min_dyn_mode << PPU_V1_PWPR_OP_POLICY_POS));
-    while ((ppu->ppu_reg->PWSR & PPU_V1_PWSR_OP_DYN_STATUS) == 0)
-        continue;
+int ppu_v1_opmode_dynamic_enable(
+    struct ppu_v1_regs *ppu,
+    bool enable,
+    enum ppu_v1_opmode min_dyn_mode,
+    struct ppu_v1_timer_ctx *timer_ctx,
+    uint32_t timeout)
+{
+    uint32_t pwpr;
+
+    if ((ppu == NULL) || (ppu->ppu_reg == NULL)) {
+        return FWK_E_PARAM;
+    }
+
+    if (enable && ((unsigned)min_dyn_mode >= (unsigned)PPU_V1_OPMODE_COUNT)) {
+        return FWK_E_PARAM;
+    }
+
+    /* Program PWPR: set/clear OP_DYN_EN; program OP_POLICY only when enabling
+     */
+    if (enable) {
+        pwpr = ppu->ppu_reg->PWPR & ~PPU_V1_PWPR_OP_POLICY;
+        pwpr |= PPU_V1_PWPR_OP_DYN_EN |
+            ((uint32_t)min_dyn_mode << PPU_V1_PWPR_OP_POLICY_POS);
+    } else {
+        pwpr = ppu->ppu_reg->PWPR & ~PPU_V1_PWPR_OP_DYN_EN;
+    }
+    PPU_V1_WRITE_PPU_REG(ppu, PWPR, pwpr);
+
+#ifdef BUILD_HAS_MOD_TIMER
+    /* If timers are available, require a timer_ctx to avoid busy-waiting. */
+    if (timer_ctx != NULL) {
+        struct op_dyn_status_check_params params = {
+            .reg = ppu,
+            .enabled = enable,
+        };
+
+        return timer_ctx->timer_api->wait(
+            timer_ctx->timer_id,
+            timer_ctx->delay_us,
+            ppu_v1_op_dyn_status_check,
+            &params);
+    }
+
+    (void)timeout;
+    return FWK_E_PARAM;
+#else
+    /* No timer support: do a bounded spin on OP_DYN_STATUS. */
+    for (uint32_t remaining = timeout; remaining > 0u; --remaining) {
+        bool is_enabled =
+            (ppu->ppu_reg->PWSR & PPU_V1_PWSR_OP_DYN_STATUS) != 0u;
+
+        if (is_enabled == enable) {
+            return FWK_SUCCESS;
+        }
+    }
+    return FWK_E_TIMEOUT;
+#endif
 }
 
 void ppu_v1_dynamic_enable(

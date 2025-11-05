@@ -153,28 +153,38 @@ void ppu_v1_request_operating_mode_CMockReturnMemThruPtr_ppu(UNITY_LINE_TYPE cmo
 void ppu_v1_request_operating_mode_CMockIgnoreArg_ppu(UNITY_LINE_TYPE cmock_line);
 #define ppu_v1_request_operating_mode_IgnoreArg_op_mode() ppu_v1_request_operating_mode_CMockIgnoreArg_op_mode(__LINE__)
 void ppu_v1_request_operating_mode_CMockIgnoreArg_op_mode(UNITY_LINE_TYPE cmock_line);
-#define ppu_v1_opmode_dynamic_enable_Ignore() ppu_v1_opmode_dynamic_enable_CMockIgnore()
-void ppu_v1_opmode_dynamic_enable_CMockIgnore(void);
+#define ppu_v1_opmode_dynamic_enable_IgnoreAndReturn(cmock_retval) ppu_v1_opmode_dynamic_enable_CMockIgnoreAndReturn(__LINE__, cmock_retval)
+void ppu_v1_opmode_dynamic_enable_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return);
 #define ppu_v1_opmode_dynamic_enable_StopIgnore() ppu_v1_opmode_dynamic_enable_CMockStopIgnore()
 void ppu_v1_opmode_dynamic_enable_CMockStopIgnore(void);
-#define ppu_v1_opmode_dynamic_enable_ExpectAnyArgs() ppu_v1_opmode_dynamic_enable_CMockExpectAnyArgs(__LINE__)
-void ppu_v1_opmode_dynamic_enable_CMockExpectAnyArgs(UNITY_LINE_TYPE cmock_line);
-#define ppu_v1_opmode_dynamic_enable_Expect(ppu, min_dyn_mode) ppu_v1_opmode_dynamic_enable_CMockExpect(__LINE__, ppu, min_dyn_mode)
-void ppu_v1_opmode_dynamic_enable_CMockExpect(UNITY_LINE_TYPE cmock_line, struct ppu_v1_regs* ppu, enum ppu_v1_opmode min_dyn_mode);
-typedef void (* CMOCK_ppu_v1_opmode_dynamic_enable_CALLBACK)(struct ppu_v1_regs* ppu, enum ppu_v1_opmode min_dyn_mode, int cmock_num_calls);
+#define ppu_v1_opmode_dynamic_enable_ExpectAnyArgsAndReturn(cmock_retval) ppu_v1_opmode_dynamic_enable_CMockExpectAnyArgsAndReturn(__LINE__, cmock_retval)
+void ppu_v1_opmode_dynamic_enable_CMockExpectAnyArgsAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return);
+#define ppu_v1_opmode_dynamic_enable_ExpectAndReturn(ppu, enable, min_dyn_mode, timer_ctx, timeout, cmock_retval) ppu_v1_opmode_dynamic_enable_CMockExpectAndReturn(__LINE__, ppu, enable, min_dyn_mode, timer_ctx, timeout, cmock_retval)
+void ppu_v1_opmode_dynamic_enable_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, struct ppu_v1_regs* ppu, bool enable, enum ppu_v1_opmode min_dyn_mode, struct ppu_v1_timer_ctx* timer_ctx, uint32_t timeout, int cmock_to_return);
+typedef int (* CMOCK_ppu_v1_opmode_dynamic_enable_CALLBACK)(struct ppu_v1_regs* ppu, bool enable, enum ppu_v1_opmode min_dyn_mode, struct ppu_v1_timer_ctx* timer_ctx, uint32_t timeout, int cmock_num_calls);
 void ppu_v1_opmode_dynamic_enable_AddCallback(CMOCK_ppu_v1_opmode_dynamic_enable_CALLBACK Callback);
 void ppu_v1_opmode_dynamic_enable_Stub(CMOCK_ppu_v1_opmode_dynamic_enable_CALLBACK Callback);
 #define ppu_v1_opmode_dynamic_enable_StubWithCallback ppu_v1_opmode_dynamic_enable_Stub
-#define ppu_v1_opmode_dynamic_enable_ExpectWithArray(ppu, ppu_Depth, min_dyn_mode) ppu_v1_opmode_dynamic_enable_CMockExpectWithArray(__LINE__, ppu, ppu_Depth, min_dyn_mode)
-void ppu_v1_opmode_dynamic_enable_CMockExpectWithArray(UNITY_LINE_TYPE cmock_line, struct ppu_v1_regs* ppu, int ppu_Depth, enum ppu_v1_opmode min_dyn_mode);
+#define ppu_v1_opmode_dynamic_enable_ExpectWithArrayAndReturn(ppu, ppu_Depth, enable, min_dyn_mode, timer_ctx, timer_ctx_Depth, timeout, cmock_retval) ppu_v1_opmode_dynamic_enable_CMockExpectWithArrayAndReturn(__LINE__, ppu, ppu_Depth, enable, min_dyn_mode, timer_ctx, timer_ctx_Depth, timeout, cmock_retval)
+void ppu_v1_opmode_dynamic_enable_CMockExpectWithArrayAndReturn(UNITY_LINE_TYPE cmock_line, struct ppu_v1_regs* ppu, int ppu_Depth, bool enable, enum ppu_v1_opmode min_dyn_mode, struct ppu_v1_timer_ctx* timer_ctx, int timer_ctx_Depth, uint32_t timeout, int cmock_to_return);
 #define ppu_v1_opmode_dynamic_enable_ReturnThruPtr_ppu(ppu) ppu_v1_opmode_dynamic_enable_CMockReturnMemThruPtr_ppu(__LINE__, ppu, sizeof(struct ppu_v1_regs))
 #define ppu_v1_opmode_dynamic_enable_ReturnArrayThruPtr_ppu(ppu, cmock_len) ppu_v1_opmode_dynamic_enable_CMockReturnMemThruPtr_ppu(__LINE__, ppu, cmock_len * sizeof(*ppu))
 #define ppu_v1_opmode_dynamic_enable_ReturnMemThruPtr_ppu(ppu, cmock_size) ppu_v1_opmode_dynamic_enable_CMockReturnMemThruPtr_ppu(__LINE__, ppu, cmock_size)
 void ppu_v1_opmode_dynamic_enable_CMockReturnMemThruPtr_ppu(UNITY_LINE_TYPE cmock_line, struct ppu_v1_regs* ppu, size_t cmock_size);
+#define ppu_v1_opmode_dynamic_enable_ReturnThruPtr_timer_ctx(timer_ctx) ppu_v1_opmode_dynamic_enable_CMockReturnMemThruPtr_timer_ctx(__LINE__, timer_ctx, sizeof(struct ppu_v1_timer_ctx))
+#define ppu_v1_opmode_dynamic_enable_ReturnArrayThruPtr_timer_ctx(timer_ctx, cmock_len) ppu_v1_opmode_dynamic_enable_CMockReturnMemThruPtr_timer_ctx(__LINE__, timer_ctx, cmock_len * sizeof(*timer_ctx))
+#define ppu_v1_opmode_dynamic_enable_ReturnMemThruPtr_timer_ctx(timer_ctx, cmock_size) ppu_v1_opmode_dynamic_enable_CMockReturnMemThruPtr_timer_ctx(__LINE__, timer_ctx, cmock_size)
+void ppu_v1_opmode_dynamic_enable_CMockReturnMemThruPtr_timer_ctx(UNITY_LINE_TYPE cmock_line, struct ppu_v1_timer_ctx* timer_ctx, size_t cmock_size);
 #define ppu_v1_opmode_dynamic_enable_IgnoreArg_ppu() ppu_v1_opmode_dynamic_enable_CMockIgnoreArg_ppu(__LINE__)
 void ppu_v1_opmode_dynamic_enable_CMockIgnoreArg_ppu(UNITY_LINE_TYPE cmock_line);
+#define ppu_v1_opmode_dynamic_enable_IgnoreArg_enable() ppu_v1_opmode_dynamic_enable_CMockIgnoreArg_enable(__LINE__)
+void ppu_v1_opmode_dynamic_enable_CMockIgnoreArg_enable(UNITY_LINE_TYPE cmock_line);
 #define ppu_v1_opmode_dynamic_enable_IgnoreArg_min_dyn_mode() ppu_v1_opmode_dynamic_enable_CMockIgnoreArg_min_dyn_mode(__LINE__)
 void ppu_v1_opmode_dynamic_enable_CMockIgnoreArg_min_dyn_mode(UNITY_LINE_TYPE cmock_line);
+#define ppu_v1_opmode_dynamic_enable_IgnoreArg_timer_ctx() ppu_v1_opmode_dynamic_enable_CMockIgnoreArg_timer_ctx(__LINE__)
+void ppu_v1_opmode_dynamic_enable_CMockIgnoreArg_timer_ctx(UNITY_LINE_TYPE cmock_line);
+#define ppu_v1_opmode_dynamic_enable_IgnoreArg_timeout() ppu_v1_opmode_dynamic_enable_CMockIgnoreArg_timeout(__LINE__)
+void ppu_v1_opmode_dynamic_enable_CMockIgnoreArg_timeout(UNITY_LINE_TYPE cmock_line);
 #define ppu_v1_dynamic_enable_Ignore() ppu_v1_dynamic_enable_CMockIgnore()
 void ppu_v1_dynamic_enable_CMockIgnore(void);
 #define ppu_v1_dynamic_enable_StopIgnore() ppu_v1_dynamic_enable_CMockStopIgnore()

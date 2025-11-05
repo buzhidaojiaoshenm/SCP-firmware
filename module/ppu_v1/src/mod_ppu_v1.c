@@ -35,6 +35,7 @@
 #define MOD_NAME "[PPU_V1] "
 
 #define PPU_V1_MIN_NUM_OPMODES 2u
+#define PPU_V1_DEFAULT_OPMODE_TIMEOUT_US 10000U
 
 /* Power domain context */
 struct ppu_v1_pd_ctx {
@@ -64,6 +65,21 @@ struct ppu_v1_pd_ctx {
 
     /* Alarm to be used for deeper locking states */
     struct mod_timer_alarm_api *alarm_api;
+
+    /*Enable operating mode support. */
+    bool opmode_enabled;
+
+    /*Enable dynamic operating mode policy.*/
+    bool opmode_dyn_policy_enabled;
+
+    /*Default operating mode. */
+    enum ppu_v1_opmode min_opmode;
+
+    /*Operating mode IRQs enabled. */
+    bool opmode_irqs_enabled;
+
+    /*Operating mode timeout value. */
+    uint32_t opmode_timeout;
 
     /* Pending operating mode state */
     bool opmode_pending;
@@ -116,15 +132,13 @@ static const uint8_t ppu_mode_to_power_state[] = {
     [PPU_V1_MODE_DBG_RECOV]   = (uint8_t)MODE_UNSUPPORTED
 };
 
-#define PPU_V1_MIN_NUM_OPMODES 2u
-
 static inline enum ppu_v1_opmode select_initial_opmode(
-    const struct mod_ppu_v1_pd_config *cfg)
+    const struct ppu_v1_pd_ctx *ctx)
 {
-    if (cfg->enable_opmode_support) {
-        return (enum ppu_v1_opmode)cfg->default_op_mode;
+    if (ctx->opmode_enabled) {
+        return ctx->min_opmode;
     }
-    return cfg->opmode; /* Maintain backwards compatibility */
+    return ctx->config->opmode; /* Maintain backwards compatibility */
 }
 
 static void ppu_v1_pd_opmode_irq_complete(struct ppu_v1_pd_ctx *ctx)
@@ -179,17 +193,12 @@ static int start_deeper_locking_alarm(fwk_id_t core_pd_id)
 
 static int apply_op_mode_for_pd(struct ppu_v1_pd_ctx *pd_ctx)
 {
-    struct ppu_v1_regs *ppu;
+    struct ppu_v1_regs *ppu = &pd_ctx->ppu;
     enum ppu_v1_opmode target;
     int status;
 
-    if (!fwk_expect(pd_ctx != NULL)) {
-        return FWK_E_PARAM;
-    }
-
-    ppu = &pd_ctx->ppu;
-
-    if (!pd_ctx->config->enable_opmode_support ||
+    if (!pd_ctx->opmode_enabled || pd_ctx->opmode_dyn_policy_enabled ||
+        ppu_v1_is_dynamic_enabled(ppu) ||
         (ppu_v1_get_num_opmode(ppu) < PPU_V1_MIN_NUM_OPMODES)) {
         return FWK_E_SUPPORT;
     }
@@ -198,13 +207,13 @@ static int apply_op_mode_for_pd(struct ppu_v1_pd_ctx *pd_ctx)
         return FWK_E_STATE;
     }
 
-    target = select_initial_opmode(pd_ctx->config);
+    target = select_initial_opmode(pd_ctx);
 
     if (ppu_v1_get_operating_mode(ppu) == target) {
-        return FWK_E_STATE;
+        return FWK_SUCCESS;
     }
 
-    if (pd_ctx->config->use_opmode_irqs) {
+    if (pd_ctx->opmode_irqs_enabled) {
         status = ppu_v1_request_operating_mode(ppu, target);
         if (status == FWK_SUCCESS) {
             pd_ctx->opmode_target = target;
@@ -214,7 +223,7 @@ static int apply_op_mode_for_pd(struct ppu_v1_pd_ctx *pd_ctx)
     }
 
     return ppu_v1_set_operating_mode(
-        ppu, target, pd_ctx->timer_ctx, pd_ctx->config->opmode_time_out);
+        ppu, target, pd_ctx->timer_ctx, pd_ctx->opmode_timeout);
 }
 
 static int get_state(struct ppu_v1_regs *ppu, unsigned int *state)
@@ -263,7 +272,7 @@ static int ppu_v1_pd_set_state(fwk_id_t pd_id, unsigned int state)
         /* If this is the system-top domain and OP modes are enabled, apply now.
          */
         if (pd_ctx->config->pd_type == MOD_PD_TYPE_SYSTEM &&
-            pd_ctx->config->enable_opmode_support) {
+            pd_ctx->opmode_enabled) {
             status = apply_op_mode_for_pd(pd_ctx);
 
             /* Not applicable at this time is not a failure to turn SYSTOP on */
@@ -351,13 +360,16 @@ static void noncore_opmode_init(struct ppu_v1_pd_ctx *pd_ctx)
         return;
     }
 
-    if (pd_ctx->config->enable_opmode_support &&
-        pd_ctx->config->enable_opmode_dynamic_policy) {
-        /* Enable HW dynamic operating-mode policy (sets OP_DYN_EN). */
-        ppu_v1_opmode_dynamic_enable(ppu, PPU_V1_OPMODE_00);
+    if (pd_ctx->opmode_enabled && pd_ctx->opmode_dyn_policy_enabled) {
+        (void)ppu_v1_opmode_dynamic_enable(
+            ppu,
+            true,
+            pd_ctx->min_opmode,
+            pd_ctx->timer_ctx,
+            pd_ctx->opmode_timeout);
     }
 
-    if (pd_ctx->config->use_opmode_irqs) {
+    if (pd_ctx->opmode_irqs_enabled) {
         ppu_v1_additional_interrupt_unmask(
             ppu, PPU_V1_AIMR_STA_POLICY_OP_IRQ_MASK);
         ppu_v1_additional_interrupt_unmask(
@@ -556,8 +568,9 @@ static const struct mod_pd_driver_api core_pd_driver = {
 
 static void cluster_handle_opmode_interrupts(struct ppu_v1_pd_ctx *pd_ctx)
 {
-    if (!pd_ctx->config->use_opmode_irqs)
+    if (!pd_ctx->config->use_opmode_irqs) {
         return;
+    }
 
     struct ppu_v1_regs *ppu = &pd_ctx->ppu;
     bool policy_complete = false;
@@ -672,7 +685,7 @@ static void cluster_on(struct ppu_v1_pd_ctx *pd_ctx)
         ppu_v1_set_power_mode(ppu, PPU_V1_MODE_ON, pd_ctx->timer_ctx);
     }
 
-    if (pd_ctx->config->enable_opmode_support) {
+    if (pd_ctx->opmode_enabled) {
         /* Now apply the configured operating mode */
         status = apply_op_mode_for_pd(pd_ctx);
         if (status != FWK_SUCCESS) {
@@ -722,8 +735,7 @@ static int ppu_v1_cluster_pd_init(struct ppu_v1_pd_ctx *pd_ctx)
             ppu, PPU_V1_MODE_ON, PPU_V1_EDGE_SENSITIVITY_FALLING_EDGE);
 
         if (ppu_v1_ctx.is_cluster_ppu_dynamic_mode_configured &&
-            pd_ctx->config->enable_opmode_support &&
-            pd_ctx->config->enable_opmode_dynamic_policy) {
+            pd_ctx->opmode_enabled && pd_ctx->opmode_dyn_policy_enabled) {
             /* Power dynamic mode (DYNAMIC_EN) for cluster when required. */
             ppu_v1_dynamic_enable(ppu, PPU_V1_MODE_OFF);
         }
@@ -935,6 +947,132 @@ static const struct ppu_v1_boot_api boot_api = {
     .power_mode_on = ppu_power_mode_on,
 };
 
+static int opmode_set_enabled(fwk_id_t pd_id, bool enable)
+{
+    struct ppu_v1_pd_ctx *ctx =
+        ppu_v1_ctx.pd_ctx_table + fwk_id_get_element_idx(pd_id);
+    ctx->opmode_enabled = enable;
+
+    if (!enable) {
+        /* Defensive cleanup if we were mid-transition */
+        ctx->opmode_pending = false;
+        return FWK_SUCCESS;
+    }
+
+    /* If PD is already on, apply the default immediately */
+    if (ppu_v1_get_power_mode(&ctx->ppu) == PPU_V1_MODE_ON) {
+        return apply_op_mode_for_pd(ctx);
+    }
+    return FWK_SUCCESS;
+}
+
+static int opmode_enable_dynamic_policy(
+    fwk_id_t pd_id,
+    bool enable,
+    enum ppu_v1_opmode min)
+{
+    struct ppu_v1_pd_ctx *ctx =
+        ppu_v1_ctx.pd_ctx_table + fwk_id_get_element_idx(pd_id);
+
+    if ((unsigned)min >= (unsigned)PPU_V1_OPMODE_COUNT) {
+        return FWK_E_PARAM;
+    }
+
+    ctx->opmode_dyn_policy_enabled = enable;
+    ctx->min_opmode = min;
+
+    if (!ctx->opmode_enabled) {
+        return FWK_SUCCESS;
+    }
+
+    if (ppu_v1_get_power_mode(&ctx->ppu) != PPU_V1_MODE_ON) {
+        return FWK_SUCCESS;
+    }
+
+    if (!enable) {
+        return ppu_v1_opmode_dynamic_enable(
+            &ctx->ppu, false, 0, ctx->timer_ctx, ctx->opmode_timeout);
+    }
+
+    return ppu_v1_opmode_dynamic_enable(
+        &ctx->ppu, true, min, ctx->timer_ctx, ctx->opmode_timeout);
+}
+
+static int opmode_set_min(fwk_id_t pd_id, enum ppu_v1_opmode opm)
+{
+    struct ppu_v1_pd_ctx *ctx =
+        ppu_v1_ctx.pd_ctx_table + fwk_id_get_element_idx(pd_id);
+
+    if ((unsigned)opm >= (unsigned)PPU_V1_OPMODE_COUNT) {
+        return FWK_E_PARAM;
+    }
+
+    ctx->min_opmode = opm;
+
+    if (!ctx->opmode_enabled ||
+        ppu_v1_get_power_mode(&ctx->ppu) != PPU_V1_MODE_ON) {
+        return FWK_SUCCESS;
+    }
+
+    if (ctx->opmode_irqs_enabled) {
+        int status = ppu_v1_request_operating_mode(&ctx->ppu, opm);
+        if (status == FWK_SUCCESS) {
+            ctx->opmode_target = opm;
+            ctx->opmode_pending = true;
+        }
+        return status;
+    }
+
+    /* Program policy and wait for OP_STATUS */
+    return ppu_v1_set_operating_mode(
+        &ctx->ppu, opm, ctx->timer_ctx, ctx->opmode_timeout);
+}
+
+static int opmode_request_now(fwk_id_t pd_id, enum ppu_v1_opmode opm)
+{
+    struct ppu_v1_pd_ctx *ctx =
+        ppu_v1_ctx.pd_ctx_table + fwk_id_get_element_idx(pd_id);
+
+    if (!ctx->opmode_enabled) {
+        return FWK_E_SUPPORT;
+    }
+
+    if (ctx->opmode_dyn_policy_enabled) {
+        return FWK_E_STATE;
+    }
+
+    if (ppu_v1_get_power_mode(&ctx->ppu) != PPU_V1_MODE_ON) {
+        return FWK_E_STATE;
+    }
+
+    if ((unsigned)opm >= (unsigned)PPU_V1_OPMODE_COUNT) {
+        return FWK_E_PARAM;
+    }
+
+    /*
+     * If IRQs are enabled, request an operating mode change and
+     * mark a pending transition on success.
+     */
+    if (ctx->opmode_irqs_enabled) {
+        int status = ppu_v1_request_operating_mode(&ctx->ppu, opm);
+        if (status == FWK_SUCCESS) {
+            ctx->opmode_target = opm;
+            ctx->opmode_pending = true;
+        }
+        return status;
+    }
+
+    return ppu_v1_set_operating_mode(
+        &ctx->ppu, opm, ctx->timer_ctx, ctx->opmode_timeout);
+}
+
+static const struct mod_ppu_v1_opmode_ctrl_api opmode_ctrl_api = {
+    .set_enabled = opmode_set_enabled,
+    .enable_dynamic_policy = opmode_enable_dynamic_policy,
+    .set_min_opmode = opmode_set_min,
+    .request_now = opmode_request_now,
+};
+
 /*
  * Framework handlers
  */
@@ -978,6 +1116,17 @@ static int ppu_v1_pd_init(fwk_id_t pd_id, unsigned int unused, const void *data)
     pd_ctx = ppu_v1_ctx.pd_ctx_table + fwk_id_get_element_idx(pd_id);
     pd_ctx->config = config;
     pd_ctx->ppu.ppu_reg = (struct ppu_v1_ppu_reg *)(config->ppu.reg_base);
+
+    pd_ctx->opmode_enabled = config->enable_opmode_support;
+    pd_ctx->opmode_dyn_policy_enabled = config->enable_opmode_dynamic_policy;
+    pd_ctx->min_opmode =
+        config->min_op_mode ? config->min_op_mode : PPU_V1_OPMODE_00;
+    pd_ctx->opmode_irqs_enabled = config->use_opmode_irqs;
+    pd_ctx->opmode_timeout = config->opmode_time_out;
+
+    if (pd_ctx->opmode_timeout == 0) {
+        pd_ctx->opmode_timeout = PPU_V1_DEFAULT_OPMODE_TIMEOUT_US;
+    }
 
     pd_ctx->opmode_pending = false;
     pd_ctx->opmode_target = PPU_V1_OPMODE_00;
@@ -1201,6 +1350,11 @@ static int ppu_v1_process_bind_request(fwk_id_t source_id,
 
     if (api_idx == MOD_PPU_V1_API_IDX_BOOT) {
         *api = &boot_api;
+        return FWK_SUCCESS;
+    }
+
+    if (api_idx == MOD_PPU_V1_API_IDX_OPMODE_CTRL) {
+        *api = &opmode_ctrl_api;
         return FWK_SUCCESS;
     }
 

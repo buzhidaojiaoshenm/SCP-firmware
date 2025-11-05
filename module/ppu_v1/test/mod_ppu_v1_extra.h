@@ -42,9 +42,12 @@ int ppu_v1_request_operating_mode(
     struct ppu_v1_regs *ppu,
     enum ppu_v1_opmode op_mode);
 
-void ppu_v1_opmode_dynamic_enable(
+int ppu_v1_opmode_dynamic_enable(
     struct ppu_v1_regs *ppu,
-    enum ppu_v1_opmode min_dyn_mode);
+    bool enable,
+    enum ppu_v1_opmode min_dyn_mode,
+    struct ppu_v1_timer_ctx *timer_ctx,
+    uint32_t timeout);
 
 void ppu_v1_dynamic_enable(
     struct ppu_v1_regs *ppu,

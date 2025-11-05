@@ -8,6 +8,7 @@
 static const char* CMockString_alarm_id = "alarm_id";
 static const char* CMockString_callback = "callback";
 static const char* CMockString_edge_sensitivity = "edge_sensitivity";
+static const char* CMockString_enable = "enable";
 static const char* CMockString_mask = "mask";
 static const char* CMockString_microseconds = "microseconds";
 static const char* CMockString_min_dyn_mode = "min_dyn_mode";
@@ -162,14 +163,25 @@ typedef struct _CMOCK_ppu_v1_opmode_dynamic_enable_CALL_INSTANCE
 {
   UNITY_LINE_TYPE LineNumber;
   char ExpectAnyArgsBool;
+  int ReturnVal;
   struct ppu_v1_regs* Expected_ppu;
+  bool Expected_enable;
   enum ppu_v1_opmode Expected_min_dyn_mode;
+  struct ppu_v1_timer_ctx* Expected_timer_ctx;
+  uint32_t Expected_timeout;
   int Expected_ppu_Depth;
+  int Expected_timer_ctx_Depth;
   char ReturnThruPtr_ppu_Used;
   struct ppu_v1_regs* ReturnThruPtr_ppu_Val;
   size_t ReturnThruPtr_ppu_Size;
+  char ReturnThruPtr_timer_ctx_Used;
+  struct ppu_v1_timer_ctx* ReturnThruPtr_timer_ctx_Val;
+  size_t ReturnThruPtr_timer_ctx_Size;
   char IgnoreArg_ppu;
+  char IgnoreArg_enable;
   char IgnoreArg_min_dyn_mode;
+  char IgnoreArg_timer_ctx;
+  char IgnoreArg_timeout;
 
 } CMOCK_ppu_v1_opmode_dynamic_enable_CALL_INSTANCE;
 
@@ -707,6 +719,7 @@ static struct Mockmod_ppu_v1_extraInstance
   int ppu_v1_request_operating_mode_CallbackCalls;
   CMOCK_MEM_INDEX_TYPE ppu_v1_request_operating_mode_CallInstance;
   char ppu_v1_opmode_dynamic_enable_IgnoreBool;
+  int ppu_v1_opmode_dynamic_enable_FinalReturn;
   char ppu_v1_opmode_dynamic_enable_CallbackBool;
   CMOCK_ppu_v1_opmode_dynamic_enable_CALLBACK ppu_v1_opmode_dynamic_enable_CallbackFunctionPointer;
   int ppu_v1_opmode_dynamic_enable_CallbackCalls;
@@ -2394,7 +2407,7 @@ void ppu_v1_request_operating_mode_CMockIgnoreArg_op_mode(UNITY_LINE_TYPE cmock_
   cmock_call_instance->IgnoreArg_op_mode = 1;
 }
 
-void ppu_v1_opmode_dynamic_enable(struct ppu_v1_regs* ppu, enum ppu_v1_opmode min_dyn_mode)
+int ppu_v1_opmode_dynamic_enable(struct ppu_v1_regs* ppu, bool enable, enum ppu_v1_opmode min_dyn_mode, struct ppu_v1_timer_ctx* timer_ctx, uint32_t timeout)
 {
   UNITY_LINE_TYPE cmock_line = TEST_LINE_NUM;
   CMOCK_ppu_v1_opmode_dynamic_enable_CALL_INSTANCE* cmock_call_instance;
@@ -2404,14 +2417,17 @@ void ppu_v1_opmode_dynamic_enable(struct ppu_v1_regs* ppu, enum ppu_v1_opmode mi
   if (Mock.ppu_v1_opmode_dynamic_enable_IgnoreBool)
   {
     UNITY_CLR_DETAILS();
-    return;
+    if (cmock_call_instance == NULL)
+      return Mock.ppu_v1_opmode_dynamic_enable_FinalReturn;
+    Mock.ppu_v1_opmode_dynamic_enable_FinalReturn = cmock_call_instance->ReturnVal;
+    return cmock_call_instance->ReturnVal;
   }
   if (!Mock.ppu_v1_opmode_dynamic_enable_CallbackBool &&
       Mock.ppu_v1_opmode_dynamic_enable_CallbackFunctionPointer != NULL)
   {
-    Mock.ppu_v1_opmode_dynamic_enable_CallbackFunctionPointer(ppu, min_dyn_mode, Mock.ppu_v1_opmode_dynamic_enable_CallbackCalls++);
+    int cmock_cb_ret = Mock.ppu_v1_opmode_dynamic_enable_CallbackFunctionPointer(ppu, enable, min_dyn_mode, timer_ctx, timeout, Mock.ppu_v1_opmode_dynamic_enable_CallbackCalls++);
     UNITY_CLR_DETAILS();
-    return;
+    return cmock_cb_ret;
   }
   UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringCalledMore);
   cmock_line = cmock_call_instance->LineNumber;
@@ -2425,15 +2441,33 @@ void ppu_v1_opmode_dynamic_enable(struct ppu_v1_regs* ppu, enum ppu_v1_opmode mi
     else
       { UNITY_TEST_ASSERT_EQUAL_MEMORY_ARRAY((void*)(cmock_call_instance->Expected_ppu), (void*)(ppu), sizeof(struct ppu_v1_regs), cmock_call_instance->Expected_ppu_Depth, cmock_line, CMockStringMismatch); }
   }
+  if (!cmock_call_instance->IgnoreArg_enable)
+  {
+    UNITY_SET_DETAILS(CMockString_ppu_v1_opmode_dynamic_enable,CMockString_enable);
+    UNITY_TEST_ASSERT_EQUAL_INT(cmock_call_instance->Expected_enable, enable, cmock_line, CMockStringMismatch);
+  }
   if (!cmock_call_instance->IgnoreArg_min_dyn_mode)
   {
     UNITY_SET_DETAILS(CMockString_ppu_v1_opmode_dynamic_enable,CMockString_min_dyn_mode);
     UNITY_TEST_ASSERT_EQUAL_MEMORY((void*)(&cmock_call_instance->Expected_min_dyn_mode), (void*)(&min_dyn_mode), sizeof(enum ppu_v1_opmode), cmock_line, CMockStringMismatch);
   }
+  if (!cmock_call_instance->IgnoreArg_timer_ctx)
+  {
+    UNITY_SET_DETAILS(CMockString_ppu_v1_opmode_dynamic_enable,CMockString_timer_ctx);
+    if (cmock_call_instance->Expected_timer_ctx == NULL)
+      { UNITY_TEST_ASSERT_NULL(timer_ctx, cmock_line, CMockStringExpNULL); }
+    else
+      { UNITY_TEST_ASSERT_EQUAL_MEMORY_ARRAY((void*)(cmock_call_instance->Expected_timer_ctx), (void*)(timer_ctx), sizeof(struct ppu_v1_timer_ctx), cmock_call_instance->Expected_timer_ctx_Depth, cmock_line, CMockStringMismatch); }
+  }
+  if (!cmock_call_instance->IgnoreArg_timeout)
+  {
+    UNITY_SET_DETAILS(CMockString_ppu_v1_opmode_dynamic_enable,CMockString_timeout);
+    UNITY_TEST_ASSERT_EQUAL_HEX32(cmock_call_instance->Expected_timeout, timeout, cmock_line, CMockStringMismatch);
+  }
   }
   if (Mock.ppu_v1_opmode_dynamic_enable_CallbackFunctionPointer != NULL)
   {
-    Mock.ppu_v1_opmode_dynamic_enable_CallbackFunctionPointer(ppu, min_dyn_mode, Mock.ppu_v1_opmode_dynamic_enable_CallbackCalls++);
+    cmock_call_instance->ReturnVal = Mock.ppu_v1_opmode_dynamic_enable_CallbackFunctionPointer(ppu, enable, min_dyn_mode, timer_ctx, timeout, Mock.ppu_v1_opmode_dynamic_enable_CallbackCalls++);
   }
   if (cmock_call_instance->ReturnThruPtr_ppu_Used)
   {
@@ -2441,32 +2475,58 @@ void ppu_v1_opmode_dynamic_enable(struct ppu_v1_regs* ppu, enum ppu_v1_opmode mi
     memcpy((void*)ppu, (void*)cmock_call_instance->ReturnThruPtr_ppu_Val,
       cmock_call_instance->ReturnThruPtr_ppu_Size);
   }
+  if (cmock_call_instance->ReturnThruPtr_timer_ctx_Used)
+  {
+    UNITY_TEST_ASSERT_NOT_NULL(timer_ctx, cmock_line, CMockStringPtrIsNULL);
+    memcpy((void*)timer_ctx, (void*)cmock_call_instance->ReturnThruPtr_timer_ctx_Val,
+      cmock_call_instance->ReturnThruPtr_timer_ctx_Size);
+  }
   UNITY_CLR_DETAILS();
+  return cmock_call_instance->ReturnVal;
 }
 
-void CMockExpectParameters_ppu_v1_opmode_dynamic_enable(CMOCK_ppu_v1_opmode_dynamic_enable_CALL_INSTANCE* cmock_call_instance, struct ppu_v1_regs* ppu, int ppu_Depth, enum ppu_v1_opmode min_dyn_mode);
-void CMockExpectParameters_ppu_v1_opmode_dynamic_enable(CMOCK_ppu_v1_opmode_dynamic_enable_CALL_INSTANCE* cmock_call_instance, struct ppu_v1_regs* ppu, int ppu_Depth, enum ppu_v1_opmode min_dyn_mode)
+void CMockExpectParameters_ppu_v1_opmode_dynamic_enable(CMOCK_ppu_v1_opmode_dynamic_enable_CALL_INSTANCE* cmock_call_instance, struct ppu_v1_regs* ppu, int ppu_Depth, bool enable, enum ppu_v1_opmode min_dyn_mode, struct ppu_v1_timer_ctx* timer_ctx, int timer_ctx_Depth, uint32_t timeout);
+void CMockExpectParameters_ppu_v1_opmode_dynamic_enable(CMOCK_ppu_v1_opmode_dynamic_enable_CALL_INSTANCE* cmock_call_instance, struct ppu_v1_regs* ppu, int ppu_Depth, bool enable, enum ppu_v1_opmode min_dyn_mode, struct ppu_v1_timer_ctx* timer_ctx, int timer_ctx_Depth, uint32_t timeout)
 {
   cmock_call_instance->Expected_ppu = ppu;
   cmock_call_instance->Expected_ppu_Depth = ppu_Depth;
   cmock_call_instance->IgnoreArg_ppu = 0;
   cmock_call_instance->ReturnThruPtr_ppu_Used = 0;
+  cmock_call_instance->Expected_enable = enable;
+  cmock_call_instance->IgnoreArg_enable = 0;
   memcpy((void*)(&cmock_call_instance->Expected_min_dyn_mode), (void*)(&min_dyn_mode),
          sizeof(enum ppu_v1_opmode[sizeof(min_dyn_mode) == sizeof(enum ppu_v1_opmode) ? 1 : -1])); /* add enum ppu_v1_opmode to :treat_as_array if this causes an error */
   cmock_call_instance->IgnoreArg_min_dyn_mode = 0;
+  cmock_call_instance->Expected_timer_ctx = timer_ctx;
+  cmock_call_instance->Expected_timer_ctx_Depth = timer_ctx_Depth;
+  cmock_call_instance->IgnoreArg_timer_ctx = 0;
+  cmock_call_instance->ReturnThruPtr_timer_ctx_Used = 0;
+  cmock_call_instance->Expected_timeout = timeout;
+  cmock_call_instance->IgnoreArg_timeout = 0;
 }
 
-void ppu_v1_opmode_dynamic_enable_CMockIgnore(void)
+void ppu_v1_opmode_dynamic_enable_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return)
 {
+  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_ppu_v1_opmode_dynamic_enable_CALL_INSTANCE));
+  CMOCK_ppu_v1_opmode_dynamic_enable_CALL_INSTANCE* cmock_call_instance = (CMOCK_ppu_v1_opmode_dynamic_enable_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
+  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringOutOfMemory);
+  memset(cmock_call_instance, 0, sizeof(*cmock_call_instance));
+  Mock.ppu_v1_opmode_dynamic_enable_CallInstance = CMock_Guts_MemChain(Mock.ppu_v1_opmode_dynamic_enable_CallInstance, cmock_guts_index);
+  Mock.ppu_v1_opmode_dynamic_enable_IgnoreBool = (char)0;
+  cmock_call_instance->LineNumber = cmock_line;
+  cmock_call_instance->ExpectAnyArgsBool = (char)0;
+  cmock_call_instance->ReturnVal = cmock_to_return;
   Mock.ppu_v1_opmode_dynamic_enable_IgnoreBool = (char)1;
 }
 
 void ppu_v1_opmode_dynamic_enable_CMockStopIgnore(void)
 {
+  if(Mock.ppu_v1_opmode_dynamic_enable_IgnoreBool)
+    Mock.ppu_v1_opmode_dynamic_enable_CallInstance = CMock_Guts_MemNext(Mock.ppu_v1_opmode_dynamic_enable_CallInstance);
   Mock.ppu_v1_opmode_dynamic_enable_IgnoreBool = (char)0;
 }
 
-void ppu_v1_opmode_dynamic_enable_CMockExpectAnyArgs(UNITY_LINE_TYPE cmock_line)
+void ppu_v1_opmode_dynamic_enable_CMockExpectAnyArgsAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return)
 {
   CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_ppu_v1_opmode_dynamic_enable_CALL_INSTANCE));
   CMOCK_ppu_v1_opmode_dynamic_enable_CALL_INSTANCE* cmock_call_instance = (CMOCK_ppu_v1_opmode_dynamic_enable_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
@@ -2476,10 +2536,11 @@ void ppu_v1_opmode_dynamic_enable_CMockExpectAnyArgs(UNITY_LINE_TYPE cmock_line)
   Mock.ppu_v1_opmode_dynamic_enable_IgnoreBool = (char)0;
   cmock_call_instance->LineNumber = cmock_line;
   cmock_call_instance->ExpectAnyArgsBool = (char)0;
+  cmock_call_instance->ReturnVal = cmock_to_return;
   cmock_call_instance->ExpectAnyArgsBool = (char)1;
 }
 
-void ppu_v1_opmode_dynamic_enable_CMockExpect(UNITY_LINE_TYPE cmock_line, struct ppu_v1_regs* ppu, enum ppu_v1_opmode min_dyn_mode)
+void ppu_v1_opmode_dynamic_enable_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, struct ppu_v1_regs* ppu, bool enable, enum ppu_v1_opmode min_dyn_mode, struct ppu_v1_timer_ctx* timer_ctx, uint32_t timeout, int cmock_to_return)
 {
   CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_ppu_v1_opmode_dynamic_enable_CALL_INSTANCE));
   CMOCK_ppu_v1_opmode_dynamic_enable_CALL_INSTANCE* cmock_call_instance = (CMOCK_ppu_v1_opmode_dynamic_enable_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
@@ -2489,7 +2550,8 @@ void ppu_v1_opmode_dynamic_enable_CMockExpect(UNITY_LINE_TYPE cmock_line, struct
   Mock.ppu_v1_opmode_dynamic_enable_IgnoreBool = (char)0;
   cmock_call_instance->LineNumber = cmock_line;
   cmock_call_instance->ExpectAnyArgsBool = (char)0;
-  CMockExpectParameters_ppu_v1_opmode_dynamic_enable(cmock_call_instance, ppu, 1, min_dyn_mode);
+  CMockExpectParameters_ppu_v1_opmode_dynamic_enable(cmock_call_instance, ppu, 1, enable, min_dyn_mode, timer_ctx, 1, timeout);
+  cmock_call_instance->ReturnVal = cmock_to_return;
 }
 
 void ppu_v1_opmode_dynamic_enable_AddCallback(CMOCK_ppu_v1_opmode_dynamic_enable_CALLBACK Callback)
@@ -2506,7 +2568,7 @@ void ppu_v1_opmode_dynamic_enable_Stub(CMOCK_ppu_v1_opmode_dynamic_enable_CALLBA
   Mock.ppu_v1_opmode_dynamic_enable_CallbackFunctionPointer = Callback;
 }
 
-void ppu_v1_opmode_dynamic_enable_CMockExpectWithArray(UNITY_LINE_TYPE cmock_line, struct ppu_v1_regs* ppu, int ppu_Depth, enum ppu_v1_opmode min_dyn_mode)
+void ppu_v1_opmode_dynamic_enable_CMockExpectWithArrayAndReturn(UNITY_LINE_TYPE cmock_line, struct ppu_v1_regs* ppu, int ppu_Depth, bool enable, enum ppu_v1_opmode min_dyn_mode, struct ppu_v1_timer_ctx* timer_ctx, int timer_ctx_Depth, uint32_t timeout, int cmock_to_return)
 {
   CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_ppu_v1_opmode_dynamic_enable_CALL_INSTANCE));
   CMOCK_ppu_v1_opmode_dynamic_enable_CALL_INSTANCE* cmock_call_instance = (CMOCK_ppu_v1_opmode_dynamic_enable_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
@@ -2516,7 +2578,8 @@ void ppu_v1_opmode_dynamic_enable_CMockExpectWithArray(UNITY_LINE_TYPE cmock_lin
   Mock.ppu_v1_opmode_dynamic_enable_IgnoreBool = (char)0;
   cmock_call_instance->LineNumber = cmock_line;
   cmock_call_instance->ExpectAnyArgsBool = (char)0;
-  CMockExpectParameters_ppu_v1_opmode_dynamic_enable(cmock_call_instance, ppu, ppu_Depth, min_dyn_mode);
+  CMockExpectParameters_ppu_v1_opmode_dynamic_enable(cmock_call_instance, ppu, ppu_Depth, enable, min_dyn_mode, timer_ctx, timer_ctx_Depth, timeout);
+  cmock_call_instance->ReturnVal = cmock_to_return;
 }
 
 void ppu_v1_opmode_dynamic_enable_CMockReturnMemThruPtr_ppu(UNITY_LINE_TYPE cmock_line, struct ppu_v1_regs* ppu, size_t cmock_size)
@@ -2528,6 +2591,15 @@ void ppu_v1_opmode_dynamic_enable_CMockReturnMemThruPtr_ppu(UNITY_LINE_TYPE cmoc
   cmock_call_instance->ReturnThruPtr_ppu_Size = cmock_size;
 }
 
+void ppu_v1_opmode_dynamic_enable_CMockReturnMemThruPtr_timer_ctx(UNITY_LINE_TYPE cmock_line, struct ppu_v1_timer_ctx* timer_ctx, size_t cmock_size)
+{
+  CMOCK_ppu_v1_opmode_dynamic_enable_CALL_INSTANCE* cmock_call_instance = (CMOCK_ppu_v1_opmode_dynamic_enable_CALL_INSTANCE*)CMock_Guts_GetAddressFor(CMock_Guts_MemEndOfChain(Mock.ppu_v1_opmode_dynamic_enable_CallInstance));
+  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringPtrPreExp);
+  cmock_call_instance->ReturnThruPtr_timer_ctx_Used = 1;
+  cmock_call_instance->ReturnThruPtr_timer_ctx_Val = timer_ctx;
+  cmock_call_instance->ReturnThruPtr_timer_ctx_Size = cmock_size;
+}
+
 void ppu_v1_opmode_dynamic_enable_CMockIgnoreArg_ppu(UNITY_LINE_TYPE cmock_line)
 {
   CMOCK_ppu_v1_opmode_dynamic_enable_CALL_INSTANCE* cmock_call_instance = (CMOCK_ppu_v1_opmode_dynamic_enable_CALL_INSTANCE*)CMock_Guts_GetAddressFor(CMock_Guts_MemEndOfChain(Mock.ppu_v1_opmode_dynamic_enable_CallInstance));
@@ -2535,11 +2607,32 @@ void ppu_v1_opmode_dynamic_enable_CMockIgnoreArg_ppu(UNITY_LINE_TYPE cmock_line)
   cmock_call_instance->IgnoreArg_ppu = 1;
 }
 
+void ppu_v1_opmode_dynamic_enable_CMockIgnoreArg_enable(UNITY_LINE_TYPE cmock_line)
+{
+  CMOCK_ppu_v1_opmode_dynamic_enable_CALL_INSTANCE* cmock_call_instance = (CMOCK_ppu_v1_opmode_dynamic_enable_CALL_INSTANCE*)CMock_Guts_GetAddressFor(CMock_Guts_MemEndOfChain(Mock.ppu_v1_opmode_dynamic_enable_CallInstance));
+  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringIgnPreExp);
+  cmock_call_instance->IgnoreArg_enable = 1;
+}
+
 void ppu_v1_opmode_dynamic_enable_CMockIgnoreArg_min_dyn_mode(UNITY_LINE_TYPE cmock_line)
 {
   CMOCK_ppu_v1_opmode_dynamic_enable_CALL_INSTANCE* cmock_call_instance = (CMOCK_ppu_v1_opmode_dynamic_enable_CALL_INSTANCE*)CMock_Guts_GetAddressFor(CMock_Guts_MemEndOfChain(Mock.ppu_v1_opmode_dynamic_enable_CallInstance));
   UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringIgnPreExp);
   cmock_call_instance->IgnoreArg_min_dyn_mode = 1;
+}
+
+void ppu_v1_opmode_dynamic_enable_CMockIgnoreArg_timer_ctx(UNITY_LINE_TYPE cmock_line)
+{
+  CMOCK_ppu_v1_opmode_dynamic_enable_CALL_INSTANCE* cmock_call_instance = (CMOCK_ppu_v1_opmode_dynamic_enable_CALL_INSTANCE*)CMock_Guts_GetAddressFor(CMock_Guts_MemEndOfChain(Mock.ppu_v1_opmode_dynamic_enable_CallInstance));
+  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringIgnPreExp);
+  cmock_call_instance->IgnoreArg_timer_ctx = 1;
+}
+
+void ppu_v1_opmode_dynamic_enable_CMockIgnoreArg_timeout(UNITY_LINE_TYPE cmock_line)
+{
+  CMOCK_ppu_v1_opmode_dynamic_enable_CALL_INSTANCE* cmock_call_instance = (CMOCK_ppu_v1_opmode_dynamic_enable_CALL_INSTANCE*)CMock_Guts_GetAddressFor(CMock_Guts_MemEndOfChain(Mock.ppu_v1_opmode_dynamic_enable_CallInstance));
+  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringIgnPreExp);
+  cmock_call_instance->IgnoreArg_timeout = 1;
 }
 
 void ppu_v1_dynamic_enable(struct ppu_v1_regs* ppu, enum ppu_v1_mode min_dyn_state)

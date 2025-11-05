@@ -317,9 +317,12 @@ int ppu_v1_set_operating_mode(
 /*
  * Enable PPU's dynamic operating mode transitions
  */
-void ppu_v1_opmode_dynamic_enable(
+int ppu_v1_opmode_dynamic_enable(
     struct ppu_v1_regs *ppu,
-    enum ppu_v1_opmode min_dyn_mode);
+    bool enable,
+    enum ppu_v1_opmode min_dyn_mode,
+    struct ppu_v1_timer_ctx *timer_ctx,
+    uint32_t timeout);
 
 /*
  * Enable PPU's dynamic power mode transitions

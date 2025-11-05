@@ -44,6 +44,8 @@ enum mod_ppu_v1_api_idx {
     MOD_PPU_V1_API_IDX_ISR,
     /*! System boot API */
     MOD_PPU_V1_API_IDX_BOOT,
+    /*! Operating mode control API */
+    MOD_PPU_V1_API_IDX_OPMODE_CTRL,
     /*! Number of exposed interfaces */
     MOD_PPU_V1_API_IDX_COUNT,
 };
@@ -198,7 +200,7 @@ struct mod_ppu_v1_pd_config {
     bool enable_opmode_dynamic_policy;
 
     /*! Defined primary operating mode to apply when an element is on. */
-    enum ppu_v1_opmode default_op_mode;
+    enum ppu_v1_opmode min_op_mode;
 
     /*!
      * Product specific ppu opmode kept for backwards comptibility used when op
@@ -253,6 +255,77 @@ struct ppu_v1_boot_api {
      * \return One of the standard framework error codes.
      */
     int (*power_mode_on)(fwk_id_t pd_id);
+};
+/*!
+ * \brief PPUv1 operating-mode control API.
+ */
+struct mod_ppu_v1_opmode_ctrl_api {
+    /*!
+     * \brief Enable or disable operating-mode management for a power domain.
+     *
+     * \param pd_id   Power-domain element identifier.
+     * \param enable  \c true to enable operating-mode management,
+     *                \c false to disable it.
+     *
+     * \details Enabling does not require the power domain to be ON.  If the
+     * domain is already ON when enabling, the current default operating mode
+     * is applied immediately.
+     *
+     * \retval ::FWK_SUCCESS Operation completed successfully.
+     */
+    int (*set_enabled)(fwk_id_t pd_id, bool enable);
+
+    /*!
+     * \brief Enable or disable min **dynamic** operating-mode policy
+     * (OP\_DYN\_EN).
+     *
+     * \param pd_id         Power-domain element identifier.
+     * \param enable        \c true to enable dynamic OP policy,
+     *                      \c false to disable it.
+     * \param min_dyn_mode  Minimum operating mode allowed when the dynamic
+     *                      policy is enabled.
+     *
+     * \note Enabling requires that operating-mode management is enabled and
+     * the power domain is currently ON.
+     *
+     * \retval ::FWK_SUCCESS Operation completed successfully.
+     * \retval ::FWK_E_STATE  The power domain is not ON, or OP-mode support
+     *                         is disabled.
+     */
+    int (*enable_dynamic_policy)(
+        fwk_id_t pd_id,
+        bool enable,
+        enum ppu_v1_opmode min_dyn_mode);
+
+    /*!
+     * \brief Set the minimum operating mode for the power domain.
+     *
+     * \param pd_id Power-domain element identifier.
+     * \param opm   Operating mode to use as the minimum when the PD turns ON.
+     *
+     * \details If operating-mode management is enabled and the domain is
+     * already ON, the new minimum is applied immediately (via IRQ or a timed
+     * wait depending on configuration).
+     *
+     * \retval ::FWK_SUCCESS Operation completed or no change required.
+     * \return Standard framework error code from the underlying request/set
+     * path.
+     */
+    int (*set_min_opmode)(fwk_id_t pd_id, enum ppu_v1_opmode opm);
+
+    /*!
+     * \brief Request an immediate, one-shot operating-mode change.
+     *
+     * \param pd_id Power-domain element identifier.
+     * \param opm   Operating mode to request now.
+     *
+     * \retval ::FWK_SUCCESS Operation completed (request queued or finished).
+     * \retval ::FWK_E_SUPPORT OP-mode management is disabled for this PD.
+     * \retval ::FWK_E_STATE   The power domain is not ON.
+     * \return Standard framework error code from the underlying request/set
+     * path.
+     */
+    int (*request_now)(fwk_id_t pd_id, enum ppu_v1_opmode opm);
 };
 
 /*!

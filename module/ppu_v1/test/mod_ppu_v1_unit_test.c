@@ -266,7 +266,7 @@ void test_pd_init_with_opmode_enabled_basic(void)
     config.pd_type = MOD_PD_TYPE_DEVICE;
     config.enable_opmode_support = true; /* request enable */
     config.enable_opmode_dynamic_policy = true;
-    config.default_op_mode = 2;
+    config.min_op_mode = 2;
     config.ppu.irq = FWK_INTERRUPT_NONE;
 
     fwk_id_get_element_idx_ExpectAnyArgsAndReturn(0);
@@ -289,7 +289,13 @@ void test_systop_init_on_enables_opmode_dynamic_and_unmasks_irqs(void)
     ppu_v1_get_power_mode_ExpectAndReturn(ppu, PPU_V1_MODE_ON);
     ppu_v1_get_num_opmode_ExpectAndReturn(ppu, 4);
 
-    ppu_v1_opmode_dynamic_enable_Expect(ppu, PPU_V1_OPMODE_00);
+    ppu_v1_opmode_dynamic_enable_ExpectAndReturn(
+        ppu,
+        true,
+        PPU_V1_OPMODE_00,
+        ctx->timer_ctx,
+        ctx->opmode_timeout,
+        FWK_SUCCESS);
     ppu_v1_additional_interrupt_unmask_Expect(
         ppu, PPU_V1_AIMR_STA_POLICY_OP_IRQ_MASK);
     ppu_v1_additional_interrupt_unmask_Expect(
@@ -348,7 +354,8 @@ void test_systop_isr_policy_complete_clears_pending(void)
 
     ppu_v1_is_additional_interrupt_pending_ExpectAndReturn(
         ppu, PPU_V1_AISR_UNSPT_POLICY_IRQ, false);
-    ppu_v1_get_operating_mode_ExpectAndReturn(ppu, PPU_V1_OPMODE_00);
+
+    ppu_v1_get_operating_mode_IgnoreAndReturn(PPU_V1_OPMODE_00);
 
     ppu_v1_is_power_active_edge_interrupt_ExpectAndReturn(
         ppu, PPU_V1_MODE_ON, false);

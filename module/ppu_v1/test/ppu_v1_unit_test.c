@@ -196,9 +196,18 @@ void test_set_operating_mode_success_when_on(void)
 
 void test_enable_dynamic_opmode_success(void)
 {
+    struct ppu_v1_timer_ctx tctx = make_tctx();
+
     regs_hw.PWSR |= PPU_V1_PWSR_OP_DYN_STATUS;
 
-    ppu_v1_opmode_dynamic_enable(&regs_wrap, (enum ppu_v1_opmode)1);
+    TEST_ASSERT_EQUAL(
+        FWK_SUCCESS,
+        ppu_v1_opmode_dynamic_enable(
+            &regs_wrap,
+            /*enable=*/true,
+            (enum ppu_v1_opmode)1,
+            &tctx,
+            PPU_V1_OPMODE_TIMEOUT));
 
     TEST_ASSERT_NOT_EQUAL(0, regs_hw.PWPR & PPU_V1_PWPR_OP_DYN_EN);
 }
