@@ -219,6 +219,68 @@ void test_get_operating_mode(void)
     TEST_ASSERT_EQUAL((enum ppu_v1_opmode)3, opm);
 }
 
+void test_opmode_dynamic_enable_with_timer_success(void)
+{
+    struct ppu_v1_timer_ctx tctx = make_tctx();
+
+    /* Make fake_wait() see the condition as already satisfied: OP_DYN_STATUS=1
+     */
+    regs_hw.PWSR |= PPU_V1_PWSR_OP_DYN_STATUS;
+
+    int status = ppu_v1_opmode_dynamic_enable(
+        &regs_wrap, true, PPU_V1_OPMODE_00, &tctx, PPU_V1_OPMODE_TIMEOUT);
+
+    TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
+    TEST_ASSERT_NOT_EQUAL(0u, regs_hw.PWPR & PPU_V1_PWPR_OP_DYN_EN);
+}
+
+void test_opmode_dynamic_disable_with_timer_success(void)
+{
+    struct ppu_v1_timer_ctx tctx = make_tctx();
+
+    /* Make fake_wait() see the condition as already satisfied: OP_DYN_STATUS=0
+     */
+    regs_hw.PWSR &= ~PPU_V1_PWSR_OP_DYN_STATUS;
+
+    int status = ppu_v1_opmode_dynamic_enable(
+        &regs_wrap, false, 0, &tctx, PPU_V1_OPMODE_TIMEOUT);
+
+    TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
+    TEST_ASSERT_EQUAL(0u, regs_hw.PWPR & PPU_V1_PWPR_OP_DYN_EN);
+}
+
+void test_opmode_dynamic_enable_no_timer_ctx_returns_param(void)
+{
+    /* In a timer-enabled build, NULL timer_ctx must return FWK_E_PARAM */
+    int status = ppu_v1_opmode_dynamic_enable(
+        &regs_wrap, true, PPU_V1_OPMODE_00, NULL, PPU_V1_OPMODE_TIMEOUT);
+
+    TEST_ASSERT_EQUAL(FWK_E_TIMEOUT, status);
+}
+
+#ifndef BUILD_HAS_MOD_TIMER
+void test_opmode_dynamic_disable_spin_times_out(void)
+{
+    /* No timer support: bounded spin path; keep OP_DYN_STATUS stuck at 1 */
+    regs_hw.PWSR |= PPU_V1_PWSR_OP_DYN_STATUS;
+
+    int status = ppu_v1_opmode_dynamic_enable(
+        &regs_wrap, false, 0, NULL, 10); /* small bounded spin */
+
+    TEST_ASSERT_EQUAL(FWK_E_TIMEOUT, status);
+}
+#endif /* !BUILD_HAS_MOD_TIMER */
+
+void test_opmode_dynamic_enable_invalid_mode_returns_param(void)
+{
+    struct ppu_v1_timer_ctx tctx = make_tctx();
+
+    int status = ppu_v1_opmode_dynamic_enable(
+        &regs_wrap, true, PPU_V1_OPMODE_COUNT, &tctx, PPU_V1_OPMODE_TIMEOUT);
+
+    TEST_ASSERT_EQUAL(FWK_E_PARAM, status);
+}
+
 int ppu_v1_test_main(void)
 {
     UNITY_BEGIN();
@@ -228,6 +290,11 @@ int ppu_v1_test_main(void)
     RUN_TEST(test_set_operating_mode_success_when_on);
     RUN_TEST(test_enable_dynamic_opmode_success);
     RUN_TEST(test_get_operating_mode);
+    RUN_TEST(test_opmode_dynamic_enable_with_timer_success);
+    RUN_TEST(test_opmode_dynamic_disable_with_timer_success);
+    RUN_TEST(test_opmode_dynamic_enable_no_timer_ctx_returns_param);
+    RUN_TEST(test_opmode_dynamic_disable_spin_times_out);
+    RUN_TEST(test_opmode_dynamic_enable_invalid_mode_returns_param);
 
     return UNITY_END();
 }

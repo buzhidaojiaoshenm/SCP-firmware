@@ -22,6 +22,8 @@
 #include <fwk_macros.h>
 #include <fwk_notification.h>
 
+#include <string.h>
+
 #include UNIT_TEST_SRC
 
 #define CORES_PER_CLUSTER 2
@@ -82,11 +84,34 @@ void setUp(void)
         ppu_v1_ctx.pd_ctx_table[i].config = &pd_ppu_ctx_config[i];
         ppu_v1_ctx.pd_ctx_table[i].alarm_api = &alarm_api_driver;
         ppu_v1_ctx.pd_ctx_table[i].pd_driver_input_api = &g_stub_pd_in;
+
+        ppu_v1_ctx.pd_ctx_table[i].opmode_timeout =
+            ppu_v1_ctx.pd_ctx_table[i].config->opmode_time_out;
     }
+
+    Mockfwk_id_Init();
+    Mockfwk_mm_Init();
+    Mockfwk_module_Init();
+    Mockfwk_notification_Init();
+    Mockmod_ppu_v1_extra_Init();
+    Mockfwk_core_internal_Init();
 }
 
 void tearDown(void)
 {
+    Mockfwk_core_internal_Verify();
+    Mockmod_ppu_v1_extra_Verify();
+    Mockfwk_notification_Verify();
+    Mockfwk_module_Verify();
+    Mockfwk_mm_Verify();
+    Mockfwk_id_Verify();
+
+    Mockfwk_core_internal_Destroy();
+    Mockmod_ppu_v1_extra_Destroy();
+    Mockfwk_notification_Destroy();
+    Mockfwk_module_Destroy();
+    Mockfwk_mm_Destroy();
+    Mockfwk_id_Destroy();
 }
 
 void test_ppu_v1_pd_init_error(void)
@@ -154,8 +179,6 @@ void test_ppu_v1_mod_init(void)
     ppu_v1_ctx.pd_ctx_table_size = 0;
     ppu_v1_ctx.max_num_cores_per_cluster = 0;
 
-    fwk_id_build_module_id_ExpectAnyArgsAndReturn(mod_id);
-
     status = ppu_v1_mod_init(mod_id, PD_COUNT, &ppu_v1_config_data_ut);
     TEST_ASSERT_EQUAL(status, FWK_SUCCESS);
     TEST_ASSERT_EQUAL(ppu_v1_ctx.pd_ctx_table_size, PD_COUNT);
@@ -171,14 +194,14 @@ void test_ppu_v1_core_pd_set_state_sleep(void)
     pd_ctx_temp = &ppu_v1_ctx.pd_ctx_table[0];
 
     fwk_id_get_element_idx_ExpectAnyArgsAndReturn(0);
-    ppu_v1_is_dynamic_enabled_ExpectAnyArgsAndReturn(false);
     ppu_v1_dynamic_enable_ExpectAnyArgs();
-    ppu_v1_set_input_edge_sensitivity_Expect(
-        &pd_ctx_temp->ppu, PPU_V1_MODE_ON, PPU_V1_EDGE_SENSITIVITY_MASKED);
+
     ppu_v1_lock_off_enable_ExpectAnyArgs();
     ppu_v1_interrupt_unmask_ExpectAnyArgs();
+
     ppu_v1_set_input_edge_sensitivity_Expect(
         &pd_ctx_temp->ppu, PPU_V1_MODE_ON, PPU_V1_EDGE_SENSITIVITY_MASKED);
+
     fwk_id_get_element_idx_ExpectAnyArgsAndReturn(0);
     fwk_id_get_element_idx_ExpectAnyArgsAndReturn(0);
     start_alarm_api_ExpectAndReturn(
@@ -188,9 +211,9 @@ void test_ppu_v1_core_pd_set_state_sleep(void)
         deeper_locking_alarm_callback,
         0,
         FWK_SUCCESS);
-    status = ppu_v1_core_pd_set_state(core_pd_id, MOD_PD_STATE_SLEEP);
 
-    TEST_ASSERT_EQUAL(status, FWK_SUCCESS);
+    status = ppu_v1_core_pd_set_state(core_pd_id, MOD_PD_STATE_SLEEP);
+    TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
 }
 
 void test_start_deeper_locking_alarm(void)
@@ -283,10 +306,11 @@ void test_systop_init_on_enables_opmode_dynamic_and_unmasks_irqs(void)
     struct ppu_v1_pd_ctx *ctx = &ppu_v1_ctx.pd_ctx_table[PD_PPU_IDX_3];
     struct ppu_v1_regs *ppu = &ctx->ppu;
 
-    fwk_id_get_element_idx_ExpectAnyArgsAndReturn(PD_PPU_IDX_3);
+    ctx->opmode_enabled = true;
+    ctx->opmode_dyn_policy_enabled = true;
+    ctx->opmode_irqs_enabled = true;
 
     ppu_v1_init_Expect(ppu);
-    ppu_v1_get_power_mode_ExpectAndReturn(ppu, PPU_V1_MODE_ON);
     ppu_v1_get_num_opmode_ExpectAndReturn(ppu, 4);
 
     ppu_v1_opmode_dynamic_enable_ExpectAndReturn(
@@ -325,6 +349,11 @@ void test_systop_on_applies_opmode_via_request_async(void)
     struct ppu_v1_pd_ctx *ctx = &ppu_v1_ctx.pd_ctx_table[PD_PPU_IDX_3];
     struct ppu_v1_regs *ppu = &ctx->ppu;
 
+    ctx->opmode_enabled = true;
+    ctx->opmode_irqs_enabled = true;
+    ctx->opmode_dyn_policy_enabled = false;
+
+    ppu_v1_is_dynamic_enabled_ExpectAndReturn(ppu, false);
     fwk_id_get_element_idx_ExpectAnyArgsAndReturn(PD_PPU_IDX_3);
     ppu_v1_set_power_mode_ExpectAndReturn(
         ppu, PPU_V1_MODE_ON, ctx->timer_ctx, FWK_SUCCESS);
@@ -347,7 +376,6 @@ void test_systop_isr_policy_complete_clears_pending(void)
     ctx->opmode_pending = true;
     ctx->opmode_target = PPU_V1_OPMODE_00;
 
-    ppu_v1_is_dyn_policy_min_interrupt_ExpectAndReturn(ppu, false);
     ppu_v1_is_additional_interrupt_pending_ExpectAndReturn(
         ppu, PPU_V1_AISR_STA_POLICY_OP_IRQ, true);
     ppu_v1_ack_additional_interrupt_Expect(ppu, PPU_V1_AISR_STA_POLICY_OP_IRQ);
@@ -355,10 +383,7 @@ void test_systop_isr_policy_complete_clears_pending(void)
     ppu_v1_is_additional_interrupt_pending_ExpectAndReturn(
         ppu, PPU_V1_AISR_UNSPT_POLICY_IRQ, false);
 
-    ppu_v1_get_operating_mode_IgnoreAndReturn(PPU_V1_OPMODE_00);
-
-    ppu_v1_is_power_active_edge_interrupt_ExpectAndReturn(
-        ppu, PPU_V1_MODE_ON, false);
+    ppu_v1_get_operating_mode_ExpectAndReturn(&ctx->ppu, PPU_V1_OPMODE_00);
 
     ppu_interrupt_handler((uintptr_t)ctx);
 
@@ -372,10 +397,15 @@ void test_systop_on_sync_path_sets_opmode_when_irqs_disabled(void)
     struct ppu_v1_pd_ctx *ctx = &ppu_v1_ctx.pd_ctx_table[PD_PPU_IDX_3];
     struct ppu_v1_regs *ppu = &ctx->ppu;
 
+    ctx->opmode_enabled = true;
+    ctx->opmode_irqs_enabled = false;
+    ctx->opmode_dyn_policy_enabled = false;
+
     struct mod_ppu_v1_pd_config mutable_cfg = *ctx->config;
     mutable_cfg.use_opmode_irqs = false;
     ctx->config = &mutable_cfg;
 
+    ppu_v1_is_dynamic_enabled_ExpectAndReturn(ppu, false);
     fwk_id_get_element_idx_ExpectAnyArgsAndReturn(PD_PPU_IDX_3);
     ppu_v1_set_power_mode_ExpectAndReturn(
         ppu, PPU_V1_MODE_ON, ctx->timer_ctx, FWK_SUCCESS);
@@ -386,11 +416,231 @@ void test_systop_on_sync_path_sets_opmode_when_irqs_disabled(void)
         ppu,
         PPU_V1_OPMODE_00,
         ctx->timer_ctx,
-        ctx->config->opmode_time_out,
+        ctx->opmode_timeout,
         FWK_SUCCESS);
     ppu_v1_get_operating_mode_IgnoreAndReturn((enum ppu_v1_opmode)1);
 
     status = ppu_v1_pd_set_state(sys_id, MOD_PD_STATE_ON);
+    TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
+}
+
+void test_opmode_ctrl_set_enabled_false_clears_pending(void)
+{
+    fwk_id_t sys_id = FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_PPU_V1, PD_PPU_IDX_3);
+    struct ppu_v1_pd_ctx *ctx = &ppu_v1_ctx.pd_ctx_table[PD_PPU_IDX_3];
+
+    /* Mimic mid transition */
+    ctx->opmode_pending = true;
+
+    fwk_id_get_element_idx_IgnoreAndReturn(PD_PPU_IDX_3);
+
+    int status = opmode_set_enabled(sys_id, false);
+
+    TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
+    TEST_ASSERT_FALSE(ctx->opmode_pending);
+}
+
+void test_opmode_ctrl_set_enabled_true_applies_default_when_on_async(void)
+{
+    fwk_id_t sys_id = FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_PPU_V1, PD_PPU_IDX_3);
+    struct ppu_v1_pd_ctx *ctx = &ppu_v1_ctx.pd_ctx_table[PD_PPU_IDX_3];
+    struct ppu_v1_regs *ppu = &ctx->ppu;
+
+    fwk_id_get_element_idx_IgnoreAndReturn(PD_PPU_IDX_3);
+
+    ctx->opmode_irqs_enabled = true;
+    ctx->min_opmode = PPU_V1_OPMODE_00;
+    ctx->opmode_dyn_policy_enabled = false;
+
+    ppu_v1_is_dynamic_enabled_IgnoreAndReturn(false);
+    ppu_v1_get_power_mode_IgnoreAndReturn(PPU_V1_MODE_ON);
+
+    /* tolerate multiple internal queries */
+    ppu_v1_get_num_opmode_IgnoreAndReturn(4);
+    ppu_v1_get_operating_mode_IgnoreAndReturn(PPU_V1_OPMODE_01);
+    ppu_v1_request_operating_mode_ExpectAndReturn(
+        ppu, PPU_V1_OPMODE_00, FWK_SUCCESS);
+
+    int status = opmode_set_enabled(sys_id, true);
+
+    TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
+    TEST_ASSERT_TRUE(ctx->opmode_enabled);
+    TEST_ASSERT_TRUE(ctx->opmode_pending);
+    TEST_ASSERT_EQUAL(PPU_V1_OPMODE_00, ctx->opmode_target);
+}
+
+void test_opmode_ctrl_set_dynamic_policy_requires_on(void)
+{
+    fwk_id_t sys_id = FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_PPU_V1, PD_PPU_IDX_3);
+    struct ppu_v1_pd_ctx *ctx = &ppu_v1_ctx.pd_ctx_table[PD_PPU_IDX_3];
+
+    /* enabled, but PD not ON */
+    ctx->opmode_enabled = true;
+
+    fwk_id_get_element_idx_IgnoreAndReturn(PD_PPU_IDX_3);
+    ppu_v1_get_power_mode_ExpectAndReturn(&ctx->ppu, PPU_V1_MODE_OFF);
+
+    int status = opmode_enable_dynamic_policy(sys_id, true, PPU_V1_OPMODE_00);
+    TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
+}
+
+void test_opmode_ctrl_set_dynamic_policy_enables_hw_when_on(void)
+{
+    fwk_id_t sys_id = FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_PPU_V1, PD_PPU_IDX_3);
+    struct ppu_v1_pd_ctx *ctx = &ppu_v1_ctx.pd_ctx_table[PD_PPU_IDX_3];
+
+    ctx->opmode_enabled = true;
+
+    fwk_id_get_element_idx_IgnoreAndReturn(PD_PPU_IDX_3);
+    ppu_v1_get_power_mode_ExpectAndReturn(&ctx->ppu, PPU_V1_MODE_ON);
+
+    ppu_v1_opmode_dynamic_enable_ExpectAndReturn(
+        &ctx->ppu,
+        true,
+        PPU_V1_OPMODE_00,
+        ctx->timer_ctx,
+        ctx->opmode_timeout,
+        FWK_SUCCESS);
+
+    int status = opmode_enable_dynamic_policy(sys_id, true, PPU_V1_OPMODE_00);
+    TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
+    TEST_ASSERT_TRUE(ctx->opmode_dyn_policy_enabled);
+}
+
+void test_opmode_ctrl_set_default_requests_when_on_and_irqs_enabled(void)
+{
+    fwk_id_t sys_id = FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_PPU_V1, PD_PPU_IDX_3);
+    struct ppu_v1_pd_ctx *ctx = &ppu_v1_ctx.pd_ctx_table[PD_PPU_IDX_3];
+    struct ppu_v1_regs *ppu = &ctx->ppu;
+
+    ctx->opmode_enabled = true;
+    ctx->opmode_irqs_enabled = true;
+
+    fwk_id_get_element_idx_IgnoreAndReturn(PD_PPU_IDX_3);
+
+    /* PD ON and current is not the new default */
+    ppu_v1_get_power_mode_ExpectAndReturn(ppu, PPU_V1_MODE_ON);
+    ppu_v1_request_operating_mode_ExpectAndReturn(
+        ppu, PPU_V1_OPMODE_00, FWK_SUCCESS);
+
+    int status = opmode_set_min(sys_id, PPU_V1_OPMODE_00);
+
+    TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
+    TEST_ASSERT_TRUE(ctx->opmode_pending);
+    TEST_ASSERT_EQUAL(PPU_V1_OPMODE_00, ctx->opmode_target);
+}
+
+void test_opmode_ctrl_set_default_sets_immediately_when_irqs_disabled(void)
+{
+    const fwk_id_t pd_id = FWK_ID_ELEMENT(FWK_MODULE_IDX_PPU_V1, 0);
+
+    struct ppu_v1_pd_ctx *ctx = &ppu_v1_ctx.pd_ctx_table[0];
+
+    const enum ppu_v1_opmode requested_opm = PPU_V1_OPMODE_01;
+
+    ctx->opmode_enabled = true;
+    ctx->opmode_irqs_enabled = false;
+    if (ctx->opmode_timeout == 0) {
+        ctx->opmode_timeout = PPU_V1_DEFAULT_OPMODE_TIMEOUT_US;
+    }
+
+    fwk_id_get_element_idx_IgnoreAndReturn(0);
+
+    ppu_v1_get_power_mode_ExpectAndReturn(&ctx->ppu, PPU_V1_MODE_ON);
+    ppu_v1_set_operating_mode_ExpectAndReturn(
+        &ctx->ppu,
+        requested_opm,
+        ctx->timer_ctx,
+        ctx->opmode_timeout,
+        FWK_SUCCESS);
+
+    TEST_ASSERT_EQUAL(FWK_SUCCESS, opmode_set_min(pd_id, requested_opm));
+    TEST_ASSERT_FALSE(ctx->opmode_pending);
+    TEST_ASSERT_EQUAL(requested_opm, ctx->min_opmode);
+}
+
+void test_opmode_ctrl_request_now_fails_when_disabled(void)
+{
+    fwk_id_t sys_id = FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_PPU_V1, PD_PPU_IDX_3);
+
+    fwk_id_get_element_idx_IgnoreAndReturn(PD_PPU_IDX_3);
+    ppu_v1_get_power_mode_IgnoreAndReturn(PPU_V1_MODE_ON);
+    ppu_v1_get_num_opmode_IgnoreAndReturn(4);
+    ppu_v1_get_operating_mode_IgnoreAndReturn(PPU_V1_OPMODE_00);
+    ppu_v1_request_operating_mode_IgnoreAndReturn(FWK_SUCCESS);
+    ppu_v1_set_operating_mode_IgnoreAndReturn(FWK_SUCCESS);
+
+    ppu_v1_ctx.pd_ctx_table[PD_PPU_IDX_3].opmode_enabled = false;
+
+    int status = opmode_request_now(sys_id, PPU_V1_OPMODE_00);
+    TEST_ASSERT_EQUAL(FWK_E_SUPPORT, status);
+}
+
+void test_opmode_ctrl_request_now_requires_on(void)
+{
+    fwk_id_t sys_id = FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_PPU_V1, PD_PPU_IDX_3);
+    struct ppu_v1_pd_ctx *ctx = &ppu_v1_ctx.pd_ctx_table[PD_PPU_IDX_3];
+
+    ctx->opmode_enabled = true;
+
+    /* Explicit that dynamic policy is off */
+    ctx->opmode_dyn_policy_enabled = false;
+
+    fwk_id_get_element_idx_IgnoreAndReturn(PD_PPU_IDX_3);
+    ppu_v1_get_power_mode_IgnoreAndReturn(PPU_V1_MODE_OFF);
+
+    int status = opmode_request_now(sys_id, PPU_V1_OPMODE_00);
+    TEST_ASSERT_EQUAL(FWK_E_STATE, status);
+}
+
+void test_opmode_ctrl_request_now_async_requests_and_clears_pending(void)
+{
+    fwk_id_t sys_id = FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_PPU_V1, PD_PPU_IDX_3);
+    struct ppu_v1_pd_ctx *ctx = &ppu_v1_ctx.pd_ctx_table[PD_PPU_IDX_3];
+    struct ppu_v1_regs *ppu = &ctx->ppu;
+
+    const enum ppu_v1_opmode requested_opm = PPU_V1_OPMODE_02;
+
+    ctx->opmode_enabled = true;
+    ctx->opmode_irqs_enabled = true;
+    ctx->opmode_dyn_policy_enabled = false;
+
+    fwk_id_get_element_idx_IgnoreAndReturn(PD_PPU_IDX_3);
+    ppu_v1_get_power_mode_IgnoreAndReturn(PPU_V1_MODE_ON);
+    ppu_v1_request_operating_mode_ExpectAndReturn(
+        ppu, requested_opm, FWK_SUCCESS);
+
+    int status = opmode_request_now(sys_id, requested_opm);
+    TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
+    TEST_ASSERT_TRUE(ctx->opmode_pending);
+    TEST_ASSERT_EQUAL(requested_opm, ctx->opmode_target);
+
+    ppu_v1_get_operating_mode_ExpectAndReturn(&ctx->ppu, requested_opm);
+    ppu_v1_pd_opmode_irq_complete(ctx);
+    TEST_ASSERT_FALSE(ctx->opmode_pending);
+}
+
+void test_opmode_ctrl_request_now_sync_sets_with_timeout(void)
+{
+    fwk_id_t sys_id = FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_PPU_V1, PD_PPU_IDX_3);
+    struct ppu_v1_pd_ctx *ctx = &ppu_v1_ctx.pd_ctx_table[PD_PPU_IDX_3];
+    struct ppu_v1_regs *ppu = &ctx->ppu;
+
+    ctx->opmode_enabled = true;
+    ctx->opmode_irqs_enabled = false;
+    ctx->opmode_timeout = ctx->config->opmode_time_out;
+    ctx->opmode_dyn_policy_enabled = false;
+
+    fwk_id_get_element_idx_IgnoreAndReturn(PD_PPU_IDX_3);
+    ppu_v1_get_power_mode_ExpectAndReturn(ppu, PPU_V1_MODE_ON);
+    ppu_v1_set_operating_mode_ExpectAndReturn(
+        ppu,
+        PPU_V1_OPMODE_03,
+        ctx->timer_ctx,
+        ctx->opmode_timeout,
+        FWK_SUCCESS);
+
+    int status = opmode_request_now(sys_id, PPU_V1_OPMODE_03);
     TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
 }
 
@@ -412,6 +662,16 @@ int mod_ppu_v1_test_main(void)
     RUN_TEST(test_systop_on_applies_opmode_via_request_async);
     RUN_TEST(test_systop_isr_policy_complete_clears_pending);
     RUN_TEST(test_systop_on_sync_path_sets_opmode_when_irqs_disabled);
+    RUN_TEST(test_opmode_ctrl_set_enabled_false_clears_pending);
+    RUN_TEST(test_opmode_ctrl_set_enabled_true_applies_default_when_on_async);
+    RUN_TEST(test_opmode_ctrl_set_dynamic_policy_requires_on);
+    RUN_TEST(test_opmode_ctrl_set_dynamic_policy_enables_hw_when_on);
+    RUN_TEST(test_opmode_ctrl_set_default_requests_when_on_and_irqs_enabled);
+    RUN_TEST(test_opmode_ctrl_set_default_sets_immediately_when_irqs_disabled);
+    RUN_TEST(test_opmode_ctrl_request_now_fails_when_disabled);
+    RUN_TEST(test_opmode_ctrl_request_now_requires_on);
+    RUN_TEST(test_opmode_ctrl_request_now_async_requests_and_clears_pending);
+    RUN_TEST(test_opmode_ctrl_request_now_sync_sets_with_timeout);
 
     return UNITY_END();
 }
