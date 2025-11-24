@@ -15,6 +15,7 @@
 
 #include <fwk_id.h>
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
 
@@ -109,8 +110,23 @@ struct mod_scmi_telemetry_config {
     /*! List of available Telemetry Shared memory areas (SHMTI)  */
     const struct mod_telemetry_shmti_info *shmti_list;
 
-    /*! Protocol attributes. */
-    uint32_t attributes;
+    /*! Platform supports single-sample asynchronous telemetry reads. */
+    bool single_sample_async_read_support;
+
+    /*! Platform supports continuous update notifications. */
+    bool continuous_update_notification_support;
+
+    /*!
+     * \brief Platform supports per event-group sampling rate
+     * and collection mode configuration.
+     */
+    bool event_group_sampling_config_support;
+
+    /*! Platform supports telemetry reset flow. */
+    bool telemetry_reset_support;
+
+    /*! Platform supports Telemetry FastChannels. */
+    bool fastchannel_support;
 };
 
 /*!

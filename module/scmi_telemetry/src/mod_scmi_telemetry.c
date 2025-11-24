@@ -247,7 +247,13 @@ static int protocol_attributes_handler(
     outmsg.num_groups = 0; // Groups are not supported yet.
 
     /* Assign protocol attributes */
-    outmsg.attributes = scmi_telemetry_ctx.config->attributes;
+    outmsg.attributes = SCMI_TELEMETRY_PROTOCOL_ATTRIBUTES(
+        scmi_telemetry_ctx.config->single_sample_async_read_support,
+        scmi_telemetry_ctx.config->continuous_update_notification_support,
+        scmi_telemetry_ctx.config->event_group_sampling_config_support,
+        scmi_telemetry_ctx.config->telemetry_reset_support,
+        scmi_telemetry_ctx.config->fastchannel_support,
+        scmi_telemetry_ctx.config->shmti_count);
 
     /* Respond to the request */
     return scmi_telemetry_ctx.scmi_api->respond(
@@ -1573,9 +1579,8 @@ static int scmi_telemetry_reset_handler(
         return FWK_E_PARAM;
     }
 
-    if (scmi_telemetry_ctx.config->attributes &
-        SCMI_TELEMETRY_PROTOCOL_ATTR_TELEMETRY_RESET_MASK) {
-        status = FWK_E_PARAM;
+    if (!scmi_telemetry_ctx.config->telemetry_reset_support) {
+        status = FWK_E_SUPPORT;
         return_values.status = SCMI_NOT_SUPPORTED;
         goto exit;
     }
