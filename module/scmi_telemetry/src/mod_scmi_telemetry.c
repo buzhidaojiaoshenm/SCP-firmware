@@ -21,7 +21,6 @@
 #include <fwk_mm.h>
 #include <fwk_module.h>
 #include <fwk_module_idx.h>
-#include <fwk_notification.h>
 #include <fwk_status.h>
 #include <fwk_string.h>
 
@@ -61,14 +60,6 @@ struct scmi_telemetry_context {
 
     /*! List of data events enabled. */
     telemetry_de_handle_st *de_enabled_list;
-
-#ifdef BUILD_HAS_SCMI_NOTIFICATIONS
-    /*! SCMI notification ID */
-    fwk_id_t notification_id;
-
-    /*! Pointer to the SCMI notification API */
-    const struct mod_scmi_notification_api *scmi_notification_api;
-#endif
 
 #ifdef BUILD_HAS_MOD_RESOURCE_PERMS
     /*! Pointer to the SCMI telemetry permissions API */
@@ -1785,21 +1776,6 @@ static int scmi_telemetry_init(
     return FWK_SUCCESS;
 }
 
-#ifdef BUILD_HAS_SCMI_NOTIFICATIONS
-/*!
- * \brief Initializes SCMI telemetry notifications.
- *
- * This function is currently not implemented and triggers an assertion failure
- * when called.
- *
- * \return No return, function triggers an assertion failure.
- */
-static int scmi_telemetry_init_notifications(void)
-{
-    fwk_assert(false);
-}
-#endif
-
 /*!
  * \brief Binds required module dependencies for SCMI telemetry.
  *
@@ -1830,17 +1806,6 @@ static int scmi_telemetry_bind(fwk_id_t id, unsigned int round)
     if (status != FWK_SUCCESS) {
         return status;
     }
-
-#ifdef BUILD_HAS_SCMI_NOTIFICATIONS
-    /* Bind the SCMI notification API */
-    status = fwk_module_bind(
-        FWK_ID_MODULE(FWK_MODULE_IDX_SCMI),
-        FWK_ID_API(FWK_MODULE_IDX_SCMI, MOD_SCMI_API_IDX_NOTIFICATION),
-        &scmi_telemetry_ctx.scmi_notification_api);
-    if (status != FWK_SUCCESS) {
-        return status;
-    }
-#endif
 
 #ifdef BUILD_HAS_MOD_TELEMETRY
     /* Bind the telemetry protocol API */
