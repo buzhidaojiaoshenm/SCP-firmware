@@ -232,13 +232,6 @@ int shmti_create(struct telemetry_shmti_context *shmti_ctx)
         return status;
     }
 
-    /* Write metadata header in SHMTI memory */
-    WRITE_SHMTI_HEADER_METADATA(
-        shmti_ctx->shmti_info->start_addr + SHMTI_HEADER_METADATA_OFFSET,
-        FWK_ALIGN_TO_PREVIOUS_PWR_OF_2(
-            shmti_ctx->shmti_info->length, QWORD_SIZE) /
-            QWORD_SIZE);
-
     /*!
      * Mark the beginning of the SHMTI region as used for metadata storage.
      * This includes the header and the start match sequence.
@@ -274,6 +267,13 @@ int shmti_create(struct telemetry_shmti_context *shmti_ctx)
         SHMTI_HEADER_METADATA_SIZE + SHMTI_MATCH_SEQUENCE_SIZE);
 
     memset((void *)shmti_ctx->end_seq_addr, 0, SHMTI_MATCH_SEQUENCE_SIZE);
+
+    /* Write metadata header in SHMTI memory */
+    WRITE_SHMTI_HEADER_METADATA(
+        shmti_ctx->shmti_info->start_addr + SHMTI_HEADER_METADATA_OFFSET,
+        FWK_ALIGN_TO_PREVIOUS_PWR_OF_2(
+            shmti_ctx->shmti_info->length, QWORD_SIZE) /
+            QWORD_SIZE);
 
     /* Mark SHMTI as successfully created */
     shmti_ctx->shmti_created = true;
