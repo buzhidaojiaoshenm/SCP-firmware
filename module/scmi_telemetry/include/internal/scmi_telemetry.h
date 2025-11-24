@@ -90,10 +90,9 @@ struct scmi_telemetry_negotiate_protocol_version_a2p {
     (UINT32_C(0x1) << SCMI_TELEMETRY_PROTOCOL_ATTR_CONTINUOUS_UPDATE_POS)
 
 /*
- * SCMI_TELEMETRY_PROTOCOL_ATTR_GROUP_SAMPLING_RATES_POS
+ * SCMI_TELEMETRY_PROTOCOL_ATTR_GROUP_SAMPLING_RATES_MASK
  *
- * Mask for enabling or disabling continuous updates.
- * When set, this indicates that telemetry data is updated continuously.
+ * Mask for enabling or disabling per-event-group sampling configuration.
  */
 #define SCMI_TELEMETRY_PROTOCOL_ATTR_GROUP_SAMPLING_RATES_MASK \
     (UINT32_C(0x1) << SCMI_TELEMETRY_PROTOCOL_ATTR_GROUP_SAMPLING_RATES_POS)
@@ -148,13 +147,17 @@ struct scmi_telemetry_negotiate_protocol_version_a2p {
  * - A 32-bit encoded value representing the protocol attributes.
  */
 #define SCMI_TELEMETRY_PROTOCOL_ATTRIBUTES( \
-    ASYNC, CONTINUOUS_UPDATE, TELEMETRY_RESET, FCH, NUM_SHMTI) \
+    ASYNC, CONTINUOUS_UPDATE, GROUP_SPECIFIC, TELEMETRY_RESET, FCH, NUM_SHMTI) \
     ( \
         (((ASYNC) << SCMI_TELEMETRY_PROTOCOL_ATTR_ASYNC_READ_POS) & \
          SCMI_TELEMETRY_PROTOCOL_ATTR_ASYNC_READ_MASK) | \
         (((CONTINUOUS_UPDATE) \
           << SCMI_TELEMETRY_PROTOCOL_ATTR_CONTINUOUS_UPDATE_POS) & \
          SCMI_TELEMETRY_PROTOCOL_ATTR_CONTINUOUS_UPDATE_MASK) | \
+        (( \
+             (GROUP_SPECIFIC) \
+             << SCMI_TELEMETRY_PROTOCOL_ATTR_GROUP_SAMPLING_RATES_POS) & \
+         SCMI_TELEMETRY_PROTOCOL_ATTR_GROUP_SAMPLING_RATES_MASK) | \
         (((TELEMETRY_RESET) \
           << SCMI_TELEMETRY_PROTOCOL_ATTR_TELEMETRY_RESET_POS) & \
          SCMI_TELEMETRY_PROTOCOL_ATTR_TELEMETRY_RESET_MASK) | \
