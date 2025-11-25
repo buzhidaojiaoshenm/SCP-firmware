@@ -302,3 +302,41 @@ Firmware.cmake:
 
 The fvp-baser-aemv8r product can be used as a reference for implementing an
 AArch64 product.
+
+## POSIX Architecture Support
+
+SCP-firmware also provides a POSIX-hosted architecture located under
+`arch/none/posix`. This target builds the framework as a regular userspace
+process, which is useful for development and validating firmware
+logic without Arm hardware. It follows the same architecture model
+described above. Because execution happens in a POSIX process,
+`arch_interrupt_global_enable()`, `arch_interrupt_global_disable()`, and
+`arch_suspend()` are implemented as no-ops and should not be relied on for
+functional behavior.
+
+### Interrupt handling
+
+Interrupt emulation is intentionally minimal and is implemented on top of POSIX
+signals:
+
+ * All interrupts have the same priority.
+ * NMIs (non-maskable interrupts) are not supported.
+ * Up to `IRQ_NUM` interrupt lines.
+ * Delivery uses `SIGUSR1` with the IRQ line encoded in
+   `siginfo_t.si_value.sival_int`.
+ * Modules must also enable the relevant host signals (for example via POSIX
+   `sigaction`/`mq_notify`) before they can be used for interrupt injection.
+
+### Usage
+
+To build a firmware for the POSIX architecture, request it in the product's
+`Firmware.cmake`:
+
+```
+set(SCP_ARCHITECTURE "posix")
+```
+
+This selects the `arch-posix` support library automatically. The produced binary
+runs directly on the host, making it ideal for fast iteration, sanitizers, and
+tests that do not require the memory-mapped peripherals or exception-level
+management that real Arm targets provide.
