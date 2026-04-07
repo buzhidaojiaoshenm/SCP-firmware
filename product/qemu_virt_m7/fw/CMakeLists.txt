@@ -15,6 +15,9 @@ target_include_directories(
 
 target_sources(qemu_virt_m7
                PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/config_stdio.c"
+                       "${CMAKE_CURRENT_SOURCE_DIR}/config_timer.c"
+                       "${CMAKE_CURRENT_SOURCE_DIR}/config_transport.c"
+                       "${CMAKE_CURRENT_SOURCE_DIR}/config_scmi.c"
                        "${CMAKE_CURRENT_SOURCE_DIR}/config_system.c")
 
 target_link_libraries(qemu_virt_m7 PUBLIC cmsis::core-m)

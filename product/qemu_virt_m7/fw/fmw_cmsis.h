@@ -41,6 +41,8 @@ typedef enum IRQn {
     UART1_TX_IRQn = 3,
     UART2_RX_IRQn = 4,
     UART2_TX_IRQn = 5,
+    TIMER0_IRQn = 8,
+    TIMER1_IRQn = 9,
 
     IRQn_MAX = INT16_MAX,
 } IRQn_Type;
@@ -48,4 +50,3 @@ typedef enum IRQn {
 #include <core_cm7.h>
 
 #endif /* FMW_CMSIS_H */
-
