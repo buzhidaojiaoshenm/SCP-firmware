@@ -12,6 +12,6 @@
 #include <fwk_module_idx.h>
 
 #define FMW_IO_STDIN_ID  FWK_ID_NONE
-#define FMW_IO_STDOUT_ID FWK_ID_MODULE(FWK_MODULE_IDX_QEMU_UART)
+#define FMW_IO_STDOUT_ID FWK_ID_ELEMENT(FWK_MODULE_IDX_PL011, 0)
 
 #endif /* FMW_IO_H */

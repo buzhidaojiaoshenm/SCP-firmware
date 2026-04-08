@@ -152,7 +152,7 @@ static const struct fwk_element qemu_bridge_element_table[] = {
     [0] = {
         .name = "SCMI",
         .data = &(struct mod_qemu_bridge_config) {
-            .bridge_reg_base = UINT32_C(0x40014000),
+            .bridge_reg_base = UINT32_C(0x45000000),
             .irq = 11,
         },
     },

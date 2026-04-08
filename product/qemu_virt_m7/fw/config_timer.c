@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-#include <mod_qemu_timer.h>
+#include <mod_gtimer.h>
 #include <mod_timer.h>
 
 #include <fwk_element.h>
@@ -26,17 +26,13 @@ enum config_timer_refclk_alarm_idx {
     CONFIG_TIMER_REFCLK_ALARM_IDX_COUNT,
 };
 
-static const struct mod_qemu_timer_dev_config qemu_timer_time_driver_config = {
-    .alarm_timer_base = UINT32_C(0x40000000),
-    .counter_timer_base = UINT32_C(0x40001000),
-    .frequency = UINT32_C(25000000),
-};
+extern const struct fwk_module_config config_gtimer;
 
 static const struct fwk_element timer_element_table[] = {
     [CONFIG_TIMER_ELEMENT_IDX_REFCLK] = {
         .name = "REFCLK",
         .data = &(struct mod_timer_dev_config) {
-            .id = FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_QEMU_TIMER, 0),
+            .id = FWK_ID_ELEMENT_INIT(FWK_MODULE_IDX_GTIMER, 0),
             .timer_irq = TIMER0_IRQn,
         },
         .sub_element_count = CONFIG_TIMER_REFCLK_ALARM_IDX_COUNT,
@@ -50,5 +46,5 @@ const struct fwk_module_config config_timer = {
 
 struct fwk_time_driver fmw_time_driver(const void **ctx)
 {
-    return mod_qemu_timer_driver(ctx, &qemu_timer_time_driver_config);
+    return mod_gtimer_driver(ctx, config_gtimer.elements.table[0].data);
 }

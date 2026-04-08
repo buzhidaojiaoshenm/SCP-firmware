@@ -16,7 +16,7 @@
 #define __MPU_PRESENT          1U
 #define __ICACHE_PRESENT       0U
 #define __DCACHE_PRESENT       0U
-#define __DTCM_PRESENT         0U
+#define __DTCM_PRESENT         1U
 #define __NVIC_PRIO_BITS       3U
 #define __Vendor_SysTickConfig 0U
 #define __VTOR_PRESENT         1U

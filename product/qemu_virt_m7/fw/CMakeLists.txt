@@ -14,7 +14,8 @@ target_include_directories(
            "${CMAKE_SOURCE_DIR}/arch/arm/common/include")
 
 target_sources(qemu_virt_m7
-               PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/config_stdio.c"
+               PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/config_pl011.c"
+                       "${CMAKE_CURRENT_SOURCE_DIR}/config_gtimer.c"
                        "${CMAKE_CURRENT_SOURCE_DIR}/config_timer.c"
                        "${CMAKE_CURRENT_SOURCE_DIR}/config_transport.c"
                        "${CMAKE_CURRENT_SOURCE_DIR}/config_scmi.c"
