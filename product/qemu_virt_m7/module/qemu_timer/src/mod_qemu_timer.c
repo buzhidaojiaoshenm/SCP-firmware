@@ -121,6 +121,22 @@ static int qemu_timer_get_frequency(fwk_id_t dev_id, uint32_t *value)
     return FWK_SUCCESS;
 }
 
+static fwk_timestamp_t mod_qemu_timer_timestamp(const void *ctx)
+{
+    const struct mod_qemu_timer_dev_config *config = ctx;
+    uint64_t counter;
+
+    if (config == NULL) {
+        return 0;
+    }
+
+    counter = (uint64_t)(
+        CMSDK_TIMER_MAX_RELOAD -
+        mmio_read32(config->counter_timer_base + CMSDK_TIMER_VALUE));
+
+    return (FWK_S(1) / config->frequency) * counter;
+}
+
 static const struct mod_timer_driver_api qemu_timer_driver_api = {
     .name = "qemu-timer",
     .enable = qemu_timer_enable,
@@ -212,6 +228,17 @@ static const struct fwk_element qemu_timer_element_table[] = {
 const struct fwk_module_config config_qemu_timer = {
     .elements = FWK_MODULE_STATIC_ELEMENTS_PTR(qemu_timer_element_table),
 };
+
+struct fwk_time_driver mod_qemu_timer_driver(
+    const void **ctx,
+    const struct mod_qemu_timer_dev_config *cfg)
+{
+    *ctx = cfg;
+
+    return (struct fwk_time_driver){
+        .timestamp = mod_qemu_timer_timestamp,
+    };
+}
 
 const struct fwk_module module_qemu_timer = {
     .type = FWK_MODULE_TYPE_DRIVER,
