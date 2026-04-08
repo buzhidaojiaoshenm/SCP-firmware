@@ -19,9 +19,10 @@ set(SCP_ENABLE_OUTBAND_MSG_SUPPORT TRUE)
 
 list(PREPEND SCP_MODULE_PATHS "${CMAKE_CURRENT_LIST_DIR}/../module/qemu_uart")
 list(PREPEND SCP_MODULE_PATHS "${CMAKE_CURRENT_LIST_DIR}/../module/qemu_timer")
-
+list(PREPEND SCP_MODULE_PATHS "${CMAKE_CURRENT_LIST_DIR}/../module/qemu_bridge")
 list(APPEND SCP_MODULES "qemu-uart")
 list(APPEND SCP_MODULES "qemu-timer")
+list(APPEND SCP_MODULES "qemu-bridge")
 list(APPEND SCP_MODULES "stdio")
 list(APPEND SCP_MODULES "timer")
 list(APPEND SCP_MODULES "transport")

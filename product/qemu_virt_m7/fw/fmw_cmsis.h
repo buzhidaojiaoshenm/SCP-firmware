@@ -43,6 +43,7 @@ typedef enum IRQn {
     UART2_TX_IRQn = 5,
     TIMER0_IRQn = 8,
     TIMER1_IRQn = 9,
+    BRIDGE_IRQn = 11,
 
     IRQn_MAX = INT16_MAX,
 } IRQn_Type;

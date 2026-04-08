@@ -246,11 +246,44 @@ static int signal_error(fwk_id_t service_id)
 
 static int signal_message(fwk_id_t service_id)
 {
+    int status;
+    uint32_t message_header;
+    uint32_t protocol_id;
+    uint32_t message_id;
+    uint32_t token;
+    uint32_t message_type;
+    struct scmi_service_ctx *ctx;
     struct fwk_event_light event = (struct fwk_event_light){
         .id = FWK_ID_EVENT(FWK_MODULE_IDX_SCMI, 0),
         .source_id = FWK_ID_MODULE(FWK_MODULE_IDX_SCMI),
         .target_id = service_id,
     };
+
+    ctx = &scmi_ctx.service_ctx_table[fwk_id_get_element_idx(service_id)];
+
+    status = ctx->transport_api->get_message_header(
+        ctx->transport_id, &message_header);
+    if (status != FWK_SUCCESS) {
+        return status;
+    }
+
+    protocol_id = (message_header & SCMI_MESSAGE_HEADER_PROTOCOL_ID_MASK) >>
+        SCMI_MESSAGE_HEADER_PROTOCOL_ID_POS;
+    message_id = (message_header & SCMI_MESSAGE_HEADER_MESSAGE_ID_MASK) >>
+        SCMI_MESSAGE_HEADER_MESSAGE_ID_POS;
+    token = (message_header & SCMI_MESSAGE_HEADER_TOKEN_MASK) >>
+        SCMI_MESSAGE_HEADER_TOKEN_POS;
+    message_type = (message_header & SCMI_MESSAGE_HEADER_MESSAGE_TYPE_MASK) >>
+        SCMI_MESSAGE_HEADER_MESSAGE_TYPE_POS;
+
+    FWK_LOG_CRIT(
+        "[SCMI RX] %s: type=%" PRIu32 " proto=0x%" PRIx32
+        " msg=0x%" PRIx32 " token=%" PRIu32,
+        fwk_module_get_element_name(service_id),
+        message_type,
+        protocol_id,
+        message_id,
+        token);
 
     return fwk_put_event(&event);
 }
