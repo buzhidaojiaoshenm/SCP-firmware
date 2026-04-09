@@ -19,6 +19,12 @@ static const struct fwk_element config_pl011_elements[] = {
             .reg_base = UINT32_C(0x44002000),
             .baud_rate_bps = 115200,
             .clock_rate_hz = 24 * FWK_MHZ,
+#ifdef BUILD_HAS_MOD_CLOCK
+            .clock_id = FWK_ID_NONE_INIT,
+#endif
+#ifdef BUILD_HAS_MOD_POWER_DOMAIN
+            .pd_id = FWK_ID_NONE_INIT,
+#endif
         }),
     },
     [1] = { 0 },

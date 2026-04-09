@@ -10,6 +10,7 @@
 
 #include <fwk_id.h>
 #include <fwk_interrupt.h>
+#include <fwk_log.h>
 #include <fwk_mm.h>
 #include <fwk_module.h>
 #include <fwk_module_idx.h>
@@ -128,7 +129,12 @@ static int qemu_bridge_start(fwk_id_t id)
         return status;
     }
 
-    return fwk_interrupt_enable(ctx->config->irq);
+    status = fwk_interrupt_enable(ctx->config->irq);
+    if (status != FWK_SUCCESS) {
+        return status;
+    }
+
+    return FWK_SUCCESS;
 }
 
 static int qemu_bridge_process_bind_request(
