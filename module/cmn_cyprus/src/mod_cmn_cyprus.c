@@ -36,10 +36,16 @@
 
 /* Module context */
 static struct cmn_cyprus_ctx ctx;
+static bool cmn_cyprus_setup_complete;
+static bool cmn_cyprus_setup_deferred;
 
 static int cmn_cyprus_setup(void)
 {
     int status;
+
+    if (cmn_cyprus_setup_complete) {
+        return FWK_SUCCESS;
+    }
 
     FWK_LOG_INFO(MOD_NAME "Configuring CMN...");
 
@@ -93,9 +99,23 @@ static int cmn_cyprus_setup(void)
     }
 
     FWK_LOG_INFO(MOD_NAME "Done");
+    cmn_cyprus_setup_complete = true;
 
     return FWK_SUCCESS;
 }
+
+static int cmn_cyprus_start_setup(void)
+{
+    if (!cmn_cyprus_setup_deferred) {
+        return FWK_E_STATE;
+    }
+
+    return cmn_cyprus_setup();
+}
+
+static const struct mod_cmn_cyprus_control_api cmn_cyprus_control_api = {
+    .start_setup = cmn_cyprus_start_setup,
+};
 
 static bool is_config_data_valid(void)
 {
@@ -212,6 +232,7 @@ int cmn_cyprus_start(fwk_id_t id)
 
     /* Initialize the chip specific config data in the context */
     ctx.config = &ctx.config_table->chip_config_data[ctx.chip_id];
+    cmn_cyprus_setup_deferred = ctx.config->deferred_setup;
 
     ctx.cfgm = (struct cmn_cyprus_cfgm_reg *)ctx.config->periphbase;
 
@@ -219,6 +240,11 @@ int cmn_cyprus_start(fwk_id_t id)
         !fwk_id_is_equal(ctx.config->clock_id, FWK_ID_NONE)) {
         return fwk_notification_subscribe(
             mod_clock_notification_id_state_changed, ctx.config->clock_id, id);
+    }
+
+    if (cmn_cyprus_setup_deferred) {
+        FWK_LOG_INFO(MOD_NAME "Waiting for deferred setup trigger");
+        return FWK_SUCCESS;
     }
 
     status = cmn_cyprus_setup();
@@ -276,6 +302,11 @@ static int cmn_cyprus_process_bind_request(
     switch (api_idx) {
     case MOD_CMN_CYPRUS_API_IDX_MAP_IO_REGION:
         get_rnsam_memmap_api(api);
+        status = FWK_SUCCESS;
+        break;
+
+    case MOD_CMN_CYPRUS_API_IDX_CONTROL:
+        *api = &cmn_cyprus_control_api;
         status = FWK_SUCCESS;
         break;
 

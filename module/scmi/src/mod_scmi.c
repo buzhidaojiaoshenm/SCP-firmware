@@ -456,6 +456,11 @@ static int scmi_permissions_handler(
 static inline bool is_valid_protocol_id(uint8_t protocol_id)
 {
     unsigned int i;
+
+    if (protocol_id >= MOD_SCMI_PLATFORM_PROTOCOL_ID_MIN) {
+        return true;
+    }
+
     for (i = 0; i < FWK_ARRAY_SIZE(valid_protocol_ids); ++i) {
         if (protocol_id == valid_protocol_ids[i]) {
             return true;

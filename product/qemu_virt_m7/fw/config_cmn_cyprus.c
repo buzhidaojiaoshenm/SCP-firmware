@@ -85,6 +85,7 @@ static const struct mod_cmn_cyprus_config cmn_config_table[] = {
         .periphbase = QEMU_VIRT_M7_CMN_BASE,
         .mesh_size_x = QEMU_VIRT_M7_CMN_MESH_X,
         .mesh_size_y = QEMU_VIRT_M7_CMN_MESH_Y,
+        .deferred_setup = true,
         .mmap_table = mmap,
         .mmap_count = FWK_ARRAY_SIZE(mmap),
         .hnf_sam_config = {

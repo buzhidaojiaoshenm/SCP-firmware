@@ -31,6 +31,10 @@
 /*! Maximum RA SAM Address regions */
 #define CMN_CYPRUS_MAX_RA_SAM_ADDR_REGION 8
 
+struct mod_cmn_cyprus_control_api {
+    int (*start_setup)(void);
+};
+
 /*!
  * \brief Coordinate (x, y, port number, device number) of a node in the mesh.
  */
@@ -413,6 +417,11 @@ struct mod_cmn_cyprus_config {
     /*! Identifier of the clock that this device depends on */
     fwk_optional_id_t clock_id;
 
+    /*!
+     * Delay CMN setup until explicitly requested through the control API.
+     */
+    bool deferred_setup;
+
     /*! Table of memory region entries */
     const struct mod_cmn_cyprus_mem_region_map *mmap_table;
 
@@ -483,6 +492,7 @@ struct mod_cmn_cyprus_config_table {
  */
 enum mod_cmn_cyprus_api_idx {
     MOD_CMN_CYPRUS_API_IDX_MAP_IO_REGION,
+    MOD_CMN_CYPRUS_API_IDX_CONTROL,
     MOD_CMN_CYPRUS_API_COUNT,
 };
 

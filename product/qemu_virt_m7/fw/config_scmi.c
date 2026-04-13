@@ -51,7 +51,7 @@ static const struct mod_scmi_agent agent_table[] = {
 
 struct fwk_module_config config_scmi = {
     .data = &(struct mod_scmi_config) {
-        .protocol_count_max = 1,
+        .protocol_count_max = 2,
         .agent_count = 1,
         .agent_table = agent_table,
         .vendor_identifier = "qemu",
